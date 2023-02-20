@@ -1,0 +1,12 @@
+{
+    "project_name": "Unstoppable",
+    "contracts": {
+        "LenderPool": ["ERC20Basic", "LenderPool"],
+        "Receiver": ["Receiver"]
+    },
+    "attack_goal": "",
+    "attack_var": "LenderPool.poolBalance",
+    "interface2contract": {
+        "IReceiver": "Receiver"
+    }
+}

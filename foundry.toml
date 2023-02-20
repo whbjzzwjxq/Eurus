@@ -1,0 +1,14 @@
+[profile.default]
+src = 'benchmarks'
+out = '.cache'
+libs = ['lib']
+
+[fuzz]
+runs = 4294967295
+seed = '0x20221001'
+
+[invariant]
+runs = 4294967295
+depth = 10
+
+# See more config options https://github.com/foundry-rs/foundry/tree/master/config

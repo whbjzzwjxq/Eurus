@@ -1,0 +1,9 @@
+{
+    "project_name": "Duplicator",
+    "contracts": {
+        "Duplicator": ["Duplicator", "ERC20Basic.BNB", "ERC20Basic.DPC"]
+    },
+    "attack_goal": "",
+    "attack_var": "ERC20Basic.BNB.balances",
+    "interface2contract": {}
+}

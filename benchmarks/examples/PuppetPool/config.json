@@ -1,0 +1,9 @@
+{
+    "project_name": "PuppetPool",
+    "contracts": {
+        "UniswapV1": ["ERC20Basic", "UniswapV1"],
+        "PuppetPool": ["PuppetPool"]
+    },
+    "attack_goal": "",
+    "attack_var": "ERC20Basic.balances"
+}
