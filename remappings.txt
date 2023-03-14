@@ -1,3 +1,5 @@
 @utils=lib/contracts/@utils
 @openzeppelin=lib/contracts/@openzeppelin
 forge-std=lib/forge-std/src
+ds-test=lib/forge-std/lib/ds-test/src
+benchmarks=./benchmarks

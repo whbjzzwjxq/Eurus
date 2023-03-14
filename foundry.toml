@@ -2,13 +2,17 @@
 src = 'benchmarks'
 out = '.cache'
 libs = ['lib']
+gas_limit = 9223372036854775807
+gas_price = 0
+
 
 [fuzz]
 runs = 4294967295
 seed = '0x20221001'
 
 [invariant]
-runs = 4294967295
+runs = 5000000
 depth = 10
+fail_on_revert = false
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

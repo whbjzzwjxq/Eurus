@@ -2,7 +2,7 @@ from os import path
 
 from typing import Tuple, Any
 
-from impl.utils import (FunctionSummary, ether, gwei)
+from impl.utils import (FunctionInstance, ether, gwei)
 
 from ._deployer import ContractDeployer
 
@@ -48,11 +48,11 @@ class PuppetPool(ContractDeployer):
         ctrt_erc20_addr.approve(ctrt_uniswap_addr, self.attacker_init_token, caller=self.attacker)
 
     def _check(self):
-        ctrt_puppetpool_addr = self.ctrt_name2addr["PuppetPool"]
+        ctrt_puppetpool_addr = self.name2ctrt_addr["PuppetPool"]
         ctrt_puppetpool_addr._check(
             self.attacker, self.lender_pool_init_token, caller=self.attacker)
 
-    def _gen_functiom_summaries(self):
+    def _gen_function_instances(self):
         func_sums = [
             ("ERC20Basic", "approve"),
             ("ERC20Basic", "transfer"),
@@ -61,16 +61,16 @@ class PuppetPool(ContractDeployer):
             ("UniswapV1", "swapETH"),
             ("UniswapV1", "swapToken"),
         ]
-        func_sums = [FunctionSummary(addr_name, func_name, self.ctrt_name2addr[addr_name].get_signature(func_name))
+        func_sums = [FunctionInstance(addr_name, func_name, self.name2ctrt_addr[addr_name].get_signature(func_name))
                      for addr_name, func_name in func_sums]
         return [*func_sums,
                 # self._transfer_func_sum
                 ]
 
-    def _exec_hook(self, func_sum: FunctionSummary) -> Tuple[Any]:
-        ctrt_erc20_addr = self.ctrt_name2addr["ERC20Basic"]
-        ctrt_puppetpool_addr = self.ctrt_name2addr["PuppetPool"]
-        ctrt_uniswap_addr = self.ctrt_name2addr["UniswapV1"]
+    def _exec_hook(self, func_sum: FunctionInstance) -> Tuple[Any]:
+        ctrt_erc20_addr = self.name2ctrt_addr["ERC20Basic"]
+        ctrt_puppetpool_addr = self.name2ctrt_addr["PuppetPool"]
+        ctrt_uniswap_addr = self.name2ctrt_addr["UniswapV1"]
         if func_sum.func_name == "approve":
             s0 = self.m.make_symbolic_address(*self._all_addresses)
             s1 = self.m.make_symbolic_value()
@@ -104,7 +104,7 @@ class PuppetPool(ContractDeployer):
             return s0, s1
         elif func_sum == self._transfer_func_sum:
             s0 = self.m.make_symbolic_value()
-            self._transfer(self.ctrt_name2addr["PuppetPool"], s0)
+            self._transfer(self.name2ctrt_addr["PuppetPool"], s0)
             return s0,
         raise ValueError(f"Unknown function summary: {func_sum}")
 
@@ -114,5 +114,5 @@ class PuppetPool(ContractDeployer):
             ("UniswapV1", "swapToken"),
             ("PuppetPool", "borrow"),
         ]
-        return [FunctionSummary(addr_name, func_name, self.ctrt_name2addr[addr_name].get_signature(func_name))
+        return [FunctionInstance(addr_name, func_name, self.name2ctrt_addr[addr_name].get_signature(func_name))
                 for addr_name, func_name in func_sums]

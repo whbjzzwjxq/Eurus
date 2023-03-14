@@ -1,77 +1,118 @@
-import re
 from os import environ, path
 from time import perf_counter
 from typing import Any, Dict, List, Tuple
 
-from impl.init_slither import gen_slither_contracts
-from impl.static_analysis import analysis_read_and_write
-from impl.utils import (SKETCH, EVMAccount, EVMContract, FunctionSummary,
-                        ManticoreEVM, MTState, NoAliveStates, ether, gwei,
+from impl.utils import (SKETCH, FunctionInstance,
+                        ether, get_solc_json, gwei,
                         init_config, print_sketch)
 
-ctrt_name_regex = re.compile(r"\ncontract (\w+)\s+{")
+from mythril.solidity.soliditycontract import SolidityContract
+from mythril.laser.ethereum.svm import LaserEVM
+from mythril.laser.ethereum.state.account import Account
+from mythril.laser.ethereum.state.world_state import WorldState
+from mythril.laser.ethereum.transaction.symbolic import Actors
+from mythril.laser.ethereum.transaction import tx_id_manager, ContractCreationTransaction, symbol_factory
 
 
 class ContractDeployer:
 
-    owner_init_balance = 1000 * ether
-    # For gas-cost of transactions
-    init_balance = 10 * gwei
-    attacker_init_balance = init_balance
-
-    init_token_supply = 100 * ether
-
-    transfer_limitation = 1 * ether
-    each_timeout = 10 * 60
-    total_timeout = 60 * 60
-
-    root_dir = path.abspath(path.join(__file__, "../../.."))
-    bmk_dir = path.abspath(path.join(root_dir, "benchmarks"))
-
     def __init__(self, project_name: str) -> None:
         self.project_name = project_name
-        self.ctrt_dir = path.join(self.bmk_dir, "examples", self.project_name)
-        self.config = init_config(self.ctrt_dir)
-        self.main_ctrt = None
-        self.__functiom_summaries = None
-        self._transfer_func_sum = FunctionSummary("Global", "transfer", "(address,uint256)")
-        self._static_graph = None
-        self._all_sketches = None
-        self.sketch_steps = 4
-        self.max_uint256 = 2 ** 256 - 1
+        self.project_dir = path.abspath(
+            path.join(self.root_dir, "benchmarks", self.project_name))
+        self.config = init_config(self.project_dir)
+        self.each_timeout = 10 * 60
+        self.total_timeout = 60 * 60
+        # For gas-cost of transactions
+        self.init_balance = 10 * gwei
 
-    def _compile(self, ctrt_path: str, ctrt_name: str,
-        args: Any = (), balance: int = 0, name: str = "", owner: EVMAccount = None):
+        self.init_token_supply = 1000 * ether
+
+        self.root_dir = path.abspath(path.join(__file__, "../../.."))
+
+        self.contract_paths = None
+        self._function_instances = None
+        self._all_sketches = None
+        self.sketch_steps = 10
+        self._deployed = False
+
+    def _deploy(self):
+        if not self._deployed:
+            self.name2ctrt_addr: Dict[str, Account] = {}
+            self.world = WorldState()
+            self.actor = Actors()
+            self.actor["someguy"] = None
+            self.actor["dead"] = "0xdead"
+            self.owner: Account = self.world.create_account(
+                balance=self.init_balance, address=self.actor.creator)
+            self.attacker: Account = self.world.create_account(
+                balance=self.init_balance, address=self.actor.attacker)
+            self.dead: Account = self.world.create_account(
+                balance=self.init_balance, address=self.actor["dead"])
+
+            self.vm = LaserEVM(
+                dynamic_loader=False,
+                max_depth=self.sketch_steps,
+                transaction_count=10e8,
+                execution_timeout=self.each_timeout,
+                create_timeout=self.each_timeout)
+            self.vm.add_world_state(self.world)
+            
+            self._deploy_hook()
+        else:
+            pass
+
+    def _create_contract(self, owner: Account) -> Account:
+        world_state = self.world
+        open_states = [world_state]
+        del self.v.open_states[:]
+        new_account = None
+        for open_world_state in open_states:
+            next_transaction_id = tx_id_manager.get_next_tx_id()
+            # call_data "should" be '[]', but it is easier to model the calldata symbolically
+            # and add logic in codecopy/codesize/calldatacopy/calldatasize than to model code "correctly"
+            transaction = ContractCreationTransaction(
+                world_state=open_world_state,
+                identifier=next_transaction_id,
+                gas_price=symbol_factory.BitVecVal(0, 256),
+                # block gas limit
+                gas_limit=8000000,
+                origin=owner.address,
+                code=Disassembly(contract_initialization_code),
+                caller=caller,
+                contract_name=contract_name,
+                call_data=None,
+                call_value=symbol_factory.BitVecVal(0, 256),
+            )
+            _setup_global_state_for_execution(laser_evm, transaction)
+            new_account = new_account or transaction.callee_account
+
+        self.vm.exec(True)
+
+        return new_account
+
+    def _compile(self, ctrt_path: str, ctrt_name: str, *args, balance: int = None, owner: Account = None) -> Account:
+        if balance is None:
+            balance = self.init_balance
         if owner is None:
             owner = self.owner
         solc_args = [
-            f"--base-path {self.bmk_dir}",
-            f"--include-path ./examples/{self.project_name}",
-            f"--include-path ./contracts",
+            f"--base-path {self.root_dir}",
+            f"--include-path ./benchmarks/{self.project_name}",
+            f"--include-path ./lib",
         ]
-        compile_args = {
-            "solc_args": " ".join(solc_args),
-            "solc_working_dir": self.bmk_dir,
-        }
-        with open(ctrt_path, "r") as f:
-            source_code = f.read()
-        ctrt_addr: EVMContract = self.m.solidity_create_contract(source_code,
-            owner=owner,
-            args=args,
-            contract_name=ctrt_name,
-            balance=balance,
-            compile_args=compile_args,
-        )
-        if name:
-            self.ctrt_name2addr[name] = ctrt_addr
-        else:
-            self.ctrt_name2addr[ctrt_name] = ctrt_addr
-        return ctrt_addr
+        solc_data = get_solc_json(ctrt_path, solc_args=solc_args)
+        ctrt = SolidityContract(ctrt_path, name=ctrt_name, solc_data=solc_data)
+        deployed_ctrt = execute_contract_creation(
+            self.vm, ctrt.creation_code, ctrt_name, self.world, caller=owner.address)
+        self.name2ctrt_addr[ctrt_name] = deployed_ctrt
+        return deployed_ctrt
 
     def _solve(self, sketches: List["SKETCH"], analysis_name: str = "Baseline"):
         print(f"Benchmark: {self.project_name}, Analysis: {analysis_name}")
         print(f"All search space: {len(sketches)}")
-        debug_idxs = [int(i) for i in environ.get("DEBUGIDX", "").split(",") if i != ""]
+        debug_idxs = [int(i) for i in environ.get(
+            "DEBUGIDX", "").split(",") if i != ""]
         time_cost = 0
         for idx, sk in enumerate(sketches):
             if len(debug_idxs) > 0 and idx not in debug_idxs:
@@ -85,8 +126,8 @@ class ContractDeployer:
                 for f in sk:
                     s = self._exec_hook(f)
                     func_name_args.append((f.func_name, s))
-                self._check()
-            except NoAliveStates:
+                self._check_hook()
+            except Exception:
                 succeed = False
             try:
                 state = next(self.m.all_sound_states)
@@ -103,171 +144,83 @@ class ContractDeployer:
                     self._print_solution(f"{func_name}({results})")
                 time_cost += perf_counter() - start_time
                 print(f"Solving timecost: {time_cost}")
-                print(f"Attacker balance: {self.check_balance(self.attacker, state)}")
+                print(
+                    f"Attacker balance: {self.check_balance(self.attacker, state)}")
                 return
 
             # Because currently, we can't set the timeout for each sketch solving,
             # so we simulate it and assume there isn't a satisfying solving costing more time than each_timeout.
-            time_cost_step = min(perf_counter() - start_time, self.each_timeout)
+            time_cost_step = min(
+                perf_counter() - start_time, self.each_timeout)
             time_cost += time_cost_step
             if time_cost > self.total_timeout:
                 print("Timeout")
                 print(f"Stop at: {idx + 1}")
                 return
 
-            # Dont' count the time of deploy because it is just due to the lack of snapshot.
-            self._deploy(analysis_name)
+            # Don't count the time of recovering to the snapshot.
+            self._deploy()
         print("Cannot find a solution!")
-
-    @property
-    def static_graph(self):
-        if self._static_graph is None:
-            ctrt_slis, _ = gen_slither_contracts(self.ctrt_dir)
-            self._static_graph = analysis_read_and_write(ctrt_slis, self.config)
-        return self._static_graph
-
-    # def _analyze_usedef(self) -> List["SKETCH"]:
-    #     print("Use-Def Analysis")
-    #     start_time = perf_counter()
-    #     static_graph = self.static_graph
-    #     sketches = self.all_sketches
-    #     attack_var = self.config.attack_var
-    #     vars_deps = static_graph.get_vars_written_dependencies(static_graph.get_node_by_name(attack_var))
-    #     sketches_left = []
-    #     sketches_no_perf = []
-    #     for sk in sketches:
-    #         final_vars_written = static_graph.get_vars_written(sk[-1:])
-    #         if attack_var not in final_vars_written:
-    #             continue
-    #         vars_written = static_graph.get_vars_written(sk)
-    #         intersection = vars_written.intersection(vars_deps)
-    #         if intersection == vars_deps:
-    #             sketches_left.append(sk)
-    #             continue
-    #         rank = len(intersection) / len(vars_deps)
-    #         sketches_no_perf.append((sk, rank))
-    #     sketches_no_perf = sorted(sketches_no_perf, key=lambda a: a[1])
-    #     sketches_no_perf = [a for a, _ in sketches_no_perf]
-    #     sketches_left.extend(sketches_no_perf)
-    #     end_time = perf_counter()
-    #     time_diff = end_time - start_time
-    #     print(f"Analysis timecost: {time_diff}")
-    #     return sketches_left
-
-    def _analyze_usedef(self) -> List["SKETCH"]:
-        print(f"Benchmark: {self.project_name}, Analysis: Use-Def")
-        start_time = perf_counter()
-        static_graph = self.static_graph
-        sketches = self.all_sketches
-        attack_var = self.config.attack_var
-        sketches_left = []
-        for sk in sketches:
-            final_vars_written = static_graph.get_vars_written(sk[-1:])
-            if attack_var not in final_vars_written:
-                continue
-            sketches_left.append(sk)
-        end_time = perf_counter()
-        time_diff = end_time - start_time
-        print(f"Analysis timecost: {time_diff}")
-        return sketches_left
 
     def _print_solution(self, s: str):
         all_replacement = {
             str(self.attacker.address): "Attacker",
-            **{str(v.address): k for k, v in self.ctrt_name2addr.items()}
+            **{str(v.address): k for k, v in self.name2ctrt_addr.items()}
         }
         for k, v in all_replacement.items():
             s = s.replace(k, v)
         print(s)
 
-    def _deploy(self, analysis_name: str = "Baseline"):
-        self.manticore_work_dir = path.join(self.root_dir, f"output/manticore_workspace/{self.project_name}_{analysis_name}")
-        self.m = ManticoreEVM(workspace_url=self.manticore_work_dir)
-        self.ctrt_name2addr: Dict[str, EVMContract] = {}
-        self.owner: EVMAccount = self.m.create_account(balance=1000 * ether, name="owner")
-        self.attacker: EVMAccount = self.m.create_account(balance=self.attacker_init_balance, name="attacker")
-        self._deploy_hook()
+    @property
+    def all_addresses(self):
+        return [self.owner, self.attacker, self.dead, *self.name2ctrt_addr.values()]
 
     @property
-    def _all_addresses(self):
-        return [self.attacker, *self.ctrt_name2addr.values()]
+    def function_instances(self):
+        if self._function_instances is None:
+            self._function_instances = self._gen_function_instances()
+        return self._function_instances
 
     @property
-    def _functiom_summaries(self):
-        if self.__functiom_summaries is None:
-            self.__functiom_summaries = self._gen_functiom_summaries()
-        return self.__functiom_summaries
-
-    def _transfer(self, receiver: "EVMAccount", value: Any, sender: "EVMAccount" = None):
-        if sender is None:
-            sender = self.attacker
-        for s in self.m.all_states:
-            world = s.platform
-            if type(value) != int:
-                self.m.constrain(value <= self.transfer_limitation)
-                self.m.constrain(value >= 1 * gwei)
-            world.send_funds(sender, receiver, value)
-
-    def _deploy_hook(self):
+    def ground_truth_sketch(self):
         raise NotImplementedError
-
-    def _check(self):
-        raise NotImplementedError
-
-    # Return tuple of symbolic values
-    def _exec_hook(self, func_sum: FunctionSummary) -> Tuple[Any]:
-        raise NotImplementedError
-
-    def _gen_functiom_summaries(self) -> List[FunctionSummary]:
-        raise NotImplementedError
-
-    @property
-    def _ground_truth_sketch(self):
-        raise NotImplementedError
-
-    def run_ground_truth(self):
-        self._deploy(analysis_name="GroundTruth")
-        self._solve([self._ground_truth_sketch], analysis_name="GroundTruth")
-
-    def run_mock_usedef(self):
-        # Although there are perhaps other potential right answers,
-        # we still use the ground truth as the first solving one.
-        self._deploy(analysis_name="Fake-Use-Def")
-        sketches = self._analyze_usedef()
-        gt_sk = self._ground_truth_sketch
-        for idx, sk in enumerate(sketches):
-            equal = True
-            if len(sk) != len(gt_sk):
-                equal = False
-            if not all((a == b for a,b in zip(gt_sk, sk))):
-                equal = False
-            if equal:
-                print(f"Ground truth at: {idx + 1}, {print_sketch(sk)}")
-                break
-            print(f"Unpruned at: {idx + 1}, {print_sketch(sk)}")
-
-    def syn_baseline(self):
-        self._deploy(analysis_name="Baseline")
-        self._solve(self.all_sketches, analysis_name="Baseline")
-
-    def syn_usedef(self):
-        self._deploy(analysis_name="Use-Def")
-        sketches = self._analyze_usedef()
-        self._solve(sketches, analysis_name="Use-Def")
 
     @property
     def all_sketches(self) -> List["SKETCH"]:
         if self._all_sketches is None:
             self._all_sketches = []
             last_plans = [[]]
-            func_sums = self._functiom_summaries
-            for i in range(self.sketch_steps):
+            func_insts = self._function_instances
+            for _ in range(self.sketch_steps):
                 temp = []
                 for p in last_plans:
-                    temp.extend([[*p, func_s] for func_s in func_sums])
+                    temp.extend([[*p, func_s] for func_s in func_insts])
                 self._all_sketches.extend(temp)
                 last_plans = temp
         return self._all_sketches
 
-    def check_balance(self, address: "EVMAccount", s: "MTState") -> int:
-        return s.solve_one(s.platform.get_balance(address))
+    def _deploy_hook(self):
+        raise NotImplementedError
+
+    # Return tuple of symbolic values
+    def _exec_hook(self, func_sum: FunctionInstance) -> Tuple[Any]:
+        raise NotImplementedError
+
+    def _check_hook(self):
+        raise NotImplementedError
+
+    def _gen_function_instances(self) -> List[FunctionInstance]:
+        raise NotImplementedError
+
+    def run_ground_truth(self):
+        self._deploy()
+        self._solve([self._ground_truth_sketch], analysis_name="GroundTruth")
+
+    # def syn_baseline(self):
+    #     self._deploy(analysis_name="Baseline")
+    #     self._solve(self.all_sketches, analysis_name="Baseline")
+
+    # def syn_usedef(self):
+    #     self._deploy(analysis_name="Use-Def")
+    #     sketches = self._analyze_usedef()
+    #     self._solve(sketches, analysis_name="Use-Def")

@@ -4,7 +4,7 @@ from .static_graph import StaticGraph, ctrt_global
 
 from slither.core.solidity_types.user_defined_type import UserDefinedType
 from slither.core.expressions.member_access import MemberAccess
-from .utils import FunctionSummary, SliContract, SliFunction, SliVariable, Config
+from .utils import FunctionInstance, SliContract, SliFunction, SliVariable, Config
 
 
 def init_temp_variable(name: str, ctrt: "SliContract") -> "SliVariable":
@@ -125,7 +125,7 @@ def analysis_read_and_write(ctrt_slis: List["SliContract"], config: "Config") ->
                         static_graph.entry_node, dest_node, f)
     for n in static_graph.nodes:
         if n.contract == ctrt_global:
-            func = FunctionSummary("Global", "transfer", "(address,uint256)")
+            func = FunctionInstance("Global", "transfer", "(address,uint256)")
             static_graph.add_edge(static_graph.entry_node, n, func)
 
     return static_graph

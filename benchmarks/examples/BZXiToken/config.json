@@ -1,8 +1,0 @@
-{
-    "project_name": "BZXiToken",
-    "contracts": {
-        "BZXiToken": ["BZXiToken"]
-    },
-    "attack_goal": "",
-    "attack_var": "BZXiToken.balances"
-}

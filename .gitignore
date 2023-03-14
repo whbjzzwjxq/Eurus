@@ -153,5 +153,6 @@ cython_debug/
 
 # Dev
 .vscode
-.cache
 .idea
+.DS_Store
+cache

@@ -1,9 +1,0 @@
-{
-    "project_name": "Whosyourowner",
-    "contracts": {
-        "Whosyourowner": ["Whosyourowner"]
-    },
-    "attack_goal": "",
-    "attack_var": "Whosyourowner.balances",
-    "interface2contract": {}
-}
