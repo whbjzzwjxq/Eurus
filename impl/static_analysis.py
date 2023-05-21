@@ -1,10 +1,10 @@
 from typing import List
 
-from .static_graph import StaticGraph, ctrt_global
+from .asset_flow_graph import AssetFlowGraph, ctrt_global
 
 from slither.core.solidity_types.user_defined_type import UserDefinedType
 from slither.core.expressions.member_access import MemberAccess
-from .utils import FunctionInstance, SliContract, SliFunction, SliVariable, Config
+from .utils import SolFunction, SliContract, SliFunction, SliVariable, Config, CornerCase
 
 
 def init_temp_variable(name: str, ctrt: "SliContract") -> "SliVariable":
@@ -23,28 +23,19 @@ def judge_called_type(called: "MemberAccess"):
             if called_expr_type.name == "address":
                 return 1
             else:
-                raise ValueError("Corner case")
+                raise CornerCase
         if isinstance(called_expr_type, UserDefinedType):
             return 2
         else:
-            raise ValueError("Corner case")
+            raise CornerCase
     else:
         return 3
 
 
-def analysis_read_and_write(ctrt_slis: List["SliContract"], config: "Config") -> "StaticGraph":
-    static_graph = StaticGraph()
+def analysis_read_and_write(ctrt_slis: List["SliContract"], config: "Config") -> "AssetFlowGraph":
+    static_graph = AssetFlowGraph()
 
     temp_vars = {}
-
-    def seek_func(ctrt_name: str, func_name: str):
-        for ctrt_sli in ctrt_slis:
-            if ctrt_sli.name != ctrt_name:
-                continue
-            for f in ctrt_sli.functions:
-                if f.name == func_name:
-                    return f
-        raise ValueError(f"Unknown function: {func_name}")
 
     def track_var(func: "SliFunction"):
         # Analyze normal storage variables usage.
@@ -125,7 +116,7 @@ def analysis_read_and_write(ctrt_slis: List["SliContract"], config: "Config") ->
                         static_graph.entry_node, dest_node, f)
     for n in static_graph.nodes:
         if n.contract == ctrt_global:
-            func = FunctionInstance("Global", "transfer", "(address,uint256)")
+            func = SolFunction("Global", "transfer", "(address,uint256)")
             static_graph.add_edge(static_graph.entry_node, n, func)
 
     return static_graph

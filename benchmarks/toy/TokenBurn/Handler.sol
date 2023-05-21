@@ -7,7 +7,7 @@ import "@utils/ERC20Basic.sol";
 import "@utils/UniswapV1.sol";
 import "@utils/Handler.sol";
 
-import "benchmarks/TokenBurn/BurningToken.sol";
+import "benchmarks/toy/TokenBurn/BurningToken.sol";
 
 contract TokenBurnHandler is Handler {
     address owner;

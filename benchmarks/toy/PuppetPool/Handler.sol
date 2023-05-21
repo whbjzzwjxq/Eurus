@@ -7,7 +7,7 @@ import "@utils/ERC20Basic.sol";
 import "@utils/UniswapV1.sol";
 import "@utils/Handler.sol";
 
-import "benchmarks/PuppetPool/PuppetPool.sol";
+import "benchmarks/toy/PuppetPool/PuppetPool.sol";
 
 contract PuppetPoolHandler is Handler {
     address owner;

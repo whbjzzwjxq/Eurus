@@ -2,7 +2,7 @@ from os import environ, path
 from time import perf_counter
 from typing import Any, Dict, List, Tuple
 
-from impl.utils import (SKETCH, FunctionInstance,
+from impl.utils import (SKETCH, SolFunction,
                         ether, get_solc_json, gwei,
                         init_config, print_sketch)
 
@@ -203,13 +203,13 @@ class ContractDeployer:
         raise NotImplementedError
 
     # Return tuple of symbolic values
-    def _exec_hook(self, func_sum: FunctionInstance) -> Tuple[Any]:
+    def _exec_hook(self, func_sum: SolFunction) -> Tuple[Any]:
         raise NotImplementedError
 
     def _check_hook(self):
         raise NotImplementedError
 
-    def _gen_function_instances(self) -> List[FunctionInstance]:
+    def _gen_function_instances(self) -> List[SolFunction]:
         raise NotImplementedError
 
     def run_ground_truth(self):

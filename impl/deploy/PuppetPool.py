@@ -2,7 +2,7 @@ from os import path
 
 from typing import Tuple, Any
 
-from impl.utils import (FunctionInstance, ether, gwei)
+from impl.utils import (SolFunction, ether, gwei)
 
 from ._deployer import ContractDeployer
 
@@ -61,13 +61,13 @@ class PuppetPool(ContractDeployer):
             ("UniswapV1", "swapETH"),
             ("UniswapV1", "swapToken"),
         ]
-        func_sums = [FunctionInstance(addr_name, func_name, self.name2ctrt_addr[addr_name].get_signature(func_name))
+        func_sums = [SolFunction(addr_name, func_name, self.name2ctrt_addr[addr_name].get_signature(func_name))
                      for addr_name, func_name in func_sums]
         return [*func_sums,
                 # self._transfer_func_sum
                 ]
 
-    def _exec_hook(self, func_sum: FunctionInstance) -> Tuple[Any]:
+    def _exec_hook(self, func_sum: SolFunction) -> Tuple[Any]:
         ctrt_erc20_addr = self.name2ctrt_addr["ERC20Basic"]
         ctrt_puppetpool_addr = self.name2ctrt_addr["PuppetPool"]
         ctrt_uniswap_addr = self.name2ctrt_addr["UniswapV1"]
@@ -114,5 +114,5 @@ class PuppetPool(ContractDeployer):
             ("UniswapV1", "swapToken"),
             ("PuppetPool", "borrow"),
         ]
-        return [FunctionInstance(addr_name, func_name, self.name2ctrt_addr[addr_name].get_signature(func_name))
+        return [SolFunction(addr_name, func_name, self.name2ctrt_addr[addr_name].get_signature(func_name))
                 for addr_name, func_name in func_sums]

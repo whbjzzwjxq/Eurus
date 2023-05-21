@@ -5,6 +5,19 @@ from subprocess import PIPE, Popen
 from typing import Dict, List
 import re
 
+from slither.core.declarations.contract import Contract as SliContract
+from slither.core.declarations.function import Function as SliFunction
+from slither.core.declarations.solidity_variables import \
+    SolidityFunction as SolFunction
+from slither.core.variables.variable import Variable as SliVariable
+from slither.core.variables.state_variable import StateVariable as SliStateVariable
+
+from slither.core.solidity_types.type import Type
+
+from slither.slithir import *
+
+from hashlib import sha3_256
+
 ether = 10 ** 18
 gwei = 10 ** 10
 max_uint256 = 2 ** 256 - 1
@@ -13,7 +26,15 @@ ctrt_name_regex = re.compile(r"\ncontract (\w+)\s+{")
 
 
 class CompilerError(BaseException):
-    """A Mythril exception denoting an error during code compilation."""
+    """An error happened during code compilation."""
+    pass
+
+class CornerCase(BaseException):
+    """A corner case has been reached."""
+    pass
+
+class FrozenObject(RuntimeError):
+    """Don't add item in a freeze graph."""
     pass
 
 @dataclass
@@ -25,19 +46,30 @@ class Config:
     interface2contract: Dict[str, str] = field(default_factory=dict)
 
 
-@dataclass
-class FunctionInstance:
-    ctrt_name: str
-    func_name: str
-    func_signature: str
+class SolidityFunction:
+    def __init__(self, ctrt_name: str, func_name: str, func_types: list) -> None:
+        self.ctrt_name = ctrt_name
+        self.func_name = func_name
+        self.func_types = func_types
+        self.func_type_strs = [str(t) for t in self.func_types]
+
+    @property
+    def func_signature(self):
+        func_types_str = ",".join(self.func_types)
+        return f"{self.func_name}({func_types_str})"
+
+    @property
+    def keccak_hash(self):
+        return sha3_256(self.func_signature.encode('utf-8')).hexdigest()
 
     @property
     def canonical_name(self):
-        return f"{self.ctrt_name}.{self.func_name}{self.func_signature}"
+        func_types_str = ",".join(self.func_types)
+        return f"{self.ctrt_name}.{self.func_name}({func_types_str})"
 
     @property
     def name(self):
-        return self.func_name
+        return self.canonical_name
 
     def __hash__(self) -> int:
         return hash(self.canonical_name)
@@ -45,11 +77,44 @@ class FunctionInstance:
     def __str__(self) -> str:
         return self.canonical_name
 
-    def __eq__(self, __o: object) -> bool:
-        return hash(self) == hash(__o)
+    def __eq__(self, __value: object) -> bool:
+        return hash(self) == hash(__value)
 
 
-SKETCH = List[FunctionInstance]
+class ConcreteSolFunction(SolidityFunction):
+
+    def __init__(self, ctrt_name: str, func_name: str, func_types: list, func_args: list) -> None:
+        super().__init__(ctrt_name, func_name, func_types)
+        not_none_args = [f for f in func_args if f is not None]
+        if len(not_none_args) == 0:
+            raise ValueError("At least one value shall be concrete.")
+        self.is_partial = len(not_none_args) < len(func_args)
+        self.func_args = func_args
+
+    @property
+    def concrete_name(self):
+        vs = [v if v is not None else "_" for v in self.func_args]
+        func_args_str = ",".join(vs)
+        return f"{self.ctrt_name}.{self.func_name}({func_args_str})"
+
+
+class Sketch:
+
+    @classmethod
+    def count_all(func_cands_num: int, steps: int = 3):
+        last = 1
+        count = 0
+        for _ in range(steps):
+            last *= func_cands_num
+            count += last
+        return count
+
+    def __init__(self, funcs: List[SolidityFunction]) -> None:
+        self.funcs = funcs
+
+    def __str__(self) -> str:
+        return " => ".join([f.canonical_name for f in self.funcs])
+
 
 def init_config(ctrt_dir: str) -> Config:
     config_path = path.join(ctrt_dir, "config.json")
@@ -60,18 +125,8 @@ def init_config(ctrt_dir: str) -> Config:
     config = Config(**config_json)
     return config
 
-def count_sketch(func_cands_num: int, steps: int = 3):
-    last = 1
-    count = 0
-    for _ in range(steps):
-        last *= func_cands_num
-        count += last
-    return count
 
-def print_sketch(sketch: SKETCH):
-    return " => ".join([f.canonical_name for f in sketch])
-
-def get_solc_json(file, solc_binary="solc", solc_args: List[str]=None, solc_settings_json=None) -> dict:
+def get_solc_json(file, solc_binary="solc", solc_args: List[str] = None, solc_settings_json=None) -> dict:
     """
 
     :param file:
@@ -129,7 +184,8 @@ def get_solc_json(file, solc_binary="solc", solc_args: List[str]=None, solc_sett
     try:
         result = json.loads(out)
     except json.JSONDecodeError:
-        raise json.JSONDecodeError(f"Encountered a decode error.\n stdout:{out}\n stderr: {stderr}")
+        raise json.JSONDecodeError(
+            f"Encountered a decode error.\n stdout:{out}\n stderr: {stderr}")
 
     for error in result.get("errors", []):
         if error["severity"] == "error":
