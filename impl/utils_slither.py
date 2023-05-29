@@ -1,31 +1,39 @@
-from os import listdir, path
-from typing import List, Tuple
+import os
+from os import path
+from typing import List
 
 from slither.slither import Slither
+from slither.core.declarations.contract import Contract as SliContract
+from slither.core.declarations.function import Function as SliFunction
+from slither.core.declarations.solidity_variables import \
+    SolidityFunction as SolFunction
+from slither.core.variables.variable import Variable as SliVariable
+from slither.core.variables.state_variable import StateVariable as SliStateVariable
+from slither.core.expressions.member_access import MemberAccess
 
-from .utils import init_config, Config, CornerCase
+from .utils import CornerCase, SolCallType
 
 
-def gen_slither_contracts(ctrt_dir: str) -> Tuple[List["Slither"], Config]:
-    root_dir = path.abspath(path.join(__file__, "../.."))
-    work_dir = path.abspath(path.join(root_dir, "benchmarks"))
+def gen_slither_contracts(bmk_dir: str) -> List[Slither]:
+    bmk_dir = path.abspath(bmk_dir)
     ctrt_slis = []
-    config = init_config(ctrt_dir)
     # Parse all contracts.
-    for file_name in listdir(ctrt_dir):
-        if (not file_name.endswith(".sol")) or ("Attacker" in file_name) or file_name.endswith(".t.sol"):
+    for file_name in os.listdir(bmk_dir):
+        if (not file_name.endswith(".sol")) or ("Handler" in file_name) or file_name.endswith(".t.sol"):
             continue
-        ctrt_path = path.abspath(path.join(ctrt_dir, file_name))
+        ctrt_path = path.abspath(path.join(bmk_dir, file_name))
         solc_args = [
-            f"--base-path {work_dir}",
-            f"--include-path ./benchmarks/{config.project_name}",
-            f"--include-path ./contracts",
+            f"--base-path {bmk_dir}",
+            f"--include-path {bmk_dir}",
+            f"--include-path ../../lib/contracts",
         ]
-        sli = Slither(ctrt_path, solc_args=" ".join(solc_args), solc_working_dir=work_dir)
+        solc_args = " ".join(solc_args)
+        sli = Slither(ctrt_path, solc_args=solc_args, solc_working_dir=bmk_dir)
         ctrt_slis.append(sli)
-    return ctrt_slis, config
+    return ctrt_slis
 
-def get_func(ctrt_slis: List["Slither"], ctrt_name: str, func_name: str):
+
+def get_func(ctrt_slis: List[Slither], ctrt_name: str, func_name: str):
     for ctrt_sli in ctrt_slis:
         ctrts = ctrt_sli.get_contract_from_name(ctrt_name)
         if len(ctrts) == 0:
@@ -37,3 +45,7 @@ def get_func(ctrt_slis: List["Slither"], ctrt_name: str, func_name: str):
             if f.name == func_name:
                 return f
     raise ValueError(f"Unknown function: {func_name}")
+
+
+def get_call_type(called: MemberAccess) -> SolCallType:
+    pass

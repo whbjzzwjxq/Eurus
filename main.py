@@ -6,44 +6,63 @@ import json
 import os
 from os import path
 
-from typing import Dict, List
-from impl.utils import init_config
+from typing import List
+
+from .impl.defi import Defi
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "-i", "--input", help="Target contract directory.", default="")
 parser.add_argument(
     "-f", "--forge", help="Do the forge invariant test.", action="store_true")
+parser.add_argument(
+    "--rwgraph", help="Generate the Read/Write analysis graph.", action="store_true")
+parser.add_argument(
+    "-e", "--eval", help="Do the evaluation.", action="store_true")
 parser.add_argument("--timeout", help="Timeout.", type=int, default=3600)
 
 
-def get_bmks(bmk_path: str):
-    if bmk_path:
-        bmk_paths = [bmk_path]
+def get_bmk_dirs(bmk_dir: str):
+    toy_dir = path.abspath("./benchmarks/toy")
+    realworld_dir = path.abspath("./benchmarks/realworld")
+    if bmk_dir == "all":
+        for n in os.listdir(toy_dir):
+            bmk_dirs.append(path.join(toy_dir, n))
+        for n in os.listdir(realworld_dir):
+            bmk_dirs.append(path.join(realworld_dir, n))
+        return bmk_dirs
     else:
-        bmk_paths = []
-        for n in os.listdir("./benchmarks"):
-            bmk_paths.append(path.join("./benchmarks", n))
-    return bmk_paths
+        if not path.isdir(bmk_dir):
+            raise ValueError(f"Benchmark path should be directory, current is: {bmk_dir}")
+        if path.abspath(bmk_dir) == toy_dir:
+            for n in os.listdir(toy_dir):
+                bmk_dirs.append(path.join(toy_dir, n))
+            return bmk_dirs
+        if path.abspath(bmk_dir) == realworld_dir:
+            for n in os.listdir(realworld_dir):
+                bmk_dirs.append(path.join(realworld_dir, n))
+            return bmk_dirs
+        bmk_dirs = [bmk_dir]
+        return bmk_dirs
 
-def resolve_bmk_name(bmk_path: str):
-    return path.basename(bmk_path)
+def resolve_bmk_name(bmk_dir: str):
+    return path.basename(bmk_dir)
 
 
-def forge_test(bmk_path: str, timeout: int):
-    bmk_name = resolve_bmk_name(bmk_path)
-    test_solfile = path.join(bmk_path, f"{bmk_name}.t.sol")
-    cache_path = path.join(bmk_path, "cache")
+def forge_test(bmk_dir: str, timeout: int):
+    bmk_name = resolve_bmk_name(bmk_dir)
+    test_solfile = path.join(bmk_dir, f"{bmk_name}.t.sol")
+    cache_path = path.join(bmk_dir, "cache")
     if not path.exists(cache_path):
         os.mkdir(cache_path)
-    result_path = path.join(bmk_path, "result")
+    result_path = path.join(bmk_dir, "result")
     if not path.exists(result_path):
         os.mkdir(result_path)
     cmds = [
         "forge",
         "test",
         "-C",
-        bmk_path,
+        bmk_dir,
         "-vvvv",
         "--cache-path",
         cache_path,
@@ -70,6 +89,14 @@ def forge_test(bmk_path: str, timeout: int):
             json.dump(err, f)
 
 
+def evaluate(bmk_dir: str, timeout: int):
+    pass
+
+def generate_rw_graph(bmk_dir: str):
+    defi = Defi(bmk_dir)
+    output_path = path.join(bmk_dir, "rw.dot")
+    defi.print_rw_graph(output_path)
+
 def execute(cmds: List[str], timeout=1200, stdout=DEVNULL, stderr=DEVNULL):
     cmd = " ".join(cmds)
     print(cmd)
@@ -81,15 +108,16 @@ def execute(cmds: List[str], timeout=1200, stdout=DEVNULL, stderr=DEVNULL):
         proc.communicate()
         raise tee
 
-
 def _main():
     args = parser.parse_args()
-    # config = init_config(args.input)
-    bmk_paths = get_bmks(args.input)
-    for bmk_path in bmk_paths:
+    bmk_dirs = get_bmk_dirs(args.input)
+    for bmk_dir in bmk_dirs:
         if args.forge:
-            forge_test(bmk_path, args.timeout)
-
+            forge_test(bmk_dir, args.timeout)
+        if args.rwgraph:
+            generate_rw_graph(bmk_dir)
+        if args.eval:
+            evaluate(bmk_dir, args.timeout)
 
 if __name__ == "__main__":
     _main()

@@ -5,16 +5,7 @@ from subprocess import PIPE, Popen
 from typing import Dict, List
 import re
 
-from slither.core.declarations.contract import Contract as SliContract
-from slither.core.declarations.function import Function as SliFunction
-from slither.core.declarations.solidity_variables import \
-    SolidityFunction as SolFunction
-from slither.core.variables.variable import Variable as SliVariable
-from slither.core.variables.state_variable import StateVariable as SliStateVariable
-
-from slither.core.solidity_types.type import Type
-
-from slither.slithir import *
+from enum import Enum
 
 from hashlib import sha3_256
 
@@ -46,7 +37,7 @@ class Config:
     interface2contract: Dict[str, str] = field(default_factory=dict)
 
 
-class SolidityFunction:
+class SolFunction:
     def __init__(self, ctrt_name: str, func_name: str, func_types: list) -> None:
         self.ctrt_name = ctrt_name
         self.func_name = func_name
@@ -79,9 +70,20 @@ class SolidityFunction:
 
     def __eq__(self, __value: object) -> bool:
         return hash(self) == hash(__value)
+    
+
+class SolCallType(Enum):
+    # payable(address).transfer(...)
+    INTRINSIC = 0
+
+    # _internalTransfer(addr1, addr2, amt)
+    INTERNAL = 1
+
+    # Token.transfer(addr1, amt)
+    EXTERNAL = 2
 
 
-class ConcreteSolFunction(SolidityFunction):
+class ConcreteSolFunction(SolFunction):
 
     def __init__(self, ctrt_name: str, func_name: str, func_types: list, func_args: list) -> None:
         super().__init__(ctrt_name, func_name, func_types)
@@ -109,7 +111,7 @@ class Sketch:
             count += last
         return count
 
-    def __init__(self, funcs: List[SolidityFunction]) -> None:
+    def __init__(self, funcs: List[SolFunction]) -> None:
         self.funcs = funcs
 
     def __str__(self) -> str:
