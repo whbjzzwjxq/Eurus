@@ -1,0 +1,10 @@
+{
+    "project_name": "TokenBurn",
+    "attack_goal": "",
+    "contract_names": [
+        "BurningToken",
+        "WETH",
+        "UniswapV1"
+    ],
+    "attack_state_variables": []
+}

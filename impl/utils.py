@@ -31,10 +31,9 @@ class FrozenObject(RuntimeError):
 @dataclass
 class Config:
     project_name: str = "None"
-    contracts: Dict[str, List[str]] = field(default_factory=dict)
     attack_goal: str = ""
-    attack_var: str = ""
-    interface2contract: Dict[str, str] = field(default_factory=dict)
+    contract_names: List[str] = field(default_factory=list)
+    attack_state_variables: List[str] = field(default_factory=list)
 
 
 class SolFunction:
@@ -118,8 +117,8 @@ class Sketch:
         return " => ".join([f.canonical_name for f in self.funcs])
 
 
-def init_config(ctrt_dir: str) -> Config:
-    config_path = path.join(ctrt_dir, "config.json")
+def init_config(bmk_dir: str) -> Config:
+    config_path = path.join(bmk_dir, "_config.json")
     config_json = {}
     if path.exists(config_path):
         with open(config_path, "r") as f:

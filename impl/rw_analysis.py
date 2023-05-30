@@ -33,21 +33,21 @@ class RWNode:
         return f"{self.contract.name}.{self.var.name}"
 
 
-class RWNodeNone(RWNode):
-    """
-    Represents None state variable dependency.
-    """
+# class RWNodeNone(RWNode):
+#     """
+#     Represents None state variable dependency.
+#     """
 
-    def __init__(self, index: int) -> None:
-        super().__init__(None, index)
+#     def __init__(self, index: int) -> None:
+#         super().__init__(None, index)
 
-    @property
-    def contract(self):
-        return None
+#     @property
+#     def contract(self):
+#         return None
 
-    @property
-    def canonical_name(self):
-        return "Entry"
+#     @property
+#     def canonical_name(self):
+#         return "Entry"
 
 
 class RWEdge:
@@ -67,7 +67,7 @@ class RWEdge:
 class RWGraph:
     def __init__(self) -> None:
         self._freeze = False
-        self.nodes: List[RWNode] = [RWNodeNone(index=0)]
+        self.nodes: List[RWNode] = []
         self.edges: List[RWEdge] = []
 
     def freeze(self):
@@ -76,9 +76,9 @@ class RWGraph:
     def unfreeze(self):
         self._freeze = False
 
-    @property
-    def none_node(self):
-        return self.nodes[0]
+    # @property
+    # def none_node(self):
+    #     return self.nodes[0]
 
     def add_node(self, var: SliVariable):
         if self._freeze:
@@ -95,16 +95,12 @@ class RWGraph:
         return edge
 
     def __contains__(self, item: SliVariable):
-        if item == None:
-            return True
         for n in self.nodes:
             if n.var == item:
                 return True
         return False
 
     def __getitem__(self, key: SliVariable):
-        if key == None:
-            return self.none_node
         for n in self.nodes:
             if n.var == key:
                 return n
