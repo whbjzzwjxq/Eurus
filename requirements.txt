@@ -1,1 +1,2 @@
 slither-analyzer==0.9.3
+graphviz==0.20.1

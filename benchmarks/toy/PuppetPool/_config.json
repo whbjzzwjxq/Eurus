@@ -1,0 +1,18 @@
+{
+    "project_name": "PuppetPool",
+    "attack_goal": "",
+    "contract_names": [
+        "ERC20Basic",
+        "WETH",
+        "UniswapV1",
+        "PuppetPool"
+    ],
+    "contract_names_mapping": {
+        "UniswapV1.token": "ERC20Basic",
+        "UniswapV1.weth": "WETH",
+        "PuppetPool.uniswapPair": "UniswapV1",
+        "PuppetPool.token": "ERC20Basic",
+        "PuppetPool.weth": "WETH"
+    },
+    "attack_state_variables": []
+}
