@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 
-import "@utils/ERC20Basic.sol";
+import "@utils/WETH.sol";
 import "@utils/UniswapV1.sol";
 
 import "benchmarks/toy/TokenBurn/BurningToken.sol";

@@ -6,5 +6,12 @@
         "WETH",
         "UniswapV1"
     ],
+    "contract_names_mapping": {
+        "UniswapV1.token": "BurningToken",
+        "UniswapV1.weth": "WETH",
+        "TokenBurnHandler.token": "BurningToken",
+        "TokenBurnHandler.weth": "WETH",
+        "TokenBurnHandler.uniswap": "UniswapV1"
+    },
     "attack_state_variables": []
 }

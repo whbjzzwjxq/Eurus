@@ -1,3 +1,4 @@
+from typing import Optional
 from os import path
 
 from slither.slither import Slither
@@ -32,3 +33,12 @@ def gen_slither(bmk_dir: str) -> Slither:
     sli = Slither(ctrt_path, solc_args=solc_args,
                   solc_working_dir=root_dir, solc_remaps=solc_remaps)
     return sli
+
+
+def get_function_from_name(ctrt: SliContract, name: str) -> Optional[SliFunction]:
+    return next(
+        (f for f in ctrt.functions if f.name ==
+         # Make sure it is the implementation instead of interface
+         name and f.canonical_name.startswith(ctrt.name)),
+        None,
+    )

@@ -94,7 +94,7 @@ def evaluate(bmk_dir: str, timeout: int):
 
 def generate_rw_graph(bmk_dir: str):
     defi = Defi(bmk_dir)
-    output_path = path.join(bmk_dir, "rw")
+    output_path = path.join(bmk_dir, "_rw")
     defi.print_rw_graph(output_path)
 
 def execute(cmds: List[str], timeout=1200, stdout=DEVNULL, stderr=DEVNULL):

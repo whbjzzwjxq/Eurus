@@ -33,6 +33,7 @@ class Config:
     project_name: str = "None"
     attack_goal: str = ""
     contract_names: List[str] = field(default_factory=list)
+    contract_names_mapping: Dict[str, str] = field(default_factory=dict)
     attack_state_variables: List[str] = field(default_factory=list)
 
 

@@ -4,9 +4,9 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract ERC20Basic is IERC20 {
-    string public constant name = "ERC20Basic";
-    string public constant symbol = "BSC";
+contract WETH is IERC20 {
+    string public constant name = "WrappedETH";
+    string public constant symbol = "WETH";
 
     mapping(address => uint256) balances;
 

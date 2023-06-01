@@ -1,6 +1,6 @@
-from typing import List, Set, Tuple
+from typing import List, Set, Tuple, Optional
 
-from .utils import init_config
+from .utils import init_config, CornerCase
 from .utils_slither import *
 from .rw_analysis import RWGraph
 
@@ -54,25 +54,35 @@ class Defi:
         static_graph = RWGraph()
         for f in self.pub_actions:
             sv_read, sv_written = self.track_var_without_addr(f)
-            for r in sv_read:
-                if r in static_graph:
-                    source_node = static_graph[r]
-                else:
-                    source_node = static_graph.add_node(r)
-                for w in sv_written:
-                    if w in static_graph:
-                        dest_node = static_graph[w]
-                    else:
-                        dest_node = static_graph.add_node(w)
-                    static_graph.add_edge(source_node, dest_node, f)
+            source_nodes = static_graph.add_or_get_nodes(sv_read)
+            dest_nodes = static_graph.add_or_get_nodes(sv_written)
+            static_graph.add_edge(source_nodes, dest_nodes, f)
         return static_graph
-    
-    def get_external_call_func(self, e_call_expr: SliExpression) -> SliFunction:
+
+    def get_contract_by_name(self, name: str) -> Optional[SliContract]:
+        for ctrt in self.ctrts:
+            if ctrt.name == name:
+                return ctrt
+        return None
+
+    def get_external_call_func(self, e_call_expr: SliExpression) -> Optional[SliFunction]:
         called: SliMemberAccess = e_call_expr.called
         called_expression: SliIdentifier = called.expression
-        if called_expression.value is None:
-            pass
-        print(1)
+        called_value: SliVariable = called_expression.value
+        # Call Library: Math.min(a, b);
+        if isinstance(called_value, SliContract):
+            if called_value.is_library:
+                return None
+            else:
+                raise CornerCase("TODO")
+        # Call Initialized Contract: token.transferFrom(a, b, amt);
+        elif isinstance(called_value, SliStateVariable):
+            tgt_ctrt_name = self.config.contract_names_mapping.get(
+                called_value.canonical_name, None)
+            tgt_ctrt = self.get_contract_by_name(tgt_ctrt_name)
+            return get_function_from_name(tgt_ctrt, called.member_name)
+        else:
+            raise CornerCase("TODO")
 
     def track_var_without_addr(self, func: SliFunction) -> Tuple[Set[SliVariable], Set[SliVariable]]:
         """
@@ -85,6 +95,8 @@ class Defi:
         # Analyze external calls.
         for e_call_expr in func.external_calls_as_expressions:
             e_call = self.get_external_call_func(e_call_expr)
+            if e_call is None:
+                continue
             e_sv_read, e_sv_written = self.track_var_without_addr(e_call)
             sv_read = sv_read.union(e_sv_read)
             sv_written = sv_written.union(e_sv_written)
@@ -95,7 +107,17 @@ class Defi:
                 i_sv_read, i_sv_written = self.track_var_without_addr(i_call)
                 sv_read = sv_read.union(i_sv_read)
                 sv_written = sv_written.union(i_sv_written)
-        return sv_read, sv_written
+
+        sv_read_n = set()
+        for sv in sv_read:
+            # Remove constant, immutable variables
+            if sv.is_constant or sv.is_immutable:
+                continue
+            # Remove contract variable
+            if sv.name in self.config.contract_names_mapping:
+                continue
+            sv_read_n.add(sv)
+        return sv_read_n, sv_written
 
     def print_rw_graph(self, output_path: str):
         self.rw_graph.draw_graphviz(output_path)

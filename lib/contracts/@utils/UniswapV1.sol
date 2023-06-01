@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 contract UniswapV1 {
     IERC20 public immutable token;
     IERC20 public immutable weth;
-    uint256 public fee;
+    uint256 public immutable fee;
     uint256 constant deno = 1000;
     uint256 constant offset = 1e6;
 

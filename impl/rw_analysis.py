@@ -1,4 +1,4 @@
-from typing import List, Set
+from typing import List, Set, Iterable, Union
 
 import graphviz
 
@@ -69,6 +69,7 @@ class RWGraph:
         self._freeze = False
         self.nodes: List[RWNode] = []
         self.edges: List[RWEdge] = []
+        self._edge_labels: List[str] = None
 
     def freeze(self):
         self._freeze = True
@@ -76,33 +77,53 @@ class RWGraph:
     def unfreeze(self):
         self._freeze = False
 
+    @property
+    def edge_labels(self):
+        if self._edge_labels is None:
+            self._edge_labels = []
+            for e in self.edges:
+                if e.canonical_name in self._edge_labels:
+                    continue
+                self._edge_labels.append(e.canonical_name)
+        return self._edge_labels
+
     # @property
     # def none_node(self):
     #     return self.nodes[0]
 
-    def add_node(self, var: SliVariable):
+    def add_or_get_nodes(self, svs: Iterable[SliVariable]) -> Set[RWNode]:
+        nodes = set()
+        for v in svs:
+            if v in self:
+                node = self[v]
+            else:
+                node = self.add_node(v)
+            nodes.add(node)
+        return nodes
+
+    def add_node(self, var: SliVariable) -> RWNode:
         if self._freeze:
-            raise RuntimeError("Don't add item in a forzen graph.")
+            raise RuntimeError("Don't add item to a forzen graph.")
         node = RWNode(var, len(self.nodes))
         self.nodes.append(node)
         return node
 
-    def add_edge(self, source: Set[RWNode], dest: Set[RWNode], func: SliFunction):
+    def add_edge(self, source: Set[RWNode], dest: Set[RWNode], func: SliFunction) -> RWEdge:
         if self._freeze:
-            raise RuntimeError("Don't add item in a forzen graph.")
+            raise RuntimeError("Don't add item to a forzen graph.")
         edge = RWEdge(source, dest, func)
         self.edges.append(edge)
         return edge
 
-    def __contains__(self, item: SliVariable):
+    def __contains__(self, item: Union[SliVariable, RWNode]):
         for n in self.nodes:
-            if n.var == item:
+            if n == item or n.var == item:
                 return True
         return False
 
-    def __getitem__(self, key: SliVariable):
+    def __getitem__(self, key: Union[SliVariable, RWNode]):
         for n in self.nodes:
-            if n.var == key:
+            if n == key or n.var == key:
                 return n
         raise KeyError(key)
 
@@ -114,10 +135,12 @@ class RWGraph:
 
     def draw_graphviz(self, output_path: str):
         dot = graphviz.Digraph(name="RWGraph")
+        edge_labels = self.edge_labels
         for n in self.nodes:
             dot.node(str(n.index), label=n.canonical_name)
         for e in self.edges:
+            label = str(edge_labels.index(e.canonical_name))
             for s in e.source:
                 for d in e.dest:
-                    dot.edge(str(s.index), str(d.index), label=e.func.name)
+                    dot.edge(str(s.index), str(d.index), label=label)
         dot.render(output_path, engine="circo", format="dot", cleanup=True)
