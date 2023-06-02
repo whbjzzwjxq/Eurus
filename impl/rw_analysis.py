@@ -134,13 +134,23 @@ class RWGraph:
         raise KeyError(name)
 
     def draw_graphviz(self, output_path: str):
-        dot = graphviz.Digraph(name="RWGraph")
+        graph = graphviz.Digraph(name="RWGraph")
+        graph.graph_attr["root"] = "root"
         edge_labels = self.edge_labels
+        graph.node(name="root", style="invis",
+                        shape="point", root="true")
         for n in self.nodes:
-            dot.node(str(n.index), label=n.canonical_name)
+            graph.node("v" + str(n.index), label=n.canonical_name)
         for e in self.edges:
-            label = str(edge_labels.index(e.canonical_name))
+            mid_name = "e" + str(edge_labels.index(e.canonical_name))
+            ctrt_name, func_name = e.canonical_name.split(".")
+            label = f"<<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLSPACING=\"0\">\n" + \
+                f"<TR><TD ALIGN=\"CENTER\">{ctrt_name}</TD></TR>\n" + \
+                f"<TR><TD ALIGN=\"CENTER\">{func_name}</TD></TR>\n</TABLE>>"
+            graph.node(mid_name, label=label, penwidth="0")
             for s in e.source:
-                for d in e.dest:
-                    dot.edge(str(s.index), str(d.index), label=label)
-        dot.render(output_path, engine="circo", format="dot", cleanup=True)
+                graph.edge("v" + str(s.index), mid_name,
+                           dir="none", headclip="false")
+            for d in e.dest:
+                graph.edge(mid_name, "v" + str(d.index), tailclip="false")
+        graph.save("_rw.gv", output_path)

@@ -1,8 +1,10 @@
-from typing import List, Set, Tuple, Optional
+from typing import List, Set, Tuple, Optional, Dict
 
 from .utils import init_config, CornerCase
 from .utils_slither import *
 from .rw_analysis import RWGraph
+
+RW_SET = Tuple[Set[SliVariable], Set[SliVariable]]
 
 
 class Defi:
@@ -14,6 +16,7 @@ class Defi:
         self.ctrts = self._init_ctrts()
         self.pub_actions = self._init_pub_actions()
         self.roles = self._init_roles()
+        self.rw_set: Dict[str, RW_SET] = {}
 
         self._rw_graph = None
 
@@ -28,7 +31,7 @@ class Defi:
         pub_actions = []
         for ctrt in self.ctrts:
             for f in ctrt.functions:
-                if f.is_constructor or f.is_constructor_variables:
+                if f.is_constructor or f.is_constructor_variables or not f.is_implemented:
                     continue
                 if f.pure or f.view or f.visibility in ("internal", "private"):
                     continue
@@ -47,15 +50,17 @@ class Defi:
     @property
     def rw_graph(self) -> RWGraph:
         if self._rw_graph is None:
-            self._rw_graph = self._analyze_rw()
+            self._rw_graph = self._init_rw_graph()
         return self._rw_graph
 
-    def _analyze_rw(self) -> RWGraph:
+    def _init_rw_graph(self) -> RWGraph:
         static_graph = RWGraph()
         for f in self.pub_actions:
-            sv_read, sv_written = self.track_var_without_addr(f)
+            sv_read, sv_written = self.get_func_rw_set(f)
             source_nodes = static_graph.add_or_get_nodes(sv_read)
             dest_nodes = static_graph.add_or_get_nodes(sv_written)
+            if len(source_nodes) == 0 and len(dest_nodes) == 0:
+                continue
             static_graph.add_edge(source_nodes, dest_nodes, f)
         return static_graph
 
@@ -64,6 +69,12 @@ class Defi:
             if ctrt.name == name:
                 return ctrt
         return None
+
+    def get_func_rw_set(self, func: SliFunction) -> RW_SET:
+        if func.canonical_name not in self.rw_set:
+            s = self.track_var_without_addr(func)
+            self.rw_set[func.canonical_name] = s
+        return self.rw_set[func.canonical_name]
 
     def get_external_call_func(self, e_call_expr: SliExpression) -> Optional[SliFunction]:
         called: SliMemberAccess = e_call_expr.called
@@ -84,7 +95,7 @@ class Defi:
         else:
             raise CornerCase("TODO")
 
-    def track_var_without_addr(self, func: SliFunction) -> Tuple[Set[SliVariable], Set[SliVariable]]:
+    def track_var_without_addr(self, func: SliFunction) -> RW_SET:
         """
         This track algorithm is imprecise, because it doesn't inline the address information.
         """
@@ -97,14 +108,14 @@ class Defi:
             e_call = self.get_external_call_func(e_call_expr)
             if e_call is None:
                 continue
-            e_sv_read, e_sv_written = self.track_var_without_addr(e_call)
+            e_sv_read, e_sv_written = self.get_func_rw_set(e_call)
             sv_read = sv_read.union(e_sv_read)
             sv_written = sv_written.union(e_sv_written)
 
         # Analyze internal calls
         for i_call in func.internal_calls:
             if isinstance(i_call, SliFunction):
-                i_sv_read, i_sv_written = self.track_var_without_addr(i_call)
+                i_sv_read, i_sv_written = self.get_func_rw_set(i_call)
                 sv_read = sv_read.union(i_sv_read)
                 sv_written = sv_written.union(i_sv_written)
 
@@ -121,3 +132,6 @@ class Defi:
 
     def print_rw_graph(self, output_path: str):
         self.rw_graph.draw_graphviz(output_path)
+
+    def iter_synthesis_candidates(self, max_step: int = 10):
+        pass
