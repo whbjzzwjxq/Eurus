@@ -1,14 +1,19 @@
-from typing import Optional
 from os import path
+from typing import Optional
 
-from slither.slither import Slither
 from slither.core.declarations.contract import Contract as SliContract
 from slither.core.declarations.function import Function as SliFunction
-from slither.core.variables.variable import Variable as SliVariable
-from slither.core.variables.state_variable import StateVariable as SliStateVariable
 from slither.core.expressions.expression import Expression as SliExpression
-from slither.core.expressions.member_access import MemberAccess as SliMemberAccess
 from slither.core.expressions.identifier import Identifier as SliIdentifier
+from slither.core.expressions.member_access import \
+    MemberAccess as SliMemberAccess
+from slither.core.solidity_types import ArrayType as SliArrayType
+from slither.core.solidity_types import ElementaryType as SliElementaryType
+from slither.core.solidity_types import MappingType as SliMappingType
+from slither.core.variables.state_variable import \
+    StateVariable as SliStateVariable
+from slither.core.variables.variable import Variable as SliVariable
+from slither.slither import Slither
 
 
 def gen_slither(bmk_dir: str) -> Slither:

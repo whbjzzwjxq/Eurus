@@ -1,6 +1,7 @@
 {
     "project_name": "TokenBurn",
-    "attack_goal": "",
+    "attack_goal": "weth.balanceOf(attacker) >= 1 ether",
+    "attack_state_variables": "weth.balances",
     "contract_names": [
         "BurningToken",
         "WETH",
@@ -8,7 +9,13 @@
     ],
     "contract_names_mapping": {
         "UniswapV1.token": "BurningToken",
-        "UniswapV1.weth": "WETH"
+        "UniswapV1.weth": "WETH",
+        "Attacker.token": "BurningToken",
+        "Attacker.weth": "WETH",
+        "Attacker.uniswap": "UniswapV1"
     },
-    "attack_state_variables": []
+    "groundtruth": [
+        "token.burn",
+        "uniswap.swapTokenToWETH"
+    ]
 }

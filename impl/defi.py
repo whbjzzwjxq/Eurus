@@ -1,8 +1,8 @@
-from typing import List, Set, Tuple, Optional, Dict
+from typing import Dict, List, Optional, Set, Tuple, Iterable
 
-from .utils import init_config, CornerCase
-from .utils_slither import *
 from .rw_analysis import RWGraph
+from .utils import CornerCase, init_config
+from .utils_slither import *
 
 RW_SET = Tuple[Set[SliVariable], Set[SliVariable]]
 
@@ -19,6 +19,7 @@ class Defi:
         self.rw_set: Dict[str, RW_SET] = {}
 
         self._rw_graph = None
+        self._sv_need_written = None
 
     def _init_ctrts(self) -> List[SliContract]:
         actual_ctrts = []
@@ -133,5 +134,36 @@ class Defi:
     def print_rw_graph(self, output_path: str):
         self.rw_graph.draw_graphviz(output_path)
 
-    def iter_synthesis_candidates(self, max_step: int = 10):
-        pass
+    def is_groundtruth(self, candidate: List[SliFunction]) -> bool:
+        if len(candidate) != len(self.config.groundtruth):
+            return False
+        else:
+            for f1, f2 in zip(candidate, self.config.groundtruth):
+                f1_ctrt_name = f1.contract.name
+                f1_func_name = f1.name
+                f2_ctrt_name, f2_func_name = f2.split(".")
+                f2_ctrt_name = self.config.contract_names_mapping.get(f"Attacker.{f2_ctrt_name}", None)
+                if f2_ctrt_name is None:
+                    raise CornerCase(f"Unknown groundtruth name: {f2}")
+                if f1_ctrt_name != f2_ctrt_name or f1_func_name != f2_func_name:
+                    return False
+            return True
+        
+    def analyze_rw(self, sv_written: Set[SliVariable]) -> bool:
+        if self._sv_need_written is None:
+            # Currently, only support a set of state variables, not zero-order logic about variables.
+            sv_need_written = set()
+            for sv_str in [self.config.attack_state_variables]:
+                ctrt_name, sv_name = sv_str.split(".")
+                ctrt_name = self.config.contract_names_mapping.get(f"Attacker.{ctrt_name}", None)
+                if ctrt_name is None:
+                    raise CornerCase(f"Unknown groundtruth name: {sv_str}")
+                for c in self.ctrts:
+                    if c.name != ctrt_name:
+                        continue
+                    for sv in c.state_variables:
+                        if sv.name == sv_name:
+                            sv_need_written.add(sv)
+                            break
+            self._sv_need_written = sv_need_written
+        return self._sv_need_written.issubset(sv_written)

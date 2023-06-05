@@ -1,14 +1,13 @@
 import argparse
-from subprocess import DEVNULL, PIPE, Popen, TimeoutExpired
-import time
-
 import json
 import os
+import time
 from os import path
-
+from subprocess import DEVNULL, PIPE, Popen, TimeoutExpired
 from typing import List
 
 from impl.defi import Defi
+from impl.synthesizer import Synthesizer
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -18,7 +17,7 @@ parser.add_argument(
 parser.add_argument(
     "--rwgraph", help="Generate the Read/Write analysis graph.", action="store_true")
 parser.add_argument(
-    "-e", "--eval", help="Do the evaluation.", action="store_true")
+    "-m", "--mockeval", help="Mock the evaluation.", action="store_true")
 parser.add_argument("--timeout", help="Timeout.", type=int, default=3600)
 
 
@@ -89,12 +88,15 @@ def forge_test(bmk_dir: str, timeout: int):
             json.dump(err, f)
 
 
-def evaluate(bmk_dir: str, timeout: int):
-    pass
+def mock_evaluate(bmk_dir: str):
+    defi = Defi(bmk_dir)
+    synthesizer = Synthesizer(defi)
+    output_path = path.abspath(path.join(bmk_dir, "_rw_eval.csv"))
+    synthesizer.mock_eval(output_path)
 
 def generate_rw_graph(bmk_dir: str):
     defi = Defi(bmk_dir)
-    output_path = bmk_dir
+    output_path = path.abspath(path.join(bmk_dir, "_rw.gv"))
     defi.print_rw_graph(output_path)
 
 def execute(cmds: List[str], timeout=1200, stdout=DEVNULL, stderr=DEVNULL):
@@ -116,8 +118,8 @@ def _main():
             forge_test(bmk_dir, args.timeout)
         if args.rwgraph:
             generate_rw_graph(bmk_dir)
-        if args.eval:
-            evaluate(bmk_dir, args.timeout)
+        if args.mockeval:
+            mock_evaluate(bmk_dir)
 
 if __name__ == "__main__":
     _main()

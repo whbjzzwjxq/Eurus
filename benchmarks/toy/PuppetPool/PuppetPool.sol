@@ -8,7 +8,7 @@ import "@utils/UniswapV1.sol";
 
 contract PuppetPool is ReentrancyGuard {
     mapping(address => uint256) public deposits;
-    UniswapV1 public immutable uniswapPair;
+    UniswapV1 public immutable uniswap;
     IERC20 public immutable token;
     IERC20 public immutable weth;
 
@@ -23,7 +23,7 @@ contract PuppetPool is ReentrancyGuard {
     constructor(address token_, address weth_, address uniswapPair_) payable {
         token = IERC20(token_);
         weth = IERC20(weth_);
-        uniswapPair = UniswapV1(uniswapPair_);
+        uniswap = UniswapV1(uniswapPair_);
     }
 
     function borrowWETH(uint256 borrowAmount) public nonReentrant {
@@ -44,7 +44,7 @@ contract PuppetPool is ReentrancyGuard {
         uint256 amount
     ) public view returns (uint256) {
         return
-            (amount * uniswapPair.tokenBalance() + offset) /
-            (uniswapPair.wethBalance() + offset);
+            (amount * uniswap.tokenBalance() + offset) /
+            (uniswap.wethBalance() + offset);
     }
 }

@@ -67,8 +67,6 @@ contract PuppetPoolTest is Test {
         excludeContract(address(uniswap));
         excludeContract(address(puppetpool));
 
-        // To be fair.
-        weth.approve(address(uniswap), UINT256_MAX);
     }
 
     function printBalance() internal {
@@ -77,6 +75,7 @@ contract PuppetPoolTest is Test {
     }
 
     function testAttackGT() public {
+        weth.approve(address(uniswap), UINT256_MAX);
         token.approve(address(puppetpool), UINT256_MAX);
         token.approve(address(uniswap), UINT256_MAX);
         uniswap.swapWETHToToken(attackerInitBalance);

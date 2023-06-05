@@ -1,4 +1,4 @@
-from typing import List, Set, Iterable, Union
+from typing import Iterable, List, Set, Union
 
 import graphviz
 
@@ -153,4 +153,4 @@ class RWGraph:
                            dir="none", headclip="false")
             for d in e.dest:
                 graph.edge(mid_name, "v" + str(d.index), tailclip="false")
-        graph.save("_rw.gv", output_path)
+        graph.save(output_path)

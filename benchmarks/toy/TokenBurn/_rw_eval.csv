@@ -1,0 +1,103 @@
+index,candidate,pruned_by_rw,pruned_by_idempotency
+0,UniswapV1.swapTokenToWETH(uint256),False,False
+1,UniswapV1.swapWETHToToken(uint256),False,False
+2,"WETH.transfer(address,uint256)",False,False
+3,"WETH.approve(address,uint256)",True,False
+4,"WETH.transferFrom(address,address,uint256)",False,False
+5,BurningToken.setOwner(address),True,False
+6,"BurningToken.transfer(address,uint256)",True,False
+7,"BurningToken.approve(address,uint256)",True,False
+8,"BurningToken.transferFrom(address,address,uint256)",True,False
+9,"BurningToken.burn(address,uint256)",True,False
+10,UniswapV1.swapTokenToWETH(uint256) => UniswapV1.swapTokenToWETH(uint256),False,True
+11,UniswapV1.swapTokenToWETH(uint256) => UniswapV1.swapWETHToToken(uint256),False,False
+12,"UniswapV1.swapTokenToWETH(uint256) => WETH.transfer(address,uint256)",False,False
+13,"UniswapV1.swapTokenToWETH(uint256) => WETH.approve(address,uint256)",False,False
+14,"UniswapV1.swapTokenToWETH(uint256) => WETH.transferFrom(address,address,uint256)",False,False
+15,UniswapV1.swapTokenToWETH(uint256) => BurningToken.setOwner(address),False,False
+16,"UniswapV1.swapTokenToWETH(uint256) => BurningToken.transfer(address,uint256)",False,False
+17,"UniswapV1.swapTokenToWETH(uint256) => BurningToken.approve(address,uint256)",False,False
+18,"UniswapV1.swapTokenToWETH(uint256) => BurningToken.transferFrom(address,address,uint256)",False,False
+19,"UniswapV1.swapTokenToWETH(uint256) => BurningToken.burn(address,uint256)",False,False
+20,UniswapV1.swapWETHToToken(uint256) => UniswapV1.swapTokenToWETH(uint256),False,False
+21,UniswapV1.swapWETHToToken(uint256) => UniswapV1.swapWETHToToken(uint256),False,True
+22,"UniswapV1.swapWETHToToken(uint256) => WETH.transfer(address,uint256)",False,False
+23,"UniswapV1.swapWETHToToken(uint256) => WETH.approve(address,uint256)",False,False
+24,"UniswapV1.swapWETHToToken(uint256) => WETH.transferFrom(address,address,uint256)",False,False
+25,UniswapV1.swapWETHToToken(uint256) => BurningToken.setOwner(address),False,False
+26,"UniswapV1.swapWETHToToken(uint256) => BurningToken.transfer(address,uint256)",False,False
+27,"UniswapV1.swapWETHToToken(uint256) => BurningToken.approve(address,uint256)",False,False
+28,"UniswapV1.swapWETHToToken(uint256) => BurningToken.transferFrom(address,address,uint256)",False,False
+29,"UniswapV1.swapWETHToToken(uint256) => BurningToken.burn(address,uint256)",False,False
+30,"WETH.transfer(address,uint256) => UniswapV1.swapTokenToWETH(uint256)",False,False
+31,"WETH.transfer(address,uint256) => UniswapV1.swapWETHToToken(uint256)",False,False
+32,"WETH.transfer(address,uint256) => WETH.transfer(address,uint256)",False,True
+33,"WETH.transfer(address,uint256) => WETH.approve(address,uint256)",False,False
+34,"WETH.transfer(address,uint256) => WETH.transferFrom(address,address,uint256)",False,False
+35,"WETH.transfer(address,uint256) => BurningToken.setOwner(address)",False,False
+36,"WETH.transfer(address,uint256) => BurningToken.transfer(address,uint256)",False,False
+37,"WETH.transfer(address,uint256) => BurningToken.approve(address,uint256)",False,False
+38,"WETH.transfer(address,uint256) => BurningToken.transferFrom(address,address,uint256)",False,False
+39,"WETH.transfer(address,uint256) => BurningToken.burn(address,uint256)",False,False
+40,"WETH.approve(address,uint256) => UniswapV1.swapTokenToWETH(uint256)",False,False
+41,"WETH.approve(address,uint256) => UniswapV1.swapWETHToToken(uint256)",False,False
+42,"WETH.approve(address,uint256) => WETH.transfer(address,uint256)",False,False
+43,"WETH.approve(address,uint256) => WETH.approve(address,uint256)",True,True
+44,"WETH.approve(address,uint256) => WETH.transferFrom(address,address,uint256)",False,False
+45,"WETH.approve(address,uint256) => BurningToken.setOwner(address)",True,False
+46,"WETH.approve(address,uint256) => BurningToken.transfer(address,uint256)",True,False
+47,"WETH.approve(address,uint256) => BurningToken.approve(address,uint256)",True,False
+48,"WETH.approve(address,uint256) => BurningToken.transferFrom(address,address,uint256)",True,False
+49,"WETH.approve(address,uint256) => BurningToken.burn(address,uint256)",True,False
+50,"WETH.transferFrom(address,address,uint256) => UniswapV1.swapTokenToWETH(uint256)",False,False
+51,"WETH.transferFrom(address,address,uint256) => UniswapV1.swapWETHToToken(uint256)",False,False
+52,"WETH.transferFrom(address,address,uint256) => WETH.transfer(address,uint256)",False,False
+53,"WETH.transferFrom(address,address,uint256) => WETH.approve(address,uint256)",False,False
+54,"WETH.transferFrom(address,address,uint256) => WETH.transferFrom(address,address,uint256)",False,True
+55,"WETH.transferFrom(address,address,uint256) => BurningToken.setOwner(address)",False,False
+56,"WETH.transferFrom(address,address,uint256) => BurningToken.transfer(address,uint256)",False,False
+57,"WETH.transferFrom(address,address,uint256) => BurningToken.approve(address,uint256)",False,False
+58,"WETH.transferFrom(address,address,uint256) => BurningToken.transferFrom(address,address,uint256)",False,False
+59,"WETH.transferFrom(address,address,uint256) => BurningToken.burn(address,uint256)",False,False
+60,BurningToken.setOwner(address) => UniswapV1.swapTokenToWETH(uint256),False,False
+61,BurningToken.setOwner(address) => UniswapV1.swapWETHToToken(uint256),False,False
+62,"BurningToken.setOwner(address) => WETH.transfer(address,uint256)",False,False
+63,"BurningToken.setOwner(address) => WETH.approve(address,uint256)",True,False
+64,"BurningToken.setOwner(address) => WETH.transferFrom(address,address,uint256)",False,False
+65,BurningToken.setOwner(address) => BurningToken.setOwner(address),True,True
+66,"BurningToken.setOwner(address) => BurningToken.transfer(address,uint256)",True,False
+67,"BurningToken.setOwner(address) => BurningToken.approve(address,uint256)",True,False
+68,"BurningToken.setOwner(address) => BurningToken.transferFrom(address,address,uint256)",True,False
+69,"BurningToken.setOwner(address) => BurningToken.burn(address,uint256)",True,False
+70,"BurningToken.transfer(address,uint256) => UniswapV1.swapTokenToWETH(uint256)",False,False
+71,"BurningToken.transfer(address,uint256) => UniswapV1.swapWETHToToken(uint256)",False,False
+72,"BurningToken.transfer(address,uint256) => WETH.transfer(address,uint256)",False,False
+73,"BurningToken.transfer(address,uint256) => WETH.approve(address,uint256)",True,False
+74,"BurningToken.transfer(address,uint256) => WETH.transferFrom(address,address,uint256)",False,False
+75,"BurningToken.transfer(address,uint256) => BurningToken.setOwner(address)",True,False
+76,"BurningToken.transfer(address,uint256) => BurningToken.transfer(address,uint256)",True,True
+77,"BurningToken.transfer(address,uint256) => BurningToken.approve(address,uint256)",True,False
+78,"BurningToken.transfer(address,uint256) => BurningToken.transferFrom(address,address,uint256)",True,False
+79,"BurningToken.transfer(address,uint256) => BurningToken.burn(address,uint256)",True,False
+80,"BurningToken.approve(address,uint256) => UniswapV1.swapTokenToWETH(uint256)",False,False
+81,"BurningToken.approve(address,uint256) => UniswapV1.swapWETHToToken(uint256)",False,False
+82,"BurningToken.approve(address,uint256) => WETH.transfer(address,uint256)",False,False
+83,"BurningToken.approve(address,uint256) => WETH.approve(address,uint256)",True,False
+84,"BurningToken.approve(address,uint256) => WETH.transferFrom(address,address,uint256)",False,False
+85,"BurningToken.approve(address,uint256) => BurningToken.setOwner(address)",True,False
+86,"BurningToken.approve(address,uint256) => BurningToken.transfer(address,uint256)",True,False
+87,"BurningToken.approve(address,uint256) => BurningToken.approve(address,uint256)",True,True
+88,"BurningToken.approve(address,uint256) => BurningToken.transferFrom(address,address,uint256)",True,False
+89,"BurningToken.approve(address,uint256) => BurningToken.burn(address,uint256)",True,False
+90,"BurningToken.transferFrom(address,address,uint256) => UniswapV1.swapTokenToWETH(uint256)",False,False
+91,"BurningToken.transferFrom(address,address,uint256) => UniswapV1.swapWETHToToken(uint256)",False,False
+92,"BurningToken.transferFrom(address,address,uint256) => WETH.transfer(address,uint256)",False,False
+93,"BurningToken.transferFrom(address,address,uint256) => WETH.approve(address,uint256)",True,False
+94,"BurningToken.transferFrom(address,address,uint256) => WETH.transferFrom(address,address,uint256)",False,False
+95,"BurningToken.transferFrom(address,address,uint256) => BurningToken.setOwner(address)",True,False
+96,"BurningToken.transferFrom(address,address,uint256) => BurningToken.transfer(address,uint256)",True,False
+97,"BurningToken.transferFrom(address,address,uint256) => BurningToken.approve(address,uint256)",True,False
+98,"BurningToken.transferFrom(address,address,uint256) => BurningToken.transferFrom(address,address,uint256)",True,True
+99,"BurningToken.transferFrom(address,address,uint256) => BurningToken.burn(address,uint256)",True,False
+100,"BurningToken.burn(address,uint256) => UniswapV1.swapTokenToWETH(uint256)",False,False
+100,Sum,36,9
