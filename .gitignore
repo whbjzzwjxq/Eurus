@@ -157,3 +157,5 @@ cython_debug/
 .DS_Store
 cache
 *.gv
+_rw_eval.csv
+_defi_racket.json

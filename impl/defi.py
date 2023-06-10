@@ -23,9 +23,12 @@ class Defi:
 
     def _init_ctrts(self) -> List[SliContract]:
         actual_ctrts = []
-        for ctrt in self.sli.contracts:
-            if ctrt.name in self.ctrt_names:
-                actual_ctrts.append(ctrt)
+        for ctrt_name in self.ctrt_names:
+            for ctrt in self.sli.contracts:
+                if ctrt.name == ctrt_name:
+                    actual_ctrts.append(ctrt)
+        if len(self.ctrt_names) != len(actual_ctrts):
+            raise ValueError("Unmatched contract_names and contracts!")
         return actual_ctrts
 
     def _init_pub_actions(self) -> List[SliFunction]:

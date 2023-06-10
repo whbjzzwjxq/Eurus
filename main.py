@@ -8,6 +8,7 @@ from typing import List
 
 from impl.defi import Defi
 from impl.synthesizer import Synthesizer
+from impl.output2racket import output_defi
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -18,6 +19,8 @@ parser.add_argument(
     "--rwgraph", help="Generate the Read/Write analysis graph.", action="store_true")
 parser.add_argument(
     "-m", "--mockeval", help="Mock the evaluation.", action="store_true")
+parser.add_argument(
+    "--outputrkt", help="Output to Racket.", action="store_true")
 parser.add_argument("--timeout", help="Timeout.", type=int, default=3600)
 
 
@@ -99,6 +102,13 @@ def generate_rw_graph(bmk_dir: str):
     output_path = path.abspath(path.join(bmk_dir, "_rw.gv"))
     defi.print_rw_graph(output_path)
 
+def output2racket(bmk_dir: str):
+    defi = Defi(bmk_dir)
+    output_path = path.abspath(path.join(bmk_dir, "_defi_racket.json"))
+    obj = output_defi(defi)
+    with open(output_path, "w") as f:
+        json.dump(obj, f)
+    
 def execute(cmds: List[str], timeout=1200, stdout=DEVNULL, stderr=DEVNULL):
     cmd = " ".join(cmds)
     print(cmd)
@@ -120,6 +130,8 @@ def _main():
             generate_rw_graph(bmk_dir)
         if args.mockeval:
             mock_evaluate(bmk_dir)
+        if args.outputrkt:
+            output2racket(bmk_dir)
 
 if __name__ == "__main__":
     _main()
