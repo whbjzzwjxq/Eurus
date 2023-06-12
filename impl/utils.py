@@ -40,11 +40,10 @@ class FrozenObject(RuntimeError):
 @dataclass
 class Config:
     project_name: str = "None"
-    attack_goal: str = ""
-    attack_state_variables: str = ""
     contract_names: List[str] = field(default_factory=list)
     contract_names_mapping: Dict[str, str] = field(default_factory=dict)
     groundtruth: List[str] = field(default_factory=list)
+    attack_state_variables: List[str] = field(default_factory=list)
 
 
 def init_config(bmk_dir: str) -> Config:

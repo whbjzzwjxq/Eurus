@@ -10,6 +10,7 @@ from slither.core.expressions.member_access import \
 from slither.core.solidity_types import ArrayType as SliArrayType
 from slither.core.solidity_types import ElementaryType as SliElementaryType
 from slither.core.solidity_types import MappingType as SliMappingType
+from slither.core.solidity_types import UserDefinedType as SliUserDefinedType
 from slither.core.variables.state_variable import \
     StateVariable as SliStateVariable
 from slither.core.variables.variable import Variable as SliVariable

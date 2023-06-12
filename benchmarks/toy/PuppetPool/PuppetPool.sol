@@ -7,12 +7,13 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@utils/UniswapV1.sol";
 
 contract PuppetPool is ReentrancyGuard {
-    mapping(address => uint256) public deposits;
-    UniswapV1 public immutable uniswap;
-    IERC20 public immutable token;
-    IERC20 public immutable weth;
+    UniswapV1 uniswap;
+    IERC20 token;
+    IERC20 weth;
 
     uint256 constant offset = 1e6;
+
+    mapping(address => uint256) public deposits;
 
     event Borrowed(
         address indexed account,

@@ -1,7 +1,5 @@
 {
     "project_name": "PuppetPool",
-    "attack_goal": "weth.balanceOf(attacker) >= 110 ether",
-    "attack_state_variables": "weth.balances",
     "contract_names": [
         "ERC20Basic",
         "WETH",
@@ -11,20 +9,17 @@
     "contract_names_mapping": {
         "UniswapV1.token": "ERC20Basic",
         "UniswapV1.weth": "WETH",
-        "PuppetPool.uniswap": "UniswapV1",
         "PuppetPool.token": "ERC20Basic",
         "PuppetPool.weth": "WETH",
-        "Attacker.token": "ERC20Basic",
-        "Attacker.weth": "WETH",
-        "Attacker.uniswap": "UniswapV1",
-        "Attacker.puppetpool": "PuppetPool"
+        "PuppetPool.uniswap": "UniswapV1"
     },
     "groundtruth": [
-        "weth.approve",
-        "token.approve",
-        "token.approve",
-        "uniswap.swapWETHToToken",
-        "puppetpool.borrowWETH",
-        "uniswap.swapTokenToWETH"
-    ]
+        "WETH.approve",
+        "ERC20Basic.approve",
+        "ERC20Basic.approve",
+        "UniswapV1.swapWETHToToken",
+        "PuppetPool.borrowWETH",
+        "UniswapV1.swapTokenToWETH"
+    ],
+    "attack_state_variables": ["WETH.balances"]
 }

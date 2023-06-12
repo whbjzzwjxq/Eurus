@@ -10,7 +10,7 @@ import "benchmarks/toy/PuppetPool/PuppetPool.sol";
 import "benchmarks/toy/PuppetPool/Handler.sol";
 
 contract PuppetPoolTest is Test {
-    address owner;
+    address constant owner = address(0xdeadbeef);
     address attacker;
 
     ERC20Basic token;
@@ -19,22 +19,21 @@ contract PuppetPoolTest is Test {
     PuppetPool puppetpool;
     PuppetPoolHandler handler;
 
-    uint256 public totalSupply = 1000 ether;
-    uint256 public feeRate = 15;
+    uint256 public constant totalSupply = 1000 ether;
+    uint256 public constant feeRate = 15;
 
-    uint256 public attackerInitBalance = 10 ether;
-    uint256 public attackerInitToken = 10 ether;
+    uint256 public constant attackerInitBalance = 10 ether;
+    uint256 public constant attackerInitToken = 10 ether;
 
-    uint256 public uniswapInitBalance = 10 ether;
-    uint256 public uniswapInitToken = 10 ether;
+    uint256 public constant uniswapInitBalance = 10 ether;
+    uint256 public constant uniswapInitToken = 10 ether;
 
-    uint256 public puppetpoolInitBalance = 100 ether;
+    uint256 public constant puppetpoolInitBalance = 100 ether;
 
-    uint256 public requiredBalance =
+    uint256 public constant requiredBalance =
         puppetpoolInitBalance + attackerInitBalance;
 
     function setUp() public {
-        owner = address(0xdeadbeef);
         attacker = address(this);
 
         vm.startPrank(owner);
@@ -66,12 +65,6 @@ contract PuppetPoolTest is Test {
         excludeContract(address(weth));
         excludeContract(address(uniswap));
         excludeContract(address(puppetpool));
-
-    }
-
-    function printBalance() internal {
-        emit log_named_decimal_uint("WETH Balance", weth.balanceOf(attacker), 18);
-        emit log_named_decimal_uint("Token Balance", token.balanceOf(attacker), 18);
     }
 
     function testAttackGT() public {
@@ -81,11 +74,14 @@ contract PuppetPoolTest is Test {
         uniswap.swapWETHToToken(attackerInitBalance);
         puppetpool.borrowWETH(puppetpoolInitBalance);
         uniswap.swapTokenToWETH(token.balanceOf(attacker));
-        printBalance();
-        require(weth.balanceOf(attacker) >= requiredBalance, "Attack Failed!");
+        require(attackGoal(), "Attack Failed!");
     }
 
-    function invariantNoProfit() external {
-        assertLe(weth.balanceOf(attacker), requiredBalance);
+    function attackGoal() public view returns (bool) {
+        return weth.balanceOf(attacker) >= requiredBalance;
+    }
+
+    function invariantSafe() public view {
+        require(!attackGoal(), "Attack Happened!");
     }
 }

@@ -1,7 +1,7 @@
-from typing import Dict, List, Optional, Set, Tuple, Iterable
+from typing import Dict, List, Optional, Set, Tuple
 
 from .rw_analysis import RWGraph
-from .utils import CornerCase, init_config
+from .utils import Config, CornerCase, init_config
 from .utils_slither import *
 
 RW_SET = Tuple[Set[SliVariable], Set[SliVariable]]
@@ -10,10 +10,11 @@ RW_SET = Tuple[Set[SliVariable], Set[SliVariable]]
 class Defi:
 
     def __init__(self, bmk_dir: str) -> None:
-        self.config = init_config(bmk_dir)
+        self.config: Config = init_config(bmk_dir)
         self.ctrt_names = self.config.contract_names
         self.sli = gen_slither(bmk_dir)
         self.ctrts = self._init_ctrts()
+        self.test_ctrt = self.sli.get_contract_from_name(f"{self.config.project_name}Test")[0]
         self.pub_actions = self._init_pub_actions()
         self.roles = self._init_roles()
         self.rw_set: Dict[str, RW_SET] = {}
@@ -129,7 +130,7 @@ class Defi:
             if sv.is_constant or sv.is_immutable:
                 continue
             # Remove contract variable
-            if sv.name in self.config.contract_names_mapping:
+            if sv.type == SliUserDefinedType:
                 continue
             sv_read_n.add(sv)
         return sv_read_n, sv_written
@@ -145,9 +146,6 @@ class Defi:
                 f1_ctrt_name = f1.contract.name
                 f1_func_name = f1.name
                 f2_ctrt_name, f2_func_name = f2.split(".")
-                f2_ctrt_name = self.config.contract_names_mapping.get(f"Attacker.{f2_ctrt_name}", None)
-                if f2_ctrt_name is None:
-                    raise CornerCase(f"Unknown groundtruth name: {f2}")
                 if f1_ctrt_name != f2_ctrt_name or f1_func_name != f2_func_name:
                     return False
             return True
@@ -156,11 +154,8 @@ class Defi:
         if self._sv_need_written is None:
             # Currently, only support a set of state variables, not zero-order logic about variables.
             sv_need_written = set()
-            for sv_str in [self.config.attack_state_variables]:
+            for sv_str in self.config.attack_state_variables:
                 ctrt_name, sv_name = sv_str.split(".")
-                ctrt_name = self.config.contract_names_mapping.get(f"Attacker.{ctrt_name}", None)
-                if ctrt_name is None:
-                    raise CornerCase(f"Unknown groundtruth name: {sv_str}")
                 for c in self.ctrts:
                     if c.name != ctrt_name:
                         continue
