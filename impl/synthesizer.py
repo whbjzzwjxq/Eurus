@@ -141,9 +141,9 @@ class Synthesizer:
         i = 0
         df = pd.DataFrame(columns=["index", "candidate", "pruned_by_rw"])
         for c in self.iter_candidate():
+            i += 1
             df.loc[len(df.index)] = [i, str(c), self.pruned_by_rw(c)]
             if self.is_groundtruth(c):
                 break
-            i += 1
         df.loc[len(df.index)] = [i, "Sum", df["pruned_by_rw"].sum()]
         df.to_csv(output_path, index=False)

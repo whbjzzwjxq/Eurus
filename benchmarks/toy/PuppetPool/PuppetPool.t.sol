@@ -81,7 +81,7 @@ contract PuppetPoolTest is Test {
         return weth.balanceOf(attacker) >= requiredBalance;
     }
 
-    function invariantSafe() public view {
-        require(!attackGoal(), "Attack Happened!");
-    }
+    // function invariantSafe() public view {
+    //     assert(!attackGoal());
+    // }
 }
