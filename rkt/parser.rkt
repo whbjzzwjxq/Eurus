@@ -19,11 +19,11 @@
 (struct index-access-expr expression ([left : expression] [right : expression]))
 (struct identifier-expr expression ([value : string]))
 
-;; Define a struct to represent a contract
-(struct contract ([name : string] [functions : (Listof function)] [state-variables : (Listof variable)]))
-
 ;; Define a struct to represent a function
 (struct function ([name : string] [parameters : (Listof variable)] [statements : (Listof expression)]))
+
+;; Define a struct to represent a contract
+(struct contract ([name : string] [functions : (Listof function)] [state-variables : (Listof variable)]))
 
 ;; Define a struct to represent the Defi
 (struct defi ([contracts : (Listof contract)] [attack-goal : string] [project-name : string]))

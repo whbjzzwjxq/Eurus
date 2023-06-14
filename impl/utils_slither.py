@@ -15,6 +15,7 @@ from slither.core.variables.state_variable import \
     StateVariable as SliStateVariable
 from slither.core.variables.variable import Variable as SliVariable
 from slither.slither import Slither
+from slither.analyses.data_dependency.data_dependency import is_dependent
 
 
 def gen_slither(bmk_dir: str) -> Slither:
@@ -41,7 +42,7 @@ def gen_slither(bmk_dir: str) -> Slither:
     return sli
 
 
-def get_function_from_name(ctrt: SliContract, name: str) -> Optional[SliFunction]:
+def get_function_by_name(ctrt: SliContract, name: str) -> Optional[SliFunction]:
     return next(
         (f for f in ctrt.functions if f.name ==
          # Make sure it is the implementation instead of interface

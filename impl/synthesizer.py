@@ -75,8 +75,9 @@ class ConcreteSolFunction(SolFunction):
 
 class Candidate:
 
-    def __init__(self, funcs: Iterable[SolFunction]) -> None:
+    def __init__(self, funcs: Iterable[SliFunction], index: int) -> None:
         self.funcs = list(funcs)
+        self.index = index
 
     def __str__(self) -> str:
         return " => ".join([f.canonical_name for f in self.funcs])
@@ -103,25 +104,34 @@ class Synthesizer:
         return count
 
     def iter_candidate(self) -> Iterable[Candidate]:
+        i = 0
         for s in range(1, self.max_steps + 1):
             candidates = itertools.product(self.defi.pub_actions, repeat=s)
             for c in candidates:
-                yield Candidate(funcs=c)
+                i += 1
+                yield Candidate(funcs=c, index=i)
 
     def pruned_by_rw(self, candidate: Candidate) -> bool:
         # RW Pruning
-        sv_written = set()
-        for func in candidate.funcs:
-            sv_written = sv_written.union(self.defi.get_func_rw_set(func)[1])
-        return not self.defi.analyze_rw(sv_written)
-    
-    def pruned_by_idempotency(self, candidate: Candidate) -> bool:
-        # It is not the sound version, we just do the rough mock.
-        for i in range(0, len(candidate.funcs) - 1):
-            cur = candidate.funcs[i]
-            nxt = candidate.funcs[i + 1]
-            if cur == nxt:
+        sv_interested = set()
+        for sv_name in self.defi.config.attack_state_variables:
+            ctrt_name, var_name = sv_name.split(".")
+            sv = self.defi.get_variable_by_name(ctrt_name, var_name)
+            if sv is None:
+                raise ValueError(f"Unknown state variable name: {sv_name}")
+            sv_interested.add(sv)
+        for sli_func in reversed(candidate.funcs):
+            sv_read, sv_written = self.defi.get_func_rw_set(sli_func)
+            if not sv_written.intersection(sv_interested):
                 return True
+            # Not sound yet
+            # sv_interested -= sv_written
+            sv_interested_new = set()
+            for sv_w in sv_written:
+                for sv_r in sv_read:
+                    if is_dependent(sv_w, sv_r, sli_func):
+                        sv_interested_new.add(sv_r)
+            sv_interested = sv_interested.union(sv_interested_new)
         return False
 
     def is_groundtruth(self, candidate: Candidate) -> bool:
@@ -129,11 +139,11 @@ class Synthesizer:
 
     def mock_eval(self, output_path: str):
         i = 0
-        df = pd.DataFrame(columns=["index", "candidate", "pruned_by_rw", "pruned_by_idempotency"])
+        df = pd.DataFrame(columns=["index", "candidate", "pruned_by_rw"])
         for c in self.iter_candidate():
-            df.loc[len(df.index)] = [i, str(c), self.pruned_by_rw(c), self.pruned_by_idempotency(c)]
+            df.loc[len(df.index)] = [i, str(c), self.pruned_by_rw(c)]
             if self.is_groundtruth(c):
                 break
             i += 1
-        df.loc[len(df.index)] = [i, "Sum", df["pruned_by_rw"].sum(), df["pruned_by_idempotency"].sum()]
+        df.loc[len(df.index)] = [i, "Sum", df["pruned_by_rw"].sum()]
         df.to_csv(output_path, index=False)

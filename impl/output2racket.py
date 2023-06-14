@@ -7,6 +7,9 @@ from slither.core.variables.variable import Variable
 from slither.core.variables.function_type_variable import FunctionTypeVariable
 from slither.core.variables.local_variable import LocalVariable
 from slither.core.variables.state_variable import StateVariable
+from slither.slithir.variables.reference import ReferenceVariable
+from slither.slithir.variables.temporary import TemporaryVariable
+
 from slither.core.expressions.assignment_operation import \
     AssignmentOperation as AO
 from slither.core.expressions.expression import Expression
@@ -48,7 +51,7 @@ def output_func(func: Function):
         "parameters": [output_var(para) for para in func.parameters],
         "statements": [output_expr(expr) for expr in func.expressions],
         "name": func.name,
-        "ret": output_var(func.return_values)
+        "ret": [output_var(v) for v in func.return_values],
     }
     return r_func
 
@@ -239,6 +242,30 @@ def output_var(var: Variable):
             "is_scalar": var.is_scalar,
             "is_storage": var.is_storage,
             "location": var.location,
+            "name": var.name,
+            "type": str(var.type),
+        }
+    
+    if isinstance(var, ReferenceVariable):
+        return {
+            "is_constant": var.is_constant,
+            "is_immutable": var.is_immutable,
+            "is_reentrant": var.is_reentrant,
+            "is_scalar": var.is_scalar,
+            "is_storage": False,
+            "location": "reference",
+            "name": var.name,
+            "type": str(var.type),
+        }
+    
+    if isinstance(var, TemporaryVariable):
+        return {
+            "is_constant": var.is_constant,
+            "is_immutable": var.is_immutable,
+            "is_reentrant": var.is_reentrant,
+            "is_scalar": var.is_scalar,
+            "is_storage": False,
+            "location": "temporary",
             "name": var.name,
             "type": str(var.type),
         }

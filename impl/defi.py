@@ -20,7 +20,6 @@ class Defi:
         self.rw_set: Dict[str, RW_SET] = {}
 
         self._rw_graph = None
-        self._sv_need_written = None
 
     def _init_ctrts(self) -> List[SliContract]:
         actual_ctrts = []
@@ -69,10 +68,25 @@ class Defi:
             static_graph.add_edge(source_nodes, dest_nodes, f)
         return static_graph
 
-    def get_contract_by_name(self, name: str) -> Optional[SliContract]:
+    def get_contract_by_name(self, name: str):
         for ctrt in self.ctrts:
             if ctrt.name == name:
                 return ctrt
+        return None
+    
+    def get_function_by_name(self, ctrt_name: str, func_name: str):
+        ctrt = self.get_contract_by_name(ctrt_name)
+        if ctrt is None:
+            raise ValueError(f"Unknown contract name: {ctrt_name}")
+        return get_function_by_name(ctrt, func_name)
+    
+    def get_variable_by_name(self, ctrt_name: str, var_name: str):
+        ctrt = self.get_contract_by_name(ctrt_name)
+        if ctrt is None:
+            raise ValueError(f"Unknown contract name: {ctrt_name}")
+        for sv in ctrt.state_variables:
+            if sv.name == var_name:
+                return sv
         return None
 
     def get_func_rw_set(self, func: SliFunction) -> RW_SET:
@@ -96,7 +110,7 @@ class Defi:
             tgt_ctrt_name = self.config.contract_names_mapping.get(
                 called_value.canonical_name, None)
             tgt_ctrt = self.get_contract_by_name(tgt_ctrt_name)
-            return get_function_from_name(tgt_ctrt, called.member_name)
+            return get_function_by_name(tgt_ctrt, called.member_name)
         else:
             raise CornerCase("TODO")
 
@@ -149,19 +163,3 @@ class Defi:
                 if f1_ctrt_name != f2_ctrt_name or f1_func_name != f2_func_name:
                     return False
             return True
-        
-    def analyze_rw(self, sv_written: Set[SliVariable]) -> bool:
-        if self._sv_need_written is None:
-            # Currently, only support a set of state variables, not zero-order logic about variables.
-            sv_need_written = set()
-            for sv_str in self.config.attack_state_variables:
-                ctrt_name, sv_name = sv_str.split(".")
-                for c in self.ctrts:
-                    if c.name != ctrt_name:
-                        continue
-                    for sv in c.state_variables:
-                        if sv.name == sv_name:
-                            sv_need_written.add(sv)
-                            break
-            self._sv_need_written = sv_need_written
-        return self._sv_need_written.issubset(sv_written)
