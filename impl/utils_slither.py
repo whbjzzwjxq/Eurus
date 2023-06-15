@@ -3,10 +3,13 @@ from typing import Optional
 
 from slither.core.declarations.contract import Contract as SliContract
 from slither.core.declarations.function import Function as SliFunction
+from slither.core.declarations.solidity_variables import SolidityVariable
 from slither.core.expressions.expression import Expression as SliExpression
 from slither.core.expressions.identifier import Identifier as SliIdentifier
 from slither.core.expressions.member_access import \
     MemberAccess as SliMemberAccess
+from slither.core.expressions.new_elementary_type import NewElementaryType
+from slither.core.expressions.type_conversion import TypeConversion as SliTypeConversion
 from slither.core.solidity_types import ArrayType as SliArrayType
 from slither.core.solidity_types import ElementaryType as SliElementaryType
 from slither.core.solidity_types import MappingType as SliMappingType
@@ -14,6 +17,7 @@ from slither.core.solidity_types import UserDefinedType as SliUserDefinedType
 from slither.core.variables.state_variable import \
     StateVariable as SliStateVariable
 from slither.core.variables.variable import Variable as SliVariable
+from slither.core.variables.local_variable import LocalVariable as SliLocalVariable
 from slither.slither import Slither
 from slither.analyses.data_dependency.data_dependency import is_dependent
 
@@ -33,6 +37,7 @@ def gen_slither(bmk_dir: str) -> Slither:
     solc_remaps = [
         f"@openzeppelin/={lib_dir}/contracts/@openzeppelin/",
         f"@utils/={lib_dir}/contracts/@utils/",
+        f"@uniswapv2={lib_dir}/contracts/@uniswapv2",
         f"forge-std={lib_dir}/forge-std/src",
         f"ds-test={lib_dir}/forge-std/lib/ds-test/src"
     ]

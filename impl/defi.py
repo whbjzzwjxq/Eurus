@@ -17,8 +17,8 @@ class Defi:
         self.test_ctrt = self.sli.get_contract_from_name(f"{self.config.project_name}Test")[0]
         self.pub_actions = self._init_pub_actions()
         self.roles = self._init_roles()
-        self.rw_set: Dict[str, RW_SET] = {}
 
+        self._rw_set: Dict[str, RW_SET] = self._init_rw_set()
         self._rw_graph = None
 
     def _init_ctrts(self) -> List[SliContract]:
@@ -50,6 +50,9 @@ class Defi:
             "owner",
         ]
         return roles
+    
+    def _init_rw_set(self) -> Dict[str, RW_SET]:
+        return {}
 
     @property
     def rw_graph(self) -> RWGraph:
@@ -90,29 +93,76 @@ class Defi:
         return None
 
     def get_func_rw_set(self, func: SliFunction) -> RW_SET:
-        if func.canonical_name not in self.rw_set:
+        if func.canonical_name not in self._rw_set:
             s = self.track_var_without_addr(func)
-            self.rw_set[func.canonical_name] = s
-        return self.rw_set[func.canonical_name]
+            self._rw_set[func.canonical_name] = s
+        return self._rw_set[func.canonical_name]
 
-    def get_external_call_func(self, e_call_expr: SliExpression) -> Optional[SliFunction]:
+    def get_external_call_funcs(self, e_call_expr: SliExpression) -> Optional[List[SliFunction]]:
+        if not isinstance(e_call_expr.called, SliMemberAccess):
+            return None
         called: SliMemberAccess = e_call_expr.called
-        called_expression: SliIdentifier = called.expression
-        called_value: SliVariable = called_expression.value
-        # Call Library: Math.min(a, b);
-        if isinstance(called_value, SliContract):
-            if called_value.is_library:
+        if isinstance(called.expression, SliTypeConversion):
+            ctrt_interface = called.expression.type.type
+            return self.get_function_by_interface(ctrt_interface, called.member_name)
+        if isinstance(called.expression, SliIdentifier):
+            called_expression: SliIdentifier = called.expression
+            called_value: SliVariable = called_expression.value
+            # Call a library: Math.min(a, b);
+            if isinstance(called_value, SliContract):
+                if called_value.is_library:
+                    return None
+                else:
+                    raise CornerCase("TODO")
+            # Call a contract initialized by variable: token.transferFrom(a, b, amt);
+            # token is a state variable or local variable
+            elif isinstance(called_value, SliStateVariable) or isinstance(called_value, SliLocalVariable):
+                if (called_value.type != SliUserDefinedType):
+                    return None
+                precise_func = self.get_function_by_canonical_name(called_value.canonical_name, called.member_name)
+                if precise_func is not None:
+                    return [precise_func]
+                imprecise_func = self.get_function_by_method_name(called_value.canonical_name, called.member_name)
+                return imprecise_func
+            elif isinstance(called_value, SolidityVariable):
                 return None
             else:
                 raise CornerCase("TODO")
-        # Call Initialized Contract: token.transferFrom(a, b, amt);
-        elif isinstance(called_value, SliStateVariable):
-            tgt_ctrt_name = self.config.contract_names_mapping.get(
-                called_value.canonical_name, None)
-            tgt_ctrt = self.get_contract_by_name(tgt_ctrt_name)
-            return get_function_by_name(tgt_ctrt, called.member_name)
+        type_str = getattr(called.expression, "type", None)
+        if type_str is not None:
+            # Inline library call: A.add(B), A.type == uint256.
+            print(type_str)
+            return None
         else:
-            raise CornerCase("TODO")
+            return None
+        
+    def get_function_by_canonical_name(self, canonical_name: str, method_name: str):
+        # Precise finding.
+        tgt_ctrt_name = self.config.contract_names_mapping.get(canonical_name, None)
+        tgt_ctrt = self.get_contract_by_name(tgt_ctrt_name)
+        if tgt_ctrt is None:
+            return None
+        return get_function_by_name(tgt_ctrt, method_name)
+    
+    def get_function_by_interface(self, interface: SliContract, method_name: str):
+        possible_funcs = []
+        for ctrt in self.ctrts:
+            if interface in ctrt.inheritance:
+                res = self.get_function_by_name(ctrt, method_name)
+                if res is None:
+                    continue
+                possible_funcs.append(res)
+        return possible_funcs
+        
+    def get_function_by_method_name(self, method_name: str):
+        # Imprecise finding.
+        possible_funcs = []
+        for ctrt in self.ctrts:
+            res = self.get_function_by_name(ctrt, method_name)
+            if res is None:
+                continue
+            possible_funcs.append(res)
+        return possible_funcs
 
     def track_var_without_addr(self, func: SliFunction) -> RW_SET:
         """
@@ -124,12 +174,13 @@ class Defi:
 
         # Analyze external calls.
         for e_call_expr in func.external_calls_as_expressions:
-            e_call = self.get_external_call_func(e_call_expr)
-            if e_call is None:
+            possible_e_calls = self.get_external_call_funcs(e_call_expr)
+            if possible_e_calls is None:
                 continue
-            e_sv_read, e_sv_written = self.get_func_rw_set(e_call)
-            sv_read = sv_read.union(e_sv_read)
-            sv_written = sv_written.union(e_sv_written)
+            for e_call in possible_e_calls:
+                e_sv_read, e_sv_written = self.get_func_rw_set(e_call)
+                sv_read = sv_read.union(e_sv_read)
+                sv_written = sv_written.union(e_sv_written)
 
         # Analyze internal calls
         for i_call in func.internal_calls:
