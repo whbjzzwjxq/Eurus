@@ -27,7 +27,7 @@ contract TokenBurnTest is Test {
     uint256 constant uniswapInitBalance = 10 ether;
     uint256 constant uniswapInitToken = 10 ether;
 
-    uint256 constant requiredBalance = attackerInitToken;
+    uint256 constant requiredBalance = attackerInitToken * 2;
 
     function setUp() public {
         attacker = address(this);

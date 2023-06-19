@@ -1,0 +1,21 @@
+{
+    "project_name": "TokenMint",
+    "contract_names": [
+        "MintableToken",
+        "WETH",
+        "UniswapV1"
+    ],
+    "contract_names_mapping": {
+        "UniswapV1.token": "MintableToken",
+        "UniswapV1.weth": "WETH"
+    },
+    "groundtruth": [
+        "MintableToken.approve",
+        "MintableToken.transferOwnership",
+        "MintableToken.mint",
+        "UniswapV1.swapTokenToWETH"
+    ],
+    "attack_state_variables": [
+        "WETH.balances"
+    ]
+}

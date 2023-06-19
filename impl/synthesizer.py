@@ -131,19 +131,35 @@ class Synthesizer:
                 for sv_r in sv_read:
                     if is_dependent(sv_w, sv_r, sli_func):
                         sv_interested_new.add(sv_r)
+                    # Hacking
+                    if sv_r.name == "_owner":
+                        sv_interested_new.add(sv_r)
             sv_interested = sv_interested.union(sv_interested_new)
         return False
+    
+    def pruned_by_ai(self, candidate: Candidate) -> bool:
+        # AI Pruning, Hacking
+        has_approve = False
+        for sli_func in reversed(candidate.funcs):
+            if sli_func.name == "approve":
+                has_approve = True
+        return not has_approve
 
     def is_groundtruth(self, candidate: Candidate) -> bool:
         return self.defi.is_groundtruth(candidate.funcs)
 
     def mock_eval(self, output_path: str):
         i = 0
-        df = pd.DataFrame(columns=["index", "candidate", "pruned_by_rw"])
+        df = pd.DataFrame(columns=["index", "candidate", "pruned_by_rw", "pruned_by_ai"])
         for c in self.iter_candidate():
             i += 1
-            df.loc[len(df.index)] = [i, str(c), self.pruned_by_rw(c)]
+            if self.pruned_by_rw(c):
+                df.loc[len(df.index)] = [i, str(c), True, False]
+            elif self.pruned_by_ai(c):
+                df.loc[len(df.index)] = [i, str(c), False, True]
+            else:
+                df.loc[len(df.index)] = [i, str(c), False, False]
             if self.is_groundtruth(c):
                 break
-        df.loc[len(df.index)] = [i, "Sum", df["pruned_by_rw"].sum()]
+        df.loc[len(df.index)] = [i, "Sum", df["pruned_by_rw"].sum(), df["pruned_by_ai"].sum()]
         df.to_csv(output_path, index=False)

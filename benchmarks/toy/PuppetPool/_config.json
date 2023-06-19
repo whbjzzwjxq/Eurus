@@ -15,10 +15,10 @@
     },
     "groundtruth": [
         "WETH.approve",
-        "ERC20Basic.approve",
-        "ERC20Basic.approve",
         "UniswapV1.swapWETHToToken",
+        "ERC20Basic.approve",
         "PuppetPool.borrowWETH",
+        "ERC20Basic.approve",
         "UniswapV1.swapTokenToWETH"
     ],
     "attack_state_variables": ["WETH.balances"]
