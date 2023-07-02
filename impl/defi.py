@@ -20,6 +20,7 @@ class Defi:
 
         self._rw_set: Dict[str, RW_SET] = self._init_rw_set()
         self._rw_graph = None
+        self.ext_calls: Dict[str, List[SliFunction]] = {}
 
     def _init_ctrts(self) -> List[SliContract]:
         actual_ctrts = []
@@ -178,6 +179,9 @@ class Defi:
             possible_e_calls = self.get_external_call_funcs(e_call_expr)
             if possible_e_calls is None:
                 continue
+            if func.name not in self.ext_calls:
+                self.ext_calls[func.canonical_name] = []
+            self.ext_calls[func.canonical_name].extend(possible_e_calls)
             for e_call in possible_e_calls:
                 e_sv_read, e_sv_written = self.get_func_rw_set(e_call)
                 sv_read = sv_read.union(e_sv_read)

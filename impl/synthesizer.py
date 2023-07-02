@@ -111,7 +111,7 @@ class Synthesizer:
                 i += 1
                 yield Candidate(funcs=c, index=i)
 
-    def pruned_by_rw(self, candidate: Candidate) -> bool:
+    def pruned_by_gsv(self, candidate: Candidate) -> bool:
         # RW Pruning
         sv_interested = set()
         for sv_name in self.defi.config.attack_state_variables:
@@ -139,11 +139,30 @@ class Synthesizer:
     
     def pruned_by_ai(self, candidate: Candidate) -> bool:
         # AI Pruning, Hacking
-        has_approve = False
-        for sli_func in reversed(candidate.funcs):
-            if sli_func.name == "approve":
-                has_approve = True
-        return not has_approve
+        for i in reversed(range(0, len(candidate.funcs) - 1)):
+            sli_func = candidate.funcs[i]
+            target_ctrts: List[SliContract] = []
+            if sli_func.name == "transferFrom":
+                target_ctrts = [sli_func.contract]
+            else:
+                ext_calls = self.defi.ext_calls.get(sli_func.canonical_name, [])
+                for e_call in ext_calls:
+                    if e_call.name == "transferFrom":
+                        target_ctrts.append(e_call.contract)
+            if len(target_ctrts) == 0:
+                continue
+            if i == 0:
+                return True
+            approved = True
+            before = candidate.funcs[0:i-1]
+            for ctrt in target_ctrts:
+                approve_func = get_function_by_name(ctrt, "approve")
+                if approve_func is None:
+                    raise ValueError("Error IERC20 contract.")
+                if approve_func not in before:
+                    approved = False
+            if not approved:
+                return True
 
     def is_groundtruth(self, candidate: Candidate) -> bool:
         return self.defi.is_groundtruth(candidate.funcs)
@@ -153,7 +172,7 @@ class Synthesizer:
         df = pd.DataFrame(columns=["index", "candidate", "pruned_by_rw", "pruned_by_ai"])
         for c in self.iter_candidate():
             i += 1
-            if self.pruned_by_rw(c):
+            if self.pruned_by_gsv(c):
                 df.loc[len(df.index)] = [i, str(c), True, False]
             elif self.pruned_by_ai(c):
                 df.loc[len(df.index)] = [i, str(c), False, True]
