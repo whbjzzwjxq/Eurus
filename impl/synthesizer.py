@@ -35,7 +35,7 @@ class SolFunction:
 
     @property
     def keccak_hash(self):
-        return sha3_256(self.func_signature.encode('utf-8')).hexdigest()
+        return sha3_256(self.func_signature.encode("utf-8")).hexdigest()
 
     @property
     def canonical_name(self):
@@ -57,7 +57,6 @@ class SolFunction:
 
 
 class ConcreteSolFunction(SolFunction):
-
     def __init__(self, ctrt_name: str, func_name: str, func_types: List[SliElementaryType], func_args: list) -> None:
         super().__init__(ctrt_name, func_name, func_types)
         not_none_args = [f for f in func_args if f is not None]
@@ -74,7 +73,6 @@ class ConcreteSolFunction(SolFunction):
 
 
 class Candidate:
-
     def __init__(self, funcs: Iterable[SliFunction], index: int) -> None:
         self.funcs = list(funcs)
         self.index = index
@@ -84,7 +82,6 @@ class Candidate:
 
 
 class Synthesizer:
-
     def __init__(self, defi: Defi):
         self.defi = defi
         self.max_steps = len(defi.config.groundtruth)
@@ -136,7 +133,7 @@ class Synthesizer:
                         sv_interested_new.add(sv_r)
             sv_interested = sv_interested.union(sv_interested_new)
         return False
-    
+
     def pruned_by_ai(self, candidate: Candidate) -> bool:
         # AI Pruning, Hacking
         for i in reversed(range(0, len(candidate.funcs) - 1)):
@@ -154,7 +151,7 @@ class Synthesizer:
             if i == 0:
                 return True
             approved = True
-            before = candidate.funcs[0:i-1]
+            before = candidate.funcs[0 : i - 1]
             for ctrt in target_ctrts:
                 approve_func = get_function_by_name(ctrt, "approve")
                 if approve_func is None:

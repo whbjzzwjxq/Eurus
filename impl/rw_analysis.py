@@ -137,20 +137,20 @@ class RWGraph:
         graph = graphviz.Digraph(name="RWGraph")
         graph.graph_attr["root"] = "root"
         edge_labels = self.edge_labels
-        graph.node(name="root", style="invis",
-                        shape="point", root="true")
+        graph.node(name="root", style="invis", shape="point", root="true")
         for n in self.nodes:
             graph.node("v" + str(n.index), label=n.canonical_name)
         for e in self.edges:
             mid_name = "e" + str(edge_labels.index(e.canonical_name))
             ctrt_name, func_name = e.canonical_name.split(".")
-            label = f"<<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLSPACING=\"0\">\n" + \
-                f"<TR><TD ALIGN=\"CENTER\">{ctrt_name}</TD></TR>\n" + \
-                f"<TR><TD ALIGN=\"CENTER\">{func_name}</TD></TR>\n</TABLE>>"
+            label = (
+                f'<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0">\n'
+                + f'<TR><TD ALIGN="CENTER">{ctrt_name}</TD></TR>\n'
+                + f'<TR><TD ALIGN="CENTER">{func_name}</TD></TR>\n</TABLE>>'
+            )
             graph.node(mid_name, label=label, penwidth="0")
             for s in e.source:
-                graph.edge("v" + str(s.index), mid_name,
-                           dir="none", headclip="false")
+                graph.edge("v" + str(s.index), mid_name, dir="none", headclip="false")
             for d in e.dest:
                 graph.edge(mid_name, "v" + str(d.index), tailclip="false")
         graph.save(output_path)

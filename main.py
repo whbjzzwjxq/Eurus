@@ -11,16 +11,12 @@ from impl.synthesizer import Synthesizer
 from impl.output2racket import output_defi
 
 parser = argparse.ArgumentParser()
-parser.add_argument(
-    "-i", "--input", help="Target contract directory.", default="")
-parser.add_argument(
-    "-f", "--forge", help="Do the forge invariant test.", action="store_true")
-parser.add_argument(
-    "--rwgraph", help="Generate the Read/Write analysis graph.", action="store_true")
-parser.add_argument(
-    "-m", "--mockeval", help="Mock the evaluation.", action="store_true")
-parser.add_argument(
-    "--outputrkt", help="Output to Racket.", action="store_true")
+parser.add_argument("-i", "--input", help="Target contract directory.", default="")
+parser.add_argument("-f", "--forge", help="Do the forge invariant test.", action="store_true")
+parser.add_argument("--rwgraph", help="Generate the Read/Write analysis graph.", action="store_true")
+parser.add_argument("-m", "--mockeval", help="Mock the evaluation.", action="store_true")
+parser.add_argument("-p", "--print", help="Print statistic.", action="store_true")
+parser.add_argument("--outputrkt", help="Output to Racket.", action="store_true")
 parser.add_argument("--timeout", help="Timeout.", type=int, default=3600)
 
 
@@ -47,6 +43,7 @@ def get_bmk_dirs(bmk_dir: str):
         bmk_dirs = [bmk_dir]
         return bmk_dirs
 
+
 def resolve_bmk_name(bmk_dir: str):
     return path.basename(bmk_dir)
 
@@ -70,7 +67,7 @@ def forge_test(bmk_dir: str, timeout: int):
         cache_path,
         "--match-path",
         test_solfile,
-        "--allow-failure"
+        "--allow-failure",
     ]
     out = {}
     err = {}
@@ -97,10 +94,12 @@ def mock_evaluate(bmk_dir: str):
     output_path = path.abspath(path.join(bmk_dir, "_rw_eval.csv"))
     synthesizer.mock_eval(output_path)
 
+
 def generate_rw_graph(bmk_dir: str):
     defi = Defi(bmk_dir)
     output_path = path.abspath(path.join(bmk_dir, "_rw.gv"))
     defi.print_rw_graph(output_path)
+
 
 def output2racket(bmk_dir: str):
     defi = Defi(bmk_dir)
@@ -108,7 +107,8 @@ def output2racket(bmk_dir: str):
     obj = output_defi(defi)
     with open(output_path, "w") as f:
         json.dump(obj, f)
-    
+
+
 def execute(cmds: List[str], timeout=1200, stdout=DEVNULL, stderr=DEVNULL):
     cmd = " ".join(cmds)
     print(cmd)
@@ -119,6 +119,7 @@ def execute(cmds: List[str], timeout=1200, stdout=DEVNULL, stderr=DEVNULL):
         proc.terminate()
         proc.communicate()
         raise tee
+
 
 def _main():
     args = parser.parse_args()
@@ -132,6 +133,7 @@ def _main():
             mock_evaluate(bmk_dir)
         if args.outputrkt:
             output2racket(bmk_dir)
+
 
 if __name__ == "__main__":
     _main()

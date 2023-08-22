@@ -8,7 +8,6 @@ RW_SET = Tuple[Set[SliVariable], Set[SliVariable]]
 
 
 class Defi:
-
     def __init__(self, bmk_dir: str) -> None:
         self.config: Config = init_config(bmk_dir)
         self.ctrt_names = self.config.contract_names
@@ -51,7 +50,7 @@ class Defi:
             "owner",
         ]
         return roles
-    
+
     def _init_rw_set(self) -> Dict[str, RW_SET]:
         return {}
 
@@ -77,13 +76,13 @@ class Defi:
             if ctrt.name == name:
                 return ctrt
         return None
-    
+
     def get_function_by_name(self, ctrt_name: str, func_name: str):
         ctrt = self.get_contract_by_name(ctrt_name)
         if ctrt is None:
             raise ValueError(f"Unknown contract name: {ctrt_name}")
         return get_function_by_name(ctrt, func_name)
-    
+
     def get_variable_by_name(self, ctrt_name: str, var_name: str):
         ctrt = self.get_contract_by_name(ctrt_name)
         if ctrt is None:
@@ -123,7 +122,7 @@ class Defi:
                 precise_func = self.get_function_by_canonical_name(called_value.canonical_name, called.member_name)
                 if precise_func is not None:
                     return [precise_func]
-                imprecise_func = self.get_function_by_method_name(called_value.canonical_name, called.member_name)
+                imprecise_func = self.get_function_by_method_name(called.member_name)
                 return imprecise_func
             elif isinstance(called_value, SolidityVariable):
                 return None
@@ -136,7 +135,7 @@ class Defi:
             return None
         else:
             return None
-        
+
     def get_function_by_canonical_name(self, canonical_name: str, method_name: str):
         # Precise finding.
         tgt_ctrt_name = self.config.contract_names_mapping.get(canonical_name, None)
@@ -144,7 +143,7 @@ class Defi:
         if tgt_ctrt is None:
             return None
         return get_function_by_name(tgt_ctrt, method_name)
-    
+
     def get_function_by_interface(self, interface: SliContract, method_name: str):
         possible_funcs = []
         for ctrt in self.ctrts:
@@ -155,7 +154,7 @@ class Defi:
                         continue
                     possible_funcs.append(res)
         return possible_funcs
-        
+
     def get_function_by_method_name(self, method_name: str):
         # Imprecise finding.
         possible_funcs = []

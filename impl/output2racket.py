@@ -10,8 +10,7 @@ from slither.core.variables.state_variable import StateVariable
 from slither.slithir.variables.reference import ReferenceVariable
 from slither.slithir.variables.temporary import TemporaryVariable
 
-from slither.core.expressions.assignment_operation import \
-    AssignmentOperation as AO
+from slither.core.expressions.assignment_operation import AssignmentOperation as AO
 from slither.core.expressions.expression import Expression
 from slither.core.expressions.binary_operation import BinaryOperation as BO
 from slither.core.expressions.call_expression import CallExpression as CE
@@ -30,10 +29,7 @@ from .utils import CornerCase
 
 
 def output_defi(defi: Defi):
-    r_defi = {
-        "contracts": [output_ctrt(ctrt) for ctrt in defi.ctrts],
-        "project_name": defi.config.project_name
-    }
+    r_defi = {"contracts": [output_ctrt(ctrt) for ctrt in defi.ctrts], "project_name": defi.config.project_name}
     return r_defi
 
 
@@ -41,7 +37,7 @@ def output_ctrt(ctrt: Contract):
     r_ctrt = {
         "functions": [output_func(func) for func in ctrt.functions if func.expressions],
         "state_variables": [output_var(var) for var in ctrt.state_variables],
-        "name": ctrt.name
+        "name": ctrt.name,
     }
     return r_ctrt
 
@@ -90,24 +86,14 @@ def output_assign_op_expr(expr: AO):
     operator = str(expr.type)
     left = output_expr(expr.expression_left)
     right = output_expr(expr.expression_right)
-    return {
-        "type": "assign_op",
-        "operator": operator,
-        "left": left,
-        "right": right
-    }
+    return {"type": "assign_op", "operator": operator, "left": left, "right": right}
 
 
 def output_binary_op_expr(expr: BO):
     operator = str(expr.type)
     left = output_expr(expr.expression_left)
     right = output_expr(expr.expression_right)
-    return {
-        "type": "binary_op",
-        "operator": operator,
-        "left": left,
-        "right": right
-    }
+    return {"type": "binary_op", "operator": operator, "left": left, "right": right}
 
 
 def output_call_expr(expr: CE):
@@ -120,68 +106,41 @@ def output_call_expr(expr: CE):
 
 
 def output_cond_expr(expr: COE):
-    return {
-
-    }
+    return {}
 
 
 def output_ete_expr(expr: ETE):
-    return {
-
-    }
+    return {}
 
 
 def output_literal_expr(expr: Literal):
-    return {
-        "type": "literal",
-        "value": str(expr.value)
-    }
+    return {"type": "literal", "value": str(expr.value)}
 
 
 def output_type_conversion(expr: TC):
-    return {
-        "type": "type_conversion",
-        "from_expr": output_expr(expr.expression),
-        "to_type": str(expr.type)
-    }
+    return {"type": "type_conversion", "from_expr": output_expr(expr.expression), "to_type": str(expr.type)}
+
 
 def output_tuple_expr(expr: TE):
-    return {
-        "type": "tuple",
-        "exprs": [output_expr(e) for e in expr.expressions]
-    }
+    return {"type": "tuple", "exprs": [output_expr(e) for e in expr.expressions]}
+
 
 def output_member_access_expr(expr: MA):
-    return {
-        "type": "member_access",
-        "member_name": expr.member_name,
-        "from_expr": output_expr(expr.expression)
-    }
+    return {"type": "member_access", "member_name": expr.member_name, "from_expr": output_expr(expr.expression)}
 
 
 def output_unary_op_expr(expr: UO):
-    return {
-        "type": "unary_op",
-        "operator": str(expr.type),
-        "right": output_expr(expr.expression)
-    }
+    return {"type": "unary_op", "operator": str(expr.type), "right": output_expr(expr.expression)}
 
 
 def output_index_access_expr(expr: IA):
     left = output_expr(expr.expression_left)
     right = output_expr(expr.expression_right)
-    return {
-        "type": "index_access",
-        "left": left,
-        "right": right
-    }
+    return {"type": "index_access", "left": left, "right": right}
 
 
 def output_identifier_expr(expr: ID):
-    return {
-        "type": "identifier",
-        "value": output_var(expr.value)
-    }
+    return {"type": "identifier", "value": output_var(expr.value)}
 
 
 def output_var(var: Variable):
@@ -204,10 +163,7 @@ def output_var(var: Variable):
         }
 
     if isinstance(var, Event):
-        return {
-            "name": var.name,
-            "type": "event"
-        }
+        return {"name": var.name, "type": "event"}
 
     if isinstance(var, Modifier):
         return {
@@ -215,7 +171,7 @@ def output_var(var: Variable):
             "type": "modifier",
             "contract": var.contract.name,
         }
-    
+
     if isinstance(var, Contract):
         return {
             "name": var.name,
@@ -245,7 +201,7 @@ def output_var(var: Variable):
             "name": var.name,
             "type": str(var.type),
         }
-    
+
     if isinstance(var, ReferenceVariable):
         return {
             "is_constant": var.is_constant,
@@ -257,7 +213,7 @@ def output_var(var: Variable):
             "name": var.name,
             "type": str(var.type),
         }
-    
+
     if isinstance(var, TemporaryVariable):
         return {
             "is_constant": var.is_constant,
