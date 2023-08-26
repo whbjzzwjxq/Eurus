@@ -23,7 +23,9 @@ contract UniswapV2ERC20 is IUniswapV2ERC20 {
         0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
     mapping(address => uint256) public override nonces;
 
-    constructor() {}
+    constructor() {
+        // Remove this function
+    }
 
     function _mint(address to, uint256 value) internal {
         totalSupply += value;

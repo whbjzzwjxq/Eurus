@@ -21,7 +21,7 @@ contract BIGFITest is Test {
     uint256 paybackAmount = (flashloanAmount * 1000) / (1000 - 3);
 
     function setUp() public {
-        vm.createSelectFork(getChain(56).rpcUrl, 26685503);
+        vm.createSelectFork("bsc", 26685503);
         vm.label(address(bigfi), "BIGFI");
         vm.label(address(usdt), "usdt");
         vm.label(address(router), "Router");

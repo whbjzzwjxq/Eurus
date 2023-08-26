@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 
 import "@utils/WETH.sol";
 import "@utils/UniswapV1.sol";
-import "@utils/Handler.sol";
+import "@utils/ForgeTestHelper.sol";
 
 import "benchmarks/toy/TokenBurn/BurningToken.sol";
 

@@ -14,6 +14,8 @@ class Defi:
         self.sli = gen_slither(bmk_dir)
         self.ctrts = self._init_ctrts()
         self.test_ctrt = self.sli.get_contract_from_name(f"{self.config.project_name}Test")[0]
+
+        
         self.pub_actions = self._init_pub_actions()
         self.roles = self._init_roles()
 
@@ -131,7 +133,6 @@ class Defi:
         type_str = getattr(called.expression, "type", None)
         if type_str is not None:
             # Inline library call: A.add(B), A.type == uint256.
-            print(type_str)
             return None
         else:
             return None

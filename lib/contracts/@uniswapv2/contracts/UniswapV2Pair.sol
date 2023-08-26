@@ -15,7 +15,7 @@ import "./interfaces/IUniswapV2Callee.sol";
 //solhint-disable reason-string
 //solhint-disable not-rely-on-time
 
-contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
+contract UniswapV2Pair is UniswapV2ERC20, IUniswapV2Pair {
     using UQ112x112 for uint224;
 
     uint256 public constant override MINIMUM_LIQUIDITY = 10 ** 3;

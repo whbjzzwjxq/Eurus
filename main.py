@@ -20,6 +20,18 @@ parser.add_argument("--outputrkt", help="Output to Racket.", action="store_true"
 parser.add_argument("--timeout", help="Timeout.", type=int, default=3600)
 
 
+def execute(cmds: List[str], timeout=3600, stdout=DEVNULL, stderr=DEVNULL):
+    cmd = " ".join(cmds)
+    print(cmd)
+    proc = Popen(cmd, shell=True, stdout=stdout, stderr=stderr)
+    try:
+        return proc.communicate(timeout=timeout)
+    except TimeoutExpired as tee:
+        proc.terminate()
+        proc.communicate()
+        raise tee
+
+
 def get_bmk_dirs(bmk_dir: str):
     toy_dir = path.abspath("./benchmarks/toy")
     realworld_dir = path.abspath("./benchmarks/realworld")
@@ -108,23 +120,18 @@ def output2racket(bmk_dir: str):
     with open(output_path, "w") as f:
         json.dump(obj, f)
 
-
-def execute(cmds: List[str], timeout=1200, stdout=DEVNULL, stderr=DEVNULL):
-    cmd = " ".join(cmds)
-    print(cmd)
-    proc = Popen(cmd, shell=True, stdout=stdout, stderr=stderr)
-    try:
-        return proc.communicate(timeout=timeout)
-    except TimeoutExpired as tee:
-        proc.terminate()
-        proc.communicate()
-        raise tee
+def evaluate(bmk_dir: str):
+    defi = Defi(bmk_dir)
+    synthesizer = Synthesizer(defi)
+    output_path = path.abspath(path.join(bmk_dir, "_rw_eval.csv"))
+    synthesizer.eval(output_path)
 
 
 def _main():
     args = parser.parse_args()
     bmk_dirs = get_bmk_dirs(args.input)
     for bmk_dir in bmk_dirs:
+        initial_data_file = path.join(bmk_dir, "_data.json")
         if args.forge:
             forge_test(bmk_dir, args.timeout)
         if args.rwgraph:
