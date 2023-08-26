@@ -156,6 +156,8 @@ cython_debug/
 .idea
 .DS_Store
 cache
+.cache-halmos
+.cache
 *.gv
 _rw_eval.csv
 _defi_racket.json

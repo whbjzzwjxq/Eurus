@@ -63,7 +63,7 @@ def resolve_bmk_name(bmk_dir: str):
 def forge_test(bmk_dir: str, timeout: int):
     bmk_name = resolve_bmk_name(bmk_dir)
     test_solfile = path.join(bmk_dir, f"{bmk_name}.t.sol")
-    cache_path = path.join(bmk_dir, "cache")
+    cache_path = path.join(bmk_dir, ".cache")
     if not path.exists(cache_path):
         os.mkdir(cache_path)
     result_path = path.join(bmk_dir, "result")

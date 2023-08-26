@@ -15,4 +15,18 @@ solc-select use 0.8.15
 git submodule update --init --recursive
 ```
 
+## Evaluation
+### Forge test (attack ground truth)`
+```bash
+forge test --match-path=./benchmarks/realworld/MUMUG/MUMUG.t.sol -vvvv
+```
+
+### Halmos
+```bash
+halmos -vvvv --function solve --forge-build-out .cache
+```
+
+## Tips
+Halomos will use the same cache directory as foundry.toml.
+
 ## Overall Algorithm
