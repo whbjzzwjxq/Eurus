@@ -5,6 +5,8 @@ from typing import Iterable, List
 
 import pandas as pd
 
+from impl.utils import List
+
 from .defi import Defi
 from .utils import *
 from .utils_slither import *
@@ -81,101 +83,143 @@ class Candidate:
         return " => ".join([f.canonical_name for f in self.funcs])
 
 
+# class Synthesizer:
+#     def __init__(self, defi: Defi):
+#         self.defi = defi
+#         self.max_steps = len(defi.config.groundtruth)
+#         if self.max_steps == 0:
+#             raise ValueError("No groundtruth is provided!")
+#         self.actions_count = len(self.defi.pub_actions)
+#         if self.actions_count == 0:
+#             raise ValueError("No actions is provided!")
+#         self.candidates_count = self._init_candidates_count()
+
+#     def _init_candidates_count(self):
+#         last = 1
+#         count = 0
+#         for _ in range(self.max_steps):
+#             last *= self.actions_count
+#             count += last
+#         return count
+
+#     def iter_candidate(self) -> Iterable[Candidate]:
+#         i = 0
+#         for s in range(1, self.max_steps + 1):
+#             candidates = itertools.product(self.defi.pub_actions, repeat=s)
+#             for c in candidates:
+#                 i += 1
+#                 yield Candidate(funcs=c, index=i)
+
+#     def pruned_by_gsv(self, candidate: Candidate) -> bool:
+#         # RW Pruning
+#         sv_interested = set()
+#         for sv_name in self.defi.config.attack_state_variables:
+#             ctrt_name, var_name = sv_name.split(".")
+#             sv = self.defi.get_variable_by_name(ctrt_name, var_name)
+#             if sv is None:
+#                 raise ValueError(f"Unknown state variable name: {sv_name}")
+#             sv_interested.add(sv)
+#         for sli_func in reversed(candidate.funcs):
+#             sv_read, sv_written = self.defi.get_func_rw_set(sli_func)
+#             if not sv_written.intersection(sv_interested):
+#                 return True
+#             # Not sound yet
+#             # sv_interested -= sv_written
+#             sv_interested_new = set()
+#             for sv_w in sv_written:
+#                 for sv_r in sv_read:
+#                     if is_dependent(sv_w, sv_r, sli_func):
+#                         sv_interested_new.add(sv_r)
+#                     # Hacking
+#                     if sv_r.name == "_owner":
+#                         sv_interested_new.add(sv_r)
+#             sv_interested = sv_interested.union(sv_interested_new)
+#         return False
+
+#     def pruned_by_ai(self, candidate: Candidate) -> bool:
+#         # AI Pruning, Hacking
+#         for i in reversed(range(0, len(candidate.funcs) - 1)):
+#             sli_func = candidate.funcs[i]
+#             target_ctrts: List[SliContract] = []
+#             if sli_func.name == "transferFrom":
+#                 target_ctrts = [sli_func.contract]
+#             else:
+#                 ext_calls = self.defi.ext_calls.get(sli_func.canonical_name, [])
+#                 for e_call in ext_calls:
+#                     if e_call.name == "transferFrom":
+#                         target_ctrts.append(e_call.contract)
+#             if len(target_ctrts) == 0:
+#                 continue
+#             if i == 0:
+#                 return True
+#             approved = True
+#             before = candidate.funcs[0 : i - 1]
+#             for ctrt in target_ctrts:
+#                 approve_func = get_function_by_name(ctrt, "approve")
+#                 if approve_func is None:
+#                     raise ValueError("Error IERC20 contract.")
+#                 if approve_func not in before:
+#                     approved = False
+#             if not approved:
+#                 return True
+
+#     def is_groundtruth(self, candidate: Candidate) -> bool:
+#         return self.defi.is_groundtruth(candidate.funcs)
+
+#     def mock_eval(self, output_path: str):
+#         i = 0
+#         df = pd.DataFrame(columns=["index", "candidate", "pruned_by_rw", "pruned_by_ai"])
+#         for c in self.iter_candidate():
+#             i += 1
+#             if self.pruned_by_gsv(c):
+#                 df.loc[len(df.index)] = [i, str(c), True, False]
+#             elif self.pruned_by_ai(c):
+#                 df.loc[len(df.index)] = [i, str(c), False, True]
+#             else:
+#                 df.loc[len(df.index)] = [i, str(c), False, False]
+#             if self.is_groundtruth(c):
+#                 break
+#         df.loc[len(df.index)] = [i, "Sum", df["pruned_by_rw"].sum(), df["pruned_by_ai"].sum()]
+#         df.to_csv(output_path, index=False)
+
+
+class ArgumentType(Enum):
+    Asset = 0
+    SwapPair = 1
+    DeFiEntry = 2
+    UINT256 = 3
+
+class DSLAction:
+    action_name: str
+    
+    def __init__(self, arguments: List[str]) -> None:
+        self.arguments = arguments
+
+class Swap(DSLAction):
+    def __init__(self, arguments: List[str]) -> None:
+        super().__init__(arguments)
+        # template:
+        # Swap(swapPair, asset0, asset1, amount0)
+
+    def output_function_name(self) -> str:
+        
+
+
 class Synthesizer:
     def __init__(self, defi: Defi):
         self.defi = defi
-        self.max_steps = len(defi.config.groundtruth)
-        if self.max_steps == 0:
-            raise ValueError("No groundtruth is provided!")
-        self.actions_count = len(self.defi.pub_actions)
-        if self.actions_count == 0:
-            raise ValueError("No actions is provided!")
-        self.candidates_count = self._init_candidates_count()
 
-    def _init_candidates_count(self):
-        last = 1
-        count = 0
-        for _ in range(self.max_steps):
-            last *= self.actions_count
-            count += last
-        return count
+    def gen_candidate_within_buysell(self) -> List[Candidate]:
+        assets = [k for k, v in self.defi.config.roles.items() if v.is_asset]
+        stable_coins = [k for k, v in self.defi.config.roles.items() if v.is_stablecoin]
+        swap_pairs = [k for k, v in self.defi.config.roles.items() if v.is_swappair]
+        defi_entrys = [k for k, v in self.defi.config.roles.items() if v.is_defientry]
+        hacked_actions = [(k, v.hacked_asset) for k, v in self.defi.config.roles.items() if v.hacked_asset]
 
-    def iter_candidate(self) -> Iterable[Candidate]:
-        i = 0
-        for s in range(1, self.max_steps + 1):
-            candidates = itertools.product(self.defi.pub_actions, repeat=s)
-            for c in candidates:
-                i += 1
-                yield Candidate(funcs=c, index=i)
+        if len(hacked_actions) == 0:
+            return []
+        
+        candidates = []
+        for ctrt_name, asset_name in hacked_actions:
+            pass
 
-    def pruned_by_gsv(self, candidate: Candidate) -> bool:
-        # RW Pruning
-        sv_interested = set()
-        for sv_name in self.defi.config.attack_state_variables:
-            ctrt_name, var_name = sv_name.split(".")
-            sv = self.defi.get_variable_by_name(ctrt_name, var_name)
-            if sv is None:
-                raise ValueError(f"Unknown state variable name: {sv_name}")
-            sv_interested.add(sv)
-        for sli_func in reversed(candidate.funcs):
-            sv_read, sv_written = self.defi.get_func_rw_set(sli_func)
-            if not sv_written.intersection(sv_interested):
-                return True
-            # Not sound yet
-            # sv_interested -= sv_written
-            sv_interested_new = set()
-            for sv_w in sv_written:
-                for sv_r in sv_read:
-                    if is_dependent(sv_w, sv_r, sli_func):
-                        sv_interested_new.add(sv_r)
-                    # Hacking
-                    if sv_r.name == "_owner":
-                        sv_interested_new.add(sv_r)
-            sv_interested = sv_interested.union(sv_interested_new)
-        return False
-
-    def pruned_by_ai(self, candidate: Candidate) -> bool:
-        # AI Pruning, Hacking
-        for i in reversed(range(0, len(candidate.funcs) - 1)):
-            sli_func = candidate.funcs[i]
-            target_ctrts: List[SliContract] = []
-            if sli_func.name == "transferFrom":
-                target_ctrts = [sli_func.contract]
-            else:
-                ext_calls = self.defi.ext_calls.get(sli_func.canonical_name, [])
-                for e_call in ext_calls:
-                    if e_call.name == "transferFrom":
-                        target_ctrts.append(e_call.contract)
-            if len(target_ctrts) == 0:
-                continue
-            if i == 0:
-                return True
-            approved = True
-            before = candidate.funcs[0 : i - 1]
-            for ctrt in target_ctrts:
-                approve_func = get_function_by_name(ctrt, "approve")
-                if approve_func is None:
-                    raise ValueError("Error IERC20 contract.")
-                if approve_func not in before:
-                    approved = False
-            if not approved:
-                return True
-
-    def is_groundtruth(self, candidate: Candidate) -> bool:
-        return self.defi.is_groundtruth(candidate.funcs)
-
-    def mock_eval(self, output_path: str):
-        i = 0
-        df = pd.DataFrame(columns=["index", "candidate", "pruned_by_rw", "pruned_by_ai"])
-        for c in self.iter_candidate():
-            i += 1
-            if self.pruned_by_gsv(c):
-                df.loc[len(df.index)] = [i, str(c), True, False]
-            elif self.pruned_by_ai(c):
-                df.loc[len(df.index)] = [i, str(c), False, True]
-            else:
-                df.loc[len(df.index)] = [i, str(c), False, False]
-            if self.is_groundtruth(c):
-                break
-        df.loc[len(df.index)] = [i, "Sum", df["pruned_by_rw"].sum(), df["pruned_by_ai"].sum()]
-        df.to_csv(output_path, index=False)

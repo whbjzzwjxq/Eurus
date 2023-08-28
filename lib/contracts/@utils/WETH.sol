@@ -13,6 +13,7 @@ contract WETH is IERC20 {
     mapping(address => mapping(address => uint256)) allowed;
 
     uint256 internal _totalSupply;
+    uint8 public constant decimals = 18;
 
     constructor(uint256 totalSupply_) {
         _totalSupply = totalSupply_;

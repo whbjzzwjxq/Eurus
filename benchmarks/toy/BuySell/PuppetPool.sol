@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+// import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "@utils/UniswapV1.sol";
 
-contract PuppetPool is ReentrancyGuard {
+// contract PuppetPool is ReentrancyGuard {
+contract PuppetPool {
     UniswapV1 uniswap;
     IERC20 token;
     IERC20 weth;
@@ -27,7 +28,8 @@ contract PuppetPool is ReentrancyGuard {
         uniswap = UniswapV1(uniswapPair_);
     }
 
-    function borrowWETH(uint256 borrowAmount) public nonReentrant {
+    // function borrowWETH(uint256 borrowAmount) public nonReentrant {
+    function borrowWETH(uint256 borrowAmount) public {
         uint256 depositRequired = calculateDepositRequired(borrowAmount);
 
         // Fails if the user doesn't have enough tokens in liquidity

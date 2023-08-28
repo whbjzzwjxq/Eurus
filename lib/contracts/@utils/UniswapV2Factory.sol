@@ -15,16 +15,27 @@ contract UniswapV2Factory is IUniswapV2Factory {
     mapping(address => mapping(address => address)) public override getPair;
     address[] public override allPairs;
 
-    constructor(address _feeToSetter, address[4] memory pairs) {
-        allPairs = pairs;
-        for (uint256 i = 0; i <= 3; i++) {
-            if (pairs[i] != address(0x0)) {
-                address token0 = UniswapV2Pair(pairs[i]).token0();
-                address token1 = UniswapV2Pair(pairs[i]).token1();
-                getPair[token0][token1] = pairs[i];
-                getPair[token1][token0] = pairs[i];
-            }
-        }
+    constructor(address _feeToSetter, address pair0, address pair1, address pair2) {
+        address token0;
+        address token1;
+
+        allPairs[0] = pair0;
+        token0 = UniswapV2Pair(pair0).token0();
+        token1 = UniswapV2Pair(pair0).token1();
+        getPair[token0][token1] = pair0;
+        getPair[token1][token0] = pair0;
+
+        allPairs[1] = pair1;
+        token0 = UniswapV2Pair(pair1).token0();
+        token1 = UniswapV2Pair(pair1).token1();
+        getPair[token0][token1] = pair1;
+        getPair[token1][token0] = pair1;
+
+        allPairs[2] = pair2;
+        token0 = UniswapV2Pair(pair2).token0();
+        token1 = UniswapV2Pair(pair2).token1();
+        getPair[token0][token1] = pair2;
+        getPair[token1][token0] = pair2;
         feeToSetter = _feeToSetter;
     }
 

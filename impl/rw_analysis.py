@@ -1,8 +1,12 @@
-from typing import Iterable, List, Set, Union
+from typing import Iterable, List, Set, Union, Tuple, Dict
 
 import graphviz
 
-from .utils_slither import SliContract, SliFunction, SliVariable
+from .utils import CornerCase
+from .utils_slither import *
+from .defi import Defi
+
+RW_SET = Tuple[Set[SliVariable], Set[SliVariable]]
 
 
 class RWNode:
@@ -154,3 +158,111 @@ class RWGraph:
             for d in e.dest:
                 graph.edge(mid_name, "v" + str(d.index), tailclip="false")
         graph.save(output_path)
+
+
+class RWResult:
+    def __init__(self, defi: Defi) -> None:
+        self.defi = defi
+        self._rw_set: Dict[str, RW_SET] = {}
+        self._rw_graph: RWGraph = self._init_rw_graph()
+        self._ext_calls: Dict[str, List[SliFunction]] = {}
+
+    def _init_rw_graph(self) -> RWGraph:
+        static_graph = RWGraph()
+        for f in self.pub_actions:
+            sv_read, sv_written = self.get_func_rw_set(f)
+            source_nodes = static_graph.add_or_get_nodes(sv_read)
+            dest_nodes = static_graph.add_or_get_nodes(sv_written)
+            if len(source_nodes) == 0 and len(dest_nodes) == 0:
+                continue
+            static_graph.add_edge(source_nodes, dest_nodes, f)
+        return static_graph
+
+    def track_var_without_addr(self, func: SliFunction) -> RW_SET:
+        """
+        This track algorithm is imprecise, because it doesn't inline the address information.
+        """
+        # Analyze normal storage variables usage.
+        sv_read = set(func.state_variables_read)
+        sv_written = set(func.state_variables_written)
+
+        # Analyze external calls.
+        for e_call_expr in func.external_calls_as_expressions:
+            possible_e_calls = self.get_external_call_funcs(e_call_expr)
+            if possible_e_calls is None:
+                continue
+            if func.name not in self._ext_calls:
+                self._ext_calls[func.canonical_name] = []
+            self._ext_calls[func.canonical_name].extend(possible_e_calls)
+            for e_call in possible_e_calls:
+                e_sv_read, e_sv_written = self.get_func_rw_set(e_call)
+                sv_read = sv_read.union(e_sv_read)
+                sv_written = sv_written.union(e_sv_written)
+
+        # Analyze internal calls
+        for i_call in func.internal_calls:
+            if isinstance(i_call, SliFunction):
+                i_sv_read, i_sv_written = self.get_func_rw_set(i_call)
+                sv_read = sv_read.union(i_sv_read)
+                sv_written = sv_written.union(i_sv_written)
+
+        sv_read_n = set()
+        for sv in sv_read:
+            # Remove constant, immutable variables
+            if sv.is_constant or sv.is_immutable:
+                continue
+            # Remove contract variable
+            if sv.type == SliUserDefinedType:
+                continue
+            sv_read_n.add(sv)
+        return sv_read_n, sv_written
+
+    def print_rw_graph(self, output_path: str):
+        self.rw_graph.draw_graphviz(output_path)
+
+    def get_func_rw_set(self, func: SliFunction) -> RW_SET:
+        if func.canonical_name not in self._rw_set:
+            s = self.track_var_without_addr(func)
+            self._rw_set[func.canonical_name] = s
+        return self._rw_set[func.canonical_name]
+
+    def get_external_call_funcs(self, e_call_expr: SliExpression) -> Optional[List[SliFunction]]:
+        if not isinstance(e_call_expr.called, SliMemberAccess):
+            return None
+        called: SliMemberAccess = e_call_expr.called
+        if isinstance(called.expression, SliTypeConversion):
+            ctrt_interface = called.expression.type.type
+            return self.get_function_by_interface(ctrt_interface, called.member_name)
+        if isinstance(called.expression, SliIdentifier):
+            called_expression: SliIdentifier = called.expression
+            called_value: SliVariable = called_expression.value
+            # Call a library: Math.min(a, b);
+            if isinstance(called_value, SliContract):
+                if called_value.is_library:
+                    return None
+                else:
+                    raise CornerCase("TODO")
+            # Call a contract initialized by variable: token.transferFrom(a, b, amt);
+            # token is a state variable or local variable
+            elif isinstance(called_value, SliStateVariable) or isinstance(called_value, SliLocalVariable):
+                if not isinstance(called_value.type, SliUserDefinedType):
+                    return None
+                precise_func = self.get_function_by_canonical_name(called_value.canonical_name, called.member_name)
+                if precise_func is not None:
+                    return [precise_func]
+                imprecise_func = self.get_function_by_method_name(called.member_name)
+                return imprecise_func
+            elif isinstance(called_value, SolidityVariable):
+                return None
+            else:
+                raise CornerCase("TODO")
+        type_str = getattr(called.expression, "type", None)
+        if type_str is not None:
+            # Inline library call: A.add(B), A.type == uint256.
+            return None
+        else:
+            return None
+
+    @property
+    def rw_graph(self) -> RWGraph:
+        return self._rw_graph

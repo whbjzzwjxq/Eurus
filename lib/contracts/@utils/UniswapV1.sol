@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
 
 // Simpified version of UniswapV1
 contract UniswapV1 {
@@ -27,9 +26,18 @@ contract UniswapV1 {
         return weth.balanceOf(address(this));
     }
 
+    function min(uint256 a, uint256 b) internal pure returns (uint256) {
+        if (a > b) {
+            return b;
+        } else {
+            return a;
+        }
+    }
+
     function swapTokenToWETH(uint256 tokenAmount) public {
-        uint256 expectedWETH = (tokenAmount * wethBalance() + offset) / (tokenBalance() + offset);
-        uint256 wethCounter = Math.min(expectedWETH, wethBalance());
+        uint256 expectedWETH = (tokenAmount * wethBalance() + offset) /
+            (tokenBalance() + offset);
+        uint256 wethCounter = min(expectedWETH, wethBalance());
         uint256 feeCounter = (wethCounter * fee) / deno;
         uint256 wethAmount = wethCounter - feeCounter;
         bool succeed = token.transferFrom(
@@ -42,8 +50,9 @@ contract UniswapV1 {
     }
 
     function swapWETHToToken(uint256 wethAmount) public {
-        uint256 expectedToken = (wethAmount * tokenBalance() + offset) / (wethBalance() + offset);
-        uint256 tokenCounter = Math.min(expectedToken, tokenBalance());
+        uint256 expectedToken = (wethAmount * tokenBalance() + offset) /
+            (wethBalance() + offset);
+        uint256 tokenCounter = min(expectedToken, tokenBalance());
         uint256 feeCounter = (tokenCounter * fee) / deno;
         uint256 tokenAmount = tokenCounter - feeCounter;
         bool succeed = weth.transferFrom(msg.sender, address(this), wethAmount);

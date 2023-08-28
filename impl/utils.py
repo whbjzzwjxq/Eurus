@@ -2,7 +2,7 @@ import json
 import re
 from dataclasses import dataclass, field
 from os import path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 ether = 10**18
 gwei = 10**10
@@ -41,12 +41,24 @@ class FrozenObject(RuntimeError):
 
 
 @dataclass
+class DefiRoles:
+    is_asset: bool = False
+    is_stablecoin: bool = False
+    is_defientry: bool = False
+    is_swappair: bool = False
+    support_swaps: Dict[str, List] = field(default_factory=dict)
+    hacked_asset: Optional[str] = None
+
+
+@dataclass
 class Config:
     project_name: str = "None"
     contract_names: List[str] = field(default_factory=list)
     contract_names_mapping: Dict[str, str] = field(default_factory=dict)
-    groundtruth: List[str] = field(default_factory=list)
     attack_state_variables: List[str] = field(default_factory=list)
+
+    groundtruth: List[str] = field(default_factory=list)
+    roles: Dict[str, DefiRoles]
 
 
 def init_config(bmk_dir: str) -> Config:
