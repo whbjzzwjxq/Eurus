@@ -39,16 +39,16 @@
             "is_defientry": true,
             "is_swappair": true,
             "support_swaps": {
-                "ERC20Basic": ["WETH"]
+                "ERC20Basic": ["ERC20Basic", "WETH"]
             },
-            "hacked_asset": "WETH"
+            "hacked_assets": ["WETH"]
         },
         "UniswapV1": {
             "is_defientry": false,
             "is_swappair": true,
             "support_swaps": {
-                "ERC20Basic": ["WETH"],
-                "WETH": ["ERC20Basic"]
+                "ERC20Basic": ["ERC20Basic", "WETH"],
+                "WETH": ["WETH", "ERC20Basic"]
             }
         }
     }

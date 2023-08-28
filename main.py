@@ -7,7 +7,7 @@ from subprocess import DEVNULL, PIPE, Popen, TimeoutExpired
 from typing import List
 
 from impl.defi import Defi
-from impl.synthesizer import Synthesizer
+from impl.synthesizer import Synthesizer, OldSynthesizer
 from impl.output2racket import output_defi
 
 parser = argparse.ArgumentParser()
@@ -15,6 +15,7 @@ parser.add_argument("-i", "--input", help="Target contract directory.", default=
 parser.add_argument("-f", "--forge", help="Do the forge invariant test.", action="store_true")
 parser.add_argument("--rwgraph", help="Generate the Read/Write analysis graph.", action="store_true")
 parser.add_argument("-m", "--mockeval", help="Mock the evaluation.", action="store_true")
+parser.add_argument("-e", "--eval", help="Do the evaluation.", action="store_true")
 parser.add_argument("-p", "--print", help="Print statistic.", action="store_true")
 parser.add_argument("--outputrkt", help="Output to Racket.", action="store_true")
 parser.add_argument("--timeout", help="Timeout.", type=int, default=3600)
@@ -102,7 +103,7 @@ def forge_test(bmk_dir: str, timeout: int):
 
 def mock_evaluate(bmk_dir: str):
     defi = Defi(bmk_dir)
-    synthesizer = Synthesizer(defi)
+    synthesizer = OldSynthesizer(defi)
     output_path = path.abspath(path.join(bmk_dir, "_rw_eval.csv"))
     synthesizer.mock_eval(output_path)
 
@@ -123,21 +124,22 @@ def output2racket(bmk_dir: str):
 def evaluate(bmk_dir: str):
     defi = Defi(bmk_dir)
     synthesizer = Synthesizer(defi)
-    output_path = path.abspath(path.join(bmk_dir, "_rw_eval.csv"))
-    synthesizer.eval(output_path)
+    output_path = path.abspath(path.join(bmk_dir, f"{defi.config.project_name}_Candidates.txt"))
+    synthesizer.print_sol(output_path)
 
 
 def _main():
     args = parser.parse_args()
     bmk_dirs = get_bmk_dirs(args.input)
     for bmk_dir in bmk_dirs:
-        initial_data_file = path.join(bmk_dir, "_data.json")
         if args.forge:
             forge_test(bmk_dir, args.timeout)
         if args.rwgraph:
             generate_rw_graph(bmk_dir)
         if args.mockeval:
             mock_evaluate(bmk_dir)
+        if args.eval:
+            evaluate(bmk_dir)
         if args.outputrkt:
             output2racket(bmk_dir)
 

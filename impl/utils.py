@@ -1,3 +1,4 @@
+from collections import defaultdict
 import json
 import re
 from dataclasses import dataclass, field
@@ -46,8 +47,8 @@ class DefiRoles:
     is_stablecoin: bool = False
     is_defientry: bool = False
     is_swappair: bool = False
-    support_swaps: Dict[str, List] = field(default_factory=dict)
-    hacked_asset: Optional[str] = None
+    support_swaps: Dict[str, List[str]] = field(default_factory=dict)
+    hacked_assets: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -58,7 +59,13 @@ class Config:
     attack_state_variables: List[str] = field(default_factory=list)
 
     groundtruth: List[str] = field(default_factory=list)
-    roles: Dict[str, DefiRoles]
+    roles: Dict[str, DefiRoles] = field(default_factory=dict)
+
+    def __post_init__(self):
+        keys = list(self.roles.keys())
+        for k in keys:
+            r = DefiRoles(**self.roles[k])
+            self.roles[k] = r
 
 
 def init_config(bmk_dir: str) -> Config:

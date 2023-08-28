@@ -35,7 +35,8 @@ def gen_slither(bmk_dir: str) -> Slither:
     solc_remaps = [
         f"@openzeppelin/={lib_dir}/contracts/@openzeppelin/",
         f"@utils/={lib_dir}/contracts/@utils/",
-        f"@uniswapv2={lib_dir}/contracts/@uniswapv2",
+        f"@uniswapv2/={lib_dir}/contracts/@uniswapv2/",
+        f"@halmos/={lib_dir}/contracts/@halmos/src/",
         f"forge-std={lib_dir}/forge-std/src",
         f"ds-test={lib_dir}/forge-std/lib/ds-test/src",
     ]
