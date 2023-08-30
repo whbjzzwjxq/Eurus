@@ -121,7 +121,7 @@ def output2racket(bmk_dir: str):
     with open(output_path, "w") as f:
         json.dump(obj, f)
 
-def evaluate(bmk_dir: str):
+def prepare(bmk_dir: str):
     defi = Defi(bmk_dir)
     synthesizer = Synthesizer(defi)
     output_path = path.abspath(path.join(bmk_dir, f"{defi.config.project_name}_Candidates.txt"))
@@ -132,14 +132,14 @@ def _main():
     args = parser.parse_args()
     bmk_dirs = get_bmk_dirs(args.input)
     for bmk_dir in bmk_dirs:
+        if args.prepare:
+            prepare(bmk_dir)
         if args.forge:
             forge_test(bmk_dir, args.timeout)
         if args.rwgraph:
             generate_rw_graph(bmk_dir)
         if args.mockeval:
             mock_evaluate(bmk_dir)
-        if args.eval:
-            evaluate(bmk_dir)
         if args.outputrkt:
             output2racket(bmk_dir)
 

@@ -13,11 +13,17 @@ contract UniswapV2Factory is IUniswapV2Factory {
     address public override feeToSetter;
 
     mapping(address => mapping(address => address)) public override getPair;
-    address[] public override allPairs;
+    address[3] public override allPairs;
 
-    constructor(address _feeToSetter, address pair0, address pair1, address pair2) {
+    constructor(
+        address _feeToSetter,
+        address pair0,
+        address pair1,
+        address pair2
+    ) {
         address token0;
         address token1;
+        feeToSetter = _feeToSetter;
 
         allPairs[0] = pair0;
         token0 = UniswapV2Pair(pair0).token0();
@@ -25,18 +31,22 @@ contract UniswapV2Factory is IUniswapV2Factory {
         getPair[token0][token1] = pair0;
         getPair[token1][token0] = pair0;
 
-        allPairs[1] = pair1;
-        token0 = UniswapV2Pair(pair1).token0();
-        token1 = UniswapV2Pair(pair1).token1();
-        getPair[token0][token1] = pair1;
-        getPair[token1][token0] = pair1;
+        if (pair1 != address(0x0)) {
+            allPairs[1] = pair1;
+            token0 = UniswapV2Pair(pair1).token0();
+            token1 = UniswapV2Pair(pair1).token1();
+            getPair[token0][token1] = pair1;
+            getPair[token1][token0] = pair1;
+        }
 
-        allPairs[2] = pair2;
-        token0 = UniswapV2Pair(pair2).token0();
-        token1 = UniswapV2Pair(pair2).token1();
-        getPair[token0][token1] = pair2;
-        getPair[token1][token0] = pair2;
-        feeToSetter = _feeToSetter;
+        if (pair2 != address(0x0)) {
+            allPairs[2] = pair2;
+            token0 = UniswapV2Pair(pair2).token0();
+            token1 = UniswapV2Pair(pair2).token1();
+            getPair[token0][token1] = pair2;
+            getPair[token1][token0] = pair2;
+            feeToSetter = _feeToSetter;
+        }
     }
 
     function allPairsLength() external view override returns (uint256) {

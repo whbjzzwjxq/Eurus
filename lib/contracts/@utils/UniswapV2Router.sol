@@ -7,11 +7,11 @@ pragma solidity ^0.8.0;
 //solhint-disable reason-string
 
 import "@uniswapv2/contracts/interfaces/IUniswapV2Factory.sol";
-import "./TransferHelper.sol";
-
 import "@uniswapv2/contracts/interfaces/IUniswapV2Router.sol";
-import "@uniswapv2/contracts/libraries/UniswapV2Library.sol";
 import "@uniswapv2/contracts/interfaces/IWETH.sol";
+
+import "./TransferHelper.sol";
+import "./UniswapV2Library.sol";
 
 contract UniswapV2Router is IUniswapV2Router {
     address public immutable override factory;
@@ -164,7 +164,7 @@ contract UniswapV2Router is IUniswapV2Router {
         address pair = UniswapV2Library.pairFor(factory, tokenA, tokenB);
         IUniswapV2Pair(pair).transferFrom(msg.sender, pair, liquidity); // send liquidity to pair
         (uint256 amount0, uint256 amount1) = IUniswapV2Pair(pair).burn(to);
-        (address token0, ) = UniswapV2Library.sortTokens(tokenA, tokenB);
+        (address token0, ) = UniswapV2Library.sortTokens(factory, tokenA, tokenB);
         (amountA, amountB) = tokenA == token0
             ? (amount0, amount1)
             : (amount1, amount0);
@@ -348,7 +348,7 @@ contract UniswapV2Router is IUniswapV2Router {
     ) internal virtual {
         for (uint256 i; i < path.length - 1; i++) {
             (address input, address output) = (path[i], path[i + 1]);
-            (address token0, ) = UniswapV2Library.sortTokens(input, output);
+            (address token0, ) = UniswapV2Library.sortTokens(factory, input, output);
             uint256 amountOut = amounts[i + 1];
             (uint256 amount0Out, uint256 amount1Out) = input == token0
                 ? (uint256(0), amountOut)
@@ -544,7 +544,7 @@ contract UniswapV2Router is IUniswapV2Router {
     ) internal virtual {
         for (uint256 i; i < path.length - 1; i++) {
             (address input, address output) = (path[i], path[i + 1]);
-            (address token0, ) = UniswapV2Library.sortTokens(input, output);
+            (address token0, ) = UniswapV2Library.sortTokens(factory, input, output);
             IUniswapV2Pair pair = IUniswapV2Pair(
                 UniswapV2Library.pairFor(factory, input, output)
             );

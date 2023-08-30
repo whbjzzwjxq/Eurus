@@ -54,6 +54,14 @@ contract BuySellTest is Test, BlockLoader, SymTest {
         vm.stopPrank();
     }
 
+    function self() internal view returns (address) {
+        return address(this);
+    }
+
+    function nop() internal pure {
+        return;
+    }
+
     function printBalance(string memory tips) public {
         emit log_string(tips);
         address attacker = self();
@@ -72,14 +80,6 @@ contract BuySellTest is Test, BlockLoader, SymTest {
         queryERC20BalanceDecimals(address(token), pool_, token.decimals());
         emit log_string("");
         emit log_string("");
-    }
-
-    function self() internal view returns (address) {
-        return address(this);
-    }
-
-    function nop() internal pure {
-        return;
     }
 
     function borrow_ERC20Basic(uint256 amount) internal {
@@ -118,7 +118,7 @@ contract BuySellTest is Test, BlockLoader, SymTest {
         weth.transfer(owner, amount);
     }
 
-    function testAttackGT() public {
+    function test_gt() public {
         printBalance("Before exploit: ");
 
         borrow_WETH(uniswapInitBalance);
@@ -132,7 +132,7 @@ contract BuySellTest is Test, BlockLoader, SymTest {
         require(attackGoal(), "Attack Failed!");
     }
 
-    function testHalmosOutput0() public {
+    function test_cand0() public {
         // Corresponds to check_cand0, failed.
         borrow_ERC20Basic(0x1eeb1035f37840004f);
         swap_UniswapV1_ERC20Basic_WETH(0x1eeb1035f37840004f);
@@ -145,7 +145,7 @@ contract BuySellTest is Test, BlockLoader, SymTest {
         require(attackGoal(), "Attack Failed!");
     }
 
-    function testHalmosOutput1() public {
+    function test_cand1() public {
         // Corresponds to check_cand1, passed.
         // It is not the best, but could prove the attacker could earn more than 1 ether.
         borrow_WETH(0x2a3439b65f577c0200);

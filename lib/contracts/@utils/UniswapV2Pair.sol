@@ -33,6 +33,7 @@ contract UniswapV2Pair is UniswapV2ERC20, IUniswapV2Pair {
     uint256 public override kLast; // reserve0 * reserve1, as of immediately after the most recent liquidity event
 
     uint256 private unlocked = 1;
+
     modifier lock() {
         require(unlocked == 1, "UniswapV2: LOCKED");
         unlocked = 0;
@@ -72,10 +73,6 @@ contract UniswapV2Pair is UniswapV2ERC20, IUniswapV2Pair {
         uint256 _kLast
     ) {
         factory = msg.sender;
-        require(
-            _token0 < _token1,
-            "address of token0 must be less than token1"
-        );
         token0 = _token0;
         token1 = _token1;
         reserve0 = _reserve0;
