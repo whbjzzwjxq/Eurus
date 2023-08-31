@@ -8,13 +8,6 @@ ctrt_name_mapping:
   "factory": "UniswapV2Factory"
   "router": "UniswapV2Router"
 
-deployments:
-  - ["mu", "new Mu(totalSupplymu)"]
-  - ["usdce", ""]
-  - ["pair", ""]
-  - ["factory", ""]
-  - ["router", ""]
-
 tokens:
   - "mu"
   - "usdce"
@@ -26,37 +19,58 @@ token_users:
 uniswap_mapping:
   "pair": ["usdce", "mu"]
 
+actions:
+  - "function swap_mubank_usdce_mu(uint256 sendAmount) internal {
+    usdce.approve(address(mubank), type(uint).max);
+    mubank.mu_bond(address(usdce), sendAmount);
+    }"
+
+# For contract deployment
+deployments:
+  - ["mu", "new Mu(totalSupplymu)"]
+  - ["usdce", ""]
+  - ["pair", ""]
+  - ["factory", ""]
+  - ["router", ""]
+  - ["mubank", "new MuBank(address(router), address(pair), address(mu))"]
+
+# For extra deployment after the contract deployment
 extra_deployments: []
 
+attack_goal:
+  "usdce.balanceOf(attacker) >= 10e6"
+
+groundtruth:
+  - ["borrow_mu", "99000 ether"]
+  - ["swap_pair_mu_usdce", "99000 ether"]
+  - ["swap_mubank_usdce_mu", "22960 ether"]
+  - ["nop", "0"]
+  - ["payback_mu", "99300 ether"]
+
+gt_constraints:
+  - "vm.assume(amt0 == amt1);"
+  - "vm.assume(amt4 == amt0 + 300 ether);"
 
 # Extra Information
 roles:
-  "USDCE":
+  "usdce":
     is_asset: true
     is_stablecoin: true
-  "Mu":
+  "mu":
     is_asset: true
     is_stablecoin: false
-  "MuBank":
+  "mubank":
     is_swappair: true
     support_swaps:
-      "Mu":
-        - "Mu"
-        - "USDCE"
-  "UniswapV2Pair":
+      "mu":
+        - "mu"
+        - "usdce"
+  "pair":
     is_swappair: true
     support_swaps:
-      "Mu":
-        - "Mu"
-        - "USDCE"
-
-
-groundtruth:
-  - "borrow_Mu"
-  - "swap_UniswapV2Pair_Mu_USDCE"
-  - "swap_MuBank_USDCE_Mu"
-  - "nop"
-  - "payback_Mu"
+      "mu":
+        - "mu"
+        - "usdce"
 
 # Not used currently
 contract_names_mapping:
@@ -65,6 +79,5 @@ contract_names_mapping:
   "PuppetPool.token": "ERC20Basic"
   "PuppetPool.weth": "WETH"
   "PuppetPool.uniswap": "UniswapV1"
-# Not used currently
 attack_state_variables:
   - "WETH.balances"

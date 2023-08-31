@@ -18,13 +18,17 @@ class DefiRoles:
 class Config:
     project_name: str = "None"
     ctrt_name_mapping: Dict[str, str] = field(default_factory=dict)
-    deployments: List[Tuple[str, str]] = field(default_factory=list)
     tokens: List[str] = field(default_factory=list)
     token_users: List[str] = field(default_factory=list)
     uniswap_mapping: Dict[str, Tuple[str, str]] = field(default_factory=dict)
+    actions: List[str] = field(default_factory=list)
+    deployments: List[Tuple[str, str]] = field(default_factory=list)
     extra_deployments: List[str] = field(default_factory=list)
+    attack_goal: str = ""
+    groundtruth: List[Tuple[str, str]] = field(default_factory=list)
+    gt_constraints: List[str] = field(default_factory=list)
+    
 
-    groundtruth: List[str] = field(default_factory=list)
     roles: Dict[str, DefiRoles] = field(default_factory=dict)
 
     # Not used

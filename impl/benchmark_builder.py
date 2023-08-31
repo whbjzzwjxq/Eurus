@@ -38,7 +38,7 @@ class BenchmarkBuilder:
             "test",
             "-vv",
             "--match-path",
-            f"{bmk_dir}/{self.name}_query.t.sol"
+            f"{bmk_dir}/{self.name}_query.t.sol",
         ]
         try:
             proc = subprocess.run(
@@ -62,7 +62,7 @@ class BenchmarkBuilder:
                 continue
             result = [s for s in output.split(" ") if s != ""]
             if len(result) != 3:
-                raise ValueError(f"Unknown output: {result}")
+                continue
             type_str, sv_name, sv_val = result
             type_str = type_str.removeprefix(" ")
             sv_name = sv_name.removesuffix(":")
@@ -170,19 +170,130 @@ class BenchmarkBuilder:
         all.append("vm.stopPrank();")
         all.append("}")
         return all
-    
-    def gen_helper_functions(self) -> List[str]:
-        pass
+
+    def gen_helper_funcs(self) -> List[str]:
+        # Print balance.
+        printer = [
+            "function printBalance(string memory tips) public {",
+            "emit log_string(tips);",
+        ]
+        tokens = self.config.tokens
+        users = self.config.token_users + ["attacker"]
+        for u in users:
+            printer.append(f'emit log_string("{u.capitalize()} Balances: ");')
+            addr = f"address({u})" if u != "attacker" else u
+            for t in tokens:
+                printer.append(
+                    f"queryERC20BalanceDecimals(address({t}), {addr}, {t}.decimals());"
+                )
+            printer.append('emit log_string("");')
+        printer.append('emit log_string("");')
+        printer.append('emit log_string("");')
+        printer.append("}")
+
+        # Attack goal
+        attack_goal = [
+            "function attackGoal() public view returns (bool) {",
+            f"return {self.config.attack_goal};",
+            "}",
+        ]
+
+        nop = ["function nop(uint256 amount) internal pure {", "return;", "}"]
+
+        # Actions
+        actions = []
+        # flashloan borrow-payback
+        for t in self.config.tokens:
+            borrow = [
+                f"function borrow_{t}(uint256 amount) internal " + "{",
+                f"{t}.transferFrom(owner, attacker, amount);",
+                "}",
+            ]
+            payback = [
+                f"function payback_{t}(uint256 amount) internal " + "{",
+                f"{t}.transfer(owner, amount);",
+                "}",
+            ]
+            actions.extend(borrow)
+            actions.extend(payback)
+
+        # swap by uniswap
+        router_name = "router"
+        for u, t in self.config.uniswap_mapping.items():
+            token0, token1 = t
+            swap0 = [
+                f"function swap_{u}_{token0}_{token1}(uint256 amount) internal" + "{",
+                f"{token0}.approve(address({router_name}), type(uint).max);",
+                f"address[] memory path = new address[](2);",
+                f"path[0] = address({token0});",
+                f"path[1] = address({token1});",
+                f"router.swapExactTokensForTokensSupportingFeeOnTransferTokens( \
+                    amount, 1, path, attacker, block.timestamp);",
+                "}",
+            ]
+            actions.extend(swap0)
+            token1, token0 = t
+            swap1 = [
+                f"function swap_{u}_{token0}_{token1}(uint256 amount) internal" + "{",
+                f"{token0}.approve(address({router_name}), type(uint).max);",
+                f"address[] memory path = new address[](2);",
+                f"path[0] = address({token0});",
+                f"path[1] = address({token1});",
+                f"router.swapExactTokensForTokensSupportingFeeOnTransferTokens( \
+                    amount, 1, path, attacker, block.timestamp);",
+                "}",
+            ]
+            actions.extend(swap1)
+
+        all = [*printer, *attack_goal, *nop, *actions, *self.config.actions]
+        return all
+
+    def gen_attack_temp_and_gt(self) -> List[str]:
+        # We assume every function only has one parameter.
+        params = [f"uint256 amt{idx}" for idx in range(len(self.config.groundtruth))]
+        attack_temp = [f'function attackTemp({",".join(params)}) public ' + "{"]
+        args = []
+        for idx, g in enumerate(self.config.groundtruth):
+            name, arg = g
+            args.append(arg)
+            attack_temp.append(f'printBalance("Before step{idx}: ");')
+            attack_temp.append(f"{name}(amt{idx});")
+        attack_temp.append(f'printBalance("After exploit: ");')
+        attack_temp.append("}")
+
+        args_str = ", ".join(args)
+        test_gt = [
+            "function test_gt() public {",
+            f"attackTemp({args_str});",
+            'require(attackGoal(), "Attack failed!");',
+            "}",
+        ]
+        args = [f"amt{idx}" for idx in range(len(self.config.groundtruth))]
+        check_gt = [
+            f'function check_gt({",".join(params)}) public ' + "{",
+            *self.config.gt_constraints,
+            f'attackTemp({",".join(args)});',
+            "assert(!attackGoal());",
+            "}",
+        ]
+        all = [*attack_temp, *test_gt, *check_gt]
+        return all
 
     def output(self, output_path: str):
+        if os.path.exists(output_path):
+            os.remove(output_path)
         results = [
             *self.gen_imports(),
             *self.gen_contract_header(),
             *self.gen_state_varibles(),
             *self.gen_setup(),
+            *self.gen_helper_funcs(),
+            *self.gen_attack_temp_and_gt(),
             "}",
         ]
         with open(output_path, "w") as f:
             for l in results:
                 f.write(l)
                 f.write("\n")
+
+        # Format

