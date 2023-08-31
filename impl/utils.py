@@ -1,9 +1,5 @@
-from collections import defaultdict
-import json
 import re
-from dataclasses import dataclass, field
-from os import path
-from typing import Dict, List, Optional
+from typing import List
 
 ether = 10**18
 gwei = 10**10
@@ -39,40 +35,3 @@ class FrozenObject(RuntimeError):
     """Don't add item in a freeze graph."""
 
     pass
-
-
-@dataclass
-class DefiRoles:
-    is_asset: bool = False
-    is_stablecoin: bool = False
-    is_defientry: bool = False
-    is_swappair: bool = False
-    support_swaps: Dict[str, List[str]] = field(default_factory=dict)
-    hacked_assets: List[str] = field(default_factory=list)
-
-
-@dataclass
-class Config:
-    project_name: str = "None"
-    contract_names: List[str] = field(default_factory=list)
-    contract_names_mapping: Dict[str, str] = field(default_factory=dict)
-    attack_state_variables: List[str] = field(default_factory=list)
-
-    groundtruth: List[str] = field(default_factory=list)
-    roles: Dict[str, DefiRoles] = field(default_factory=dict)
-
-    def __post_init__(self):
-        keys = list(self.roles.keys())
-        for k in keys:
-            r = DefiRoles(**self.roles[k])
-            self.roles[k] = r
-
-
-def init_config(bmk_dir: str) -> Config:
-    config_path = path.join(bmk_dir, "_config.json")
-    config_json = {}
-    if path.exists(config_path):
-        with open(config_path, "r") as f:
-            config_json = json.load(f)
-    config = Config(**config_json)
-    return config

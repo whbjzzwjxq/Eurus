@@ -4,9 +4,9 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract WETH is IERC20 {
-    string public constant name = "WrappedETH";
-    string public constant symbol = "WETH";
+contract Mu is IERC20 {
+    string public constant name = "MMMUUU";
+    string public constant symbol = "MU";
 
     mapping(address => uint256) balances;
 
@@ -15,8 +15,8 @@ contract WETH is IERC20 {
     uint256 internal _totalSupply;
     uint8 public constant decimals = 18;
 
-    constructor() {
-        _totalSupply = 3150548537808543021983692;
+    constructor(uint256 totalSupply_) {
+        _totalSupply = totalSupply_;
         balances[msg.sender] = _totalSupply;
     }
 

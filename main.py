@@ -8,16 +8,18 @@ from typing import List
 
 from impl.defi import Defi
 from impl.synthesizer import Synthesizer, OldSynthesizer
-from impl.output2racket import output_defi
+from impl.benchmark_builder import BenchmarkBuilder
+# from impl.output2racket import output_defi
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", help="Target contract directory.", default="")
+parser.add_argument("-p", "--prepare", help="Prepare the sol file to execute.", action="store_true")
 parser.add_argument("-f", "--forge", help="Do the forge invariant test.", action="store_true")
 parser.add_argument("--rwgraph", help="Generate the Read/Write analysis graph.", action="store_true")
 parser.add_argument("-m", "--mockeval", help="Mock the evaluation.", action="store_true")
 parser.add_argument("-e", "--eval", help="Do the evaluation.", action="store_true")
-parser.add_argument("-p", "--print", help="Print statistic.", action="store_true")
-parser.add_argument("--outputrkt", help="Output to Racket.", action="store_true")
+parser.add_argument("-s", "--statistic", help="Print statistic.", action="store_true")
+# parser.add_argument("--outputrkt", help="Output to Racket.", action="store_true")
 parser.add_argument("--timeout", help="Timeout.", type=int, default=3600)
 
 
@@ -114,19 +116,17 @@ def generate_rw_graph(bmk_dir: str):
     defi.print_rw_graph(output_path)
 
 
-def output2racket(bmk_dir: str):
-    defi = Defi(bmk_dir)
-    output_path = path.abspath(path.join(bmk_dir, "_defi_racket.json"))
-    obj = output_defi(defi)
-    with open(output_path, "w") as f:
-        json.dump(obj, f)
+# def output2racket(bmk_dir: str):
+#     defi = Defi(bmk_dir)
+#     output_path = path.abspath(path.join(bmk_dir, "_defi_racket.json"))
+#     obj = output_defi(defi)
+#     with open(output_path, "w") as f:
+#         json.dump(obj, f)
 
 def prepare(bmk_dir: str):
-    defi = Defi(bmk_dir)
-    synthesizer = Synthesizer(defi)
-    output_path = path.abspath(path.join(bmk_dir, f"{defi.config.project_name}_Candidates.txt"))
-    synthesizer.print_sol(output_path)
-
+    builder = BenchmarkBuilder(bmk_dir)
+    output_path = path.abspath(path.join(bmk_dir, f"{builder.config.project_name}.t.sol"))
+    builder.output(output_path)
 
 def _main():
     args = parser.parse_args()
@@ -140,8 +140,8 @@ def _main():
             generate_rw_graph(bmk_dir)
         if args.mockeval:
             mock_evaluate(bmk_dir)
-        if args.outputrkt:
-            output2racket(bmk_dir)
+        # if args.outputrkt:
+        #     output2racket(bmk_dir)
 
 
 if __name__ == "__main__":

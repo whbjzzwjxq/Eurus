@@ -36,7 +36,7 @@ contract BuySellTest is Test, BlockLoader, SymTest {
     function setUp() public {
         vm.startPrank(owner);
         token = new ERC20Basic(totalSupply);
-        weth = new WETH(totalSupply);
+        weth = new WETH();
         uniswap = new UniswapV1(address(token), address(weth), feeRate);
         puppetpool = new PuppetPool(
             address(token),

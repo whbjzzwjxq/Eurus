@@ -1,0 +1,48 @@
+project_name: "BuySell"
+contract_names:
+  - "ERC20Basic"
+  - "WETH"
+  - "UniswapV1"
+  - "PuppetPool"
+contract_names_mapping:
+  "UniswapV1.token": "ERC20Basic"
+  "UniswapV1.weth": "WETH"
+  "PuppetPool.token": "ERC20Basic"
+  "PuppetPool.weth": "WETH"
+  "PuppetPool.uniswap": "UniswapV1"
+attack_state_variables:
+  - "WETH.balances"
+groundtruth:
+  - "borrow_WETH"
+  - "swap_WETH_ERC20Basic_UniswapV1"
+  - "hackedAction_WETH_PuppetPool"
+  - "swap_ERC20Basic_WETH_UniswapV1"
+  - "nop"
+  - "nop"
+  - "payback_WETH"
+roles:
+  ERC20Basic:
+    is_asset: true
+    is_stablecoin: false
+  WETH:
+    is_asset: true
+    is_stablecoin: true
+  PuppetPool:
+    is_defientry: true
+    is_swappair: true
+    support_swaps:
+      ERC20Basic:
+        - "ERC20Basic"
+        - "WETH"
+    hacked_assets:
+      - "WETH"
+  UniswapV1:
+    is_defientry: false
+    is_swappair: true
+    support_swaps:
+      ERC20Basic:
+        - "ERC20Basic"
+        - "WETH"
+      WETH:
+        - "WETH"
+        - "ERC20Basic"

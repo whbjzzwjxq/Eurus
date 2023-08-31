@@ -1,0 +1,70 @@
+project_name: "MUMUG"
+
+ctrt_name_mapping:
+  "mubank": "MuBank"
+  "mu": "Mu"
+  "usdce": "USDCE"
+  "pair": "UniswapV2Pair"
+  "factory": "UniswapV2Factory"
+  "router": "UniswapV2Router"
+
+deployments:
+  - ["mu", "new Mu(totalSupplymu)"]
+  - ["usdce", ""]
+  - ["pair", ""]
+  - ["factory", ""]
+  - ["router", ""]
+
+tokens:
+  - "mu"
+  - "usdce"
+
+token_users:
+  - "mubank"
+  - "pair"
+
+uniswap_mapping:
+  "pair": ["usdce", "mu"]
+
+extra_deployments: []
+
+
+# Extra Information
+roles:
+  "USDCE":
+    is_asset: true
+    is_stablecoin: true
+  "Mu":
+    is_asset: true
+    is_stablecoin: false
+  "MuBank":
+    is_swappair: true
+    support_swaps:
+      "Mu":
+        - "Mu"
+        - "USDCE"
+  "UniswapV2Pair":
+    is_swappair: true
+    support_swaps:
+      "Mu":
+        - "Mu"
+        - "USDCE"
+
+
+groundtruth:
+  - "borrow_Mu"
+  - "swap_UniswapV2Pair_Mu_USDCE"
+  - "swap_MuBank_USDCE_Mu"
+  - "nop"
+  - "payback_Mu"
+
+# Not used currently
+contract_names_mapping:
+  "UniswapV1.token": "ERC20Basic"
+  "UniswapV1.weth": "WETH"
+  "PuppetPool.token": "ERC20Basic"
+  "PuppetPool.weth": "WETH"
+  "PuppetPool.uniswap": "UniswapV1"
+# Not used currently
+attack_state_variables:
+  - "WETH.balances"

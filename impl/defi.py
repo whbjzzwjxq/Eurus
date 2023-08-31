@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from .utils import Config, init_config
+from .config import Config, init_config
 from .utils_slither import SliContract, SliFunction, gen_slither
 
 
