@@ -274,7 +274,6 @@ class BenchmarkBuilder:
         check_gt = [
             f'function check_gt({",".join(params)}) public ' + "{",
             *[f"vm.assume({c});" for c in self.config.constraints],
-            *[f"vm.assume(amt{idx} > 0);" for idx in range(self.config.total_amt)],
             *func_body,
             "assert(!attackGoal());",
             "}",

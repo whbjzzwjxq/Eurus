@@ -2,12 +2,12 @@
 pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "@utils/QueryBlockchain.sol";
-import "./MuBank.sol";
-import "@utils/USDCE.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
-import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
-import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import "./Mu.sol";
+import "./MuBank.sol";
+import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
+import "@utils/USDCE.sol";
+import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 
 contract MUMUGTest is Test, BlockLoader {
     MuBank mubank;
@@ -171,12 +171,6 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.assume(amt5 == amt0 + 300 ether);
-        vm.assume(amt0 > 0);
-        vm.assume(amt1 > 0);
-        vm.assume(amt2 > 0);
-        vm.assume(amt3 > 0);
-        vm.assume(amt4 > 0);
-        vm.assume(amt5 > 0);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_mubank_usdce_mu(amt2);
@@ -193,12 +187,6 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.assume(amt5 == amt0 + 300 ether);
-        vm.assume(amt0 > 0);
-        vm.assume(amt1 > 0);
-        vm.assume(amt2 > 0);
-        vm.assume(amt3 > 0);
-        vm.assume(amt4 > 0);
-        vm.assume(amt5 > 0);
         borrow_usdce(amt0);
         swap_mubank_usdce_mu(amt1);
         swap_pair_mu_usdce(amt2);
@@ -215,12 +203,6 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.assume(amt5 == amt0 + 300 ether);
-        vm.assume(amt0 > 0);
-        vm.assume(amt1 > 0);
-        vm.assume(amt2 > 0);
-        vm.assume(amt3 > 0);
-        vm.assume(amt4 > 0);
-        vm.assume(amt5 > 0);
         borrow_usdce(amt0);
         swap_pair_usdce_mu(amt1);
         swap_pair_mu_usdce(amt2);
@@ -237,12 +219,6 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.assume(amt5 == amt0 + 300 ether);
-        vm.assume(amt0 > 0);
-        vm.assume(amt1 > 0);
-        vm.assume(amt2 > 0);
-        vm.assume(amt3 > 0);
-        vm.assume(amt4 > 0);
-        vm.assume(amt5 > 0);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_mubank_usdce_mu(amt2);
@@ -259,12 +235,6 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.assume(amt5 == amt0 + 300 ether);
-        vm.assume(amt0 > 0);
-        vm.assume(amt1 > 0);
-        vm.assume(amt2 > 0);
-        vm.assume(amt3 > 0);
-        vm.assume(amt4 > 0);
-        vm.assume(amt5 > 0);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_pair_usdce_mu(amt2);
@@ -281,12 +251,6 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.assume(amt5 == amt0 + 300 ether);
-        vm.assume(amt0 > 0);
-        vm.assume(amt1 > 0);
-        vm.assume(amt2 > 0);
-        vm.assume(amt3 > 0);
-        vm.assume(amt4 > 0);
-        vm.assume(amt5 > 0);
         borrow_usdce(amt0);
         swap_mubank_usdce_mu(amt1);
         swap_pair_mu_usdce(amt2);
@@ -304,12 +268,6 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.assume(amt5 == amt0 + 300 ether);
-        vm.assume(amt0 > 0);
-        vm.assume(amt1 > 0);
-        vm.assume(amt2 > 0);
-        vm.assume(amt3 > 0);
-        vm.assume(amt4 > 0);
-        vm.assume(amt5 > 0);
         borrow_usdce(amt0);
         swap_pair_usdce_mu(amt1);
         swap_pair_mu_usdce(amt2);
@@ -327,12 +285,6 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.assume(amt5 == amt0 + 300 ether);
-        vm.assume(amt0 > 0);
-        vm.assume(amt1 > 0);
-        vm.assume(amt2 > 0);
-        vm.assume(amt3 > 0);
-        vm.assume(amt4 > 0);
-        vm.assume(amt5 > 0);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_mubank_usdce_mu(amt2);
@@ -350,12 +302,6 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.assume(amt5 == amt0 + 300 ether);
-        vm.assume(amt0 > 0);
-        vm.assume(amt1 > 0);
-        vm.assume(amt2 > 0);
-        vm.assume(amt3 > 0);
-        vm.assume(amt4 > 0);
-        vm.assume(amt5 > 0);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_pair_usdce_mu(amt2);

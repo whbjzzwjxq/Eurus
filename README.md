@@ -23,7 +23,7 @@ forge test --match-path=./benchmarks/realworld/MUMUG/MUMUG.t.sol -vvvv
 
 ### Halmos (Example)
 ```bash
-halmos -vvvvv --function check_ --contract MUMUGTest --forge-build-out .cache --print-potential-counterexample --solver-timeout-branching 1000
+halmos -vvvvv --function check_cand --contract MUMUGTest --forge-build-out .cache --print-potential-counterexample --solver-timeout-branching 10000
 ```
 
 ## Tips
