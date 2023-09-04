@@ -10,6 +10,7 @@ from impl.utils import List
 from .defi import Defi
 from .utils import *
 from .utils_slither import *
+from .config import Config
 
 
 class SolCallType(Enum):
@@ -24,7 +25,9 @@ class SolCallType(Enum):
 
 
 class SolFunction:
-    def __init__(self, ctrt_name: str, func_name: str, func_types: List[SliElementaryType]):
+    def __init__(
+        self, ctrt_name: str, func_name: str, func_types: List[SliElementaryType]
+    ):
         self.ctrt_name = ctrt_name
         self.func_name = func_name
         self.func_types = func_types
@@ -59,7 +62,13 @@ class SolFunction:
 
 
 class ConcreteSolFunction(SolFunction):
-    def __init__(self, ctrt_name: str, func_name: str, func_types: List[SliElementaryType], func_args: list) -> None:
+    def __init__(
+        self,
+        ctrt_name: str,
+        func_name: str,
+        func_types: List[SliElementaryType],
+        func_args: list,
+    ) -> None:
         super().__init__(ctrt_name, func_name, func_types)
         not_none_args = [f for f in func_args if f is not None]
         if len(not_none_args) == 0:
@@ -155,7 +164,7 @@ class OldSynthesizer:
             approved = True
             before = candidate.funcs[0 : i - 1]
             for ctrt in target_ctrts:
-                approve_func = get_function_by_name(ctrt, "approve")
+                approve_func = self.defi.get_function_by_name(ctrt, "approve")
                 if approve_func is None:
                     raise ValueError("Error IERC20 contract.")
                 if approve_func not in before:
@@ -168,7 +177,9 @@ class OldSynthesizer:
 
     def mock_eval(self, output_path: str):
         i = 0
-        df = pd.DataFrame(columns=["index", "candidate", "pruned_by_rw", "pruned_by_ai"])
+        df = pd.DataFrame(
+            columns=["index", "candidate", "pruned_by_rw", "pruned_by_ai"]
+        )
         for c in self.iter_candidate():
             i += 1
             if self.pruned_by_gsv(c):
@@ -179,7 +190,12 @@ class OldSynthesizer:
                 df.loc[len(df.index)] = [i, str(c), False, False]
             if self.is_groundtruth(c):
                 break
-        df.loc[len(df.index)] = [i, "Sum", df["pruned_by_rw"].sum(), df["pruned_by_ai"].sum()]
+        df.loc[len(df.index)] = [
+            i,
+            "Sum",
+            df["pruned_by_rw"].sum(),
+            df["pruned_by_ai"].sum(),
+        ]
         df.to_csv(output_path, index=False)
 
 
@@ -191,11 +207,21 @@ class ArgumentType(Enum):
 
 
 class DSLAction:
-    action_name: str
-
-    def __init__(self, args_in_name: List[str], args: List[str]) -> None:
+    def __init__(
+        self, action_name: str, args_in_name: List[str], args: List[str]
+    ) -> None:
+        self.action_name = action_name
         self.args_in_name = args_in_name
         self.args = args
+
+    def __eq__(self, __value: "DSLAction") -> bool:
+        if self.action_name == "nop" and __value.action_name == "nop":
+            return True
+        return (
+            (self.action_name == __value.action_name)
+            and (self.args_in_name == __value.args_in_name)
+            and (self.args == __value.args)
+        )
 
     def __str__(self) -> str:
         func_names = "_".join([self.action_name, *self.args_in_name])
@@ -203,48 +229,178 @@ class DSLAction:
         return f"{func_names}({arg_names})"
 
 
-class Swap(DSLAction):
-    action_name: str = "swap"
+class NOP(DSLAction):
+    def __init__(self, args_in_name: List[str], args: List[str]) -> None:
+        super().__init__("nop", args_in_name, args)
 
+
+class Swap(DSLAction):
     def __init__(self, swap_pair: str, asset0: str, asset1: str, amount: str) -> None:
-        super().__init__([swap_pair, asset0, asset1], [amount])
+        if asset0 == asset1:
+            super().__init__("nop", [], [amount])
+            return
+        super().__init__("swap", [swap_pair, asset0, asset1], [amount])
         self.swap_pair = swap_pair
         self.asset0 = asset0
         self.asset1 = asset1
         self.amount = amount
 
-    def __str__(self) -> str:
-        if self.asset0 == self.asset1:
-            return "nop()"
-        else:
-            return super().__str__()
-
 
 class Borrow(DSLAction):
-    action_name: str = "borrow"
-
     def __init__(self, asset: str, amount: str) -> None:
-        super().__init__([asset], [amount])
+        super().__init__("borrow", [asset], [amount])
 
 
 class Payback(DSLAction):
-    action_name: str = "payback"
-
     def __init__(self, asset: str, amount: str) -> None:
-        super().__init__([asset], [amount])
+        super().__init__("payback", [asset], [amount])
 
 
 class HackedAction(DSLAction):
-    action_name: str = "hackedAction"
-
     def __init__(self, defi_entry: str, asset_hacked: str, amount: str) -> None:
-        super().__init__([defi_entry, asset_hacked], [amount])
+        super().__init__("hackedAction", [defi_entry, asset_hacked], [amount])
+
+
+class Sketch:
+
+    def __init__(self, actions: List[DSLAction]) -> None:
+        self.actions = actions
+
+    @property
+    def len(self):
+        return self.actions.__len__()
+    
+    @property
+    def pure_len(self):
+        return self.pure_actions.__len__()
+
+    @property
+    def pure_actions(self):
+        return [a for a in self.actions if a.action_name != "nop"]
+    
+    def __eq__(self, __value: "Sketch") -> bool:
+        if self.pure_len != __value.pure_len:
+            return False
+        pa0 = self.pure_actions
+        pa1 = __value.pure_actions
+        sames = [a == b for a, b in zip(pa0, pa1)]
+        return all(sames)
 
 
 class Synthesizer:
-    def __init__(self, defi: Defi):
-        self.defi = defi
-        self.roles = self.defi.config.roles
+    def __init__(self, config: Config):
+        self.config = config
+        self.roles = self.config.roles
+
+    def check_duplicated(
+        self, actions: Sketch, candidates: List[Sketch]
+    ) -> bool:
+        return any([actions == c for c in candidates])
+
+    def output(self) -> List[str]:
+        if self.config.pattern == "Price Discrepancy":
+            return self.gen_candidate_template_pricediscrepancy()
+        if self.config.pattern == "BuySell Manipulation":
+            return self.gen_candidate_template_buysell()
+        raise CornerCase("Unknown pattern!")
+
+    def gen_candidate_template_pricediscrepancy(self) -> List[str]:
+        assets = [k for k, v in self.roles.items() if v.is_asset]
+        stable_coins = [k for k, v in self.roles.items() if v.is_stablecoin]
+        swap_pairs = [k for k, v in self.roles.items() if v.is_swappair]
+
+        candidates: List[Sketch] = []
+        for (
+            asset0,
+            swap_pair0,
+            asset1,
+            swap_pair1,
+            swap_pair2,
+            stable_coin,
+            swap_pair3,
+        ) in itertools.product(
+            assets, swap_pairs, assets, swap_pairs, swap_pairs, stable_coins, swap_pairs
+        ):
+
+            if asset0 == asset1:
+                continue
+
+            # SwapPair 0
+            if asset1 not in self.roles[swap_pair0].support_swaps.get(asset0, []):
+                continue
+
+            # SwapPair 1
+            if asset0 not in self.roles[swap_pair1].support_swaps.get(asset1, []):
+                continue
+
+            # SwapPair 2
+            if stable_coin not in self.roles[swap_pair2].support_swaps.get(asset0, []):
+                continue
+
+            # SwapPair 3
+            if stable_coin not in self.roles[swap_pair3].support_swaps.get(asset1, []):
+                continue
+
+            actions0: List[DSLAction] = [
+                Borrow(asset0, "amt0"),
+                Swap(swap_pair0, asset0, asset1, "amt1"),
+                Swap(swap_pair1, asset1, asset0, "amt2"),
+                Payback(asset0, "amt5"),
+            ]
+
+            actions1: List[DSLAction] = [
+                Borrow(asset0, "amt0"),
+                Swap(swap_pair0, asset0, asset1, "amt1"),
+                Swap(swap_pair1, asset1, asset0, "amt2"),
+                Swap(swap_pair3, asset1, stable_coin, "amt4"),
+                Payback(asset0, "amt5"),
+            ]
+
+            actions2: List[DSLAction] = [
+                Borrow(asset0, "amt0"),
+                Swap(swap_pair0, asset0, asset1, "amt1"),
+                Swap(swap_pair1, asset1, asset0, "amt2"),
+                Swap(swap_pair2, asset0, stable_coin, "amt3"),
+                Payback(asset0, "amt5"),
+            ]
+
+            actions3: List[DSLAction] = [
+                Borrow(asset0, "amt0"),
+                Swap(swap_pair0, asset0, asset1, "amt1"),
+                Swap(swap_pair1, asset1, asset0, "amt2"),
+                Swap(swap_pair2, asset0, stable_coin, "amt3"),
+                Swap(swap_pair3, asset1, stable_coin, "amt4"),
+                Payback(asset0, "amt5"),
+            ]
+
+            skecthes = [
+                Sketch(actions0),
+                Sketch(actions1),
+                Sketch(actions2),
+                Sketch(actions3),
+            ]
+
+            for s in skecthes:
+                if not self.check_duplicated(s, candidates):
+                    candidates.append(s)
+
+        candidates = sorted(candidates, key=lambda s: s.pure_len)
+        func_bodys = []
+        for idx, c in enumerate(candidates):
+            action_str = "".join([f"{str(s)};\n" for s in c.pure_actions])
+            constraint_str = "".join(
+                [f"vm.assume({c});\n" for c in self.config.constraints]
+            )
+            param_str = ",".join([f"uint256 amt{i}" for i in range(self.config.total_amt)])
+            func_body = f"""
+                function check_cand{idx}({param_str}) public {{
+                        {constraint_str + action_str}
+                        assert(!attackGoal());
+                    }}
+
+            """
+            func_bodys.append(func_body)
+        return func_bodys
 
     def gen_candidate_template_buysell(self) -> List[str]:
         assets = [k for k, v in self.roles.items() if v.is_asset]
@@ -256,9 +412,7 @@ class Synthesizer:
         if len(hacked_defi) == 0:
             return []
 
-        action_strs = set()
         candidates = []
-        i = 0
         for (
             asset0,
             swap_pair0,
@@ -266,42 +420,66 @@ class Synthesizer:
             defi_entry,
             asset_hacked,
             swap_pair1,
-            stable_coin,
             swap_pair2,
-        ) in itertools.product(assets, swap_pairs, assets, defi_entrys, assets, swap_pairs, stable_coins, swap_pairs):
-            if asset0 == asset1:
-                continue
-            if asset0 not in self.roles[swap_pair0].support_swaps.get(asset1, []):
-                continue
-            if asset1 not in self.roles[swap_pair0].support_swaps.get(asset0, []):
-                continue
-            if asset_hacked not in self.roles[defi_entry].hacked_assets:
-                continue
-            if stable_coin not in self.roles[swap_pair0].support_swaps.get(asset_hacked, []):
-                continue
-            if asset0 not in self.roles[swap_pair2].support_swaps.get(stable_coin, []):
-                continue
+            stable_coin,
+            swap_pair3,
+        ) in itertools.product(
+            assets,
+            swap_pairs,
+            assets,
+            defi_entrys,
+            assets,
+            swap_pairs,
+            swap_pairs,
+            stable_coins,
+            swap_pairs,
+        ):
             actions: List[DSLAction] = [
                 Borrow(asset0, "amt0"),
                 Swap(swap_pair0, asset0, asset1, "amt1"),
                 HackedAction(defi_entry, asset_hacked, "amt2"),
-                Swap(swap_pair0, asset1, asset0, "amt3"),
-                Swap(swap_pair1, asset_hacked, stable_coin, "amt4"),
-                Swap(swap_pair2, stable_coin, asset0, "amt5"),
+                Swap(swap_pair1, asset1, asset0, "amt3"),
+                Swap(swap_pair2, asset_hacked, stable_coin, "amt4"),
+                Swap(swap_pair3, stable_coin, asset0, "amt5"),
                 Payback(asset0, "amt6"),
             ]
-            constraints = [
-                "amt0 == amt1",
-                "amt6 == amt0 + 1 ether",
-            ]
-            tabs = " " * 8
-            action_str = "".join([f"{tabs}{str(s)};\n" for s in actions])
-            if action_str in action_strs:
+            if asset0 == asset1:
                 continue
-            action_strs.add(action_str)
-            constraint_str = "".join([f"{tabs}vm.assume({c});\n" for c in constraints])
+            # SwapPair 0
+            if asset1 not in self.roles[swap_pair0].support_swaps.get(asset0, []):
+                continue
+
+            # SwapPair 1
+            if asset0 not in self.roles[swap_pair1].support_swaps.get(asset1, []):
+                continue
+
+            # SwapPair 2
+            if stable_coin not in self.roles[swap_pair2].support_swaps.get(
+                asset_hacked, []
+            ):
+                continue
+
+            # SwapPair 3
+            if asset0 not in self.roles[swap_pair3].support_swaps.get(stable_coin, []):
+                continue
+
+            # DeFi
+            if asset_hacked not in self.roles[defi_entry].hacked_assets:
+                continue
+
+            if not self.check_duplicated(actions, candidates):
+                candidates.append(actions)
+
+        func_bodys = []
+        total_parameters = 6
+
+        for idx, c in enumerate(candidates):
+            action_str = "".join([f"{str(s)};\n" for s in c])
+            constraint_str = "".join(
+                [f"vm.assume({c});\n" for c in self.config.constraints]
+            )
             func_body = f"""
-                function check_cand{i}(
+                function check_cand{idx}(
                     uint256 amt0,
                     uint256 amt1,
                     uint256 amt2,
@@ -314,14 +492,5 @@ class Synthesizer:
                     }}
 
             """
-            candidates.append(func_body)
-            print(func_body)
-            i += 1
-        return candidates
-
-    def print_sol(self, output_path: str):
-        candidates = self.gen_candidate_template_buysell()
-        with open(output_path, "w") as f:
-            for c in candidates:
-                f.write(c)
-                f.write("\n\n")
+            func_bodys.append(func_body)
+        return func_bodys

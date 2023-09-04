@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 
-import {BEP20USDT} from "@utils/USDT.sol";
+import {USDT} from "@utils/USDT.sol";
 import {UniswapV2Pair} from "@uniswapv2/contracts/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@uniswapv2/contracts/UniswapV2Router.sol";
 
@@ -11,7 +11,7 @@ import {DxBurnToken} from "benchmarks/realworld/BIGFI/DxBurnToken.sol";
 
 contract BIGFITest is Test {
     DxBurnToken bigfi = DxBurnToken(payable(0xd3d4B46Db01C006Fb165879f343fc13174a1cEeB));
-    BEP20USDT usdt = BEP20USDT(0x55d398326f99059fF775485246999027B3197955);
+    USDT usdt = USDT(0x55d398326f99059fF775485246999027B3197955);
     UniswapV2Router router =
         UniswapV2Router(payable(0x10ED43C718714eb63d5aA57B78B54704E256024E));
     UniswapV2Pair pair =

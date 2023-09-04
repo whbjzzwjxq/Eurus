@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from .config import Config, init_config
 from .utils_slither import SliContract, SliFunction, gen_slither
@@ -52,10 +52,13 @@ class Defi:
             None,
         )
 
-    def get_function_by_name(self, ctrt_name: str, func_name: str):
-        ctrt = self.get_contract_by_name(ctrt_name)
-        if ctrt is None:
-            raise ValueError(f"Unknown contract name: {ctrt_name}")
+    def get_function_by_name(self, ctrt_or_name: Union[SliContract, str], func_name: str):
+        if isinstance(ctrt_or_name, str):
+            ctrt = self.get_contract_by_name(ctrt_or_name)
+            if ctrt is None:
+                raise ValueError(f"Unknown contract name: {ctrt}")
+        else:
+            ctrt = ctrt_or_name
         return self._get_function_by_name(ctrt, func_name)
 
     def get_variable_by_name(self, ctrt_name: str, var_name: str):

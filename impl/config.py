@@ -26,10 +26,12 @@ class Config:
     extra_deployments: List[str] = field(default_factory=list)
     attack_goal: str = ""
     groundtruth: List[Tuple[str, str]] = field(default_factory=list)
-    gt_constraints: List[str] = field(default_factory=list)
+    constraints: List[str] = field(default_factory=list)
     
-
+    # Used for synthesizer
+    total_amt: int = 0
     roles: Dict[str, DefiRoles] = field(default_factory=dict)
+    pattern: str = "None"
 
     # Not used
     contract_names_mapping: Dict[str, str] = field(default_factory=dict)

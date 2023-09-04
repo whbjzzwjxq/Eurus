@@ -4,6 +4,7 @@ from typing import List
 
 from .config import Config, init_config
 from .utils import CornerCase
+from .synthesizer import Synthesizer
 
 
 class BenchmarkBuilder:
@@ -248,36 +249,41 @@ class BenchmarkBuilder:
         all = [*printer, *attack_goal, *nop, *actions, *self.config.actions]
         return all
 
-    def gen_attack_temp_and_gt(self) -> List[str]:
-        # We assume every function only has one parameter.
-        params = [f"uint256 amt{idx}" for idx in range(len(self.config.groundtruth))]
-        attack_temp = [f'function attackTemp({",".join(params)}) public ' + "{"]
-        args = []
+    def gen_gt_for_forge_and_halmos(self) -> List[str]:
+        # Build groundtruth test for forge
+        func_body = []
         for idx, g in enumerate(self.config.groundtruth):
             name, arg = g
-            args.append(arg)
-            attack_temp.append(f'printBalance("Before step{idx}: ");')
-            attack_temp.append(f"{name}(amt{idx});")
-        attack_temp.append(f'printBalance("After exploit: ");')
-        attack_temp.append("}")
-
-        args_str = ", ".join(args)
+            if name != "nop":
+                func_body.append(f'printBalance("Before step{idx}: ");')
+                func_body.append(f"{name}({arg});")
         test_gt = [
             "function test_gt() public {",
-            f"attackTemp({args_str});",
+            *func_body,
             'require(attackGoal(), "Attack failed!");',
-            "}",
+            '}'
         ]
-        args = [f"amt{idx}" for idx in range(len(self.config.groundtruth))]
+
+        # Build groundtruth test for halmos
+        params = [f"uint256 amt{idx}" for idx in range(self.config.total_amt)]
+        func_body = []
+        for idx, g in enumerate(self.config.groundtruth):
+            name, _ = g
+            if name != "nop":
+                func_body.append(f"{name}(amt{idx});")
         check_gt = [
             f'function check_gt({",".join(params)}) public ' + "{",
-            *self.config.gt_constraints,
-            f'attackTemp({",".join(args)});',
+            "".join([f"vm.assume({c});\n" for c in self.config.constraints]),
+            *func_body,
             "assert(!attackGoal());",
             "}",
         ]
-        all = [*attack_temp, *test_gt, *check_gt]
+        all = [*test_gt, *check_gt]
         return all
+    
+    def gen_candidates(self) -> List[str]:
+        synthesizer = Synthesizer(self.config)
+        return synthesizer.output()
 
     def output(self, output_path: str):
         if os.path.exists(output_path):
@@ -288,7 +294,8 @@ class BenchmarkBuilder:
             *self.gen_state_varibles(),
             *self.gen_setup(),
             *self.gen_helper_funcs(),
-            *self.gen_attack_temp_and_gt(),
+            *self.gen_gt_for_forge_and_halmos(),
+            *self.gen_candidates(),
             "}",
         ]
         with open(output_path, "w") as f:

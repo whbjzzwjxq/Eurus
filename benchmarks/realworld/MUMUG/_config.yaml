@@ -45,11 +45,13 @@ groundtruth:
   - ["swap_pair_mu_usdce", "99000 ether"]
   - ["swap_mubank_usdce_mu", "22960 ether"]
   - ["nop", "0"]
+  - ["nop", "0"]
   - ["payback_mu", "99300 ether"]
 
-gt_constraints:
-  - "vm.assume(amt0 == amt1);"
-  - "vm.assume(amt4 == amt0 + 300 ether);"
+# Constraints for flashLoan payback
+constraints:
+  - "amt5 == amt0 + 300 ether"
+
 
 # Extra Information
 roles:
@@ -62,15 +64,18 @@ roles:
   "mubank":
     is_swappair: true
     support_swaps:
-      "mu":
-        - "mu"
-        - "usdce"
+      "usdce": ["mu", "usdce"]
   "pair":
     is_swappair: true
     support_swaps:
-      "mu":
-        - "mu"
-        - "usdce"
+      "mu": ["mu", "usdce"]
+      "usdce": ["mu", "usdce"]
+  
+pattern:
+  "Price Discrepancy"
+
+total_amt:
+  6
 
 # Not used currently
 contract_names_mapping:
