@@ -273,7 +273,8 @@ class BenchmarkBuilder:
                 func_body.append(f"{name}(amt{idx});")
         check_gt = [
             f'function check_gt({",".join(params)}) public ' + "{",
-            "".join([f"vm.assume({c});\n" for c in self.config.constraints]),
+            *[f"vm.assume({c});" for c in self.config.constraints],
+            *[f"vm.assume(amt{idx} > 0);" for idx in range(self.config.total_amt)],
             *func_body,
             "assert(!attackGoal());",
             "}",

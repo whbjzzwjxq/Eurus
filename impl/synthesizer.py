@@ -262,14 +262,13 @@ class HackedAction(DSLAction):
 
 
 class Sketch:
-
     def __init__(self, actions: List[DSLAction]) -> None:
         self.actions = actions
 
     @property
     def len(self):
         return self.actions.__len__()
-    
+
     @property
     def pure_len(self):
         return self.pure_actions.__len__()
@@ -277,7 +276,7 @@ class Sketch:
     @property
     def pure_actions(self):
         return [a for a in self.actions if a.action_name != "nop"]
-    
+
     def __eq__(self, __value: "Sketch") -> bool:
         if self.pure_len != __value.pure_len:
             return False
@@ -292,9 +291,7 @@ class Synthesizer:
         self.config = config
         self.roles = self.config.roles
 
-    def check_duplicated(
-        self, actions: Sketch, candidates: List[Sketch]
-    ) -> bool:
+    def check_duplicated(self, actions: Sketch, candidates: List[Sketch]) -> bool:
         return any([actions == c for c in candidates])
 
     def output(self) -> List[str]:
@@ -321,7 +318,6 @@ class Synthesizer:
         ) in itertools.product(
             assets, swap_pairs, assets, swap_pairs, swap_pairs, stable_coins, swap_pairs
         ):
-
             if asset0 == asset1:
                 continue
 
@@ -386,20 +382,20 @@ class Synthesizer:
 
         candidates = sorted(candidates, key=lambda s: s.pure_len)
         func_bodys = []
-        for idx, c in enumerate(candidates):
-            action_str = "".join([f"{str(s)};\n" for s in c.pure_actions])
-            constraint_str = "".join(
-                [f"vm.assume({c});\n" for c in self.config.constraints]
-            )
-            param_str = ",".join([f"uint256 amt{i}" for i in range(self.config.total_amt)])
-            func_body = f"""
-                function check_cand{idx}({param_str}) public {{
-                        {constraint_str + action_str}
-                        assert(!attackGoal());
-                    }}
 
-            """
-            func_bodys.append(func_body)
+        params = [f"uint256 amt{i}" for i in range(self.config.total_amt)]
+
+        for idx, c in enumerate(candidates):
+            func_body = [f"{str(s)};" for s in c.pure_actions]
+            checker = [
+                f'function check_cand{idx}({",".join(params)}) public ' + "{",
+                *[f"vm.assume({c});" for c in self.config.constraints],
+                *[f"vm.assume(amt{idx} > 0);" for idx in range(self.config.total_amt)],
+                *func_body,
+                "assert(!attackGoal());",
+                "}",
+            ]
+            func_bodys.extend(checker)
         return func_bodys
 
     def gen_candidate_template_buysell(self) -> List[str]:
