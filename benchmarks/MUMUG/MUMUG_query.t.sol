@@ -25,6 +25,7 @@ contract MUMUGTest is Test, BlockLoader {
 
     function test_query() public {
         emit log_string("----query starts----");
+        queryBlockTimestamp();
         queryUniswapV2Pair(address(pair), "pair");
         address[] memory users = new address[](3);
         users[0] = address(mubank);

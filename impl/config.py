@@ -14,6 +14,7 @@ class DefiRoles:
     is_defientry: bool = False
     is_swappair: bool = False
     is_oracle: bool = False
+
     support_swaps: Dict[str, List[str]] = field(default_factory=dict)
     hacked_assets: List[str] = field(default_factory=list)
     uniswap_order: List[str] = field(default_factory=list)

@@ -75,7 +75,7 @@ class BenchmarkBuilder:
 
         actions = [init_action_from_list(a, True) for a in self.config.groundtruth]
         self.sketch = Sketch(actions)
-        self.flashloan_amount = Decimal(self.sketch.actions[-1].amount)
+        self.flashloan_amount = Decimal(self.sketch.actions[0].amount)
 
     def get_initial_state(self) -> List[str]:
         # Handle the initial states print by foundry.
@@ -84,7 +84,7 @@ class BenchmarkBuilder:
         if path.exists(cache_file):
             with open(cache_file, "r") as f:
                 outputs = f.readlines()
-                outputs = [l.removesuffix("\n") for l in output]
+                outputs = [l.removesuffix("\n") for l in outputs]
         else:
             cmd = [
                 "forge",
@@ -161,6 +161,7 @@ class BenchmarkBuilder:
     def gen_setup(self) -> List[str]:
         all = [
             "function setUp() public {",
+            "vm.warp(blockTimestamp);",
             "attacker = address(this);",
             "vm.startPrank(owner);",
         ]
@@ -200,6 +201,8 @@ class BenchmarkBuilder:
                 d_stmt = f"{ctrt_name} = {stmt};"
             all.append(d_stmt)
 
+        all.extend(self.extra_deployments)
+
         all.append("// Initialize balances and mock flashloan.")
 
         # Deploy tokens
@@ -216,7 +219,6 @@ class BenchmarkBuilder:
                 if u == "attacker":
                     all.append(f"{t}.approve(attacker, UINT256_MAX);")
 
-        all.extend(self.extra_deployments)
         all.append("vm.stopPrank();")
         all.append("}")
         return all
@@ -335,16 +337,15 @@ class BenchmarkBuilder:
                 f.write("\n")
 
         # Format
-        cmds = [
+        cmd = [
             "npx",
             "prettier",
             "--write",
             "--plugin=prettier-plugin-solidity",
             f"{output_path}",
         ]
-        print(cmds)
         subprocess.run(
-            cmds,
+            cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,

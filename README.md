@@ -19,7 +19,7 @@ npm install --save-dev
 ## Evaluation
 ### Forge test (attack ground truth)`
 ```bash
-forge test --match-path=./benchmarks/MUMUG/MUMUG.t.sol -vvvv
+forge test --match-path ./benchmarks/MUMUG/MUMUG.t.sol -vvvv
 ```
 
 ### Halmos (Example)

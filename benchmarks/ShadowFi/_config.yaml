@@ -9,7 +9,7 @@ ctrt_name2cls:
   - ["router", "UniswapV2Router"]
 
 ctrt_name2deploy:
-  - ["sdf", "new ShadowFi(blockTimestamp, address(router), address(pair))"]
+  - ["sdf", "new ShadowFi(1662075000)"]
   - ["wbnb", ""]
   - ["pair", ""]
   - ["factory", ""]
@@ -20,10 +20,12 @@ extra_actions:
     sdf.burn(address(pair), amount);
     }"
 
-extra_deployments: []
+extra_deployments:
+  - "sdf.afterDeploy(address(router), address(pair));"
+
 extra_constraints: []
 
-attack_goal: "wbnb.balanceOf(attacker) >= 1e18"
+attack_goal: "wbnb.balanceOf(attacker) >= 1e18 + balanceOfwbnbattacker"
 
 groundtruth:
   - ["borrow", "wbnb", "1e16"]

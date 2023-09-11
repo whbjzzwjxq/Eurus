@@ -198,7 +198,7 @@ abstract contract ShadowAuth {
     mapping(address => mapping(uint256 => bool)) private authorizations; // uint256 is permission index
     
     uint256 constant NUM_PERMISSIONS = 10; // always has to be adjusted when Permission element is added or removed
-    mapping(string => uint256) permissionNameToIndex;
+    // mapping(string => uint256) permissionNameToIndex;
     mapping(uint256 => string) permissionIndexToName;
 
     mapping(uint256 => PermissionLock) lockedPermissions;
@@ -209,13 +209,13 @@ abstract contract ShadowAuth {
             authorizations[owner_][i] = true;
         }
 
-        permissionNameToIndex["ChangeFees"] = uint256(Permission.ChangeFees);
-        permissionNameToIndex["Buyback"] = uint256(Permission.Buyback);
-        permissionNameToIndex["AdjustContractVariables"] = uint256(Permission.AdjustContractVariables);
-        permissionNameToIndex["Authorize"] = uint256(Permission.Authorize);
-        permissionNameToIndex["Unauthorize"] = uint256(Permission.Unauthorize);
-        permissionNameToIndex["LockPermissions"] = uint256(Permission.LockPermissions);
-        permissionNameToIndex["ExcludeInclude"] = uint256(Permission.ExcludeInclude);
+        // permissionNameToIndex["ChangeFees"] = uint256(Permission.ChangeFees);
+        // permissionNameToIndex["Buyback"] = uint256(Permission.Buyback);
+        // permissionNameToIndex["AdjustContractVariables"] = uint256(Permission.AdjustContractVariables);
+        // permissionNameToIndex["Authorize"] = uint256(Permission.Authorize);
+        // permissionNameToIndex["Unauthorize"] = uint256(Permission.Unauthorize);
+        // permissionNameToIndex["LockPermissions"] = uint256(Permission.LockPermissions);
+        // permissionNameToIndex["ExcludeInclude"] = uint256(Permission.ExcludeInclude);
 
         permissionIndexToName[uint256(Permission.ChangeFees)] = "ChangeFees";
         permissionIndexToName[uint256(Permission.Buyback)] = "Buyback";
@@ -241,49 +241,49 @@ abstract contract ShadowAuth {
         require(isAuthorizedFor(msg.sender, permission), string(abi.encodePacked("Not authorized. You need the permission ", permissionIndexToName[uint256(permission)]))); _;
     }
 
-    /**
-     * Authorize address for one permission
-     */
-    function authorizeFor(address adr, string memory permissionName) public authorizedFor(Permission.Authorize) {
-        uint256 permIndex = permissionNameToIndex[permissionName];
-        authorizations[adr][permIndex] = true;
-        emit AuthorizedFor(adr, permissionName, permIndex);
-    }
+    // /**
+    //  * Authorize address for one permission
+    //  */
+    // function authorizeFor(address adr, string memory permissionName) public authorizedFor(Permission.Authorize) {
+    //     uint256 permIndex = permissionNameToIndex[permissionName];
+    //     authorizations[adr][permIndex] = true;
+    //     emit AuthorizedFor(adr, permissionName, permIndex);
+    // }
 
-    /**
-     * Authorize address for multiple permissions
-     */
-    function authorizeForMultiplePermissions(address adr, string[] calldata permissionNames) public authorizedFor(Permission.Authorize) {
-        for (uint256 i; i < permissionNames.length; i++) {
-            uint256 permIndex = permissionNameToIndex[permissionNames[i]];
-            authorizations[adr][permIndex] = true;
-            emit AuthorizedFor(adr, permissionNames[i], permIndex);
-        }
-    }
+    // /**
+    //  * Authorize address for multiple permissions
+    //  */
+    // function authorizeForMultiplePermissions(address adr, string[] calldata permissionNames) public authorizedFor(Permission.Authorize) {
+    //     for (uint256 i; i < permissionNames.length; i++) {
+    //         uint256 permIndex = permissionNameToIndex[permissionNames[i]];
+    //         authorizations[adr][permIndex] = true;
+    //         emit AuthorizedFor(adr, permissionNames[i], permIndex);
+    //     }
+    // }
 
-    /**
-     * Remove address' authorization
-     */
-    function unauthorizeFor(address adr, string memory permissionName) public authorizedFor(Permission.Unauthorize) {
-        require(adr != owner, "Can't unauthorize owner");
+    // /**
+    //  * Remove address' authorization
+    //  */
+    // function unauthorizeFor(address adr, string memory permissionName) public authorizedFor(Permission.Unauthorize) {
+    //     require(adr != owner, "Can't unauthorize owner");
 
-        uint256 permIndex = permissionNameToIndex[permissionName];
-        authorizations[adr][permIndex] = false;
-        emit UnauthorizedFor(adr, permissionName, permIndex);
-    }
+    //     uint256 permIndex = permissionNameToIndex[permissionName];
+    //     authorizations[adr][permIndex] = false;
+    //     emit UnauthorizedFor(adr, permissionName, permIndex);
+    // }
 
-    /**
-     * Unauthorize address for multiple permissions
-     */
-    function unauthorizeForMultiplePermissions(address adr, string[] calldata permissionNames) public authorizedFor(Permission.Unauthorize) {
-        require(adr != owner, "Can't unauthorize owner");
+    // /**
+    //  * Unauthorize address for multiple permissions
+    //  */
+    // function unauthorizeForMultiplePermissions(address adr, string[] calldata permissionNames) public authorizedFor(Permission.Unauthorize) {
+    //     require(adr != owner, "Can't unauthorize owner");
 
-        for (uint256 i; i < permissionNames.length; i++) {
-            uint256 permIndex = permissionNameToIndex[permissionNames[i]];
-            authorizations[adr][permIndex] = false;
-            emit UnauthorizedFor(adr, permissionNames[i], permIndex);
-        }
-    }
+    //     for (uint256 i; i < permissionNames.length; i++) {
+    //         uint256 permIndex = permissionNameToIndex[permissionNames[i]];
+    //         authorizations[adr][permIndex] = false;
+    //         emit UnauthorizedFor(adr, permissionNames[i], permIndex);
+    //     }
+    // }
 
     /**
      * Check if address is owner
@@ -292,12 +292,12 @@ abstract contract ShadowAuth {
         return account == owner;
     }
 
-    /**
-     * Return address' authorization status
-     */
-    function isAuthorizedFor(address adr, string memory permissionName) public view returns (bool) {
-        return authorizations[adr][permissionNameToIndex[permissionName]];
-    }
+    // /**
+    //  * Return address' authorization status
+    //  */
+    // function isAuthorizedFor(address adr, string memory permissionName) public view returns (bool) {
+    //     return authorizations[adr][permissionNameToIndex[permissionName]];
+    // }
 
     /**
      * Return address' authorization status
@@ -319,46 +319,46 @@ abstract contract ShadowAuth {
         emit OwnershipTransferred(oldOwner, owner);
     }
 
-    /**
-     * Get the index of the permission by its name
-     */
-    function getPermissionNameToIndex(string memory permissionName) public view returns (uint256) {
-        return permissionNameToIndex[permissionName];
-    }
+    // /**
+    //  * Get the index of the permission by its name
+    //  */
+    // function getPermissionNameToIndex(string memory permissionName) public view returns (uint256) {
+    //     return permissionNameToIndex[permissionName];
+    // }
     
-    /**
-     * Get the time the timelock expires
-     */
-    function getPermissionUnlockTime(string memory permissionName) public view returns (uint256) {
-        return lockedPermissions[permissionNameToIndex[permissionName]].expiryTime;
-    }
+    // /**
+    //  * Get the time the timelock expires
+    //  */
+    // function getPermissionUnlockTime(string memory permissionName) public view returns (uint256) {
+    //     return lockedPermissions[permissionNameToIndex[permissionName]].expiryTime;
+    // }
 
-    /**
-     * Check if the permission is locked
-     */
-    function isLocked(string memory permissionName) public view returns (bool) {
-        return lockedPermissions[permissionNameToIndex[permissionName]].isLocked;
-    }
+    // /**
+    //  * Check if the permission is locked
+    //  */
+    // function isLocked(string memory permissionName) public view returns (bool) {
+    //     return lockedPermissions[permissionNameToIndex[permissionName]].isLocked;
+    // }
 
-    /*
-     *Locks the permission from being used for the amount of time provided
-     */
-    function lockPermission(string memory permissionName, uint64 time) public virtual authorizedFor(Permission.LockPermissions) {
-        uint256 permIndex = permissionNameToIndex[permissionName];
-        uint64 expiryTime = uint64(block.timestamp) + time;
-        lockedPermissions[permIndex] = PermissionLock(true, expiryTime);
-        emit PermissionLocked(permissionName, permIndex, expiryTime);
-    }
+    // /*
+    //  *Locks the permission from being used for the amount of time provided
+    //  */
+    // function lockPermission(string memory permissionName, uint64 time) public virtual authorizedFor(Permission.LockPermissions) {
+    //     uint256 permIndex = permissionNameToIndex[permissionName];
+    //     uint64 expiryTime = uint64(block.timestamp) + time;
+    //     lockedPermissions[permIndex] = PermissionLock(true, expiryTime);
+    //     emit PermissionLocked(permissionName, permIndex, expiryTime);
+    // }
     
-    /*
-     * Unlocks the permission if the lock has expired 
-     */
-    function unlockPermission(string memory permissionName) public virtual {
-        require(block.timestamp > getPermissionUnlockTime(permissionName) , "Permission is locked until the expiry time.");
-        uint256 permIndex = permissionNameToIndex[permissionName];
-        lockedPermissions[permIndex].isLocked = false;
-        emit PermissionUnlocked(permissionName, permIndex);
-    }
+    // /*
+    //  * Unlocks the permission if the lock has expired 
+    //  */
+    // function unlockPermission(string memory permissionName) public virtual {
+    //     require(block.timestamp > getPermissionUnlockTime(permissionName) , "Permission is locked until the expiry time.");
+    //     uint256 permIndex = permissionNameToIndex[permissionName];
+    //     lockedPermissions[permIndex].isLocked = false;
+    //     emit PermissionUnlocked(permissionName, permIndex);
+    // }
 
     event PermissionLocked(string permissionName, uint256 permissionIndex, uint64 expiryTime);
     event PermissionUnlocked(string permissionName, uint256 permissionIndex);
@@ -604,20 +604,20 @@ contract ShadowFi is IBEP20, ShadowAuth {
 
     uint256 transferBlockTime;
 
-    constructor (uint256 _transferBlockTime, address _router, address _pair) ShadowAuth(msg.sender) {
-        router = IDEXRouter(_router);
-        pancakeV2BNBPair = _pair;
-        _allowances[address(this)][address(router)] = ~uint256(0);
+    constructor (uint256 _transferBlockTime) ShadowAuth(msg.sender) {
+        // router = IDEXRouter(_router);
+        // pancakeV2BNBPair = _pair;
+        // _allowances[address(this)][address(router)] = ~uint256(0);
 
-        pairs.push(pancakeV2BNBPair);
-        distributor = new DividendDistributor(address(router));
+        // pairs.push(pancakeV2BNBPair);
+        // distributor = new DividendDistributor(address(router));
 
         address owner_ = msg.sender;
         allowedAddresses[owner_] = true;
 
         isFeeExempt[owner_] = true;
         isTxLimitExempt[owner_] = true;
-        isDividendExempt[pancakeV2BNBPair] = true;
+        // isDividendExempt[pancakeV2BNBPair] = true;
         isDividendExempt[address(this)] = true;
         isFeeExempt[address(this)] = true;
         isTxLimitExempt[address(this)] = true;
@@ -630,6 +630,17 @@ contract ShadowFi is IBEP20, ShadowAuth {
 
         _balances[owner_] = _totalSupply;
         emit Transfer(address(0), owner_, _totalSupply);
+    }
+
+    function afterDeploy(address _router, address _pair) public {
+        router = IDEXRouter(_router);
+        pancakeV2BNBPair = _pair;
+        _allowances[address(this)][address(router)] = ~uint256(0);
+
+        pairs.push(pancakeV2BNBPair);
+        distributor = new DividendDistributor(address(router));
+        isDividendExempt[pancakeV2BNBPair] = true;
+        isTxLimitExempt[_pair] = true;
     }
 
     receive() external payable { }
@@ -683,17 +694,17 @@ contract ShadowFi is IBEP20, ShadowAuth {
 
         if(shouldSwapBack()){ swapBack(); }
 
-        if(!launched() && recipient == pancakeV2BNBPair){ require(_balances[sender] > 0); launch(); }
+        // if(!launched() && recipient == pancakeV2BNBPair){ require(_balances[sender] > 0); launch(); }
 
         _balances[sender] = _balances[sender].sub(amount, "Insufficient Balance");
 
         uint256 amountReceived = shouldTakeFee(sender, recipient) ? takeFee(sender, recipient, amount) : amount;
         _balances[recipient] = _balances[recipient].add(amountReceived);
 
-        if(!isDividendExempt[sender]){ try distributor.setShare(sender, _balances[sender]) {} catch {} }
-        if(!isDividendExempt[recipient]){ try distributor.setShare(recipient, _balances[recipient]) {} catch {} }
+        // if(!isDividendExempt[sender]){ try distributor.setShare(sender, _balances[sender]) {} catch {} }
+        // if(!isDividendExempt[recipient]){ try distributor.setShare(recipient, _balances[recipient]) {} catch {} }
 
-        try distributor.process(distributorGas) {} catch {}
+        // try distributor.process(distributorGas) {} catch {}
 
         emit Transfer(sender, recipient, amountReceived);
         return true;
