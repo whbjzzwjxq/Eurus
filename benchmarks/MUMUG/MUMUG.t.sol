@@ -144,6 +144,10 @@ contract MUMUGTest is Test, BlockLoader {
         );
     }
 
+    function sync_pair() internal {
+        pair.sync();
+    }
+
     function swap_mubank_usdce_mu(uint256 sendAmount) internal {
         usdce.approve(address(mubank), type(uint).max);
         mubank.mu_bond(address(usdce), sendAmount);

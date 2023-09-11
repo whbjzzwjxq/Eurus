@@ -13,12 +13,13 @@ pip install -r ./requirements.txt
 solc-select install 0.8.15
 solc-select use 0.8.15
 git submodule update --init --recursive
+npm install --save-dev
 ```
 
 ## Evaluation
 ### Forge test (attack ground truth)`
 ```bash
-forge test --match-path=./benchmarks/realworld/MUMUG/MUMUG.t.sol -vvvv
+forge test --match-path=./benchmarks/MUMUG/MUMUG.t.sol -vvvv
 ```
 
 ### Halmos (Example)

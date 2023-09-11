@@ -15,7 +15,11 @@ ctrt_name2deploy:
   - ["factory", ""]
   - ["router", ""]
 
-extra_actions: []
+extra_actions:
+  - "function burn_pair_sdf(uint256 amount) internal {
+    sdf.burn(address(pair), amount);
+    }"
+
 extra_deployments: []
 extra_constraints: []
 
@@ -42,7 +46,7 @@ roles:
     is_burnable: true
   "pair":
     is_swappair: true
-    is_uniswap: true
+    uniswap_order: ["sdf", "wbnb"]
     support_swaps:
       "wbnb": ["sdf", "wbnb"]
       "sdf": ["sdf", "wbnb"]

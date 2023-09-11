@@ -55,5 +55,6 @@ roles:
     support_swaps:
       "mu": ["mu", "usdce"]
       "usdce": ["mu", "usdce"]
+    is_oracle: true
 
 pattern: "Price Discrepancy"

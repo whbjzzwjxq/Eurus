@@ -22,6 +22,7 @@ class BenchmarkBuilder:
         "USDCE",
         "USDT",
         "WETH",
+        "WBNB",
     ]
     default_import_ctrts = [
         *default_erc20_tokens,
@@ -77,29 +78,38 @@ class BenchmarkBuilder:
         self.flashloan_amount = Decimal(self.sketch.actions[-1].amount)
 
     def get_initial_state(self) -> List[str]:
-        # bmk_dir = os.path.abspath(os.path.join(os.getcwd(), self.bmk_dir))
-        bmk_dir = self.bmk_dir
         # Handle the initial states print by foundry.
-        # Look at: QueryBlockchain.sol
-        cmd = [
-            "forge",
-            "test",
-            "-vv",
-            "--match-path",
-            f"{bmk_dir}/{self.name}_query.t.sol",
-        ]
-        try:
-            proc = subprocess.run(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                cwd=os.getcwd(),
-            )
-        except Exception as err:
-            err.add_note("Forge test failed!")
-            raise err
-        outputs = proc.stdout.split("\n") + proc.stderr.split("\n")
+        # Look at: QueryBlockchain.sol and query_output_example.txt for more information.
+        cache_file = path.join(self.bmk_dir, "query_cache")
+        if path.exists(cache_file):
+            with open(cache_file, "r") as f:
+                outputs = f.readlines()
+                outputs = [l.removesuffix("\n") for l in output]
+        else:
+            cmd = [
+                "forge",
+                "test",
+                "-vv",
+                "--match-path",
+                f"{self.bmk_dir}/{self.name}_query.t.sol",
+            ]
+            print(" ".join(cmd))
+            try:
+                proc = subprocess.run(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    cwd=os.getcwd(),
+                    check=True,
+                )
+            except Exception as err:
+                err.add_note("Forge test failed!")
+                raise err
+            outputs = proc.stdout + proc.stderr
+            with open(cache_file, "w") as f:
+                f.write(outputs)
+            outputs = outputs.split("\n")
         states = []
         for output in outputs:
             if output.startswith("  ----"):
@@ -283,13 +293,24 @@ class BenchmarkBuilder:
             ]
             actions.extend(swap1)
 
+        # sync uniswap
+        for uniswap in self.uniswap_pairs:
+            sync = [
+                f"function sync_{uniswap}() internal" + "{",
+                f"{uniswap}.sync();",
+                "}",
+            ]
+            actions.extend(sync)
+
         all = [*printer, *attack_goal, *nop, *actions, *self.extra_actions]
         return all
 
     def gen_gt_for_forge_and_halmos(self) -> List[str]:
         # Build groundtruth test for forge
         test_gt = self.sketch.output_test("test_gt")
-        check_gt = self.sketch.symbolic_copy().output("check_gt", self.flashloan_amount, self.extra_constraints)
+        check_gt = self.sketch.symbolic_copy().output(
+            "check_gt", self.flashloan_amount, self.extra_constraints
+        )
         all = [*test_gt, *check_gt]
         return all
 
@@ -298,8 +319,6 @@ class BenchmarkBuilder:
         return synthesizer.output_default(self.flashloan_amount, self.extra_constraints)
 
     def output(self, output_path: str):
-        if os.path.exists(output_path):
-            os.remove(output_path)
         results = [
             *self.gen_imports(),
             *self.gen_contract_header(),
@@ -316,3 +335,19 @@ class BenchmarkBuilder:
                 f.write("\n")
 
         # Format
+        cmds = [
+            "npx",
+            "prettier",
+            "--write",
+            "--plugin=prettier-plugin-solidity",
+            f"{output_path}",
+        ]
+        print(cmds)
+        subprocess.run(
+            cmds,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            cwd=os.getcwd(),
+            check=True,
+        )

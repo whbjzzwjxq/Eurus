@@ -1,5 +1,7 @@
 from decimal import Decimal
-from typing import List
+from typing import Dict, List
+
+from impl.config import DefiRoles
 
 from .utils import *
 from .utils_slither import *
@@ -68,6 +70,15 @@ class DSLAction:
             raise ValueError(
                 f"This action: {self.action_name} doesn't have a role as asset1"
             )
+        
+    @property
+    def defi_entry(self):
+        if self.action_name in ("transaction"):
+            return self.args_in_name[0]
+        else:
+            raise ValueError(
+                f"This action: {self.action_name} doesn't have a role as defi_entry"
+            )
 
     @property
     def amount(self):
@@ -77,6 +88,17 @@ class DSLAction:
             raise ValueError(
                 f"This action: {self.action_name} doesn't have a role as amount"
             )
+
+    def check_implemented(self, roles: Dict[str, DefiRoles]) -> bool:
+        if self.action_name == "swap":
+            return self.asset1 in roles[self.swap_pair].support_swaps.get(
+                self.asset0, []
+            )
+        elif self.action_name == "burn":
+            return roles[self.asset0].is_burnable
+        elif self.action_name == "transaction":
+            return self.asset0 in roles[self.defi_entry].hacked_assets
+        return True
 
 
 class NOP(DSLAction):
@@ -158,6 +180,7 @@ action_name2cls = {
     "swap": Swap,
     "borrow": Borrow,
     "payback": Payback,
+    "burn": Burn,
     "sync": Sync,
     "transaction": Transaction,
 }
@@ -185,7 +208,7 @@ class Sketch:
     @property
     def pure_actions(self):
         return [a for a in self.actions if a.action_name != "nop"]
-    
+
     @property
     def param_num(self):
         return sum(n.param_num for n in self.pure_actions)
@@ -209,6 +232,9 @@ class Sketch:
             new_actions.append(new_a)
             arg_start_index += new_a.param_num
         return Sketch(new_actions)
+    
+    def check_implemented(self, roles: Dict[str, DefiRoles]) -> bool:
+        return all(a.check_implemented(roles) for a in self.pure_actions)
 
     def output_test(self, func_name: str) -> List[str]:
         func_body = []

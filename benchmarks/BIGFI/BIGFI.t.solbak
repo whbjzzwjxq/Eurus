@@ -7,7 +7,7 @@ import {USDT} from "@utils/USDT.sol";
 import {UniswapV2Pair} from "@uniswapv2/contracts/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@uniswapv2/contracts/UniswapV2Router.sol";
 
-import {DxBurnToken} from "benchmarks/realworld/BIGFI/DxBurnToken.sol";
+import {DxBurnToken} from "benchmarks/BIGFI/DxBurnToken.sol";
 
 contract BIGFITest is Test {
     DxBurnToken bigfi = DxBurnToken(payable(0xd3d4B46Db01C006Fb165879f343fc13174a1cEeB));

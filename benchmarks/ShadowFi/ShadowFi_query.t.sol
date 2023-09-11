@@ -4,14 +4,12 @@ pragma solidity ^0.8.10;
 import "forge-std/Test.sol";
 
 import "@utils/QueryBlockchain.sol";
-import "./ShadowFi.sol";
 
 contract ShadowFiTest is Test, BlockLoader {
     IERC20 wbnb = IERC20(0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c);
-    ShadowFi sdf =
-        ShadowFi(payable(0x10bc28d2810dD462E16facfF18f78783e859351b));
+    IERC20 sdf = IERC20(0x10bc28d2810dD462E16facfF18f78783e859351b);
     IUniswapV2Pair pair =
-        IUniswapV2Pair(0x10ED43C718714eb63d5aA57B78B54704E256024E);
+        IUniswapV2Pair(0xF9e3151e813cd6729D52d9A0C3ee69F22CcE650A);
 
     address attacker = 0x4daa3135B016Ac37C46ED03423D314CAeA89ff5e;
 

@@ -7,16 +7,26 @@ from subprocess import DEVNULL, PIPE, Popen, TimeoutExpired
 from typing import List
 
 from impl.defi import Defi
+
 # from impl.synthesizer import Synthesizer, OldSynthesizer
 from impl.solidity_builder import BenchmarkBuilder
+
 # from impl.output2racket import output_defi
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", help="Target contract directory.", default="")
-parser.add_argument("-p", "--prepare", help="Prepare the sol file to execute.", action="store_true")
-parser.add_argument("-f", "--forge", help="Do the forge invariant test.", action="store_true")
-parser.add_argument("--rwgraph", help="Generate the Read/Write analysis graph.", action="store_true")
-parser.add_argument("-m", "--mockeval", help="Mock the evaluation.", action="store_true")
+parser.add_argument(
+    "-p", "--prepare", help="Prepare the sol file to execute.", action="store_true"
+)
+parser.add_argument(
+    "-f", "--forge", help="Do the forge invariant test.", action="store_true"
+)
+parser.add_argument(
+    "--rwgraph", help="Generate the Read/Write analysis graph.", action="store_true"
+)
+parser.add_argument(
+    "-m", "--mockeval", help="Mock the evaluation.", action="store_true"
+)
 parser.add_argument("-e", "--eval", help="Do the evaluation.", action="store_true")
 parser.add_argument("-s", "--statistic", help="Print statistic.", action="store_true")
 # parser.add_argument("--outputrkt", help="Output to Racket.", action="store_true")
@@ -36,27 +46,24 @@ def execute(cmds: List[str], timeout=3600, stdout=DEVNULL, stderr=DEVNULL):
 
 
 def get_bmk_dirs(bmk_dir: str):
-    toy_dir = path.abspath("./benchmarks/toy")
-    realworld_dir = path.abspath("./benchmarks/realworld")
+    # Don't use absolute path, because foundry doesn't support.
+    benmark_folder = "./benchmarks"
     if bmk_dir == "all":
-        for n in os.listdir(toy_dir):
-            bmk_dirs.append(path.join(toy_dir, n))
-        for n in os.listdir(realworld_dir):
-            bmk_dirs.append(path.join(realworld_dir, n))
-        return bmk_dirs
+        bmk_dirs = []
+        for p in os.listdir(benmark_folder):
+            bmk_dir = path.join(benmark_folder, p)
+            if not path.isdir(bmk_dir):
+                continue
+            if not path.exists(path.join(bmk_dir, "_config.yaml")):
+                continue
+            bmk_dirs.append(bmk_dir)
     else:
         if not path.isdir(bmk_dir):
-            raise ValueError(f"Benchmark path should be directory, current is: {bmk_dir}")
-        if path.abspath(bmk_dir) == toy_dir:
-            for n in os.listdir(toy_dir):
-                bmk_dirs.append(path.join(toy_dir, n))
-            return bmk_dirs
-        if path.abspath(bmk_dir) == realworld_dir:
-            for n in os.listdir(realworld_dir):
-                bmk_dirs.append(path.join(realworld_dir, n))
-            return bmk_dirs
+            raise ValueError(
+                f"Benchmark path should be a directory, current is: {bmk_dir}"
+            )
         bmk_dirs = [bmk_dir]
-        return bmk_dirs
+    return bmk_dirs
 
 
 def resolve_bmk_name(bmk_dir: str):
@@ -123,17 +130,29 @@ def generate_rw_graph(bmk_dir: str):
 #     with open(output_path, "w") as f:
 #         json.dump(obj, f)
 
-def prepare(bmk_dir: str):
-    builder = BenchmarkBuilder(bmk_dir)
-    output_path = path.abspath(path.join(bmk_dir, f"{builder.config.project_name}.t.sol"))
-    builder.output(output_path)
+
+def prepare():
+    bmk_dirs = get_bmk_dirs("all")
+    for bmk_dir in bmk_dirs:
+        project_name = resolve_bmk_name(bmk_dir)
+        output_path = path.join(bmk_dir, f"{project_name}.t.sol")
+        print(f"Output path is: {output_path}")
+        if path.exists(output_path):
+            os.remove(output_path)
+    for bmk_dir in bmk_dirs:
+        project_name = resolve_bmk_name(bmk_dir)
+        builder = BenchmarkBuilder(bmk_dir)
+        output_path = path.join(bmk_dir, f"{project_name}.t.sol")
+        builder.output(output_path)
+
 
 def _main():
     args = parser.parse_args()
+    if args.prepare:
+        prepare()
+        return
     bmk_dirs = get_bmk_dirs(args.input)
     for bmk_dir in bmk_dirs:
-        if args.prepare:
-            prepare(bmk_dir)
         if args.forge:
             forge_test(bmk_dir, args.timeout)
         if args.rwgraph:

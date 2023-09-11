@@ -1,5 +1,5 @@
 import itertools
-from typing import List
+from typing import List, Tuple
 
 from impl.utils import List
 
@@ -195,7 +195,6 @@ from .dsl import *
 #         df.to_csv(output_path, index=False)
 
 
-
 class Synthesizer:
     def __init__(self, config: Config):
         self.config = config
@@ -207,17 +206,44 @@ class Synthesizer:
         elif self.config.pattern == "Token Burn":
             candidates = self.gen_candidates_tokenburn()
         else:
-            raise CornerCase("Unknown pattern!")
-        self.candidates = candidates
+            raise CornerCase(f"Unknown pattern: {self.config.pattern}!")
+        self.candidates: List[Sketch] = candidates
 
-    def check_duplicated(self, actions: Sketch, candidates: List[Sketch]) -> bool:
-        return any([actions == c for c in candidates])
+    def check_duplicated(self, sketch: Sketch, candidates: List[Sketch]) -> bool:
+        return any([sketch == c for c in candidates])
 
-    def output_default(self, flashloan_amount: Decimal, constraints: List[str]) -> List[str]:
+    def extend_candidates_from_template(
+        self,
+        template: List[DSLAction],
+        template_times: List[int],
+        exist_candidates: List[Sketch],
+    ):
+        sketches: List[Sketch] = []
+        for times in itertools.product(*template_times):
+            actions = []
+            for i in range(len(template)):
+                t = times[i]
+                actions.extend([template[i]] * t)
+            # Rename parameters
+            sketch = Sketch(actions).symbolic_copy()
+            sketches.append(sketch)
+
+        for s in sketches:
+            if not s.check_implemented(self.roles):
+                continue
+            if self.check_duplicated(s, exist_candidates):
+                continue
+            exist_candidates.append(s)
+
+    def output_default(
+        self, flashloan_amount: Decimal, constraints: List[str]
+    ) -> List[str]:
         candidates = sorted(self.candidates, key=lambda s: s.pure_len)
         func_bodys: List[str] = []
         for idx, c in enumerate(candidates):
-            func_bodys.extend(c.output(f"check_cand{idx}", flashloan_amount, constraints))
+            func_bodys.extend(
+                c.output(f"check_cand{idx}", flashloan_amount, constraints)
+            )
         return func_bodys
 
     def gen_candidates_buysell(self) -> List[Sketch]:
@@ -225,14 +251,6 @@ class Synthesizer:
         stable_coins = [k for k, v in self.roles.items() if v.is_stablecoin]
         swap_pairs = [k for k, v in self.roles.items() if v.is_swappair]
         defi_entrys = [k for k, v in self.roles.items() if v.is_defientry]
-        hacked_defi = [k for k, v in self.roles.items() if v.hacked_assets]
-
-        if len(hacked_defi) == 0:
-            return []
-
-        if len(defi_entrys) == 0:
-            return []
-
         candidates: List[Sketch] = []
         for (
             asset0,
@@ -257,29 +275,8 @@ class Synthesizer:
         ):
             if asset0 == asset1:
                 continue
-            # SwapPair 0
-            if asset1 not in self.roles[swap_pair0].support_swaps.get(asset0, []):
-                continue
 
-            # DeFi
-            if asset_hacked not in self.roles[defi_entry].hacked_assets:
-                continue
-
-            # SwapPair 1
-            if asset0 not in self.roles[swap_pair1].support_swaps.get(asset1, []):
-                continue
-
-            # SwapPair 2
-            if stable_coin not in self.roles[swap_pair2].support_swaps.get(
-                asset_hacked, []
-            ):
-                continue
-
-            # SwapPair 3
-            if asset0 not in self.roles[swap_pair3].support_swaps.get(stable_coin, []):
-                continue
-
-            actions0: List[DSLAction] = [
+            template: List[DSLAction] = [
                 Borrow(asset0, "amt0"),
                 Swap(swap_pair0, asset0, asset1, "amt1"),
                 Transaction(defi_entry, asset_hacked, "amt2"),
@@ -289,21 +286,24 @@ class Synthesizer:
                 Payback(asset0, "amt6"),
             ]
 
-            skecthes = [
-                Sketch(actions0),
+            template_times = [
+                (1,),
+                (1,),
+                (1,),
+                (1,),
+                (1,),
+                (1,),
+                (1,),
             ]
 
-            for s in skecthes:
-                if not self.check_duplicated(s, candidates):
-                    candidates.append(s)
+            self.extend_candidates_from_template(template, template_times, candidates)
 
         return candidates
 
-    def gen_candidates_pricediscrepancy(self) -> List[Sketch]:
+    def gen_candidates_pricediscrepancy(self) -> Tuple[List[DSLAction], List[int]]:
         assets = [k for k, v in self.roles.items() if v.is_asset]
         stable_coins = [k for k, v in self.roles.items() if v.is_stablecoin]
         swap_pairs = [k for k, v in self.roles.items() if v.is_swappair]
-
         candidates: List[Sketch] = []
         for (
             asset0,
@@ -319,50 +319,7 @@ class Synthesizer:
             if asset0 == asset1:
                 continue
 
-            # SwapPair 0
-            if asset1 not in self.roles[swap_pair0].support_swaps.get(asset0, []):
-                continue
-
-            # SwapPair 1
-            if asset0 not in self.roles[swap_pair1].support_swaps.get(asset1, []):
-                continue
-
-            # SwapPair 2
-            if stable_coin not in self.roles[swap_pair2].support_swaps.get(asset0, []):
-                continue
-
-            # SwapPair 3
-            if stable_coin not in self.roles[swap_pair3].support_swaps.get(asset1, []):
-                continue
-
-            actions0: List[DSLAction] = [
-                Borrow(asset0, "amt0"),
-                Swap(swap_pair0, asset0, asset1, "amt1"),
-                Swap(swap_pair1, asset1, asset0, "amt2"),
-                # Swap(swap_pair2, asset0, stable_coin, "amt3"),
-                # Swap(swap_pair3, asset1, stable_coin, "amt4"),
-                Payback(asset0, "amt5"),
-            ]
-
-            actions1: List[DSLAction] = [
-                Borrow(asset0, "amt0"),
-                Swap(swap_pair0, asset0, asset1, "amt1"),
-                Swap(swap_pair1, asset1, asset0, "amt2"),
-                # Swap(swap_pair2, asset0, stable_coin, "amt3"),
-                Swap(swap_pair3, asset1, stable_coin, "amt4"),
-                Payback(asset0, "amt5"),
-            ]
-
-            actions2: List[DSLAction] = [
-                Borrow(asset0, "amt0"),
-                Swap(swap_pair0, asset0, asset1, "amt1"),
-                Swap(swap_pair1, asset1, asset0, "amt2"),
-                Swap(swap_pair2, asset0, stable_coin, "amt3"),
-                # Swap(swap_pair3, asset1, stable_coin, "amt4"),
-                Payback(asset0, "amt5"),
-            ]
-
-            actions3: List[DSLAction] = [
+            template: List[DSLAction] = [
                 Borrow(asset0, "amt0"),
                 Swap(swap_pair0, asset0, asset1, "amt1"),
                 Swap(swap_pair1, asset1, asset0, "amt2"),
@@ -371,17 +328,16 @@ class Synthesizer:
                 Payback(asset0, "amt5"),
             ]
 
-            # Rename parameters
-            skecthes = [
-                Sketch(actions0).symbolic_copy(),
-                Sketch(actions1).symbolic_copy(),
-                Sketch(actions2).symbolic_copy(),
-                Sketch(actions3).symbolic_copy(),
+            template_times = [
+                (1,),
+                (1,),
+                (1,),
+                (0, 1),
+                (0, 1),
+                (1,),
             ]
+            self.extend_candidates_from_template(template, template_times, candidates)
 
-            for s in skecthes:
-                if not self.check_duplicated(s, candidates):
-                    candidates.append(s)
         return candidates
 
     def gen_candidates_tokenburn(self) -> List[Sketch]:
@@ -389,9 +345,6 @@ class Synthesizer:
         stable_coins = [k for k, v in self.roles.items() if v.is_stablecoin]
         swap_pairs = [k for k, v in self.roles.items() if v.is_swappair]
         oracles = [k for k, v in self.roles.items() if v.is_oracle]
-
-        if len(oracles) == 0:
-            return []
 
         candidates: List[Sketch] = []
         for (
@@ -408,58 +361,27 @@ class Synthesizer:
             if asset0 == asset1:
                 continue
 
-            # SwapPair 0
-            if asset1 not in self.roles[swap_pair0].support_swaps.get(asset0, []):
-                continue
-
-            # SwapPair 1
-            if stable_coin not in self.roles[swap_pair1].support_swaps.get(asset1, []):
-                continue
-
-            # SwapPair 2
-            if stable_coin not in self.roles[swap_pair2].support_swaps.get(asset0, []):
-                continue
-
-            actions0: List[DSLAction] = [
+            template: List[DSLAction] = [
                 Borrow(asset0, "amt0"),
                 Swap(swap_pair0, asset0, asset1, "amt1"),
                 Burn(oracle, asset1, "amt2"),
-                Payback(asset0, "amt5"),
+                Sync(oracle),
+                Swap(swap_pair0, asset1, asset0, "amt3"),
+                Swap(swap_pair1, asset0, stable_coin, "amt4"),
+                Swap(swap_pair2, asset1, stable_coin, "amt5"),
+                Payback(asset0, "amt6"),
             ]
-
-            actions1: List[DSLAction] = [
-                Borrow(asset0, "amt0"),
-                Swap(swap_pair0, asset0, asset1, "amt1"),
-                Swap(swap_pair1, asset1, asset0, "amt2"),
-                Swap(swap_pair3, asset1, stable_coin, "amt4"),
-                Payback(asset0, "amt5"),
+            template_times = [
+                (1,),
+                (1,),
+                # Use 5 to replace maxmium loop.
+                [i for i in range(5)],
+                (0, 1),
+                (1,),
+                (0, 1),
+                (0, 1),
+                (1,),
             ]
+            self.extend_candidates_from_template(template, template_times, candidates)
 
-            actions2: List[DSLAction] = [
-                Borrow(asset0, "amt0"),
-                Swap(swap_pair0, asset0, asset1, "amt1"),
-                Swap(swap_pair1, asset1, asset0, "amt2"),
-                Swap(swap_pair2, asset0, stable_coin, "amt3"),
-                Payback(asset0, "amt5"),
-            ]
-
-            actions3: List[DSLAction] = [
-                Borrow(asset0, "amt0"),
-                Swap(swap_pair0, asset0, asset1, "amt1"),
-                Swap(swap_pair1, asset1, asset0, "amt2"),
-                Swap(swap_pair2, asset0, stable_coin, "amt3"),
-                Swap(swap_pair3, asset1, stable_coin, "amt4"),
-                Payback(asset0, "amt5"),
-            ]
-
-            skecthes = [
-                Sketch(actions0),
-                Sketch(actions1),
-                Sketch(actions2),
-                Sketch(actions3),
-            ]
-
-            for s in skecthes:
-                if not self.check_duplicated(s, candidates):
-                    candidates.append(s)
         return candidates
