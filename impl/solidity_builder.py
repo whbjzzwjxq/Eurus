@@ -1,10 +1,13 @@
 import os
 import subprocess
-from typing import List
+from typing import List, Dict, Tuple
+
+from decimal import Decimal
 
 from .config import Config, init_config
 from .utils import CornerCase
 from .synthesizer import Synthesizer
+from .dsl import *
 
 
 class BenchmarkBuilder:
@@ -12,22 +15,66 @@ class BenchmarkBuilder:
     Used for building test sol contract to do the test.
     """
 
-    stable_coins = ("USDCE", "USDT", "WETH")
-    pair_name = "UniswapV2Pair"
+    uniswap_pair_ctrt = "UniswapV2Pair"
+    uniswap_factory_ctrt = "UniswapV2Factory"
+    uniswap_router_ctrt = "UniswapV2Router"
+    default_erc20_tokens = [
+        "USDCE",
+        "USDT",
+        "WETH",
+    ]
+    default_import_ctrts = [
+        *default_erc20_tokens,
+        uniswap_pair_ctrt,
+        uniswap_factory_ctrt,
+        uniswap_router_ctrt,
+    ]
 
     def __init__(self, bmk_dir: str) -> None:
         self.bmk_dir = bmk_dir
         self.config: Config = init_config(bmk_dir)
         self.name = self.config.project_name
+        self.roles = self.config.roles
+
         # Map contract's variable name to its contract label.
-        self.ctrt_name_mapping = self.config.ctrt_name_mapping
+        self.ctrt_name2cls = {name: cls for name, cls in self.config.ctrt_name2cls}
+        self.ctrt_name2deploy = self.config.ctrt_name2deploy
         # Like pair, router, usdt, etc.
-        self.ctrt_names = list(self.ctrt_name_mapping.keys())
+        self.ctrt_names = list(self.ctrt_name2cls.keys())
         # Like UniswapV2Router, USDCE, USDT, etc.
-        self.ctrt_labels = set(self.ctrt_name_mapping.values())
+        self.ctrt_cls = set(self.ctrt_name2cls.values())
+
+        self.attack_goal = self.config.attack_goal
+        self.extra_actions = self.config.extra_actions
+        self.extra_deployments = self.config.extra_deployments
+        self.extra_constraints = self.config.extra_constraints
+
+        # Uniswap pairs.
+        self.uniswap_pairs: List[str] = [
+            name for name, role in self.roles.items() if len(role.uniswap_order) != 0
+        ]
+
+        # Uniswap pairs to token_names
+        self.uniswap_pair2tokens: Dict[str, Tuple[str, str]] = {
+            u: tuple(self.roles[u].uniswap_order) for u in self.uniswap_pairs
+        }
+
+        # ERC20 tokens.
+        self.erc20_tokens = [name for name, role in self.roles.items() if role.is_erc20]
 
         # Map state_variable name to its type and initial value.
-        self.init_states = {}
+        self.init_states: Dict[str, Tuple[str, str]] = {}
+
+        # Will print token_users' initial balances.
+        self.token_users = [
+            c
+            for c in self.ctrt_names
+            if (c not in self.erc20_tokens) and (c in self.roles)
+        ] + ["attacker"]
+
+        actions = [init_action_from_list(a, True) for a in self.config.groundtruth]
+        self.sketch = Sketch(actions)
+        self.flashloan_amount = Decimal(self.sketch.actions[-1].amount)
 
     def get_initial_state(self) -> List[str]:
         # bmk_dir = os.path.abspath(os.path.join(os.getcwd(), self.bmk_dir))
@@ -79,24 +126,12 @@ class BenchmarkBuilder:
             'import "forge-std/Test.sol";',
             'import "@utils/QueryBlockchain.sol";',
         ]
-        for c in self.ctrt_labels:
-            if c in ("USDCE", "USDT", "WETH"):
-                imports.append(f'import "@utils/{c}.sol";')
-            elif c == "UniswapV2Pair":
-                imports.append(
-                    'import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";'
-                )
-            elif c == "UniswapV2Factory":
-                imports.append(
-                    'import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";'
-                )
-            elif c == "UniswapV2Router":
-                imports.append(
-                    'import {UniswapV2Router} from "@utils/UniswapV2Router.sol";'
-                )
+        for c in self.ctrt_cls:
+            if c in self.default_import_ctrts:
+                imports.append(f'import {{{c}}} from "@utils/{c}.sol";')
             else:
-                special_import = f'import "./{c}.sol";'
-                imports.append(special_import)
+                imports.append(f'import "./{c}.sol";')
+        imports = sorted(imports)
         all = [license, pragma, *imports]
         return all
 
@@ -104,7 +139,7 @@ class BenchmarkBuilder:
         return [f"contract {self.name}Test is Test, BlockLoader " + "{"]
 
     def gen_state_varibles(self) -> List[str]:
-        contract_interfaces = [f"{v} {k};" for k, v in self.ctrt_name_mapping.items()]
+        contract_interfaces = [f"{v} {k};" for k, v in self.ctrt_name2cls.items()]
         users = [
             f"address attacker;",
             "address constant owner = address(0x123456);",
@@ -121,36 +156,36 @@ class BenchmarkBuilder:
         ]
 
         # Deploy contracts
-        for d in self.config.deployments:
-            ctrt_name, stmt = d
+        for ctrt_name, stmt in self.ctrt_name2deploy:
             # Default deployment
             if stmt == "":
-                ctrt_label = self.ctrt_name_mapping[ctrt_name]
-                if ctrt_label in self.stable_coins:
+                ctrt_label = self.ctrt_name2cls[ctrt_name]
+                if ctrt_label in self.default_erc20_tokens:
                     d_stmt = f"{ctrt_name} = new {ctrt_label}();"
-                elif ctrt_label == "UniswapV2Pair":
-                    token0, token1 = self.config.uniswap_mapping[ctrt_name]
-                    d_stmt = f"{ctrt_name} = new UniswapV2Pair(\
+
+                elif ctrt_label == self.uniswap_pair_ctrt:
+                    token0, token1 = self.uniswap_pair2tokens[ctrt_name]
+                    d_stmt = f"{ctrt_name} = new {self.uniswap_pair_ctrt}(\
                         address({token0}), address({token1}), \
                         reserve0{ctrt_name}, reserve1{ctrt_name}, \
                         blockTimestampLast{ctrt_name}, kLast{ctrt_name}, \
                         price0CumulativeLast{ctrt_name}, price1CumulativeLast{ctrt_name});"
-                elif ctrt_label == "UniswapV2Factory":
-                    pairs = [
-                        k
-                        for k, v in self.ctrt_name_mapping.items()
-                        if v == "UniswapV2Pair"
-                    ]
+
+                elif ctrt_label == self.uniswap_factory_ctrt:
+                    pairs = self.uniswap_pairs
                     if len(pairs) > 3:
                         raise ValueError("More than 3 pairs are not supported.")
-                    while len(pairs) < 3:
-                        pairs.append("0x0")
-                    d_stmt = f"{ctrt_name} = new UniswapV2Factory(address(0xdead), \
-                        address({pairs[0]}), address({pairs[1]}), address({pairs[2]}));"
-                elif ctrt_label == "UniswapV2Router":
-                    d_stmt = f"{ctrt_name} = new UniswapV2Router(address(factory), address(0xdead));"
+                    addrs = [
+                        f"address({pairs[i]})" if i < len(pairs) else "address(0x0)"
+                        for i in range(3)
+                    ]
+                    params = ["address(0xdead)", *addrs]
+                    d_stmt = f'{ctrt_name} = new {self.uniswap_factory_ctrt}({",".join(params)});'
+
+                elif ctrt_label == self.uniswap_router_ctrt:
+                    d_stmt = f"{ctrt_name} = new {self.uniswap_router_ctrt}(address(factory), address(0xdead));"
                 else:
-                    raise CornerCase("Unsupported default deployment.")
+                    raise CornerCase(f"Unsupported default deployment: {ctrt_label}")
             else:
                 d_stmt = f"{ctrt_name} = {stmt};"
             all.append(d_stmt)
@@ -158,16 +193,20 @@ class BenchmarkBuilder:
         all.append("// Initialize balances and mock flashloan.")
 
         # Deploy tokens
-        for t in self.config.tokens:
-            for u in self.config.token_users:
+        for u in self.token_users:
+            addr = f"address({u})" if u != "attacker" else u
+            for t in self.erc20_tokens:
                 sv_name = f"balanceOf{t}{u}"
-                val = self.init_states.get(sv_name, "0")
+                _, val = self.init_states.get(sv_name, ("uint256", "0"))
                 if val != "0":
-                    stmt = f"{t}.transfer(address({u}), {sv_name});"
+                    stmt = f"{t}.transfer({addr}, {sv_name});"
                     all.append(stmt)
-            all.append(f"{t}.approve(attacker, UINT256_MAX);")
 
-        all.extend(self.config.extra_deployments)
+                # Use approve-transfer to mock flashloan
+                if u == "attacker":
+                    all.append(f"{t}.approve(attacker, UINT256_MAX);")
+
+        all.extend(self.extra_deployments)
         all.append("vm.stopPrank();")
         all.append("}")
         return all
@@ -178,12 +217,10 @@ class BenchmarkBuilder:
             "function printBalance(string memory tips) public {",
             "emit log_string(tips);",
         ]
-        tokens = self.config.tokens
-        users = self.config.token_users + ["attacker"]
-        for u in users:
-            printer.append(f'emit log_string("{u.capitalize()} Balances: ");')
+        for u in self.token_users:
             addr = f"address({u})" if u != "attacker" else u
-            for t in tokens:
+            printer.append(f'emit log_string("{u.capitalize()} Balances: ");')
+            for t in self.erc20_tokens:
                 printer.append(
                     f"queryERC20BalanceDecimals(address({t}), {addr}, {t}.decimals());"
                 )
@@ -195,7 +232,7 @@ class BenchmarkBuilder:
         # Attack goal
         attack_goal = [
             "function attackGoal() public view returns (bool) {",
-            f"return {self.config.attack_goal};",
+            f"return {self.attack_goal};",
             "}",
         ]
 
@@ -204,7 +241,7 @@ class BenchmarkBuilder:
         # Actions
         actions = []
         # flashloan borrow-payback
-        for t in self.config.tokens:
+        for t in self.erc20_tokens:
             borrow = [
                 f"function borrow_{t}(uint256 amount) internal " + "{",
                 f"{t}.transferFrom(owner, attacker, amount);",
@@ -220,7 +257,7 @@ class BenchmarkBuilder:
 
         # swap by uniswap
         router_name = "router"
-        for u, t in self.config.uniswap_mapping.items():
+        for u, t in self.uniswap_pair2tokens.items():
             token0, token1 = t
             swap0 = [
                 f"function swap_{u}_{token0}_{token1}(uint256 amount) internal" + "{",
@@ -246,44 +283,19 @@ class BenchmarkBuilder:
             ]
             actions.extend(swap1)
 
-        all = [*printer, *attack_goal, *nop, *actions, *self.config.actions]
+        all = [*printer, *attack_goal, *nop, *actions, *self.extra_actions]
         return all
 
     def gen_gt_for_forge_and_halmos(self) -> List[str]:
         # Build groundtruth test for forge
-        func_body = []
-        for idx, g in enumerate(self.config.groundtruth):
-            name, arg = g
-            if name != "nop":
-                func_body.append(f'printBalance("Before step{idx}: ");')
-                func_body.append(f"{name}({arg});")
-        test_gt = [
-            "function test_gt() public {",
-            *func_body,
-            'require(attackGoal(), "Attack failed!");',
-            '}'
-        ]
-
-        # Build groundtruth test for halmos
-        params = [f"uint256 amt{idx}" for idx in range(self.config.total_amt)]
-        func_body = []
-        for idx, g in enumerate(self.config.groundtruth):
-            name, _ = g
-            if name != "nop":
-                func_body.append(f"{name}(amt{idx});")
-        check_gt = [
-            f'function check_gt({",".join(params)}) public ' + "{",
-            *[f"vm.assume({c});" for c in self.config.constraints],
-            *func_body,
-            "assert(!attackGoal());",
-            "}",
-        ]
+        test_gt = self.sketch.output_test("test_gt")
+        check_gt = self.sketch.symbolic_copy().output("check_gt", self.flashloan_amount, self.extra_constraints)
         all = [*test_gt, *check_gt]
         return all
-    
+
     def gen_candidates(self) -> List[str]:
         synthesizer = Synthesizer(self.config)
-        return synthesizer.output()
+        return synthesizer.output_default(self.flashloan_amount, self.extra_constraints)
 
     def output(self, output_path: str):
         if os.path.exists(output_path):

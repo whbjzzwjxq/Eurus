@@ -1,32 +1,16 @@
 project_name: "MUMUG"
 
-ctrt_name_mapping:
-  "mubank": "MuBank"
-  "mu": "Mu"
-  "usdce": "USDCE"
-  "pair": "UniswapV2Pair"
-  "factory": "UniswapV2Factory"
-  "router": "UniswapV2Router"
-
-tokens:
-  - "mu"
-  - "usdce"
-
-token_users:
-  - "mubank"
-  - "pair"
-
-uniswap_mapping:
-  "pair": ["usdce", "mu"]
-
-actions:
-  - "function swap_mubank_usdce_mu(uint256 sendAmount) internal {
-    usdce.approve(address(mubank), type(uint).max);
-    mubank.mu_bond(address(usdce), sendAmount);
-    }"
+# Abstract name of a DeFi contract and its class name.
+ctrt_name2cls:
+  - ["mu", "Mu"]
+  - ["usdce", "USDCE"]
+  - ["pair", "UniswapV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+  - ["mubank", "MuBank"]
 
 # For contract deployment
-deployments:
+ctrt_name2deploy:
   - ["mu", "new Mu(totalSupplymu)"]
   - ["usdce", ""]
   - ["pair", ""]
@@ -34,32 +18,32 @@ deployments:
   - ["router", ""]
   - ["mubank", "new MuBank(address(router), address(pair), address(mu))"]
 
-# For extra deployment after the contract deployment
+extra_actions:
+  - "function swap_mubank_usdce_mu(uint256 sendAmount) internal {
+    usdce.approve(address(mubank), type(uint).max);
+    mubank.mu_bond(address(usdce), sendAmount);
+    }"
+
 extra_deployments: []
 
-attack_goal:
-  "usdce.balanceOf(attacker) >= 10e6"
+extra_constraints: []
+
+attack_goal: "usdce.balanceOf(attacker) >= 1e6"
 
 groundtruth:
-  - ["borrow_mu", "99000 ether"]
-  - ["swap_pair_mu_usdce", "99000 ether"]
-  - ["swap_mubank_usdce_mu", "22960 ether"]
-  - ["nop", "0"]
-  - ["nop", "0"]
-  - ["payback_mu", "99300 ether"]
+  - ["borrow", "mu", "99000e18"]
+  - ["swap", "pair", "mu", "usdce", "99000e18"]
+  - ["swap", "mubank", "usdce", "mu", "22960e18"]
+  - ["payback", "mu", "99297e18"]
 
-# Constraints for flashLoan payback
-constraints:
-  - "amt5 == amt0 + 300 ether"
-
-
-# Extra Information
 roles:
   "usdce":
     is_asset: true
+    is_erc20: true
     is_stablecoin: true
   "mu":
     is_asset: true
+    is_erc20: true
     is_stablecoin: false
   "mubank":
     is_swappair: true
@@ -67,22 +51,9 @@ roles:
       "usdce": ["mu", "usdce"]
   "pair":
     is_swappair: true
+    uniswap_order: ["usdce", "mu"]
     support_swaps:
       "mu": ["mu", "usdce"]
       "usdce": ["mu", "usdce"]
-  
-pattern:
-  "Price Discrepancy"
 
-total_amt:
-  6
-
-# Not used currently
-contract_names_mapping:
-  "UniswapV1.token": "ERC20Basic"
-  "UniswapV1.weth": "WETH"
-  "PuppetPool.token": "ERC20Basic"
-  "PuppetPool.weth": "WETH"
-  "PuppetPool.uniswap": "UniswapV1"
-attack_state_variables:
-  - "WETH.balances"
+pattern: "Price Discrepancy"

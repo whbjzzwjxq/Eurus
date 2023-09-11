@@ -79,4 +79,10 @@ abstract contract BlockLoader is Test {
         );
         emit log_string(concatString("----queryUniswapV2Pair ends----", name));
     }
+
+    function queryBlockTimestamp() public {
+        emit log_string("----queryBlockTimestamp starts----");
+        emit log_named_uint("uint256 blockTimestamp", block.timestamp);
+        emit log_string("----queryBlockTimestamp ends----");
+    }
 }

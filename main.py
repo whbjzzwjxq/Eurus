@@ -7,8 +7,8 @@ from subprocess import DEVNULL, PIPE, Popen, TimeoutExpired
 from typing import List
 
 from impl.defi import Defi
-from impl.synthesizer import Synthesizer, OldSynthesizer
-from impl.benchmark_builder import BenchmarkBuilder
+# from impl.synthesizer import Synthesizer, OldSynthesizer
+from impl.solidity_builder import BenchmarkBuilder
 # from impl.output2racket import output_defi
 
 parser = argparse.ArgumentParser()
@@ -103,11 +103,11 @@ def forge_test(bmk_dir: str, timeout: int):
             json.dump(err, f)
 
 
-def mock_evaluate(bmk_dir: str):
-    defi = Defi(bmk_dir)
-    synthesizer = OldSynthesizer(defi)
-    output_path = path.abspath(path.join(bmk_dir, "_rw_eval.csv"))
-    synthesizer.mock_eval(output_path)
+# def mock_evaluate(bmk_dir: str):
+#     defi = Defi(bmk_dir)
+#     synthesizer = OldSynthesizer(defi)
+#     output_path = path.abspath(path.join(bmk_dir, "_rw_eval.csv"))
+#     synthesizer.mock_eval(output_path)
 
 
 def generate_rw_graph(bmk_dir: str):
@@ -138,8 +138,8 @@ def _main():
             forge_test(bmk_dir, args.timeout)
         if args.rwgraph:
             generate_rw_graph(bmk_dir)
-        if args.mockeval:
-            mock_evaluate(bmk_dir)
+        # if args.mockeval:
+        #     mock_evaluate(bmk_dir)
         # if args.outputrkt:
         #     output2racket(bmk_dir)
 
