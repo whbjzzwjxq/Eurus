@@ -28,7 +28,7 @@ extra_deployments: []
 
 extra_constraints: []
 
-attack_goal: "usdt.balanceOf(attacker) >= 1e18"
+attack_goal: "usdt.balanceOf(attacker) >= 1e18 + balanceOfusdtattacker"
 
 groundtruth:
   - ["borrow", "usdt", "200000e18"]

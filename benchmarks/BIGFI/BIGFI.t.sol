@@ -93,7 +93,7 @@ contract BIGFITest is Test, BlockLoader {
     }
 
     function attackGoal() public view returns (bool) {
-        return usdt.balanceOf(attacker) >= 1e18;
+        return usdt.balanceOf(attacker) >= 1e18 + balanceOfusdtattacker;
     }
 
     function nop(uint256 amount) internal pure {

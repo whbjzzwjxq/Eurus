@@ -151,6 +151,7 @@ def halmos_test(bmk_dir: str, timeout: int):
             "--json-output",
             json_output,
         ]
+        print(" ".join(cmds))
         proc, err = None, None
         try:
             proc = run(cmds, timeout=timeout, text=True, capture_output=True)

