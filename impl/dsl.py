@@ -262,7 +262,7 @@ class Sketch:
             constraints = []
         # Here, all of benchmarks have flashloan.
         constraints = [
-            f"{self.actions[-1].amount} == {int(flashloan_amount * Decimal(1.003))}",
+            f"{self.actions[-1].amount} == {self.actions[0].amount} + {int(flashloan_amount * Decimal(1.003))}",
             *constraints,
         ]
 

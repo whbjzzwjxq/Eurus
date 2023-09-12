@@ -80,7 +80,7 @@ class BenchmarkBuilder:
     def get_initial_state(self) -> List[str]:
         # Handle the initial states print by foundry.
         # Look at: QueryBlockchain.sol and query_output_example.txt for more information.
-        cache_file = path.join(self.bmk_dir, "query_cache")
+        cache_file = path.join(self.bmk_dir, "_query.cache")
         if path.exists(cache_file):
             with open(cache_file, "r") as f:
                 outputs = f.readlines()

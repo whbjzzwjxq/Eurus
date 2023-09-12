@@ -242,7 +242,7 @@ class Synthesizer:
         func_bodys: List[str] = []
         for idx, c in enumerate(candidates):
             func_bodys.extend(
-                c.output(f"check_cand{idx}", flashloan_amount, constraints)
+                c.output(f"check_cand{str(idx).zfill(3)}", flashloan_amount, constraints)
             )
         return func_bodys
 

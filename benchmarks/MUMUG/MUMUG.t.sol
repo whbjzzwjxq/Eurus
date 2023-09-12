@@ -173,7 +173,7 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == 99296999999999989272581);
+        vm.assume(amt3 == amt0 + 99296999999999989272581);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_mubank_usdce_mu(amt2);
@@ -181,13 +181,13 @@ contract MUMUGTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand0(
+    function check_cand000(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == 99296999999999989272581);
+        vm.assume(amt3 == amt0 + 99296999999999989272581);
         borrow_usdce(amt0);
         swap_mubank_usdce_mu(amt1);
         swap_pair_mu_usdce(amt2);
@@ -195,13 +195,13 @@ contract MUMUGTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand1(
+    function check_cand001(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == 99296999999999989272581);
+        vm.assume(amt3 == amt0 + 99296999999999989272581);
         borrow_usdce(amt0);
         swap_pair_usdce_mu(amt1);
         swap_pair_mu_usdce(amt2);
@@ -209,13 +209,13 @@ contract MUMUGTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand2(
+    function check_cand002(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == 99296999999999989272581);
+        vm.assume(amt3 == amt0 + 99296999999999989272581);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_mubank_usdce_mu(amt2);
@@ -223,13 +223,13 @@ contract MUMUGTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand3(
+    function check_cand003(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == 99296999999999989272581);
+        vm.assume(amt3 == amt0 + 99296999999999989272581);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_pair_usdce_mu(amt2);
@@ -237,14 +237,14 @@ contract MUMUGTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand4(
+    function check_cand004(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == 99296999999999989272581);
+        vm.assume(amt4 == amt0 + 99296999999999989272581);
         borrow_usdce(amt0);
         swap_mubank_usdce_mu(amt1);
         swap_pair_mu_usdce(amt2);
@@ -253,14 +253,14 @@ contract MUMUGTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand5(
+    function check_cand005(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == 99296999999999989272581);
+        vm.assume(amt4 == amt0 + 99296999999999989272581);
         borrow_usdce(amt0);
         swap_pair_usdce_mu(amt1);
         swap_pair_mu_usdce(amt2);
@@ -269,14 +269,14 @@ contract MUMUGTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand6(
+    function check_cand006(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == 99296999999999989272581);
+        vm.assume(amt4 == amt0 + 99296999999999989272581);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_mubank_usdce_mu(amt2);
@@ -285,14 +285,14 @@ contract MUMUGTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand7(
+    function check_cand007(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == 99296999999999989272581);
+        vm.assume(amt4 == amt0 + 99296999999999989272581);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_pair_usdce_mu(amt2);
