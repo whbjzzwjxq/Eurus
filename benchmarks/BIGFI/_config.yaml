@@ -46,6 +46,7 @@ roles:
     is_asset: true
     is_erc20: true
     is_stablecoin: false
+    is_burnable: true
   "pair":
     is_swappair: true
     uniswap_order: ["usdt", "bigfi"]

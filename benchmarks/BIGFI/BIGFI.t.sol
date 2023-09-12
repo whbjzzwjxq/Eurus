@@ -181,4 +181,332 @@ contract BIGFITest is Test, BlockLoader {
         payback_usdt(amt4);
         assert(!attackGoal());
     }
+
+    function check_cand000(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4
+    ) public {
+        vm.assume(amt4 == amt0 + 200599999999999978328446);
+        borrow_usdt(amt0);
+        swap_pair_usdt_bigfi(amt1);
+        burn_pair_bigfi(amt2);
+        swap_pair_bigfi_usdt(amt3);
+        payback_usdt(amt4);
+        assert(!attackGoal());
+    }
+
+    function check_cand001(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.assume(amt5 == amt0 + 200599999999999978328446);
+        borrow_usdt(amt0);
+        swap_pair_usdt_bigfi(amt1);
+        burn_pair_bigfi(amt2);
+        swap_pair_bigfi_usdt(amt3);
+        swap_pair_bigfi_usdt(amt4);
+        payback_usdt(amt5);
+        assert(!attackGoal());
+    }
+
+    function check_cand002(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4
+    ) public {
+        vm.assume(amt4 == amt0 + 200599999999999978328446);
+        borrow_usdt(amt0);
+        swap_pair_usdt_bigfi(amt1);
+        burn_pair_bigfi(amt2);
+        sync_pair();
+        swap_pair_bigfi_usdt(amt3);
+        payback_usdt(amt4);
+        assert(!attackGoal());
+    }
+
+    function check_cand003(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.assume(amt5 == amt0 + 200599999999999978328446);
+        borrow_usdt(amt0);
+        swap_pair_usdt_bigfi(amt1);
+        burn_pair_bigfi(amt2);
+        burn_pair_bigfi(amt3);
+        swap_pair_bigfi_usdt(amt4);
+        payback_usdt(amt5);
+        assert(!attackGoal());
+    }
+
+    function check_cand004(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.assume(amt5 == amt0 + 200599999999999978328446);
+        borrow_usdt(amt0);
+        swap_pair_usdt_bigfi(amt1);
+        burn_pair_bigfi(amt2);
+        sync_pair();
+        swap_pair_bigfi_usdt(amt3);
+        swap_pair_bigfi_usdt(amt4);
+        payback_usdt(amt5);
+        assert(!attackGoal());
+    }
+
+    function check_cand005(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.assume(amt6 == amt0 + 200599999999999978328446);
+        borrow_usdt(amt0);
+        swap_pair_usdt_bigfi(amt1);
+        burn_pair_bigfi(amt2);
+        burn_pair_bigfi(amt3);
+        swap_pair_bigfi_usdt(amt4);
+        swap_pair_bigfi_usdt(amt5);
+        payback_usdt(amt6);
+        assert(!attackGoal());
+    }
+
+    function check_cand006(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.assume(amt5 == amt0 + 200599999999999978328446);
+        borrow_usdt(amt0);
+        swap_pair_usdt_bigfi(amt1);
+        burn_pair_bigfi(amt2);
+        burn_pair_bigfi(amt3);
+        sync_pair();
+        swap_pair_bigfi_usdt(amt4);
+        payback_usdt(amt5);
+        assert(!attackGoal());
+    }
+
+    function check_cand007(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.assume(amt6 == amt0 + 200599999999999978328446);
+        borrow_usdt(amt0);
+        swap_pair_usdt_bigfi(amt1);
+        burn_pair_bigfi(amt2);
+        burn_pair_bigfi(amt3);
+        burn_pair_bigfi(amt4);
+        swap_pair_bigfi_usdt(amt5);
+        payback_usdt(amt6);
+        assert(!attackGoal());
+    }
+
+    function check_cand008(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.assume(amt6 == amt0 + 200599999999999978328446);
+        borrow_usdt(amt0);
+        swap_pair_usdt_bigfi(amt1);
+        burn_pair_bigfi(amt2);
+        burn_pair_bigfi(amt3);
+        sync_pair();
+        swap_pair_bigfi_usdt(amt4);
+        swap_pair_bigfi_usdt(amt5);
+        payback_usdt(amt6);
+        assert(!attackGoal());
+    }
+
+    function check_cand009(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.assume(amt7 == amt0 + 200599999999999978328446);
+        borrow_usdt(amt0);
+        swap_pair_usdt_bigfi(amt1);
+        burn_pair_bigfi(amt2);
+        burn_pair_bigfi(amt3);
+        burn_pair_bigfi(amt4);
+        swap_pair_bigfi_usdt(amt5);
+        swap_pair_bigfi_usdt(amt6);
+        payback_usdt(amt7);
+        assert(!attackGoal());
+    }
+
+    function check_cand010(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.assume(amt6 == amt0 + 200599999999999978328446);
+        borrow_usdt(amt0);
+        swap_pair_usdt_bigfi(amt1);
+        burn_pair_bigfi(amt2);
+        burn_pair_bigfi(amt3);
+        burn_pair_bigfi(amt4);
+        sync_pair();
+        swap_pair_bigfi_usdt(amt5);
+        payback_usdt(amt6);
+        assert(!attackGoal());
+    }
+
+    function check_cand011(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.assume(amt7 == amt0 + 200599999999999978328446);
+        borrow_usdt(amt0);
+        swap_pair_usdt_bigfi(amt1);
+        burn_pair_bigfi(amt2);
+        burn_pair_bigfi(amt3);
+        burn_pair_bigfi(amt4);
+        burn_pair_bigfi(amt5);
+        swap_pair_bigfi_usdt(amt6);
+        payback_usdt(amt7);
+        assert(!attackGoal());
+    }
+
+    function check_cand012(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.assume(amt7 == amt0 + 200599999999999978328446);
+        borrow_usdt(amt0);
+        swap_pair_usdt_bigfi(amt1);
+        burn_pair_bigfi(amt2);
+        burn_pair_bigfi(amt3);
+        burn_pair_bigfi(amt4);
+        sync_pair();
+        swap_pair_bigfi_usdt(amt5);
+        swap_pair_bigfi_usdt(amt6);
+        payback_usdt(amt7);
+        assert(!attackGoal());
+    }
+
+    function check_cand013(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8
+    ) public {
+        vm.assume(amt8 == amt0 + 200599999999999978328446);
+        borrow_usdt(amt0);
+        swap_pair_usdt_bigfi(amt1);
+        burn_pair_bigfi(amt2);
+        burn_pair_bigfi(amt3);
+        burn_pair_bigfi(amt4);
+        burn_pair_bigfi(amt5);
+        swap_pair_bigfi_usdt(amt6);
+        swap_pair_bigfi_usdt(amt7);
+        payback_usdt(amt8);
+        assert(!attackGoal());
+    }
+
+    function check_cand014(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.assume(amt7 == amt0 + 200599999999999978328446);
+        borrow_usdt(amt0);
+        swap_pair_usdt_bigfi(amt1);
+        burn_pair_bigfi(amt2);
+        burn_pair_bigfi(amt3);
+        burn_pair_bigfi(amt4);
+        burn_pair_bigfi(amt5);
+        sync_pair();
+        swap_pair_bigfi_usdt(amt6);
+        payback_usdt(amt7);
+        assert(!attackGoal());
+    }
+
+    function check_cand015(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8
+    ) public {
+        vm.assume(amt8 == amt0 + 200599999999999978328446);
+        borrow_usdt(amt0);
+        swap_pair_usdt_bigfi(amt1);
+        burn_pair_bigfi(amt2);
+        burn_pair_bigfi(amt3);
+        burn_pair_bigfi(amt4);
+        burn_pair_bigfi(amt5);
+        sync_pair();
+        swap_pair_bigfi_usdt(amt6);
+        swap_pair_bigfi_usdt(amt7);
+        payback_usdt(amt8);
+        assert(!attackGoal());
+    }
 }
