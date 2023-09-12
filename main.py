@@ -1,7 +1,7 @@
 import argparse
 import json
 import os
-from subprocess import run, TimeoutExpired
+from subprocess import run, TimeoutExpired, CalledProcessError
 from os import path
 from typing import List, Tuple
 import time
@@ -129,33 +129,40 @@ def forge_test(bmk_dir: str, timeout: int):
 def halmos_test(bmk_dir: str, timeout: int):
     project_name = resolve_project_name(bmk_dir)
     _, result_path = prepare_subfolder(bmk_dir)
-    json_output = path.join(result_path, "halmos_out.json")
-    cmds = [
-        "halmos",
-        "-vvvvv",
-        "--function",
-        "check_cand",
-        "--contract",
-        f"{project_name}Test",
-        "--forge-build-out",
-        ".cache",
-        "--print-potential-counterexample",
-        "--solver-timeout-branching",
-        "10000",
-        "--solver-timeout-assertion",
-        "10000",
-        "--json-output",
-        json_output,
-    ]
-    try:
-        _ = run(cmds, timeout=timeout, text=True, check=True)
-    except TimeoutExpired:
-        err = {"error": "timeout", "details": ""}
-    except Exception as e:
-        err = {"error": "unknown", "details": str(e)}
-    if err:
-        with open(path.join(result_path, "halmos_err.json"), "w") as f:
-            json.dump(err, f)
+    for i in range(100):
+        idx = str(i).zfill(3)
+        json_output = path.join(result_path, f"halmos_out{idx}.json")
+        cmds = [
+            "halmos",
+            "-vvvvv",
+            "--function",
+            f"check_cand{idx}",
+            "--contract",
+            f"{project_name}Test",
+            "--forge-build-out",
+            ".cache",
+            "--print-potential-counterexample",
+            "--solver-timeout-branching",
+            "10000",
+            "--solver-timeout-assertion",
+            "10000",
+            "--json-output",
+            json_output,
+        ]
+        proc, err = None, None
+        try:
+            proc = run(cmds, timeout=timeout, text=True, capture_output=True)
+        except TimeoutExpired:
+            err = {"error": "timeout", "details": ""}
+        except Exception as e:
+            err = {"error": "unknown", "details": str(e)}
+        if proc:
+            if "Error: No tests with the prefix" in proc.stdout:
+                break
+            print(proc.stdout, proc.stderr)
+        if err:
+            with open(path.join(result_path, f"halmos_err{idx}.json"), "w") as f:
+                json.dump(err, f)
 
 
 def _main():

@@ -163,3 +163,4 @@ _rw_eval.csv
 _defi_racket.json
 
 node_modules
+benchmarks/**/result/*
