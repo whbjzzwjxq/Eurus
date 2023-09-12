@@ -375,7 +375,7 @@ class Synthesizer:
                 (1,),
                 (1,),
                 # Use 5 to replace maxmium loop.
-                [i for i in range(5)],
+                [i for i in range(1, 5)],
                 (0, 1),
                 (1,),
                 (0, 1),

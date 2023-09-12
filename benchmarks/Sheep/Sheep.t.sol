@@ -194,65 +194,6 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3
-    ) public {
-        vm.assume(amt3 == amt0 + 38113999999999995882);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_sheep(amt1);
-        swap_pair_sheep_wbnb(amt2);
-        payback_wbnb(amt3);
-        assert(!attackGoal());
-    }
-
-    function check_cand001(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3
-    ) public {
-        vm.assume(amt3 == amt0 + 38113999999999995882);
-        borrow_sheep(amt0);
-        swap_pair_sheep_wbnb(amt1);
-        swap_pair_wbnb_sheep(amt2);
-        payback_sheep(amt3);
-        assert(!attackGoal());
-    }
-
-    function check_cand002(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
-        vm.assume(amt4 == amt0 + 38113999999999995882);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_sheep(amt1);
-        swap_pair_sheep_wbnb(amt2);
-        swap_pair_sheep_wbnb(amt3);
-        payback_wbnb(amt4);
-        assert(!attackGoal());
-    }
-
-    function check_cand003(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3
-    ) public {
-        vm.assume(amt3 == amt0 + 38113999999999995882);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_sheep(amt1);
-        sync_pair();
-        swap_pair_sheep_wbnb(amt2);
-        payback_wbnb(amt3);
-        assert(!attackGoal());
-    }
-
-    function check_cand004(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
         uint256 amt3,
         uint256 amt4
     ) public {
@@ -265,55 +206,7 @@ contract SheepTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand005(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
-        vm.assume(amt4 == amt0 + 38113999999999995882);
-        borrow_sheep(amt0);
-        swap_pair_sheep_wbnb(amt1);
-        swap_pair_wbnb_sheep(amt2);
-        swap_pair_sheep_wbnb(amt3);
-        payback_sheep(amt4);
-        assert(!attackGoal());
-    }
-
-    function check_cand006(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3
-    ) public {
-        vm.assume(amt3 == amt0 + 38113999999999995882);
-        borrow_sheep(amt0);
-        swap_pair_sheep_wbnb(amt1);
-        sync_pair();
-        swap_pair_wbnb_sheep(amt2);
-        payback_sheep(amt3);
-        assert(!attackGoal());
-    }
-
-    function check_cand007(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
-        vm.assume(amt4 == amt0 + 38113999999999995882);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_sheep(amt1);
-        sync_pair();
-        swap_pair_sheep_wbnb(amt2);
-        swap_pair_sheep_wbnb(amt3);
-        payback_wbnb(amt4);
-        assert(!attackGoal());
-    }
-
-    function check_cand008(
+    function check_cand001(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -331,7 +224,7 @@ contract SheepTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand009(
+    function check_cand002(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -348,7 +241,7 @@ contract SheepTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand010(
+    function check_cand003(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -366,24 +259,7 @@ contract SheepTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand011(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
-        vm.assume(amt4 == amt0 + 38113999999999995882);
-        borrow_sheep(amt0);
-        swap_pair_sheep_wbnb(amt1);
-        sync_pair();
-        swap_pair_wbnb_sheep(amt2);
-        swap_pair_sheep_wbnb(amt3);
-        payback_sheep(amt4);
-        assert(!attackGoal());
-    }
-
-    function check_cand012(
+    function check_cand004(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -402,7 +278,7 @@ contract SheepTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand013(
+    function check_cand005(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -422,7 +298,7 @@ contract SheepTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand014(
+    function check_cand006(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -441,7 +317,7 @@ contract SheepTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand015(
+    function check_cand007(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -461,7 +337,7 @@ contract SheepTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand016(
+    function check_cand008(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -482,7 +358,7 @@ contract SheepTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand017(
+    function check_cand009(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -504,7 +380,7 @@ contract SheepTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand018(
+    function check_cand010(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -525,7 +401,7 @@ contract SheepTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand019(
+    function check_cand011(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -547,7 +423,7 @@ contract SheepTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand020(
+    function check_cand012(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -570,7 +446,7 @@ contract SheepTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand021(
+    function check_cand013(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -594,7 +470,7 @@ contract SheepTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand022(
+    function check_cand014(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -617,7 +493,7 @@ contract SheepTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand023(
+    function check_cand015(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
