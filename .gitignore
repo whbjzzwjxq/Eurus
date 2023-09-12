@@ -155,12 +155,13 @@ cython_debug/
 .vscode
 .idea
 .DS_Store
-cache
-.cache-halmos
 .cache
+cache
 *.gv
 _rw_eval.csv
 _defi_racket.json
 
 node_modules
-benchmarks/**/result/*
+benchmarks/**/result
+benchmarks/**/.cache
+

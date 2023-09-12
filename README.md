@@ -17,23 +17,19 @@ npm install --save-dev
 ```
 
 ## Evaluation
-### Forge test (attack ground truth)
+### Forge test
 ```bash
 forge test --match-path ./benchmarks/MUMUG/MUMUG.t.sol -vvvv
 ```
 
-### Halmos (Example)
+### Halmos test
 (Add caffeinate on macbook)
 ```bash
-halmos -vvvvv --function check_cand \
---contract MUMUGTest --forge-build-out .cache \
---print-potential-counterexample --symbolic-storage \
---solver-timeout-branching 10000 --solver-timeout-assertion 10000 \
-| tee ./benchmarks/MUMUG/MUMUG.output
+python3 ./main.py -ha -i ./benchmarks/MUMUG
 ```
 
 ## Tips
-Halomos will use the same cache directory as foundry.toml.
+Halmos will use the same cache directory as foundry.toml.
 
 Supported cheating codes: [Check this file](https://github.com/a16z/halmos/blob/6be83f77b9b4775c4c27fd262fc4b7faaf8a1a22/src/halmos/sevm.py#L1828)
 

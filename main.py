@@ -142,6 +142,8 @@ def halmos_test(bmk_dir: str, timeout: int):
             "--forge-build-out",
             ".cache",
             "--print-potential-counterexample",
+            # It doesn't work.
+            # "--symbolic-storage",
             "--solver-timeout-branching",
             "10000",
             "--solver-timeout-assertion",
