@@ -80,7 +80,7 @@ class BenchmarkBuilder:
     def get_initial_state(self) -> List[str]:
         # Handle the initial states print by foundry.
         # Look at: QueryBlockchain.sol and query_output_example.txt for more information.
-        cache_file = path.join(self.bmk_dir, "_query.cache")
+        cache_file = path.join(self.bmk_dir, "result", "_query.cache")
         if path.exists(cache_file):
             with open(cache_file, "r") as f:
                 outputs = f.readlines()
@@ -335,20 +335,3 @@ class BenchmarkBuilder:
             for l in results:
                 f.write(l)
                 f.write("\n")
-
-        # Format
-        cmd = [
-            "npx",
-            "prettier",
-            "--write",
-            "--plugin=prettier-plugin-solidity",
-            f"{output_path}",
-        ]
-        subprocess.run(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            cwd=os.getcwd(),
-            check=True,
-        )

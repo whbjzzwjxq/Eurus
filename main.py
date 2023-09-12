@@ -1,52 +1,37 @@
 import argparse
 import json
 import os
-import time
+from subprocess import run, TimeoutExpired
 from os import path
-from subprocess import DEVNULL, PIPE, Popen, TimeoutExpired
-from typing import List
+from typing import List, Tuple
+import time
 
-from impl.defi import Defi
-
-# from impl.synthesizer import Synthesizer, OldSynthesizer
 from impl.solidity_builder import BenchmarkBuilder
 
-# from impl.output2racket import output_defi
-
 parser = argparse.ArgumentParser()
-parser.add_argument("-i", "--input", help="Target contract directory.", default="")
 parser.add_argument(
-    "-p", "--prepare", help="Prepare the sol file to execute.", action="store_true"
+    "-p", "--prepare", help="Prepare all sol files to execute.", action="store_true"
 )
 parser.add_argument(
-    "-f", "--forge", help="Do the forge invariant test.", action="store_true"
+    "-i",
+    "--input",
+    help="Input benchmark directory. Set to all for all of benchmarks.",
+    default="",
 )
 parser.add_argument(
-    "--rwgraph", help="Generate the Read/Write analysis graph.", action="store_true"
+    "-fo", "--forge", help="Do Foundry fuzzing test.", action="store_true"
 )
 parser.add_argument(
-    "-m", "--mockeval", help="Mock the evaluation.", action="store_true"
+    "-ha", "--halmos", help="Do Halmos symbolic execution.", action="store_true"
 )
-parser.add_argument("-e", "--eval", help="Do the evaluation.", action="store_true")
 parser.add_argument("-s", "--statistic", help="Print statistic.", action="store_true")
-# parser.add_argument("--outputrkt", help="Output to Racket.", action="store_true")
-parser.add_argument("--timeout", help="Timeout.", type=int, default=3600)
+parser.add_argument(
+    "--timeout", help="Set the total timeout.", type=int, default=3600 * 10
+)
 
 
-def execute(cmds: List[str], timeout=3600, stdout=DEVNULL, stderr=DEVNULL):
-    cmd = " ".join(cmds)
-    print(cmd)
-    proc = Popen(cmd, shell=True, stdout=stdout, stderr=stderr)
-    try:
-        return proc.communicate(timeout=timeout)
-    except TimeoutExpired as tee:
-        proc.terminate()
-        proc.communicate()
-        raise tee
-
-
-def get_bmk_dirs(bmk_dir: str):
-    # Don't use absolute path, because foundry doesn't support.
+def get_bmk_dirs(bmk_dir: str) -> List[str]:
+    # Don't use an absolute path, because Foundry doesn't support it.
     benmark_folder = "./benchmarks"
     if bmk_dir == "all":
         bmk_dirs = []
@@ -66,19 +51,50 @@ def get_bmk_dirs(bmk_dir: str):
     return bmk_dirs
 
 
-def resolve_bmk_name(bmk_dir: str):
+def resolve_project_name(bmk_dir: str):
     return path.basename(bmk_dir)
 
 
-def forge_test(bmk_dir: str, timeout: int):
-    bmk_name = resolve_bmk_name(bmk_dir)
-    test_solfile = path.join(bmk_dir, f"{bmk_name}.t.sol")
+def prepare_subfolder(bmk_dir: str) -> Tuple[str, str]:
     cache_path = path.join(bmk_dir, ".cache")
     if not path.exists(cache_path):
         os.mkdir(cache_path)
     result_path = path.join(bmk_dir, "result")
     if not path.exists(result_path):
         os.mkdir(result_path)
+    return cache_path, result_path
+
+
+def prepare():
+    bmk_dirs = get_bmk_dirs("all")
+    for bmk_dir in bmk_dirs:
+        project_name = resolve_project_name(bmk_dir)
+        output_file = path.join(bmk_dir, f"{project_name}.t.sol")
+        print(f"Output path is: {output_file}")
+        if path.exists(output_file):
+            os.remove(output_file)
+        _ = prepare_subfolder(bmk_dir)
+    for bmk_dir in bmk_dirs:
+        project_name = resolve_project_name(bmk_dir)
+        builder = BenchmarkBuilder(bmk_dir)
+        output_file = path.join(bmk_dir, f"{project_name}.t.sol")
+        builder.output(output_file)
+
+        # Format
+        cmd = [
+            "npx",
+            "prettier",
+            "--write",
+            "--plugin=prettier-plugin-solidity",
+            f"{output_file}",
+        ]
+        run(cmd, text=True, check=True)
+
+
+def forge_test(bmk_dir: str, timeout: int):
+    project_name = resolve_project_name(bmk_dir)
+    test_solfile = path.join(bmk_dir, f"{project_name}_forge.t.sol")
+    cache_path, result_path = prepare_subfolder(bmk_dir)
     cmds = [
         "forge",
         "test",
@@ -93,57 +109,53 @@ def forge_test(bmk_dir: str, timeout: int):
     ]
     out = {}
     err = {}
+    timer = time.perf_counter()
     try:
-        init_timer = time.perf_counter()
-        out, _ = execute(cmds, timeout=timeout, stdout=PIPE, stderr=PIPE)
-        timecost = time.perf_counter() - init_timer
+        out = run(cmds, timeout=timeout, text=True, check=True, capture_output=True)
     except TimeoutExpired:
-        err = {"error": "timeout"}
+        err = {"error": "timeout", "details": ""}
     except Exception as e:
-        err = {"error": str(e)}
+        err = {"error": "unknown", "details": str(e)}
     if out:
+        timecost = time.perf_counter() - timer
         out = {"time": timecost, "result": str(out)}
-        with open(path.join(result_path, "out.log"), "w") as f:
+        with open(path.join(result_path, "forge_out.json"), "w") as f:
             json.dump(out, f)
     if err:
-        with open(path.join(result_path, "err.log"), "w") as f:
+        with open(path.join(result_path, "forge_err.json"), "w") as f:
             json.dump(err, f)
 
 
-# def mock_evaluate(bmk_dir: str):
-#     defi = Defi(bmk_dir)
-#     synthesizer = OldSynthesizer(defi)
-#     output_path = path.abspath(path.join(bmk_dir, "_rw_eval.csv"))
-#     synthesizer.mock_eval(output_path)
-
-
-def generate_rw_graph(bmk_dir: str):
-    defi = Defi(bmk_dir)
-    output_path = path.abspath(path.join(bmk_dir, "_rw.gv"))
-    defi.print_rw_graph(output_path)
-
-
-# def output2racket(bmk_dir: str):
-#     defi = Defi(bmk_dir)
-#     output_path = path.abspath(path.join(bmk_dir, "_defi_racket.json"))
-#     obj = output_defi(defi)
-#     with open(output_path, "w") as f:
-#         json.dump(obj, f)
-
-
-def prepare():
-    bmk_dirs = get_bmk_dirs("all")
-    for bmk_dir in bmk_dirs:
-        project_name = resolve_bmk_name(bmk_dir)
-        output_path = path.join(bmk_dir, f"{project_name}.t.sol")
-        print(f"Output path is: {output_path}")
-        if path.exists(output_path):
-            os.remove(output_path)
-    for bmk_dir in bmk_dirs:
-        project_name = resolve_bmk_name(bmk_dir)
-        builder = BenchmarkBuilder(bmk_dir)
-        output_path = path.join(bmk_dir, f"{project_name}.t.sol")
-        builder.output(output_path)
+def halmos_test(bmk_dir: str, timeout: int):
+    project_name = resolve_project_name(bmk_dir)
+    _, result_path = prepare_subfolder(bmk_dir)
+    json_output = path.join(result_path, "halmos_out.json")
+    cmds = [
+        "halmos",
+        "-vvvvv",
+        "--function",
+        "check_cand",
+        "--contract",
+        f"{project_name}Test",
+        "--forge-build-out",
+        ".cache",
+        "--print-potential-counterexample",
+        "--solver-timeout-branching",
+        "10000",
+        "--solver-timeout-assertion",
+        "10000",
+        "--json-output",
+        json_output,
+    ]
+    try:
+        _ = run(cmds, timeout=timeout, text=True, check=True)
+    except TimeoutExpired:
+        err = {"error": "timeout", "details": ""}
+    except Exception as e:
+        err = {"error": "unknown", "details": str(e)}
+    if err:
+        with open(path.join(result_path, "halmos_err.json"), "w") as f:
+            json.dump(err, f)
 
 
 def _main():
@@ -155,12 +167,8 @@ def _main():
     for bmk_dir in bmk_dirs:
         if args.forge:
             forge_test(bmk_dir, args.timeout)
-        if args.rwgraph:
-            generate_rw_graph(bmk_dir)
-        # if args.mockeval:
-        #     mock_evaluate(bmk_dir)
-        # if args.outputrkt:
-        #     output2racket(bmk_dir)
+        if args.halmos:
+            halmos_test(bmk_dir, args.timeout)
 
 
 if __name__ == "__main__":
