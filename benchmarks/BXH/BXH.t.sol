@@ -187,7 +187,7 @@ contract BXHTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 25074999999999997291055);
+        vm.assume(amt4 == amt0 + 75000000000000001561);
         borrow_usdt(amt0);
         swap_pair_usdt_bxh(amt1);
         transaction_bxhstaking_bxh(amt2);
@@ -204,7 +204,7 @@ contract BXHTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 25074999999999997291055);
+        vm.assume(amt5 == amt0 + 75000000000000001561);
         borrow_usdt(amt0);
         swap_pair_usdt_bxh(amt1);
         transaction_bxhstaking_bxh(amt2);
@@ -223,7 +223,7 @@ contract BXHTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 25074999999999997291055);
+        vm.assume(amt6 == amt0 + 75000000000000001561);
         borrow_bxh(amt0);
         swap_pair_bxh_usdt(amt1);
         transaction_bxhstaking_bxh(amt2);

@@ -167,7 +167,7 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 10029999999999998);
+        vm.assume(amt4 == amt0 + 30000000000000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -184,7 +184,7 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 10029999999999998);
+        vm.assume(amt4 == amt0 + 30000000000000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -201,7 +201,7 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 10029999999999998);
+        vm.assume(amt5 == amt0 + 30000000000000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -218,7 +218,7 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 10029999999999998);
+        vm.assume(amt4 == amt0 + 30000000000000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -236,7 +236,7 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 10029999999999998);
+        vm.assume(amt5 == amt0 + 30000000000000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -254,7 +254,7 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 10029999999999998);
+        vm.assume(amt5 == amt0 + 30000000000000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -274,7 +274,7 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 10029999999999998);
+        vm.assume(amt6 == amt0 + 30000000000000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -293,7 +293,7 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 10029999999999998);
+        vm.assume(amt5 == amt0 + 30000000000000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -313,7 +313,7 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 10029999999999998);
+        vm.assume(amt6 == amt0 + 30000000000000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -333,7 +333,7 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 10029999999999998);
+        vm.assume(amt6 == amt0 + 30000000000000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -355,7 +355,7 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 10029999999999998);
+        vm.assume(amt7 == amt0 + 30000000000000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -376,7 +376,7 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 10029999999999998);
+        vm.assume(amt6 == amt0 + 30000000000000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -398,7 +398,7 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 10029999999999998);
+        vm.assume(amt7 == amt0 + 30000000000000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -420,7 +420,7 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 10029999999999998);
+        vm.assume(amt7 == amt0 + 30000000000000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -444,7 +444,7 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
-        vm.assume(amt8 == amt0 + 10029999999999998);
+        vm.assume(amt8 == amt0 + 30000000000000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -467,7 +467,7 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 10029999999999998);
+        vm.assume(amt7 == amt0 + 30000000000000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -491,7 +491,7 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
-        vm.assume(amt8 == amt0 + 10029999999999998);
+        vm.assume(amt8 == amt0 + 30000000000000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);

@@ -173,7 +173,7 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == amt0 + 99296999999999989272581);
+        vm.assume(amt3 == amt0 + 297000000000000006182);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_mubank_usdce_mu(amt2);
@@ -187,7 +187,7 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == amt0 + 99296999999999989272581);
+        vm.assume(amt3 == amt0 + 297000000000000006182);
         borrow_usdce(amt0);
         swap_mubank_usdce_mu(amt1);
         swap_pair_mu_usdce(amt2);
@@ -201,7 +201,7 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == amt0 + 99296999999999989272581);
+        vm.assume(amt3 == amt0 + 297000000000000006182);
         borrow_usdce(amt0);
         swap_pair_usdce_mu(amt1);
         swap_pair_mu_usdce(amt2);
@@ -215,7 +215,7 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == amt0 + 99296999999999989272581);
+        vm.assume(amt3 == amt0 + 297000000000000006182);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_mubank_usdce_mu(amt2);
@@ -229,7 +229,7 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == amt0 + 99296999999999989272581);
+        vm.assume(amt3 == amt0 + 297000000000000006182);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_pair_usdce_mu(amt2);
@@ -244,7 +244,7 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 99296999999999989272581);
+        vm.assume(amt4 == amt0 + 297000000000000006182);
         borrow_usdce(amt0);
         swap_mubank_usdce_mu(amt1);
         swap_pair_mu_usdce(amt2);
@@ -260,7 +260,7 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 99296999999999989272581);
+        vm.assume(amt4 == amt0 + 297000000000000006182);
         borrow_usdce(amt0);
         swap_pair_usdce_mu(amt1);
         swap_pair_mu_usdce(amt2);
@@ -276,7 +276,7 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 99296999999999989272581);
+        vm.assume(amt4 == amt0 + 297000000000000006182);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_mubank_usdce_mu(amt2);
@@ -292,7 +292,7 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 99296999999999989272581);
+        vm.assume(amt4 == amt0 + 297000000000000006182);
         borrow_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_pair_usdce_mu(amt2);

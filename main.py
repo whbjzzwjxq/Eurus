@@ -28,6 +28,7 @@ parser.add_argument("-s", "--statistic", help="Print statistic.", action="store_
 parser.add_argument(
     "--timeout", help="Set the total timeout.", type=int, default=3600 * 2
 )
+parser.add_argument("-c", "--clean", help="Clean the cache.", action="store_true")
 
 
 def get_bmk_dirs(bmk_dir: str) -> List[str]:
@@ -90,6 +91,23 @@ def prepare():
         ]
         run(cmd, text=True, check=True)
 
+        cache_path, result_path = prepare_subfolder(bmk_dir)
+        # Run ground truth
+        cmds = [
+            "forge",
+            "test",
+            "-vvvv",
+            "--cache-path",
+            cache_path,
+            "--match-path",
+            output_file,
+        ]
+        try:
+            run(cmds, text=True, check=True, capture_output=True)
+        except Exception as err:
+            print(f"\n\nBenchmark: {bmk_dir} ground truth doesn't work!")
+            raise err
+
 
 def forge_test(bmk_dir: str, timeout: int):
     project_name = resolve_project_name(bmk_dir)
@@ -131,7 +149,10 @@ def halmos_test(bmk_dir: str, timeout: int):
     _, result_path = prepare_subfolder(bmk_dir)
     for i in range(100):
         idx = str(i).zfill(3)
-        json_output = path.join(result_path, f"halmos_out{idx}.json")
+        output = path.join(result_path, f"halmos_out{idx}.json")
+        err_output = path.join(result_path, f"halmos_err{idx}.json")
+        if path.exists(output) or path.exists(err_output):
+            continue
         cmds = [
             "halmos",
             "-vvvvv",
@@ -149,7 +170,7 @@ def halmos_test(bmk_dir: str, timeout: int):
             "--solver-timeout-assertion",
             "100000",
             "--json-output",
-            json_output,
+            output,
         ]
         print(" ".join(cmds))
         proc, err = None, None
@@ -164,8 +185,20 @@ def halmos_test(bmk_dir: str, timeout: int):
                 break
             print(proc.stdout, proc.stderr)
         if err:
-            with open(path.join(result_path, f"halmos_err{idx}.json"), "w") as f:
+            with open(err_output, "w") as f:
                 json.dump(err, f)
+
+
+def clean_result(bmk_dir: str):
+    _, result_path = prepare_subfolder(bmk_dir)
+    for i in range(100):
+        idx = str(i).zfill(3)
+        output = path.join(result_path, f"halmos_out{idx}.json")
+        err_output = path.join(result_path, f"halmos_err{idx}.json")
+        if path.exists(output):
+            os.remove(output)
+        if path.exists(err_output):
+            os.remove(err_output)
 
 
 def _main():
@@ -179,6 +212,8 @@ def _main():
             forge_test(bmk_dir, args.timeout)
         if args.halmos:
             halmos_test(bmk_dir, args.timeout)
+        if args.clean:
+            clean_result(bmk_dir)
 
 
 if __name__ == "__main__":

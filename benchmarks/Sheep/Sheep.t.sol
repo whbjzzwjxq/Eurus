@@ -180,7 +180,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 38113999999999995882);
+        vm.assume(amt4 == amt0 + 114000000000000002);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
         burn_pair_sheep(amt2);
@@ -197,7 +197,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 38113999999999995882);
+        vm.assume(amt4 == amt0 + 114000000000000002);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
         burn_pair_sheep(amt2);
@@ -214,7 +214,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 38113999999999995882);
+        vm.assume(amt5 == amt0 + 114000000000000002);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
         burn_pair_sheep(amt2);
@@ -231,7 +231,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 38113999999999995882);
+        vm.assume(amt4 == amt0 + 114000000000000002);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
         burn_pair_sheep(amt2);
@@ -249,7 +249,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 38113999999999995882);
+        vm.assume(amt5 == amt0 + 114000000000000002);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
         burn_pair_sheep(amt2);
@@ -267,7 +267,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 38113999999999995882);
+        vm.assume(amt5 == amt0 + 114000000000000002);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
         burn_pair_sheep(amt2);
@@ -287,7 +287,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 38113999999999995882);
+        vm.assume(amt6 == amt0 + 114000000000000002);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
         burn_pair_sheep(amt2);
@@ -306,7 +306,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 38113999999999995882);
+        vm.assume(amt5 == amt0 + 114000000000000002);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
         burn_pair_sheep(amt2);
@@ -326,7 +326,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 38113999999999995882);
+        vm.assume(amt6 == amt0 + 114000000000000002);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
         burn_pair_sheep(amt2);
@@ -346,7 +346,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 38113999999999995882);
+        vm.assume(amt6 == amt0 + 114000000000000002);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
         burn_pair_sheep(amt2);
@@ -368,7 +368,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 38113999999999995882);
+        vm.assume(amt7 == amt0 + 114000000000000002);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
         burn_pair_sheep(amt2);
@@ -389,7 +389,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 38113999999999995882);
+        vm.assume(amt6 == amt0 + 114000000000000002);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
         burn_pair_sheep(amt2);
@@ -411,7 +411,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 38113999999999995882);
+        vm.assume(amt7 == amt0 + 114000000000000002);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
         burn_pair_sheep(amt2);
@@ -433,7 +433,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 38113999999999995882);
+        vm.assume(amt7 == amt0 + 114000000000000002);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
         burn_pair_sheep(amt2);
@@ -457,7 +457,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
-        vm.assume(amt8 == amt0 + 38113999999999995882);
+        vm.assume(amt8 == amt0 + 114000000000000002);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
         burn_pair_sheep(amt2);
@@ -480,7 +480,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 38113999999999995882);
+        vm.assume(amt7 == amt0 + 114000000000000002);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
         burn_pair_sheep(amt2);
@@ -504,7 +504,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
-        vm.assume(amt8 == amt0 + 38113999999999995882);
+        vm.assume(amt8 == amt0 + 114000000000000002);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
         burn_pair_sheep(amt2);

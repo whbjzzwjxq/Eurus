@@ -164,7 +164,7 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 125374999999999986455);
+        vm.assume(amt4 == amt0 + 375000000000000007);
         borrow_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
@@ -181,7 +181,7 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 125374999999999986455);
+        vm.assume(amt4 == amt0 + 375000000000000007);
         borrow_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
@@ -198,7 +198,7 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 125374999999999986455);
+        vm.assume(amt5 == amt0 + 375000000000000007);
         borrow_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
@@ -215,7 +215,7 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 125374999999999986455);
+        vm.assume(amt4 == amt0 + 375000000000000007);
         borrow_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
@@ -233,7 +233,7 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 125374999999999986455);
+        vm.assume(amt5 == amt0 + 375000000000000007);
         borrow_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
@@ -251,7 +251,7 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 125374999999999986455);
+        vm.assume(amt5 == amt0 + 375000000000000007);
         borrow_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
@@ -271,7 +271,7 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 125374999999999986455);
+        vm.assume(amt6 == amt0 + 375000000000000007);
         borrow_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
@@ -290,7 +290,7 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 125374999999999986455);
+        vm.assume(amt5 == amt0 + 375000000000000007);
         borrow_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
@@ -310,7 +310,7 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 125374999999999986455);
+        vm.assume(amt6 == amt0 + 375000000000000007);
         borrow_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
@@ -330,7 +330,7 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 125374999999999986455);
+        vm.assume(amt6 == amt0 + 375000000000000007);
         borrow_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
@@ -352,7 +352,7 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 125374999999999986455);
+        vm.assume(amt7 == amt0 + 375000000000000007);
         borrow_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
@@ -373,7 +373,7 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 125374999999999986455);
+        vm.assume(amt6 == amt0 + 375000000000000007);
         borrow_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
@@ -395,7 +395,7 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 125374999999999986455);
+        vm.assume(amt7 == amt0 + 375000000000000007);
         borrow_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
@@ -417,7 +417,7 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 125374999999999986455);
+        vm.assume(amt7 == amt0 + 375000000000000007);
         borrow_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
@@ -441,7 +441,7 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
-        vm.assume(amt8 == amt0 + 125374999999999986455);
+        vm.assume(amt8 == amt0 + 375000000000000007);
         borrow_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
@@ -464,7 +464,7 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 125374999999999986455);
+        vm.assume(amt7 == amt0 + 375000000000000007);
         borrow_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
@@ -488,7 +488,7 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
-        vm.assume(amt8 == amt0 + 125374999999999986455);
+        vm.assume(amt8 == amt0 + 375000000000000007);
         borrow_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);

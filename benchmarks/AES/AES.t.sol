@@ -181,7 +181,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 100299999999999989164223);
+        vm.assume(amt4 == amt0 + 300000000000000006245);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
@@ -198,7 +198,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 100299999999999989164223);
+        vm.assume(amt4 == amt0 + 300000000000000006245);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
@@ -215,7 +215,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 100299999999999989164223);
+        vm.assume(amt5 == amt0 + 300000000000000006245);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
@@ -232,7 +232,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 100299999999999989164223);
+        vm.assume(amt4 == amt0 + 300000000000000006245);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
@@ -250,7 +250,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 100299999999999989164223);
+        vm.assume(amt5 == amt0 + 300000000000000006245);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
@@ -268,7 +268,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 100299999999999989164223);
+        vm.assume(amt5 == amt0 + 300000000000000006245);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
@@ -288,7 +288,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 100299999999999989164223);
+        vm.assume(amt6 == amt0 + 300000000000000006245);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
@@ -307,7 +307,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 100299999999999989164223);
+        vm.assume(amt5 == amt0 + 300000000000000006245);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
@@ -327,7 +327,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 100299999999999989164223);
+        vm.assume(amt6 == amt0 + 300000000000000006245);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
@@ -347,7 +347,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 100299999999999989164223);
+        vm.assume(amt6 == amt0 + 300000000000000006245);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
@@ -369,7 +369,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 100299999999999989164223);
+        vm.assume(amt7 == amt0 + 300000000000000006245);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
@@ -390,7 +390,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 100299999999999989164223);
+        vm.assume(amt6 == amt0 + 300000000000000006245);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
@@ -412,7 +412,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 100299999999999989164223);
+        vm.assume(amt7 == amt0 + 300000000000000006245);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
@@ -434,7 +434,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 100299999999999989164223);
+        vm.assume(amt7 == amt0 + 300000000000000006245);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
@@ -458,7 +458,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
-        vm.assume(amt8 == amt0 + 100299999999999989164223);
+        vm.assume(amt8 == amt0 + 300000000000000006245);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
@@ -481,7 +481,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 100299999999999989164223);
+        vm.assume(amt7 == amt0 + 300000000000000006245);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
@@ -505,7 +505,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
-        vm.assume(amt8 == amt0 + 100299999999999989164223);
+        vm.assume(amt8 == amt0 + 300000000000000006245);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
