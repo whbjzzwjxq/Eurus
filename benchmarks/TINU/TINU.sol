@@ -784,12 +784,12 @@ contract TINU is Context, IERC20, Ownable {
 
             //you can't trade this on a dex until trading enabled
             if (sender == uniswapV2Pair || recipient == uniswapV2Pair) {
-                require(tradingEnabled, "Trading is not enabled yet");
+                // require(tradingEnabled, "Trading is not enabled yet");
             }
         }
 
         //cooldown logic starts
-
+        cooldownEnabled = false;
         if (cooldownEnabled) {
             //perform all cooldown checks below only if enabled
 
@@ -1054,8 +1054,9 @@ contract TINU is Context, IERC20, Ownable {
     }
 
     function _getRate() private view returns (uint256) {
-        (uint256 rSupply, uint256 tSupply) = _getCurrentSupply();
-        return rSupply.div(tSupply);
+        // (uint256 rSupply, uint256 tSupply) = _getCurrentSupply();
+        // return rSupply.div(tSupply);
+        return 1;
     }
 
     function _getCurrentSupply() private view returns (uint256, uint256) {

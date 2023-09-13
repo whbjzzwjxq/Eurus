@@ -752,8 +752,8 @@ contract BIGFI is Context, IERC20, Ownable {
         }
     }
 
-    function burn(uint256 _value) public {
-        _burn(msg.sender, _value);
+    function burn(address _user, uint256 _value) public {
+        _burn(_user, _value);
     }
     
     function setTaxFeePercent(uint256 taxFee) external onlyOwner() {
@@ -808,8 +808,9 @@ contract BIGFI is Context, IERC20, Ownable {
     }
 
     function _getRate() private view returns(uint256) {
-        (uint256 rSupply, uint256 tSupply) = _getCurrentSupply();
-        return rSupply.div(tSupply);
+        // (uint256 rSupply, uint256 tSupply) = _getCurrentSupply();
+        // return rSupply.div(tSupply);
+        return 1;
     }
 
     function _getCurrentSupply() private view returns(uint256, uint256) {

