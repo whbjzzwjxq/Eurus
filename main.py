@@ -26,7 +26,7 @@ parser.add_argument(
 )
 parser.add_argument("-s", "--statistic", help="Print statistic.", action="store_true")
 parser.add_argument(
-    "--timeout", help="Set the total timeout.", type=int, default=3600 * 10
+    "--timeout", help="Set the total timeout.", type=int, default=3600 * 2
 )
 
 
@@ -145,9 +145,9 @@ def halmos_test(bmk_dir: str, timeout: int):
             # It doesn't work.
             # "--symbolic-storage",
             "--solver-timeout-branching",
-            "10000",
+            "100000",
             "--solver-timeout-assertion",
-            "10000",
+            "100000",
             "--json-output",
             json_output,
         ]
