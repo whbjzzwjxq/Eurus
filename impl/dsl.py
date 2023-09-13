@@ -53,7 +53,7 @@ class DSLAction:
 
     @property
     def asset0(self):
-        if self.action_name in ("swap", "burn", "oracle"):
+        if self.action_name in ("swap", "burn", "oracle", "transaction"):
             return self.args_in_name[1]
         elif self.action_name in ("borrow", "payback"):
             return self.args_in_name[0]

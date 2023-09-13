@@ -255,7 +255,6 @@ class BenchmarkBuilder:
         extra_actions = self.config.extra_actions
         func_name_regex = re.compile(r"function (.*?)\(")
         extra_action_names = set([func_name_regex.match(a).group(1) for a in extra_actions])
-        print(extra_action_names)
 
         def add_func_to_actions(func_body: str):
             func_name = func_name_regex.match(func_body[0]).group(1)
