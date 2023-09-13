@@ -3,7 +3,7 @@ project_name: "TINU"
 
 ctrt_name2cls:
   - ["tinu", "TINU"]
-  - ["weth", "WBNB"]
+  - ["weth", "WETH"]
   - ["pair", "UniswapV2Pair"]
   - ["factory", "UniswapV2Factory"]
   - ["router", "UniswapV2Router"]

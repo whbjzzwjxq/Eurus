@@ -6,11 +6,11 @@ import "forge-std/Test.sol";
 import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
-import {WBNB} from "@utils/WBNB.sol";
+import {WETH} from "@utils/WETH.sol";
 
 contract TINUTest is Test, BlockLoader {
     TINU tinu;
-    WBNB weth;
+    WETH weth;
     UniswapV2Pair pair;
     UniswapV2Factory factory;
     UniswapV2Router router;
@@ -41,7 +41,7 @@ contract TINUTest is Test, BlockLoader {
             payable(0x9980A74fCBb1936Bc79Ddecbd4148f7511598521),
             payable(0xEBA4a1e0ff3baF18A9D2910874Ffaee11911Cc31)
         );
-        weth = new WBNB();
+        weth = new WETH();
         pair = new UniswapV2Pair(
             address(tinu),
             address(weth),
