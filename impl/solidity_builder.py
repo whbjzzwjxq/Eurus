@@ -252,6 +252,16 @@ class BenchmarkBuilder:
 
         # Actions
         actions = []
+        extra_actions = self.config.extra_actions
+        func_name_regex = re.compile(r"function (.*?)\(")
+        extra_action_names = set([func_name_regex.match(a).group(1) for a in extra_actions])
+        print(extra_action_names)
+
+        def add_func_to_actions(func_body: str):
+            func_name = func_name_regex.match(func_body[0]).group(1)
+            if func_name not in extra_action_names:
+                actions.extend(func_body)
+
         # flashloan borrow-payback
         for t in self.erc20_tokens:
             borrow = [
@@ -264,8 +274,8 @@ class BenchmarkBuilder:
                 f"{t}.transfer(owner, amount);",
                 "}",
             ]
-            actions.extend(borrow)
-            actions.extend(payback)
+            add_func_to_actions(borrow)
+            add_func_to_actions(payback)
 
         # swap by uniswap
         router_name = "router"
@@ -281,7 +291,7 @@ class BenchmarkBuilder:
                     amount, 1, path, attacker, block.timestamp);",
                 "}",
             ]
-            actions.extend(swap0)
+            add_func_to_actions(swap0)
             token1, token0 = t
             swap1 = [
                 f"function swap_{u}_{token0}_{token1}(uint256 amount) internal" + "{",
@@ -293,7 +303,7 @@ class BenchmarkBuilder:
                     amount, 1, path, attacker, block.timestamp);",
                 "}",
             ]
-            actions.extend(swap1)
+            add_func_to_actions(swap1)
 
         # sync uniswap
         for uniswap in self.uniswap_pairs:
@@ -302,7 +312,7 @@ class BenchmarkBuilder:
                 f"{uniswap}.sync();",
                 "}",
             ]
-            actions.extend(sync)
+            add_func_to_actions(sync)
 
         all = [*printer, *attack_goal, *nop, *actions, *self.extra_actions]
         return all
