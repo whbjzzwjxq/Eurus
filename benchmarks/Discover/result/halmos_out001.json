@@ -1,0 +1,31 @@
+{
+    "exitcode": 1,
+    "test_results": {
+        "benchmarks/Discover/Discover.t.sol:DiscoverTest": [
+            {
+                "name": "check_cand001(uint256,uint256,uint256,uint256)",
+                "exitcode": 1,
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt1_uint256": "0x3aa8259ef6e9da00005",
+                        "p_amt2_uint256": "0x757d87e1e024a6ef59b2",
+                        "p_amt0_uint256": "0x103f08008a00800000002",
+                        "p_amt3_uint256": "0x103f4673c028f142005dc"
+                    }
+                ],
+                "num_paths": [
+                    20,
+                    1,
+                    0
+                ],
+                "time": [
+                    28.928275207988918,
+                    28.855265874997713,
+                    0.07300712500000373
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}

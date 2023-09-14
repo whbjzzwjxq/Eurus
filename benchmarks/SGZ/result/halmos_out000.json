@@ -1,0 +1,24 @@
+{
+    "exitcode": 0,
+    "test_results": {
+        "benchmarks/SGZ/SGZ.t.sol:SGZTest": [
+            {
+                "name": "check_cand000(uint256,uint256,uint256,uint256)",
+                "exitcode": 0,
+                "num_models": 0,
+                "models": [],
+                "num_paths": [
+                    58,
+                    2,
+                    0
+                ],
+                "time": [
+                    5392.523894916987,
+                    5192.513119334006,
+                    200.01077358296607
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}
