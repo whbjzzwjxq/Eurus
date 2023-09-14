@@ -68,6 +68,7 @@ def prepare_subfolder(bmk_dir: str) -> Tuple[str, str]:
 
 def prepare(bmk_dir: str):
     project_name = resolve_project_name(bmk_dir)
+    cache_path, result_path = prepare_subfolder(bmk_dir)
     output_file = path.join(bmk_dir, f"{project_name}.t.sol")
     print(f"Output path is: {output_file}")
     if path.exists(output_file):
@@ -86,7 +87,6 @@ def prepare(bmk_dir: str):
     ]
     run(cmd, text=True, check=True)
 
-    cache_path, result_path = prepare_subfolder(bmk_dir)
     # Run ground truth
     cmds = [
         "forge",
