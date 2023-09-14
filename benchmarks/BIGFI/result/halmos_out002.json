@@ -1,0 +1,32 @@
+{
+    "exitcode": 1,
+    "test_results": {
+        "benchmarks/BIGFI/BIGFI.t.sol:BIGFITest": [
+            {
+                "name": "check_cand002(uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 1,
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt2_uint256": "0xffdffa7574bffb3d7f",
+                        "p_amt4_uint256": "0xac02086ac3510526030cb",
+                        "p_amt1_uint256": "0x8fd79b9c619bb1c09acd0",
+                        "p_amt0_uint256": "0xac0000000000000000001",
+                        "p_amt3_uint256": "0x20465007c960f5584"
+                    }
+                ],
+                "num_paths": [
+                    38,
+                    1,
+                    0
+                ],
+                "time": [
+                    1141.6805779170245,
+                    1141.2603270409745,
+                    0.42023954197065905
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}

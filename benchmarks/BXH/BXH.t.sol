@@ -201,6 +201,38 @@ contract BXHTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
+        uint256 amt4
+    ) public {
+        vm.assume(amt4 == amt0 + 75000000000000001561);
+        borrow_usdt(amt0);
+        swap_pair_usdt_bxh(amt1);
+        transaction_bxhstaking_bxh(amt2);
+        swap_pair_bxh_usdt(amt3);
+        payback_usdt(amt4);
+        assert(!attackGoal());
+    }
+
+    function check_cand001(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4
+    ) public {
+        vm.assume(amt4 == amt0 + 75000000000000001561);
+        borrow_bxh(amt0);
+        swap_pair_bxh_usdt(amt1);
+        transaction_bxhstaking_bxh(amt2);
+        swap_pair_usdt_bxh(amt3);
+        payback_bxh(amt4);
+        assert(!attackGoal());
+    }
+
+    function check_cand002(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
         uint256 amt4,
         uint256 amt5
     ) public {
@@ -214,7 +246,43 @@ contract BXHTest is Test, BlockLoader {
         assert(!attackGoal());
     }
 
-    function check_cand001(
+    function check_cand003(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.assume(amt5 == amt0 + 75000000000000001561);
+        borrow_bxh(amt0);
+        swap_pair_bxh_usdt(amt1);
+        transaction_bxhstaking_bxh(amt2);
+        swap_pair_usdt_bxh(amt3);
+        swap_pair_usdt_bxh(amt4);
+        payback_bxh(amt5);
+        assert(!attackGoal());
+    }
+
+    function check_cand004(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.assume(amt5 == amt0 + 75000000000000001561);
+        borrow_bxh(amt0);
+        swap_pair_bxh_usdt(amt1);
+        transaction_bxhstaking_bxh(amt2);
+        swap_pair_usdt_bxh(amt3);
+        swap_pair_bxh_usdt(amt4);
+        payback_bxh(amt5);
+        assert(!attackGoal());
+    }
+
+    function check_cand005(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,

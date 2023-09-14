@@ -1,0 +1,24 @@
+{
+    "exitcode": 0,
+    "test_results": {
+        "benchmarks/TINU/TINU.t.sol:TINUTest": [
+            {
+                "name": "check_cand000(uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 0,
+                "num_models": 0,
+                "models": [],
+                "num_paths": [
+                    62,
+                    2,
+                    0
+                ],
+                "time": [
+                    6101.22385833296,
+                    5901.200108041987,
+                    200.0237375840079
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}

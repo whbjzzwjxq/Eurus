@@ -1,0 +1,24 @@
+{
+    "exitcode": 0,
+    "test_results": {
+        "benchmarks/BXH/BXH.t.sol:BXHTest": [
+            {
+                "name": "check_cand000(uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 0,
+                "num_models": 0,
+                "models": [],
+                "num_paths": [
+                    39,
+                    1,
+                    0
+                ],
+                "time": [
+                    3839.4053232499864,
+                    3739.3933594169794,
+                    100.01194408297306
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}

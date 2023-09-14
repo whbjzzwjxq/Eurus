@@ -1,0 +1,24 @@
+{
+    "exitcode": 0,
+    "test_results": {
+        "benchmarks/BIGFI/BIGFI.t.sol:BIGFITest": [
+            {
+                "name": "check_cand003(uint256,uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 0,
+                "num_models": 0,
+                "models": [],
+                "num_paths": [
+                    41,
+                    1,
+                    0
+                ],
+                "time": [
+                    3667.0271472909953,
+                    3567.0211074590334,
+                    100.00602487497963
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}

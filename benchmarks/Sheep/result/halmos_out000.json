@@ -1,0 +1,24 @@
+{
+    "exitcode": 0,
+    "test_results": {
+        "benchmarks/Sheep/Sheep.t.sol:SheepTest": [
+            {
+                "name": "check_cand000(uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 0,
+                "num_models": 0,
+                "models": [],
+                "num_paths": [
+                    38,
+                    1,
+                    0
+                ],
+                "time": [
+                    3146.0324735409813,
+                    3046.0204791669967,
+                    100.01197879202664
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}
