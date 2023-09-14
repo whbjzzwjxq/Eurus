@@ -70,6 +70,30 @@ contract TINUTest is Test, BlockLoader {
 
     function printBalance(string memory tips) public {
         emit log_string(tips);
+        emit log_string("Tinu Balances: ");
+        queryERC20BalanceDecimals(
+            address(weth),
+            address(tinu),
+            weth.decimals()
+        );
+        queryERC20BalanceDecimals(
+            address(tinu),
+            address(tinu),
+            tinu.decimals()
+        );
+        emit log_string("");
+        emit log_string("Weth Balances: ");
+        queryERC20BalanceDecimals(
+            address(weth),
+            address(weth),
+            weth.decimals()
+        );
+        queryERC20BalanceDecimals(
+            address(tinu),
+            address(weth),
+            tinu.decimals()
+        );
+        emit log_string("");
         emit log_string("Pair Balances: ");
         queryERC20BalanceDecimals(
             address(weth),

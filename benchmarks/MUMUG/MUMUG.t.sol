@@ -70,6 +70,22 @@ contract MUMUGTest is Test, BlockLoader {
 
     function printBalance(string memory tips) public {
         emit log_string(tips);
+        emit log_string("Mu Balances: ");
+        queryERC20BalanceDecimals(
+            address(usdce),
+            address(mu),
+            usdce.decimals()
+        );
+        queryERC20BalanceDecimals(address(mu), address(mu), mu.decimals());
+        emit log_string("");
+        emit log_string("Usdce Balances: ");
+        queryERC20BalanceDecimals(
+            address(usdce),
+            address(usdce),
+            usdce.decimals()
+        );
+        queryERC20BalanceDecimals(address(mu), address(usdce), mu.decimals());
+        emit log_string("");
         emit log_string("Pair Balances: ");
         queryERC20BalanceDecimals(
             address(usdce),

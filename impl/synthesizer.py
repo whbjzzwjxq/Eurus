@@ -205,6 +205,8 @@ class Synthesizer:
             candidates = self.gen_candidates_pricediscrepancy()
         elif self.config.pattern == "Token Burn":
             candidates = self.gen_candidates_tokenburn()
+        elif self.config.pattern == "Liquidity Ratio Break":
+            candidates = self.gen_candidates_lrbreak()
         else:
             raise CornerCase(f"Unknown pattern: {self.config.pattern}!")
         self.candidates: List[Sketch] = candidates
@@ -242,7 +244,9 @@ class Synthesizer:
         func_bodys: List[str] = []
         for idx, c in enumerate(candidates):
             func_bodys.extend(
-                c.output(f"check_cand{str(idx).zfill(3)}", flashloan_amount, constraints)
+                c.output(
+                    f"check_cand{str(idx).zfill(3)}", flashloan_amount, constraints
+                )
             )
         return func_bodys
 
@@ -376,6 +380,60 @@ class Synthesizer:
                 (1,),
                 # Use 5 to replace maxmium loop.
                 [i for i in range(1, 5)],
+                (0, 1),
+                (1,),
+                (0, 1),
+                (0, 1),
+                (1,),
+            ]
+            self.extend_candidates_from_template(template, template_times, candidates)
+
+        return candidates
+
+    def gen_candidates_lrbreak(self) -> List[Sketch]:
+        assets = [k for k, v in self.roles.items() if v.is_asset]
+        stable_coins = [k for k, v in self.roles.items() if v.is_stablecoin]
+        swap_pairs = [k for k, v in self.roles.items() if v.is_swappair]
+        oracles = [k for k, v in self.roles.items() if v.is_oracle]
+        defi_entrys = [k for k, v in self.roles.items() if v.is_defientry]
+
+        candidates: List[Sketch] = []
+        for (
+            asset0,
+            swap_pair0,
+            asset1,
+            defi_entry,
+            oracle,
+            swap_pair1,
+            swap_pair2,
+            stable_coin,
+        ) in itertools.product(
+            assets,
+            swap_pairs,
+            assets,
+            defi_entrys,
+            oracles,
+            swap_pairs,
+            swap_pairs,
+            stable_coins,
+        ):
+            if asset0 == asset1:
+                continue
+
+            template: List[DSLAction] = [
+                Borrow(asset0, "amt0"),
+                Swap(swap_pair0, asset0, asset1, "amt1"),
+                BreakLR(defi_entry, swap_pair0),
+                Sync(oracle),
+                Swap(swap_pair0, asset1, asset0, "amt3"),
+                Swap(swap_pair1, asset0, stable_coin, "amt4"),
+                Swap(swap_pair2, asset1, stable_coin, "amt5"),
+                Payback(asset0, "amt6"),
+            ]
+            template_times = [
+                (1,),
+                (1,),
+                (1,),
                 (0, 1),
                 (1,),
                 (0, 1),

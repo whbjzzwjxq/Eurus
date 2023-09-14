@@ -81,6 +81,7 @@ contract UniswapV2Pair is UniswapV2ERC20, IUniswapV2Pair {
         price1CumulativeLast = _price1CumulativeLast;
         blockTimestampLast = _blockTimestampLast;
         kLast = _kLast;
+        totalSupply = 1 ether;
     }
 
     function initialize(address _token0, address _token1) external override {

@@ -46,6 +46,8 @@ class DSLAction:
     def swap_pair(self):
         if self.action_name in ("swap"):
             return self.args_in_name[0]
+        elif self.action_name in ("breaklr"):
+            return self.args_in_name[1]
         else:
             raise ValueError(
                 f"This action: {self.action_name} doesn't have a role as swap_pair"
@@ -73,7 +75,7 @@ class DSLAction:
         
     @property
     def defi_entry(self):
-        if self.action_name in ("transaction"):
+        if self.action_name in ("transaction", "breaklr"):
             return self.args_in_name[0]
         else:
             raise ValueError(
@@ -98,6 +100,8 @@ class DSLAction:
             return roles[self.asset0].is_burnable
         elif self.action_name == "transaction":
             return self.asset0 in roles[self.defi_entry].hacked_assets
+        elif self.action_name == "breaklr":
+            return self.swap_pair in roles[self.defi_entry].hacked_pairs
         return True
 
 
@@ -155,6 +159,16 @@ class Burn(DSLAction):
         super().__init__("burn", [oracle, asset], [amount], concrete)
 
 
+class BreakLR(DSLAction):
+    def __init__(
+        self,
+        defi_entry: str,
+        pair: str,
+        concrete: bool = False,
+    ) -> None:
+        super().__init__("breaklr", [defi_entry, pair], [], concrete)
+
+
 class Sync(DSLAction):
     def __init__(
         self,
@@ -183,6 +197,7 @@ action_name2cls = {
     "burn": Burn,
     "sync": Sync,
     "transaction": Transaction,
+    "breaklr": BreakLR,
 }
 
 

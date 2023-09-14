@@ -70,7 +70,7 @@ class BenchmarkBuilder:
         self.token_users = [
             c
             for c in self.ctrt_names
-            if (c not in self.erc20_tokens) and (c in self.roles)
+            if c in self.roles
         ] + ["attacker"]
 
         actions = [init_action_from_list(a, True) for a in self.config.groundtruth]

@@ -16,8 +16,10 @@ class DefiRoles:
     is_oracle: bool = False
 
     support_swaps: Dict[str, List[str]] = field(default_factory=dict)
-    hacked_assets: List[str] = field(default_factory=list)
     uniswap_order: List[str] = field(default_factory=list)
+    
+    hacked_assets: List[str] = field(default_factory=list)
+    hacked_pairs: List[str] = field(default_factory=list)
 
 
 @dataclass

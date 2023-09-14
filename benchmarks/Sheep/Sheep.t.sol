@@ -77,6 +77,30 @@ contract SheepTest is Test, BlockLoader {
 
     function printBalance(string memory tips) public {
         emit log_string(tips);
+        emit log_string("Sheep Balances: ");
+        queryERC20BalanceDecimals(
+            address(wbnb),
+            address(sheep),
+            wbnb.decimals()
+        );
+        queryERC20BalanceDecimals(
+            address(sheep),
+            address(sheep),
+            sheep.decimals()
+        );
+        emit log_string("");
+        emit log_string("Wbnb Balances: ");
+        queryERC20BalanceDecimals(
+            address(wbnb),
+            address(wbnb),
+            wbnb.decimals()
+        );
+        queryERC20BalanceDecimals(
+            address(sheep),
+            address(wbnb),
+            sheep.decimals()
+        );
+        emit log_string("");
         emit log_string("Pair Balances: ");
         queryERC20BalanceDecimals(
             address(wbnb),

@@ -78,6 +78,18 @@ contract BXHTest is Test, BlockLoader {
 
     function printBalance(string memory tips) public {
         emit log_string(tips);
+        emit log_string("Bxh Balances: ");
+        queryERC20BalanceDecimals(address(usdt), address(bxh), usdt.decimals());
+        queryERC20BalanceDecimals(address(bxh), address(bxh), bxh.decimals());
+        emit log_string("");
+        emit log_string("Usdt Balances: ");
+        queryERC20BalanceDecimals(
+            address(usdt),
+            address(usdt),
+            usdt.decimals()
+        );
+        queryERC20BalanceDecimals(address(bxh), address(usdt), bxh.decimals());
+        emit log_string("");
         emit log_string("Pair Balances: ");
         queryERC20BalanceDecimals(
             address(usdt),

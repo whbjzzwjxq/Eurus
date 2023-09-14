@@ -66,47 +66,45 @@ def prepare_subfolder(bmk_dir: str) -> Tuple[str, str]:
     return cache_path, result_path
 
 
-def prepare():
-    bmk_dirs = get_bmk_dirs("all")
-    for bmk_dir in bmk_dirs:
-        project_name = resolve_project_name(bmk_dir)
-        output_file = path.join(bmk_dir, f"{project_name}.t.sol")
-        print(f"Output path is: {output_file}")
-        if path.exists(output_file):
-            os.remove(output_file)
-        _ = prepare_subfolder(bmk_dir)
-    for bmk_dir in bmk_dirs:
-        project_name = resolve_project_name(bmk_dir)
-        builder = BenchmarkBuilder(bmk_dir)
-        output_file = path.join(bmk_dir, f"{project_name}.t.sol")
-        builder.output(output_file)
+def prepare(bmk_dir: str):
+    project_name = resolve_project_name(bmk_dir)
+    output_file = path.join(bmk_dir, f"{project_name}.t.sol")
+    print(f"Output path is: {output_file}")
+    if path.exists(output_file):
+        os.remove(output_file)
+    builder = BenchmarkBuilder(bmk_dir)
+    output_file = path.join(bmk_dir, f"{project_name}.t.sol")
+    builder.output(output_file)
 
-        # Format
-        cmd = [
-            "npx",
-            "prettier",
-            "--write",
-            "--plugin=prettier-plugin-solidity",
-            f"{output_file}",
-        ]
-        run(cmd, text=True, check=True)
+    # Format
+    cmd = [
+        "npx",
+        "prettier",
+        "--write",
+        "--plugin=prettier-plugin-solidity",
+        f"{output_file}",
+    ]
+    run(cmd, text=True, check=True)
 
-        cache_path, result_path = prepare_subfolder(bmk_dir)
-        # Run ground truth
-        cmds = [
-            "forge",
-            "test",
-            "-vvvv",
-            "--cache-path",
-            cache_path,
-            "--match-path",
-            output_file,
-        ]
-        try:
-            run(cmds, text=True, check=True, capture_output=True)
-        except Exception as err:
-            print(f"\n\nBenchmark: {bmk_dir} ground truth doesn't work!")
-            raise err
+    cache_path, result_path = prepare_subfolder(bmk_dir)
+    # Run ground truth
+    cmds = [
+        "forge",
+        "test",
+        "-vvvv",
+        "--cache-path",
+        cache_path,
+        "--match-path",
+        output_file,
+    ]
+    try:
+        out = run(cmds, text=True, check=True, capture_output=True)
+    except Exception as err:
+        print(f"\n\nBenchmark: {bmk_dir} ground truth doesn't work!")
+        print("Execute", " ".join(cmds))
+        if isinstance(err, CalledProcessError):
+            print(err.stderr, err.stdout)
+        raise err
 
 
 def forge_test(bmk_dir: str, timeout: int):
@@ -203,11 +201,10 @@ def clean_result(bmk_dir: str):
 
 def _main():
     args = parser.parse_args()
-    if args.prepare:
-        prepare()
-        return
     bmk_dirs = get_bmk_dirs(args.input)
     for bmk_dir in bmk_dirs:
+        if args.prepare:
+            prepare(bmk_dir)
         if args.forge:
             forge_test(bmk_dir, args.timeout)
         if args.halmos:
