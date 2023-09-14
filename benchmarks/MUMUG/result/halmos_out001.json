@@ -1,0 +1,24 @@
+{
+    "exitcode": 1,
+    "test_results": {
+        "benchmarks/MUMUG/MUMUG.t.sol:MUMUGTest": [
+            {
+                "name": "check_cand001(uint256,uint256,uint256,uint256)",
+                "exitcode": 1,
+                "num_models": 0,
+                "models": [],
+                "num_paths": [
+                    30,
+                    0,
+                    0
+                ],
+                "time": [
+                    807.0260552919935,
+                    807.0260035829851,
+                    4.9708993174135685e-05
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}
