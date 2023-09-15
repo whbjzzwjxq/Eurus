@@ -3,11 +3,9 @@ from typing import List, Tuple
 
 from impl.utils import List
 
-from .utils import *
-from .utils_slither import *
 from .config import Config
-
 from .dsl import *
+from .utils import *
 
 # class SolCallType(Enum):
 #     # payable(address).transfer(...)

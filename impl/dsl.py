@@ -4,7 +4,6 @@ from typing import Dict, List
 from impl.config import DefiRoles
 
 from .utils import *
-from .utils_slither import *
 
 
 class DSLAction:
