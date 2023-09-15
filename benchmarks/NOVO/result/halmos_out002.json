@@ -1,0 +1,32 @@
+{
+    "exitcode": 1,
+    "test_results": {
+        "benchmarks/NOVO/NOVO.t.sol:NOVOTest": [
+            {
+                "name": "check_cand002(uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 1,
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt4_uint256": "0x21a0800bd303ad38b8001",
+                        "p_amt1_uint256": "0x1ffffdaa9000000040253",
+                        "p_amt2_uint256": "0xaf277fe1f4b975",
+                        "p_amt0_uint256": "0x21a080008000000000000",
+                        "p_amt3_uint256": "0x83a8a"
+                    }
+                ],
+                "num_paths": [
+                    35,
+                    1,
+                    0
+                ],
+                "time": [
+                    979.0092542080092,
+                    978.8701715000207,
+                    0.13908004201948643
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}

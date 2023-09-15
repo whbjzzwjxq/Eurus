@@ -17,6 +17,12 @@ npm install --save-dev
 ```
 
 ## Evaluation
+
+### Prepare code
+```bash
+python3 ./main.py -p -i ./benchmarks/MUMUG
+```
+
 ### Forge test
 ```bash
 forge test --match-path ./benchmarks/MUMUG/MUMUG.t.sol -vvvv

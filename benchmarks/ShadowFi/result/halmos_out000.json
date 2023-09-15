@@ -1,0 +1,24 @@
+{
+    "exitcode": 0,
+    "test_results": {
+        "benchmarks/ShadowFi/ShadowFi.t.sol:ShadowFiTest": [
+            {
+                "name": "check_cand000(uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 0,
+                "num_models": 0,
+                "models": [],
+                "num_paths": [
+                    68,
+                    2,
+                    0
+                ],
+                "time": [
+                    4334.692446583009,
+                    4134.673942667025,
+                    200.01850112498505
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}
