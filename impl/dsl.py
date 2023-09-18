@@ -42,11 +42,11 @@ class DSLAction:
         return len(self.args)
 
     @property
-    def swap_pair(self):
-        if self.action_name in ("swap"):
-            return self.args_in_name[0]
-        elif self.action_name in ("breaklr"):
-            return self.args_in_name[1]
+    def swap_pairs(self):
+        if self.action_name in ("swap", ):
+            return self.args_in_name[:-2]
+        elif self.action_name in ("breaklr", ):
+            return self.args_in_name[:-1]
         else:
             raise ValueError(
                 f"This action: {self.action_name} doesn't have a role as swap_pair"
@@ -54,10 +54,12 @@ class DSLAction:
 
     @property
     def asset0(self):
-        if self.action_name in ("swap", "burn", "oracle", "transaction"):
-            return self.args_in_name[1]
-        elif self.action_name in ("borrow", "payback"):
+        if self.action_name in ("borrow", "payback"):
             return self.args_in_name[0]
+        elif self.action_name in ("burn", "oracle", "transaction"):
+            return self.args_in_name[1]
+        elif self.action_name in ("swap", ):
+            return self.args_in_name[-2]
         else:
             raise ValueError(
                 f"This action: {self.action_name} doesn't have a role as asset0"
@@ -65,8 +67,8 @@ class DSLAction:
 
     @property
     def asset1(self):
-        if self.action_name in ("swap"):
-            return self.args_in_name[2]
+        if self.action_name in ("swap", ):
+            return self.args_in_name[-1]
         else:
             raise ValueError(
                 f"This action: {self.action_name} doesn't have a role as asset1"
@@ -74,8 +76,10 @@ class DSLAction:
         
     @property
     def defi_entry(self):
-        if self.action_name in ("transaction", "breaklr"):
+        if self.action_name in ("transaction", ):
             return self.args_in_name[0]
+        elif self.action_name in ("breaklr", ):
+            return self.args_in_name[-1]
         else:
             raise ValueError(
                 f"This action: {self.action_name} doesn't have a role as defi_entry"
@@ -92,15 +96,20 @@ class DSLAction:
 
     def check_implemented(self, roles: Dict[str, DefiRoles]) -> bool:
         if self.action_name == "swap":
-            return self.asset1 in roles[self.swap_pair].support_swaps.get(
-                self.asset0, []
-            )
+            src_assets = set([self.asset0])
+            for s in self.swap_pairs:
+                new_src_assets = set()
+                support_swaps = roles[s].support_swaps
+                for sa in src_assets:
+                    new_src_assets.update(support_swaps.get(sa, []))
+                src_assets = new_src_assets
+            return self.asset1 in src_assets
         elif self.action_name == "burn":
             return roles[self.asset0].is_burnable
         elif self.action_name == "transaction":
             return self.asset0 in roles[self.defi_entry].hacked_assets
         elif self.action_name == "breaklr":
-            return self.swap_pair in roles[self.defi_entry].hacked_pairs
+            return self.swap_pairs[0] in roles[self.defi_entry].hacked_pairs
         return True
 
 
@@ -115,16 +124,19 @@ class NOP(DSLAction):
 class Swap(DSLAction):
     def __init__(
         self,
-        swap_pair: str,
-        asset0: str,
-        asset1: str,
-        amount: str,
+        *args,
         concrete: bool = False,
     ) -> None:
+        if len(args) < 4:
+            raise ValueError(f"Length of arguments of a Swap must be larger than 4, current is: {args}")
+        swap_pairs: str = args[:-3]
+        asset0: str = args[-3]
+        asset1: str = args[-2]
+        amount: str = args[-1]
         if asset0 == asset1:
             super().__init__("nop", [], [], True)
             return
-        super().__init__("swap", [swap_pair, asset0, asset1], [amount], concrete)
+        super().__init__("swap", [*swap_pairs, asset0, asset1], [amount], concrete)
 
 
 class Borrow(DSLAction):
@@ -161,11 +173,14 @@ class Burn(DSLAction):
 class BreakLR(DSLAction):
     def __init__(
         self,
-        defi_entry: str,
-        pair: str,
+        *args,
         concrete: bool = False,
     ) -> None:
-        super().__init__("breaklr", [defi_entry, pair], [], concrete)
+        if len(args) < 2:
+            raise ValueError(f"Length of arguments of a Swap must be larger than 2, current is: {args}")
+        swap_pairs: str = args[:-1]
+        defi_entry: str = args[-1]
+        super().__init__("breaklr", [*swap_pairs, defi_entry], [], concrete)
 
 
 class Sync(DSLAction):

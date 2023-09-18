@@ -16,7 +16,7 @@ ctrt_name2deploy:
   - ["router", ""]
 
 extra_actions:
-  - "function breaklr_sgz_pair() internal {
+  - "function breaklr_pair_sgz() internal {
         sgz.swapAndLiquifyStepv1();
     }"
 
@@ -29,7 +29,7 @@ attack_goal: "usdt.balanceOf(attacker) >= 1e18 + balanceOfusdtattacker"
 groundtruth:
   - ["borrow", "usdt", "100e18"]
   - ["swap", "pair", "usdt", "sgz", "usdt.balanceOf(attacker)"]
-  - ["breaklr", "sgz", "pair"]
+  - ["breaklr", "pair", "sgz"]
   - ["swap", "pair", "sgz", "usdt", "sgz.balanceOf(attacker)"]
   - ["payback", "usdt", "100e18 * 1003 / 1000"]
 
