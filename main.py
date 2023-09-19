@@ -93,7 +93,7 @@ def prepare(bmk_dir: str):
     cmds = [
         "forge",
         "test",
-        "-vvvv",
+        "-vvv",
         "--cache-path",
         cache_path,
         "--match-path",
@@ -102,10 +102,10 @@ def prepare(bmk_dir: str):
     try:
         out = run(cmds, text=True, check=True, capture_output=True)
     except Exception as err:
-        print(f"\n\nBenchmark: {bmk_dir} ground truth doesn't work!")
-        print("Execute", " ".join(cmds))
         if isinstance(err, CalledProcessError):
             print(err.stderr, err.stdout)
+        print(f"\n\nBenchmark: {bmk_dir} ground truth doesn't work!")
+        print("Execute: ", " ".join(cmds))
         raise err
 
 
