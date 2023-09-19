@@ -13,7 +13,7 @@ We search a few keywords actually targeting to price oracle manipulation attack:
 [Initial Benchmark](https://docs.google.com/spreadsheets/d/1Lv_MobKl0fHEsKa3oUU9-YnTsg_f9afePEtP_zSXU1c/edit?usp=sharing)
 [Initial Study](https://docs.google.com/document/d/1GLrh-LDtsVapd0acO_sXS0HsohMXxJ6p2bjj6VbaNSw/edit?usp=sharing)
 
-## Setup
+## Setup by Docker
 First, build the image. 
 ```bash
 docker build -t eurus .
@@ -21,6 +21,31 @@ docker build -t eurus .
 Then, execute a container based on this image.
 ```bash
 docker run -it eurus
+```
+
+## Setup by commandline (If you are using a Macbook)
+Install python 3.11.
+```bash
+brew install python@3.11
+```
+
+Install depdencies.
+```bash
+pip3 install -q --upgrade pip && pip3 install -q -r ./requirements.txt && \
+solc-select install 0.8.15 && solc-select use 0.8.15 && npm install --quiet --save-dev
+```
+
+Install foundry
+```bash
+curl -L https://foundry.paradigm.xyz | bash
+```
+Then:
+```bash
+source /Users/hongbo/.zshenv
+```
+Then:
+```bash
+foundryup
 ```
 
 ## Evaluation
