@@ -9,28 +9,74 @@ import time
 from impl.solidity_builder import BenchmarkBuilder
 
 parser = argparse.ArgumentParser()
-parser.add_argument(
-    "-p", "--prepare", help="Prepare all sol files to execute.", action="store_true"
-)
+
 parser.add_argument(
     "-i",
     "--input",
-    help="Input benchmark directory. Set to all for all of benchmarks.",
-    default="",
+    help="Input benchmark directory. Set to `all` for all of benchmarks.",
+    required=True,
 )
-parser.add_argument(
-    "-fo", "--forge", help="Do Foundry fuzzing test.", action="store_true"
-)
-parser.add_argument(
-    "-ha", "--halmos", help="Do Halmos symbolic execution.", action="store_true"
-)
-parser.add_argument("-s", "--statistic", help="Print statistic.", action="store_true")
-parser.add_argument(
-    "--timeout", help="Set the total timeout.", type=int, default=3600 * 2
-)
-parser.add_argument("-c", "--clean", help="Clean the cache.", action="store_true")
 
-parser.add_argument("--printgt", help="Print GroundTruth", action="store_true")
+# Actions, select one of them.
+parser.add_argument(
+    "-p",
+    "--prepare",
+    help="Prepare all sol files to execute.",
+    action="store_true",
+)
+parser.add_argument(
+    "-fo",
+    "--forge",
+    help="Do Foundry fuzzing test.",
+    action="store_true",
+)
+parser.add_argument(
+    "-ha",
+    "--halmos",
+    help="Do Halmos symbolic execution.",
+    action="store_true",
+)
+parser.add_argument(
+    "-s",
+    "--statistic",
+    help="Print statistic.",
+    action="store_true",
+)
+parser.add_argument(
+    "-c",
+    "--clean",
+    help="Clean the cache.",
+    action="store_true",
+)
+
+parser.add_argument(
+    "-pg",
+    "--printgt",
+    help="Print GroundTruth",
+    action="store_true",
+)
+
+# Parameters for evaluation.
+parser.add_argument(
+    "--timeout",
+    help="Set the total timeout.",
+    type=int,
+    default=3600 * 2,
+)
+
+parser.add_argument(
+    "--start",
+    help="Start sketch.",
+    type=int,
+    default=0,
+)
+
+parser.add_argument(
+    "--end",
+    help="End sketch",
+    type=int,
+    default=100,
+)
 
 
 def get_bmk_dirs(bmk_dir: str) -> List[str]:
@@ -144,10 +190,10 @@ def forge_test(bmk_dir: str, timeout: int):
             json.dump(err, f)
 
 
-def halmos_test(bmk_dir: str, timeout: int):
+def halmos_test(bmk_dir: str, timeout: int, start: int, end: int):
     project_name = resolve_project_name(bmk_dir)
     _, result_path = prepare_subfolder(bmk_dir)
-    for i in range(100):
+    for i in range(start, end):
         idx = str(i).zfill(3)
         output = path.join(result_path, f"halmos_out{idx}.json")
         err_output = path.join(result_path, f"halmos_err{idx}.json")
@@ -222,7 +268,7 @@ def _main():
         if args.forge:
             forge_test(bmk_dir, args.timeout)
         if args.halmos:
-            halmos_test(bmk_dir, args.timeout)
+            halmos_test(bmk_dir, args.timeout, args.start, args.end)
         if args.clean:
             clean_result(bmk_dir)
         if args.printgt:
