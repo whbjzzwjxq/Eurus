@@ -1,0 +1,24 @@
+{
+    "exitcode": 0,
+    "test_results": {
+        "benchmarks/NMB/NMB.t.sol:NMBTest": [
+            {
+                "name": "check_cand008(uint256,uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 0,
+                "num_models": 0,
+                "models": [],
+                "num_paths": [
+                    48,
+                    1,
+                    0
+                ],
+                "time": [
+                    5107.771150375003,
+                    5007.765725334,
+                    100.00542249999853
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}
