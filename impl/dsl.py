@@ -43,9 +43,9 @@ class DSLAction:
 
     @property
     def swap_pairs(self):
-        if self.action_name in ("swap", ):
+        if self.action_name in ("swap",):
             return self.args_in_name[:-2]
-        elif self.action_name in ("breaklr", ):
+        elif self.action_name in ("breaklr",):
             return self.args_in_name[:-1]
         else:
             raise ValueError(
@@ -58,7 +58,7 @@ class DSLAction:
             return self.args_in_name[0]
         elif self.action_name in ("burn", "oracle", "transaction"):
             return self.args_in_name[1]
-        elif self.action_name in ("swap", ):
+        elif self.action_name in ("swap",):
             return self.args_in_name[-2]
         else:
             raise ValueError(
@@ -67,18 +67,18 @@ class DSLAction:
 
     @property
     def asset1(self):
-        if self.action_name in ("swap", ):
+        if self.action_name in ("swap",):
             return self.args_in_name[-1]
         else:
             raise ValueError(
                 f"This action: {self.action_name} doesn't have a role as asset1"
             )
-        
+
     @property
     def defi_entry(self):
-        if self.action_name in ("transaction", ):
+        if self.action_name in ("transaction",):
             return self.args_in_name[0]
-        elif self.action_name in ("breaklr", ):
+        elif self.action_name in ("breaklr",):
             return self.args_in_name[-1]
         else:
             raise ValueError(
@@ -128,7 +128,9 @@ class Swap(DSLAction):
         concrete: bool = False,
     ) -> None:
         if len(args) < 4:
-            raise ValueError(f"Length of arguments of a Swap must be larger than 4, current is: {args}")
+            raise ValueError(
+                f"Length of arguments of a Swap must be larger than 4, current is: {args}"
+            )
         swap_pairs: str = args[:-3]
         asset0: str = args[-3]
         asset1: str = args[-2]
@@ -177,7 +179,9 @@ class BreakLR(DSLAction):
         concrete: bool = False,
     ) -> None:
         if len(args) < 2:
-            raise ValueError(f"Length of arguments of a Swap must be larger than 2, current is: {args}")
+            raise ValueError(
+                f"Length of arguments of a Swap must be larger than 2, current is: {args}"
+            )
         swap_pairs: str = args[:-1]
         defi_entry: str = args[-1]
         super().__init__("breaklr", [*swap_pairs, defi_entry], [], concrete)
@@ -261,7 +265,7 @@ class Sketch:
             new_actions.append(new_a)
             arg_start_index += new_a.param_num
         return Sketch(new_actions)
-    
+
     def check_implemented(self, roles: Dict[str, DefiRoles]) -> bool:
         return all(a.check_implemented(roles) for a in self.pure_actions)
 
@@ -312,3 +316,19 @@ class Sketch:
             "}",
         ]
         return checker
+
+    def output_verify(self, func_name: str, args: List[str]) -> List[str]:
+        assert(len(args) == self.param_num)
+        func_body = []
+        for i, p in enumerate(args):
+            func_body.append(f"uint256 amt{i} = {p};")
+        for s in self.pure_actions:
+            func_body.append(f"{str(s)};")
+        final_require = 'require(attackGoal(), "Attack failed!");'
+        verifier = [
+            f"function {func_name}() public " + "{",
+            *func_body,
+            final_require,
+            "}",
+        ]
+        return verifier

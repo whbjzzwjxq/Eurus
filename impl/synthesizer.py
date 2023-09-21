@@ -192,6 +192,8 @@ from .utils import *
 #         ]
 #         df.to_csv(output_path, index=False)
 
+ZFILL_SIZE = 3
+MAX_SKETCH_NUM = 10 ** (ZFILL_SIZE - 1)
 
 class Synthesizer:
     def __init__(self, config: Config):
@@ -207,7 +209,7 @@ class Synthesizer:
             candidates = self.gen_candidates_lrbreak()
         else:
             raise CornerCase(f"Unknown pattern: {self.config.pattern}!")
-        self.candidates: List[Sketch] = candidates
+        self.candidates: List[Sketch] = sorted(candidates, key=lambda s: s.pure_len)
 
     def check_duplicated(self, sketch: Sketch, candidates: List[Sketch]) -> bool:
         return any([sketch == c for c in candidates])
@@ -238,12 +240,11 @@ class Synthesizer:
     def output_default(
         self, flashloan_amount: Decimal, constraints: List[str]
     ) -> List[str]:
-        candidates = sorted(self.candidates, key=lambda s: s.pure_len)
         func_bodys: List[str] = []
-        for idx, c in enumerate(candidates):
+        for idx, c in enumerate(self.candidates):
             func_bodys.extend(
                 c.output(
-                    f"check_cand{str(idx).zfill(3)}", flashloan_amount, constraints
+                    f"check_cand{str(idx).zfill(ZFILL_SIZE)}", flashloan_amount, constraints
                 )
             )
         return func_bodys

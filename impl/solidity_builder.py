@@ -2,11 +2,11 @@ import os
 import subprocess
 from decimal import Decimal
 from os import path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 from .config import Config, init_config
 from .dsl import *
-from .synthesizer import Synthesizer
+from .synthesizer import Synthesizer, ZFILL_SIZE
 from .utils import CornerCase
 
 
@@ -67,11 +67,9 @@ class BenchmarkBuilder:
         self.init_states: Dict[str, Tuple[str, str]] = {}
 
         # Will print token_users' initial balances.
-        self.token_users = [
-            c
-            for c in self.ctrt_names
-            if c in self.roles
-        ] + ["attacker"]
+        self.token_users = [c for c in self.ctrt_names if c in self.roles] + [
+            "attacker"
+        ]
 
         actions = [init_action_from_list(a, True) for a in self.config.groundtruth]
         self.sketch = Sketch(actions)
@@ -254,7 +252,9 @@ class BenchmarkBuilder:
         actions = []
         extra_actions = self.config.extra_actions
         func_name_regex = re.compile(r"function (.*?)\(")
-        extra_action_names = set([func_name_regex.match(a).group(1) for a in extra_actions])
+        extra_action_names = set(
+            [func_name_regex.match(a).group(1) for a in extra_actions]
+        )
 
         def add_func_to_actions(func_body: str):
             func_name = func_name_regex.match(func_body[0]).group(1)
@@ -340,6 +340,30 @@ class BenchmarkBuilder:
             *self.gen_candidates(),
             "}",
         ]
+        with open(output_path, "w") as f:
+            for l in results:
+                f.write(l)
+                f.write("\n")
+
+    def output_verify(
+        self, concrete_args: List[Optional[List[List[str]]]], output_path: str
+    ):
+        synthesizer = Synthesizer(self.config)
+        results = [
+            "// SPDX-License-Identifier: MIT",
+            "pragma solidity ^0.8.10;",
+            f'import "./{self.name}.t.sol";',
+            f"contract {self.name}Verify is {self.name}Test" + "{",
+        ]
+        for i, arg_candidates in enumerate(concrete_args):
+            if arg_candidates is None:
+                continue
+            candidate = synthesizer.candidates[i]
+            idx = str(i).zfill(ZFILL_SIZE)
+            for j, args in enumerate(arg_candidates):
+                func_name = f"test_verify_cand{idx}_{j}"
+                results.extend(candidate.output_verify(func_name, args))
+        results.extend(["}"])
         with open(output_path, "w") as f:
             for l in results:
                 f.write(l)
