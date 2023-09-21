@@ -380,7 +380,7 @@ def _main():
         if args.forge:
             forge_test(bmk_dir, args.timeout)
         if args.halmos:
-            halmos_test(bmk_dir, args.timeout, args.start, args.end)
+            halmos_test(bmk_dir, args.timeout, args.gt, args.start, args.end)
         if args.clean:
             clean_result(bmk_dir, args.start, args.end)
         if args.printgt:
