@@ -90,6 +90,12 @@ parser.add_argument(
     default=100,
 )
 
+parser.add_argument(
+    "--gt",
+    help="Only evaluate groundtruth",
+    action="store_true",
+)
+
 
 def get_bmk_dirs(bmk_dir: str) -> List[str]:
     # Don't use an absolute path, because Foundry doesn't support it.
@@ -202,31 +208,26 @@ def forge_test(bmk_dir: str, timeout: int):
             json.dump(err, f)
 
 
-def halmos_test(bmk_dir: str, timeout: int, start: int, end: int):
+def halmos_test(bmk_dir: str, timeout: int, only_gt: bool, start: int, end: int):
     project_name = resolve_project_name(bmk_dir)
     _, result_path = prepare_subfolder(bmk_dir)
-    for i in range(start, end):
-        idx = str(i).zfill(ZFILL_SIZE)
-        output = path.join(result_path, f"halmos_out{idx}.json")
-        err_output = path.join(result_path, f"halmos_err{idx}.json")
-        if path.exists(output) or path.exists(err_output):
-            continue
+
+    def run_eval(func_name: str):
         cmds = [
             "halmos",
             "-vvvvv",
             "--function",
-            f"check_cand{idx}",
+            f"{func_name}",
             "--contract",
             f"{project_name}Test",
             "--forge-build-out",
             ".cache",
             "--print-potential-counterexample",
-            # It doesn't work.
-            # "--symbolic-storage",
             "--solver-timeout-branching",
             "100000",
             "--solver-timeout-assertion",
             "100000",
+            "--smt-div",
             "--json-output",
             output,
         ]
@@ -238,13 +239,33 @@ def halmos_test(bmk_dir: str, timeout: int, start: int, end: int):
             err = {"error": "timeout", "details": ""}
         except Exception as e:
             err = {"error": "unknown", "details": str(e)}
+        return proc, err
+    if only_gt:
+        output = path.join(result_path, f"halmos_outgt.json")
+        err_output = path.join(result_path, f"halmos_errgt.json")
+        if path.exists(output) or path.exists(err_output):
+            return
+        proc, err = run_eval(f"check_gt")
         if proc:
-            if "Error: No tests with the prefix" in proc.stdout:
-                break
             print(proc.stdout, proc.stderr)
         if err:
             with open(err_output, "w") as f:
                 json.dump(err, f)
+    else:
+        for i in range(start, end):
+            idx = str(i).zfill(ZFILL_SIZE)
+            output = path.join(result_path, f"halmos_out{idx}.json")
+            err_output = path.join(result_path, f"halmos_err{idx}.json")
+            if path.exists(output) or path.exists(err_output):
+                continue
+            proc, err = run_eval(f"check_cand{idx}")
+            if proc:
+                if "Error: No tests with the prefix" in proc.stdout:
+                    break
+                print(proc.stdout, proc.stderr)
+            if err:
+                with open(err_output, "w") as f:
+                    json.dump(err, f)
 
 
 def clean_result(bmk_dir: str, start: int, end: int):
@@ -257,6 +278,13 @@ def clean_result(bmk_dir: str, start: int, end: int):
             os.remove(output)
         if path.exists(err_output):
             os.remove(err_output)
+
+    output = path.join(result_path, f"halmos_outgt.json")
+    err_output = path.join(result_path, f"halmos_errgt.json")
+    if path.exists(output):
+        os.remove(output)
+    if path.exists(err_output):
+        os.remove(err_output)
 
 
 def print_groundtruth(bmk_dir: str):

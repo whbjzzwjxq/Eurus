@@ -3,15 +3,15 @@
     "test_results": {
         "benchmarks/Discover/Discover.t.sol:DiscoverTest": [
             {
-                "name": "check_cand001(uint256,uint256,uint256,uint256)",
+                "name": "check_gt(uint256,uint256,uint256,uint256)",
                 "exitcode": 1,
                 "num_models": 1,
                 "models": [
                     {
-                        "p_amt1_uint256": "0x3aa8259ef6e9da00005",
-                        "p_amt2_uint256": "0x757d87e1e024a6ef59b2",
-                        "p_amt0_uint256": "0x103f08008a00800000002",
-                        "p_amt3_uint256": "0x103f4673c028f142005dc"
+                        "p_amt1_uint256": "0xeb817cba9d94bdeb2cc",
+                        "p_amt2_uint256": "0x332001cf8442ca6aaad",
+                        "p_amt0_uint256": "0x1000000000000000000001",
+                        "p_amt3_uint256": "0x100003e7336287142005db"
                     }
                 ],
                 "num_paths": [
@@ -20,9 +20,9 @@
                     0
                 ],
                 "time": [
-                    28.928275207988918,
-                    28.855265874997713,
-                    0.07300712500000373
+                    4738.716284167007,
+                    4738.204483458001,
+                    0.5117985830001999
                 ],
                 "num_bounded_loops": 0
             }
