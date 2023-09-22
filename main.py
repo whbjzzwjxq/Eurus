@@ -73,7 +73,7 @@ parser.add_argument(
     "--timeout",
     help="Set the total timeout.",
     type=int,
-    default=3600 * 2,
+    default=3600 * 12,
 )
 
 parser.add_argument(
@@ -264,10 +264,10 @@ def halmos_test(
             "--solver-subprocess",
             "--solver-smt-div",
         ]
-        suffix = "smtdiv_model"
+        suffix = "_smtdiv_model"
     else:
         extra_args_halmos = []
-        suffix = "smtdiv_none"
+        suffix = "_smtdiv_none"
 
     if only_gt:
         output = path.join(result_path, f"halmos_outgt{suffix}.json")
