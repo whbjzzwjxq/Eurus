@@ -96,6 +96,13 @@ parser.add_argument(
     action="store_true",
 )
 
+parser.add_argument(
+    "--smtdiv",
+    help="Apply smt-div in which phases",
+    choices=["All", "Models", "None"],
+    default="All",
+)
+
 
 def get_bmk_dirs(bmk_dir: str) -> List[str]:
     # Don't use an absolute path, because Foundry doesn't support it.
@@ -208,11 +215,15 @@ def forge_test(bmk_dir: str, timeout: int):
             json.dump(err, f)
 
 
-def halmos_test(bmk_dir: str, timeout: int, only_gt: bool, start: int, end: int):
+def halmos_test(
+    bmk_dir: str, timeout: int, only_gt: bool, smtdiv: str, start: int, end: int
+):
     project_name = resolve_project_name(bmk_dir)
     _, result_path = prepare_subfolder(bmk_dir)
 
-    def run_eval(func_name: str):
+    def run_eval(
+        func_name: str, output: str, smt_output: str, extra_args_halmos: List[str]
+    ):
         cmds = [
             "halmos",
             "-vvvvv",
@@ -224,12 +235,14 @@ def halmos_test(bmk_dir: str, timeout: int, only_gt: bool, start: int, end: int)
             ".cache",
             "--print-potential-counterexample",
             "--solver-timeout-branching",
-            "100000",
+            "100",
             "--solver-timeout-assertion",
-            "100000",
-            "--smt-div",
+            "0",
             "--json-output",
             output,
+            "--dump-smt-queries",
+            smt_output,
+            *extra_args_halmos,
         ]
         print(" ".join(cmds))
         proc, err = None, None
@@ -240,12 +253,29 @@ def halmos_test(bmk_dir: str, timeout: int, only_gt: bool, start: int, end: int)
         except Exception as e:
             err = {"error": "unknown", "details": str(e)}
         return proc, err
+
+    extra_args_halmos = []
+    suffix = ""
+    if smtdiv == "All":
+        extra_args_halmos = ["--smt-div"]
+        suffix = ""
+    elif smtdiv == "Models":
+        extra_args_halmos = [
+            "--solver-subprocess",
+            "--solver-smt-div",
+        ]
+        suffix = "smtdiv_model"
+    else:
+        extra_args_halmos = []
+        suffix = "smtdiv_none"
+
     if only_gt:
-        output = path.join(result_path, f"halmos_outgt.json")
-        err_output = path.join(result_path, f"halmos_errgt.json")
+        output = path.join(result_path, f"halmos_outgt{suffix}.json")
+        err_output = path.join(result_path, f"halmos_errgt{suffix}.json")
+        smt_output = path.join(result_path, f"smt_gt{suffix}")
         if path.exists(output) or path.exists(err_output):
             return
-        proc, err = run_eval(f"check_gt")
+        proc, err = run_eval(f"check_gt", output, smt_output, extra_args_halmos)
         if proc:
             print(proc.stdout, proc.stderr)
         if err:
@@ -254,11 +284,12 @@ def halmos_test(bmk_dir: str, timeout: int, only_gt: bool, start: int, end: int)
     else:
         for i in range(start, end):
             idx = str(i).zfill(ZFILL_SIZE)
-            output = path.join(result_path, f"halmos_out{idx}.json")
-            err_output = path.join(result_path, f"halmos_err{idx}.json")
+            output = path.join(result_path, f"halmos_out{idx}{suffix}.json")
+            err_output = path.join(result_path, f"halmos_err{idx}{suffix}.json")
+            smt_output = path.join(result_path, f"smt_{idx}{suffix}")
             if path.exists(output) or path.exists(err_output):
                 continue
-            proc, err = run_eval(f"check_cand{idx}")
+            proc, err = run_eval(f"check_cand{idx}", output, smt_output, extra_args_halmos)
             if proc:
                 if "Error: No tests with the prefix" in proc.stdout:
                     break
@@ -380,7 +411,9 @@ def _main():
         if args.forge:
             forge_test(bmk_dir, args.timeout)
         if args.halmos:
-            halmos_test(bmk_dir, args.timeout, args.gt, args.start, args.end)
+            halmos_test(
+                bmk_dir, args.timeout, args.gt, args.smtdiv, args.start, args.end
+            )
         if args.clean:
             clean_result(bmk_dir, args.start, args.end)
         if args.printgt:
