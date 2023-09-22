@@ -1,0 +1,32 @@
+{
+    "exitcode": 1,
+    "test_results": {
+        "benchmarks/NOVO/NOVO.t.sol:NOVOTest": [
+            {
+                "name": "check_gt(uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 1,
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt4_uint256": "0x200012fb55003789b4003",
+                        "p_amt1_uint256": "0x180dd5cf4fd3f562d20b3",
+                        "p_amt2_uint256": "0x16f6ddbbff80",
+                        "p_amt0_uint256": "0x200012f001fc8a50fc002",
+                        "p_amt3_uint256": "0x24ff34454542af"
+                    }
+                ],
+                "num_paths": [
+                    76,
+                    3,
+                    0
+                ],
+                "time": [
+                    1500.9327155000065,
+                    1186.4463167500217,
+                    314.4863925410027
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}

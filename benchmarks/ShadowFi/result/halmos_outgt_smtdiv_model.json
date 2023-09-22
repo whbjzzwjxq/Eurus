@@ -1,0 +1,28 @@
+{
+    "exitcode": 1,
+    "test_results": {
+        "benchmarks/ShadowFi/ShadowFi.t.sol:ShadowFiTest": [
+            {
+                "name": "check_gt(uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 1,
+                "num_models": 3,
+                "models": [
+                    "see ./benchmarks/ShadowFi/result/smt_gt_smtdiv_model/97.smt2.out",
+                    "see ./benchmarks/ShadowFi/result/smt_gt_smtdiv_model/164.smt2.out",
+                    "see ./benchmarks/ShadowFi/result/smt_gt_smtdiv_model/223.smt2.out"
+                ],
+                "num_paths": [
+                    257,
+                    12,
+                    0
+                ],
+                "time": [
+                    25502.94735112501,
+                    597.2091630420182,
+                    24905.738178875006
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}
