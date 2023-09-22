@@ -1,0 +1,32 @@
+{
+    "exitcode": 1,
+    "test_results": {
+        "benchmarks/BXH/BXH.t.sol:BXHTest": [
+            {
+                "name": "check_gt(uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 1,
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt3_uint256": "0x17212159196bb52e1cc0",
+                        "p_amt2_uint256": "0xc859457a0fa8f41efe0",
+                        "p_amt4_uint256": "0x18bffc13d586a20a4c0619",
+                        "p_amt1_uint256": "0x1c013ec34aec2db8367",
+                        "p_amt0_uint256": "0x18bff80300000000000000"
+                    }
+                ],
+                "num_paths": [
+                    80,
+                    3,
+                    0
+                ],
+                "time": [
+                    10359.730606583005,
+                    2372.9793953339977,
+                    7986.751203749998
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}
