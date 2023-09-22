@@ -2,11 +2,11 @@ import os
 import subprocess
 from decimal import Decimal
 from os import path
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple
 
 from .config import Config, init_config
 from .dsl import *
-from .synthesizer import Synthesizer, ZFILL_SIZE
+from .synthesizer import Synthesizer
 from .utils import CornerCase
 
 
@@ -72,8 +72,8 @@ class BenchmarkBuilder:
         ]
 
         actions = [init_action_from_list(a, True) for a in self.config.groundtruth]
-        self.sketch = Sketch(actions)
-        self.flashloan_amount = Decimal(self.sketch.actions[0].amount)
+        self.gt_sketch = Sketch(actions)
+        self.flashloan_amount = Decimal(self.gt_sketch.actions[0].amount)
 
     def get_initial_state(self) -> List[str]:
         # Handle the initial states print by foundry.
@@ -318,8 +318,8 @@ class BenchmarkBuilder:
 
     def gen_gt_for_forge_and_halmos(self) -> List[str]:
         # Build groundtruth test for forge
-        test_gt = self.sketch.output_test("test_gt")
-        check_gt = self.sketch.symbolic_copy().output(
+        test_gt = self.gt_sketch.output_test("test_gt")
+        check_gt = self.gt_sketch.symbolic_copy().output(
             "check_gt", self.flashloan_amount, self.extra_constraints
         )
         all = [*test_gt, *check_gt]
@@ -346,23 +346,20 @@ class BenchmarkBuilder:
                 f.write("\n")
 
     def output_verify(
-        self, concrete_args: List[Optional[List[List[str]]]], output_path: str
+        self, verifiers: List[Tuple[str, Sketch, List[List[str]]]], output_path: str
     ):
-        synthesizer = Synthesizer(self.config)
         results = [
             "// SPDX-License-Identifier: MIT",
             "pragma solidity ^0.8.10;",
             f'import "./{self.name}.t.sol";',
             f"contract {self.name}Verify is {self.name}Test" + "{",
         ]
-        for i, arg_candidates in enumerate(concrete_args):
-            if arg_candidates is None:
+        for func_name, candidate, arg_candidates in verifiers:
+            if len(arg_candidates) == 0:
                 continue
-            candidate = synthesizer.candidates[i]
-            idx = str(i).zfill(ZFILL_SIZE)
             for j, args in enumerate(arg_candidates):
-                func_name = f"test_verify_cand{idx}_{j}"
-                results.extend(candidate.output_verify(func_name, args))
+                actual_name = f"test_verify_{func_name}_{j}"
+                results.extend(candidate.output_verify(actual_name, args))
         results.extend(["}"])
         with open(output_path, "w") as f:
             for l in results:

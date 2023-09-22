@@ -7,7 +7,8 @@ from typing import List, Tuple
 import time
 
 from impl.solidity_builder import BenchmarkBuilder
-from impl.synthesizer import ZFILL_SIZE, MAX_SKETCH_NUM
+from impl.synthesizer import ZFILL_SIZE, MAX_SKETCH_NUM, Synthesizer
+from impl.utils import parse_smt_output
 
 parser = argparse.ArgumentParser()
 
@@ -218,6 +219,7 @@ def forge_test(bmk_dir: str, timeout: int):
 def halmos_test(
     bmk_dir: str, timeout: int, only_gt: bool, smtdiv: str, start: int, end: int
 ):
+    solver_timeout = timeout // 2
     project_name = resolve_project_name(bmk_dir)
     _, result_path = prepare_subfolder(bmk_dir)
 
@@ -242,6 +244,8 @@ def halmos_test(
             output,
             "--dump-smt-queries",
             smt_output,
+            "--solver-subprocess-command",
+            f"z3 --model -T:{solver_timeout}",
             *extra_args_halmos,
         ]
         print(" ".join(cmds))
@@ -289,7 +293,9 @@ def halmos_test(
             smt_output = path.join(result_path, f"smt_{idx}{suffix}")
             if path.exists(output) or path.exists(err_output):
                 continue
-            proc, err = run_eval(f"check_cand{idx}", output, smt_output, extra_args_halmos)
+            proc, err = run_eval(
+                f"check_cand{idx}", output, smt_output, extra_args_halmos
+            )
             if proc:
                 if "Error: No tests with the prefix" in proc.stdout:
                     break
@@ -320,7 +326,7 @@ def clean_result(bmk_dir: str, start: int, end: int):
 
 def print_groundtruth(bmk_dir: str):
     builder = BenchmarkBuilder(bmk_dir)
-    sketch = builder.sketch
+    sketch = builder.gt_sketch
     print("----Groundtruth----\n")
     for a in sketch.pure_actions:
         print(str(a))
@@ -330,7 +336,7 @@ def print_groundtruth(bmk_dir: str):
         print(str(a))
 
 
-def verify_result(bmk_dir: str):
+def verify_result(bmk_dir: str, smtdiv: str):
     builder = BenchmarkBuilder(bmk_dir)
     cache_path, result_path = prepare_subfolder(bmk_dir)
     project_name = resolve_project_name(bmk_dir)
@@ -339,25 +345,60 @@ def verify_result(bmk_dir: str):
     verify_sol_path = path.join(bmk_dir, f"{project_name}_verify_halmos.t.sol")
     if path.exists(verify_sol_path):
         os.remove(verify_sol_path)
-    concrete_args = [None] * MAX_SKETCH_NUM
-    for i in range(MAX_SKETCH_NUM):
-        idx = str(i).zfill(ZFILL_SIZE)
-        file_name = f"halmos_out{idx}.json"
-        file_path = path.join(result_path, file_name)
+
+    def load_result(file_path: str) -> List[List[str]]:
         if not path.exists(file_path):
-            continue
+            return []
         with open(file_path, "r") as f:
             result = json.load(f)
         result = list(result["test_results"].values())[0][0]
         if len(result["models"]) == 0:
-            continue
+            return []
         arg_candidates = []
         for model in result["models"]:
-            arg_candidates.append(
-                [model[f"p_amt{j}_uint256"] for j in range(len(model))]
-            )
-        concrete_args[i] = arg_candidates
-    builder.output_verify(concrete_args, verify_sol_path)
+            if isinstance(model, str):
+                smtout = model.removeprefix("see ")
+                with open(smtout, "r") as f:
+                    lines = f.readlines()
+                values = [
+                    parse_smt_output(f"p_amt{j}_uint256", lines) for j in range(10)
+                ]
+                values = [v for v in values if v is not None]
+                arg_candidates.append(values)
+            else:
+                arg_candidates.append(
+                    [model[f"p_amt{j}_uint256"] for j in range(len(model))]
+                )
+        return arg_candidates
+
+    synthesizer = Synthesizer(builder.config)
+
+    suffix = ""
+    if smtdiv == "All":
+        suffix = ""
+    elif smtdiv == "Models":
+        suffix = "_smtdiv_model"
+    else:
+        suffix = "_smtdiv_none"
+
+    # Eval
+    verifiers = []
+    for i in range(MAX_SKETCH_NUM):
+        idx = str(i).zfill(ZFILL_SIZE)
+        file_name = f"halmos_out{idx}{suffix}.json"
+        file_path = path.join(result_path, file_name)
+        results = load_result(file_path)
+        if len(results) == 0:
+            continue
+        verifiers.append((f"cand{idx}", synthesizer.candidates[i], results))
+    
+    # GT
+    file_name = f"halmos_outgt{suffix}.json"
+    file_path = path.join(result_path, file_name)
+    results = load_result(file_path)
+    if len(results) != 0:
+        verifiers.append((f"gt", builder.gt_sketch.symbolic_copy(), results))
+    builder.output_verify(verifiers, verify_sol_path)
 
     # Format
     cmd = [
@@ -396,6 +437,7 @@ def verify_result(bmk_dir: str):
         print(
             f"Halmos produces feasiable counter-examples for benchmark {project_name}. They are: {verified_sketches}"
         )
+    os.remove(verify_sol_path)
     # result = lines[-1]
     # verify_result_path = path.join(result_path, f"verify_halmos.json")
     # with open(verify_result_path, "w") as f:
@@ -419,7 +461,7 @@ def _main():
         if args.printgt:
             print_groundtruth(bmk_dir)
         if args.verify:
-            verify_result(bmk_dir)
+            verify_result(bmk_dir, args.smtdiv)
 
 
 if __name__ == "__main__":
