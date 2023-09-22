@@ -1,0 +1,26 @@
+{
+    "exitcode": 1,
+    "test_results": {
+        "benchmarks/Sheep/Sheep.t.sol:SheepTest": [
+            {
+                "name": "check_gt(uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 1,
+                "num_models": 1,
+                "models": [
+                    "see ./benchmarks/Sheep/result/smt_gt_smtdiv_model/44.smt2.out"
+                ],
+                "num_paths": [
+                    80,
+                    3,
+                    0
+                ],
+                "time": [
+                    2376.676189863996,
+                    136.27325321699755,
+                    2240.4029249140003
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}
