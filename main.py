@@ -1,23 +1,20 @@
 import argparse
 import json
-import os
-from subprocess import run, TimeoutExpired, CalledProcessError
-from os import path
-from typing import List, Tuple
-import time
-import random
 import math
+import os
+import random
 import re
-from impl.dsl import Sketch
+import shutil
+import time
+from os import path
+from subprocess import CalledProcessError, TimeoutExpired, run
+from typing import List, Tuple
 
+from impl.dsl import Sketch
 from impl.solidity_builder import BenchmarkBuilder
 from impl.synthesizer import Synthesizer
-from impl.utils import (
-    gen_model_by_z3,
-    gen_result_paths,
-    is_result_sat,
-    parse_smt_output,
-)
+from impl.utils import (gen_model_by_z3, gen_result_paths, is_result_sat,
+                        parse_smt_output)
 
 parser = argparse.ArgumentParser()
 
@@ -290,7 +287,7 @@ def clean_result(bmk_dir: str, only_gt: bool, smtdiv: str, start: int, end: int)
         if path.exists(err_path):
             os.remove(err_path)
         if path.exists(smt_folder):
-            os.removedirs(smt_folder)
+            shutil.rmtree(smt_folder)
 
 
 def print_groundtruth(bmk_dir: str):
