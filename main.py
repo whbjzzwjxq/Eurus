@@ -11,13 +11,12 @@ import re
 from impl.dsl import Sketch
 
 from impl.solidity_builder import BenchmarkBuilder
-from impl.synthesizer import ZFILL_SIZE, MAX_SKETCH_NUM, Synthesizer
+from impl.synthesizer import Synthesizer
 from impl.utils import (
     gen_model_by_z3,
     gen_result_paths,
     is_result_sat,
     parse_smt_output,
-    query_z3,
 )
 
 parser = argparse.ArgumentParser()
@@ -25,6 +24,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "-i",
     "--input",
+    type=str,
+    nargs="+",
     help="Input benchmark directory. Set to `all` for all of benchmarks.",
     required=True,
 )
@@ -127,11 +128,11 @@ parser.add_argument(
 )
 
 
-def get_bmk_dirs(bmk_dir: str) -> List[str]:
+def get_bmk_dirs(i_bmk_dirs: str) -> List[str]:
     # Don't use an absolute path, because Foundry doesn't support it.
     benmark_folder = "./benchmarks"
-    if bmk_dir == "all":
-        bmk_dirs = []
+    bmk_dirs = []
+    if "all" in i_bmk_dirs:
         for p in os.listdir(benmark_folder):
             bmk_dir = path.join(benmark_folder, p)
             if not path.isdir(bmk_dir):
@@ -140,11 +141,16 @@ def get_bmk_dirs(bmk_dir: str) -> List[str]:
                 continue
             bmk_dirs.append(bmk_dir)
     else:
-        if not path.isdir(bmk_dir):
-            raise ValueError(
-                f"Benchmark path should be a directory, current is: {bmk_dir}"
-            )
-        bmk_dirs = [bmk_dir]
+        for bmk_dir in i_bmk_dirs:
+            if not path.isdir(bmk_dir):
+                raise ValueError(
+                    f"Benchmark path should be a directory, current is: {bmk_dir}"
+                )
+            config_file = path.join(bmk_dir, "_config.yaml")
+            if not path.exists(config_file):
+                continue
+
+            bmk_dirs.append(bmk_dir)
     return bmk_dirs
 
 
