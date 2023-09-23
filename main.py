@@ -5,10 +5,20 @@ from subprocess import run, TimeoutExpired, CalledProcessError
 from os import path
 from typing import List, Tuple
 import time
+import random
+import math
+import re
+from impl.dsl import Sketch
 
 from impl.solidity_builder import BenchmarkBuilder
 from impl.synthesizer import ZFILL_SIZE, MAX_SKETCH_NUM, Synthesizer
-from impl.utils import parse_smt_output
+from impl.utils import (
+    gen_model_by_z3,
+    gen_result_paths,
+    is_result_sat,
+    parse_smt_output,
+    query_z3,
+)
 
 parser = argparse.ArgumentParser()
 
@@ -69,6 +79,12 @@ parser.add_argument(
     action="store_true",
 )
 
+parser.add_argument(
+    "--fuzz-smtdiv",
+    help="Fuzzing the replaced smtdiv to find the upper bound",
+    action="store_true",
+)
+
 # Parameters for evaluation.
 parser.add_argument(
     "--timeout",
@@ -102,6 +118,12 @@ parser.add_argument(
     help="Apply smt-div in which phases",
     choices=["All", "Models", "None"],
     default="All",
+)
+
+parser.add_argument(
+    "--fuzz-times",
+    type=int,
+    default=1000,
 )
 
 
@@ -219,90 +241,34 @@ def forge_test(bmk_dir: str, timeout: int):
 def halmos_test(
     bmk_dir: str, timeout: int, only_gt: bool, smtdiv: str, start: int, end: int
 ):
-    solver_timeout = timeout // 2
+    builder = BenchmarkBuilder(bmk_dir)
+    synthesizer = Synthesizer(builder.config)
     project_name = resolve_project_name(bmk_dir)
+    solver_timeout = timeout // 2
     _, result_path = prepare_subfolder(bmk_dir)
 
-    def run_eval(
-        func_name: str, output: str, smt_output: str, extra_args_halmos: List[str]
-    ):
-        cmds = [
-            "halmos",
-            "-vvvvv",
-            "--function",
-            f"{func_name}",
-            "--contract",
-            f"{project_name}Test",
-            "--forge-build-out",
-            ".cache",
-            "--print-potential-counterexample",
-            "--solver-timeout-branching",
-            "100",
-            "--solver-timeout-assertion",
-            "0",
-            "--json-output",
-            output,
-            "--dump-smt-queries",
-            smt_output,
-            "--solver-subprocess-command",
-            f"z3 --model memory_max_size=31457280 -T:{solver_timeout}",
-            *extra_args_halmos,
-        ]
-        print(" ".join(cmds))
-        proc, err = None, None
-        try:
-            proc = run(cmds, timeout=timeout, text=True, capture_output=True)
-        except TimeoutExpired:
-            err = {"error": "timeout", "details": ""}
-        except Exception as e:
-            err = {"error": "unknown", "details": str(e)}
-        return proc, err
+    result_paths = gen_result_paths(
+        result_path, only_gt, smtdiv, len(synthesizer.candidates)
+    )
 
-    extra_args_halmos = []
-    suffix = ""
-    if smtdiv == "All":
-        extra_args_halmos = ["--smt-div"]
-        suffix = ""
-    elif smtdiv == "Models":
-        extra_args_halmos = [
-            "--solver-subprocess",
-            "--solver-smt-div",
-        ]
-        suffix = "_smtdiv_model"
-    else:
-        extra_args_halmos = []
-        suffix = "_smtdiv_none"
+    result_paths = result_paths[start:end]
 
-    if only_gt:
-        output = path.join(result_path, f"halmos_outgt{suffix}.json")
-        err_output = path.join(result_path, f"halmos_errgt{suffix}.json")
-        smt_output = path.join(result_path, f"smt_gt{suffix}")
-        if path.exists(output) or path.exists(err_output):
-            return
-        proc, err = run_eval(f"check_gt", output, smt_output, extra_args_halmos)
-        if proc:
-            print(proc.stdout, proc.stderr)
-        if err:
-            with open(err_output, "w") as f:
-                json.dump(err, f)
-    else:
-        for i in range(start, end):
-            idx = str(i).zfill(ZFILL_SIZE)
-            output = path.join(result_path, f"halmos_out{idx}{suffix}.json")
-            err_output = path.join(result_path, f"halmos_err{idx}{suffix}.json")
-            smt_output = path.join(result_path, f"smt_{idx}{suffix}")
-            if path.exists(output) or path.exists(err_output):
+    for _, _, _, smt_folder in result_paths:
+        for smtquerys in os.listdir(smt_folder):
+            if not smtquerys.endswith("smt2"):
                 continue
-            proc, err = run_eval(
-                f"check_cand{idx}", output, smt_output, extra_args_halmos
-            )
-            if proc:
-                if "Error: No tests with the prefix" in proc.stdout:
-                    break
-                print(proc.stdout, proc.stderr)
-            if err:
-                with open(err_output, "w") as f:
-                    json.dump(err, f)
+            base_smtquery_path = path.join(smt_folder, smtquerys)
+            base_smtquery_resultpath = base_smtquery_path.replace(".smt2", ".smt2.out")
+            if not path.exists(base_smtquery_resultpath):
+                gen_model_by_z3(
+                    base_smtquery_path, base_smtquery_resultpath, solver_timeout
+                )
+            succeed = verify_result(bmk_dir, only_gt, smtdiv)
+            if succeed:
+                print(
+                    f"Benchmark: {project_name} is solved by setting: only_gt={only_gt}, smtdiv={smtdiv}, timeout={timeout}"
+                )
+                break
 
 
 def clean_result(bmk_dir: str, start: int, end: int):
@@ -336,19 +302,10 @@ def print_groundtruth(bmk_dir: str):
         print(str(a))
 
 
-def verify_result(bmk_dir: str, smtdiv: str):
-    builder = BenchmarkBuilder(bmk_dir)
-    cache_path, result_path = prepare_subfolder(bmk_dir)
-    project_name = resolve_project_name(bmk_dir)
-
-    # Verification for Halmos.
-    verify_sol_path = path.join(bmk_dir, f"{project_name}_verify_halmos.t.sol")
-    if path.exists(verify_sol_path):
-        os.remove(verify_sol_path)
-
-    def load_result(file_path: str) -> List[List[str]]:
-        if not path.exists(file_path):
-            return []
+def load_smt_model(file_path: str) -> List[List[str]]:
+    if not path.exists(file_path):
+        return []
+    if file_path.endswith(".json"):
         with open(file_path, "r") as f:
             result = json.load(f)
         result = list(result["test_results"].values())[0][0]
@@ -358,57 +315,34 @@ def verify_result(bmk_dir: str, smtdiv: str):
         for model in result["models"]:
             if isinstance(model, str):
                 smtout = model.removeprefix("see ")
-                with open(smtout, "r") as f:
-                    lines = f.readlines()
-                values = [
-                    parse_smt_output(f"p_amt{j}_uint256", lines) for j in range(10)
-                ]
-                values = [v for v in values if v is not None]
-                arg_candidates.append(values)
+                arg_candidates.extend(load_smt_model(smtout))
             else:
                 arg_candidates.append(
                     [model[f"p_amt{j}_uint256"] for j in range(len(model))]
                 )
         return arg_candidates
-
-    synthesizer = Synthesizer(builder.config)
-
-    suffix = ""
-    if smtdiv == "All":
-        suffix = ""
-    elif smtdiv == "Models":
-        suffix = "_smtdiv_model"
+    elif file_path.endswith(".smt2.out"):
+        with open(smtout, "r") as f:
+            lines = f.readlines()
+        if lines[0] != "sat":
+            return []
+        values = [parse_smt_output(f"p_amt{j}_uint256", lines) for j in range(10)]
+        values = [v for v in values if v is not None]
+        return [values]
     else:
-        suffix = "_smtdiv_none"
+        raise ValueError(f"Unknown file for smt model: {file_path}")
 
-    # Eval
-    verifiers = []
-    for i in range(MAX_SKETCH_NUM):
-        idx = str(i).zfill(ZFILL_SIZE)
-        file_name = f"halmos_out{idx}{suffix}.json"
-        file_path = path.join(result_path, file_name)
-        results = load_result(file_path)
-        if len(results) == 0:
-            continue
-        verifiers.append((f"cand{idx}", synthesizer.candidates[i], results))
-    
-    # GT
-    file_name = f"halmos_outgt{suffix}.json"
-    file_path = path.join(result_path, file_name)
-    results = load_result(file_path)
-    if len(results) != 0:
-        verifiers.append((f"gt", builder.gt_sketch.symbolic_copy(), results))
+
+def verify_model(bmk_dir: str, verifiers: List[Tuple[str, Sketch, List[List[str]]]]):
+    builder = BenchmarkBuilder(bmk_dir)
+    cache_path, _ = prepare_subfolder(bmk_dir)
+
+    # Verification for Halmos.
+    verify_sol_path = path.join(bmk_dir, f"verify.t.sol")
+    if path.exists(verify_sol_path):
+        os.remove(verify_sol_path)
+
     builder.output_verify(verifiers, verify_sol_path)
-
-    # Format
-    cmd = [
-        "npx",
-        "prettier",
-        "--write",
-        "--plugin=prettier-plugin-solidity",
-        f"{verify_sol_path}",
-    ]
-    run(cmd, text=True, check=True)
 
     cmds = [
         "forge",
@@ -429,19 +363,160 @@ def verify_result(bmk_dir: str, smtdiv: str):
     result.pop("test_gt()")
     verified_sketches = [k for k, v in result.items() if v["status"] == "Success"]
     verified_sketches = sorted(verified_sketches)
-    if len(verified_sketches) == 0:
+    os.remove(verify_sol_path)
+    return len(verified_sketches) != 0
+
+
+def verify_result(bmk_dir: str, only_gt: bool, smtdiv: str):
+    builder = BenchmarkBuilder(bmk_dir)
+    synthesizer = Synthesizer(builder.config)
+    _, result_path = prepare_subfolder(bmk_dir)
+    project_name = resolve_project_name(bmk_dir)
+
+    result_paths = gen_result_paths(
+        result_path, only_gt, smtdiv, len(synthesizer.candidates)
+    )
+
+    verifiers = []
+
+    for func_name, output_path, _, _ in result_paths:
+        sketch = get_sketch_by_func_name(synthesizer, func_name)
+        model = load_smt_model(output_path)
+        if len(model) == 0:
+            continue
+        verifiers.append((func_name, sketch, model))
+
+    succeed = verify_model(bmk_dir, verifiers)
+    if succeed:
         print(
-            f"Halmos doesn't produce any feasiable counter-example for benchmark {project_name}."
+            f"Benchmark: {project_name} is solved by setting: only_gt={only_gt}, smtdiv={smtdiv}"
         )
     else:
         print(
-            f"Halmos produces feasiable counter-examples for benchmark {project_name}. They are: {verified_sketches}"
+            f"Benchmark: {project_name} is NOT solved by setting: only_gt={only_gt}, smtdiv={smtdiv}"
         )
-    os.remove(verify_sol_path)
-    # result = lines[-1]
-    # verify_result_path = path.join(result_path, f"verify_halmos.json")
-    # with open(verify_result_path, "w") as f:
-    #     f.write(result)
+
+
+def prepare_smtquery(bmk_dir: str, only_gt: bool, smtdiv: str, timeout: int):
+    builder = BenchmarkBuilder(bmk_dir)
+    synthesize = Synthesizer(builder.config)
+    _, result_path = prepare_subfolder(bmk_dir)
+    project_name = resolve_project_name(bmk_dir)
+
+    # func_name, output_path, err_path, smt_folder
+    result_paths = gen_result_paths(
+        result_path, only_gt, smtdiv, len(synthesize.candidates)
+    )
+
+    result_paths = [
+        (func_name, a, b, c)
+        for func_name, a, b, c in result_paths
+        if not (path.exists(a) and path.exists(c))
+    ]
+
+    for func_name, output_path, err_path, smt_folder in result_paths:
+        cmds = [
+            "halmos",
+            "-vvvvv",
+            "--function",
+            f"{func_name}",
+            "--contract",
+            f"{project_name}Test",
+            "--forge-build-out",
+            ".cache",
+            "--solver-timeout-branching",
+            "100",
+            "--solver-timeout-assertion",
+            "0",
+            "--json-output",
+            output_path,
+            "--solver-only-dump",
+            "--dump-smt-queries",
+            smt_folder,
+        ]
+        if smtdiv == "All":
+            cmds.append("--smt-div")
+        print(" ".join(cmds))
+        proc, err = None, None
+        try:
+            proc = run(cmds, timeout=timeout, text=True, capture_output=True)
+        except TimeoutExpired:
+            err = {"error": "timeout", "details": ""}
+        except Exception as e:
+            err = {"error": "unknown", "details": str(e)}
+        if proc:
+            print(proc.stdout, proc.stderr)
+        if err:
+            with open(err_path, "w") as f:
+                json.dump(err, f)
+
+
+def get_sketch_by_func_name(b: BenchmarkBuilder, s: Synthesizer, func_name: str):
+    if func_name == "check_gt":
+        sketch = b.gt_sketch.symbolic_copy()
+    else:
+        sketch = s.candidates[int(func_name.removeprefix("check_cand"))]
+    return sketch
+
+
+def fuzz_smtquery(
+    bmk_dir: str, only_gt: bool, smtdiv: str, timeout: int, fuzz_times: int
+):
+    pattern = re.compile(r"evm_bvudiv")
+    replacement = "bvudiv"
+    builder = BenchmarkBuilder(bmk_dir)
+    synthesizer = Synthesizer(builder.config)
+    _, result_path = prepare_subfolder(bmk_dir)
+
+    # Timeout for one query
+    solver_timeout = (timeout // fuzz_times) * 10
+
+    # func_name, output_path, err_path, smt_folder
+    result_paths: List[Tuple[str, str, str, str]] = gen_result_paths(
+        result_path, only_gt, smtdiv, len(synthesizer.candidates)
+    )
+
+    def variable_replace(match, r):
+        # Decide whether to replace or keep the match
+        return replacement if random.random() <= r else match.group()
+
+    for func_name, _, _, smt_folder in result_paths:
+        for smtquerys in os.listdir(smt_folder):
+            if not smtquerys.endswith("smt2"):
+                continue
+            base_smtquery_path = path.join(smt_folder, smtquerys)
+            base_smtquery_resultpath = base_smtquery_path.replace(".smt2", ".smt2.out")
+            if not path.exists(base_smtquery_resultpath):
+                gen_model_by_z3(base_smtquery_path, base_smtquery_resultpath)
+            if not is_result_sat(base_smtquery_resultpath):
+                continue
+            with open(base_smtquery_path, "r") as f:
+                smtquery = f.read()
+            for i in range(fuzz_times):
+                idx = str(i).zfill(int(math.ceil(math.log10(fuzz_times))))
+                smtquery_path = path.join(
+                    smt_folder, smtquerys.replace(".smt2", f"_{idx}.smt2")
+                )
+                smtquery_resultpath = smtquery_path.replace(".smt2", ".smt2.out")
+                if not path.exists(smtquery_path):
+                    new_smtquery = re.sub(
+                        pattern,
+                        lambda m: variable_replace(m, 0.8 * i / fuzz_times + 0.2),
+                        smtquery,
+                    )
+                    with open(smtquery_path, "w") as f:
+                        f.write(new_smtquery)
+                if not path.exists(smtquery_resultpath):
+                    gen_model_by_z3(smtquery_path, smtquery_resultpath, solver_timeout)
+                if is_result_sat(smtquery_resultpath):
+                    # func_name == "check_gt"
+                    sketch = get_sketch_by_func_name(builder, synthesizer, func_name)
+                    models = load_smt_model(smtquery_resultpath)
+                    verifiers = [(func_name, sketch, models)]
+                    feasible = verify_model(bmk_dir, verifiers)
+                    if feasible:
+                        print(f"Result is feasible at: {smtquery_resultpath}")
+                        break
 
 
 def _main():
@@ -453,6 +528,7 @@ def _main():
         if args.forge:
             forge_test(bmk_dir, args.timeout)
         if args.halmos:
+            prepare_smtquery(bmk_dir, args.gt, args.smtdiv, args.timeout)
             halmos_test(
                 bmk_dir, args.timeout, args.gt, args.smtdiv, args.start, args.end
             )
@@ -461,7 +537,10 @@ def _main():
         if args.printgt:
             print_groundtruth(bmk_dir)
         if args.verify:
-            verify_result(bmk_dir, args.smtdiv)
+            verify_result(bmk_dir, args.gt, args.smtdiv)
+        if args.fuzz_smtdiv:
+            prepare_smtquery(bmk_dir, True, "Models", args.timeout)
+            fuzz_smtquery(bmk_dir, True, "Models", args.timeout, args.fuzz_times)
 
 
 if __name__ == "__main__":

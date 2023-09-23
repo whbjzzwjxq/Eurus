@@ -192,8 +192,6 @@ from .utils import *
 #         ]
 #         df.to_csv(output_path, index=False)
 
-ZFILL_SIZE = 3
-MAX_SKETCH_NUM = 10 ** (ZFILL_SIZE - 1)
 
 class Synthesizer:
     def __init__(self, config: Config):

@@ -358,7 +358,8 @@ class BenchmarkBuilder:
             if len(arg_candidates) == 0:
                 continue
             for j, args in enumerate(arg_candidates):
-                actual_name = f"test_verify_{func_name}_{j}"
+                jdx = str(j).zfill(3)
+                actual_name = f"test_verify_{func_name}_{jdx}"
                 results.extend(candidate.output_verify(actual_name, args))
         results.extend(["}"])
         with open(output_path, "w") as f:

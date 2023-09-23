@@ -3,7 +3,7 @@
     "test_results": {
         "benchmarks/MUMUG/MUMUG.t.sol:MUMUGTest": [
             {
-                "name": "check_cand000(uint256,uint256,uint256,uint256)",
+                "name": "check_gt(uint256,uint256,uint256,uint256)",
                 "exitcode": 0,
                 "num_models": 0,
                 "models": [],
@@ -13,9 +13,9 @@
                     0
                 ],
                 "time": [
-                    313.95174616598524,
-                    306.997445874993,
-                    6.954294374998426
+                    37.81944679099979,
+                    37.81944724999994,
+                    0
                 ],
                 "num_bounded_loops": 0
             }
