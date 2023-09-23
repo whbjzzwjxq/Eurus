@@ -67,7 +67,7 @@ def gen_result_paths(result_path: str, only_gt: bool, smtdiv: str, sketch_num: i
         suffix_smt = ""
     elif smtdiv == "Models":
         suffix = "_smtdiv_none"
-        suffix_smt = ""
+        suffix_smt = "_smtdiv_models"
     elif smtdiv == "None":
         suffix = "_smtdiv_none"
         suffix_smt = "_smtdiv_none"
@@ -99,7 +99,7 @@ def query_z3(smtquery: str, timeout: int = 21400, mem_max: int = 31457280):
     print(" ".join(cmds))
     timecost, proc, err = 0, None, ""
     try:
-        proc = run(cmds, timeout=timeout, check=True, text=True)
+        proc = run(cmds, timeout=timeout, check=True, text=True, capture_output=True)
     except TimeoutExpired:
         err = f"timeout: {timeout}"
     except Exception as e:
@@ -118,14 +118,14 @@ def gen_model_by_z3(smtquery_path: str, smtquery_resultpath: str, timeout: int =
     if status == "unsat":
         # Impossible
         with open(smtquery_resultpath, "w") as f:
-            f.write(status + "\n")
+            f.write(f"{status}\n")
             f.write(timecost)
     # status == "sat"
     assert(status == "sat")
     model = results[1]
     with open(smtquery_resultpath, "w") as f:
-        f.write(status + "\n")
-        f.write(timecost + "\n")
+        f.write(f"{status}\n")
+        f.write(f"{timecost}\n")
         f.write(model)
 
 def is_result_sat(smtquery_resultpath: str):

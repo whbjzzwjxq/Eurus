@@ -5,16 +5,18 @@
             {
                 "name": "check_gt(uint256,uint256,uint256,uint256)",
                 "exitcode": 0,
-                "num_models": 0,
-                "models": [],
+                "num_models": 1,
+                "models": [
+                    "see ./benchmarks/MUMUG/result/smt_gt_smtdiv_models/23.smt2.out"
+                ],
                 "num_paths": [
-                    36,
+                    35,
                     1,
                     0
                 ],
                 "time": [
-                    37.81944679099979,
-                    37.81944724999994,
+                    35.28625704099977,
+                    35.28625749999628,
                     0
                 ],
                 "num_bounded_loops": 0

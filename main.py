@@ -266,28 +266,26 @@ def halmos_test(
             succeed = verify_result(bmk_dir, only_gt, smtdiv)
             if succeed:
                 print(
-                    f"Benchmark: {project_name} is solved by setting: only_gt={only_gt}, smtdiv={smtdiv}, timeout={timeout}"
+                    f"Great! Benchmark: {project_name} is solved by setting: only_gt={only_gt}, smtdiv={smtdiv}, timeout={timeout}"
                 )
                 break
 
 
-def clean_result(bmk_dir: str, start: int, end: int):
+def clean_result(bmk_dir: str, only_gt: bool, smtdiv: str, start: int, end: int):
+    builder = BenchmarkBuilder(bmk_dir)
+    synthesizer = Synthesizer(builder.config)
     _, result_path = prepare_subfolder(bmk_dir)
-    for i in range(start, end):
-        idx = str(i).zfill(ZFILL_SIZE)
-        output = path.join(result_path, f"halmos_out{idx}.json")
-        err_output = path.join(result_path, f"halmos_err{idx}.json")
-        if path.exists(output):
-            os.remove(output)
-        if path.exists(err_output):
-            os.remove(err_output)
-
-    output = path.join(result_path, f"halmos_outgt.json")
-    err_output = path.join(result_path, f"halmos_errgt.json")
-    if path.exists(output):
-        os.remove(output)
-    if path.exists(err_output):
-        os.remove(err_output)
+    result_paths = gen_result_paths(
+        result_path, only_gt, smtdiv, len(synthesizer.candidates)
+    )
+    result_paths = result_paths[start:end]
+    for _, output_path, err_path, smt_folder in result_paths:
+        if path.exists(output_path):
+            os.remove(output_path)
+        if path.exists(err_path):
+            os.remove(err_path)
+        if path.exists(smt_folder):
+            os.removedirs(smt_folder)
 
 
 def print_groundtruth(bmk_dir: str):
@@ -322,9 +320,9 @@ def load_smt_model(file_path: str) -> List[List[str]]:
                 )
         return arg_candidates
     elif file_path.endswith(".smt2.out"):
-        with open(smtout, "r") as f:
+        with open(file_path, "r") as f:
             lines = f.readlines()
-        if lines[0] != "sat":
+        if lines[0].strip() != "sat":
             return []
         values = [parse_smt_output(f"p_amt{j}_uint256", lines) for j in range(10)]
         values = [v for v in values if v is not None]
@@ -380,7 +378,7 @@ def verify_result(bmk_dir: str, only_gt: bool, smtdiv: str):
     verifiers = []
 
     for func_name, output_path, _, _ in result_paths:
-        sketch = get_sketch_by_func_name(synthesizer, func_name)
+        sketch = get_sketch_by_func_name(builder, synthesizer, func_name)
         model = load_smt_model(output_path)
         if len(model) == 0:
             continue
@@ -389,7 +387,7 @@ def verify_result(bmk_dir: str, only_gt: bool, smtdiv: str):
     succeed = verify_model(bmk_dir, verifiers)
     if succeed:
         print(
-            f"Benchmark: {project_name} is solved by setting: only_gt={only_gt}, smtdiv={smtdiv}"
+            f"Great! Benchmark: {project_name} is solved by setting: only_gt={only_gt}, smtdiv={smtdiv}"
         )
     else:
         print(
@@ -436,6 +434,9 @@ def prepare_smtquery(bmk_dir: str, only_gt: bool, smtdiv: str, timeout: int):
         ]
         if smtdiv == "All":
             cmds.append("--smt-div")
+            cmds.append("--solver-smt-div")
+        elif smtdiv == "Models":
+            cmds.append("--solver-smt-div")
         print(" ".join(cmds))
         proc, err = None, None
         try:
@@ -533,7 +534,7 @@ def _main():
                 bmk_dir, args.timeout, args.gt, args.smtdiv, args.start, args.end
             )
         if args.clean:
-            clean_result(bmk_dir, args.start, args.end)
+            clean_result(bmk_dir, args.gt, args.smtdiv, args.start, args.end)
         if args.printgt:
             print_groundtruth(bmk_dir)
         if args.verify:
