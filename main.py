@@ -245,7 +245,7 @@ def halmos_test(
             "--dump-smt-queries",
             smt_output,
             "--solver-subprocess-command",
-            f"z3 --model -T:{solver_timeout}",
+            f"z3 --model memory_max_size=31457280 -T:{solver_timeout}",
             *extra_args_halmos,
         ]
         print(" ".join(cmds))
