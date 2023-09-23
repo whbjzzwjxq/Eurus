@@ -119,7 +119,7 @@ def gen_model_by_z3(smtquery_path: str, smtquery_resultpath: str, timeout: int =
         # Impossible
         with open(smtquery_resultpath, "w") as f:
             f.write(f"{status}\n")
-            f.write(timecost)
+            f.write(f"{timecost}\n")
     # status == "sat"
     assert(status == "sat")
     model = results[1]
