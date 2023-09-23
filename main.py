@@ -26,7 +26,7 @@ parser.add_argument(
     "-i",
     "--input",
     type=str,
-    nargs="+",
+    action='append',
     help="Input benchmark directory. Set to `all` for all of benchmarks.",
     required=True,
 )
