@@ -1,23 +1,23 @@
 {
     "exitcode": 1,
     "test_results": {
-        "benchmarks/BIGFI/BIGFI.t.sol:BIGFITest": [
+        "benchmarks/Sheep/Sheep.t.sol:SheepTest": [
             {
                 "name": "check_gt(uint256,uint256,uint256,uint256,uint256)",
                 "exitcode": 1,
                 "num_models": 1,
                 "models": [
-                    "see ./benchmarks/BIGFI/result/smt_gt_smtdiv_model/30.smt2.out"
+                    "see ./benchmarks/Sheep/result/smt_gt_smtdiv_models/44.smt2.out"
                 ],
                 "num_paths": [
-                    78,
+                    80,
                     3,
                     0
                 ],
                 "time": [
-                    3482.987293992,
-                    141.2654076419999,
-                    3341.7218777590006
+                    2376.676189863996,
+                    136.27325321699755,
+                    0
                 ],
                 "num_bounded_loops": 0
             }

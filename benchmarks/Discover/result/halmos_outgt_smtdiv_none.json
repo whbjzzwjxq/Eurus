@@ -5,16 +5,18 @@
             {
                 "name": "check_gt(uint256,uint256,uint256,uint256)",
                 "exitcode": 0,
-                "num_models": 0,
-                "models": [],
+                "num_models": 1,
+                "models": [
+                    "see ./benchmarks/Discover/result/smt_gt_smtdiv_models/12.smt2.out"
+                ],
                 "num_paths": [
                     24,
                     1,
                     0
                 ],
                 "time": [
-                    21.9692465420012,
-                    21.969247000000905,
+                    22.138662459001353,
+                    22.138662749996,
                     0
                 ],
                 "num_bounded_loops": 0

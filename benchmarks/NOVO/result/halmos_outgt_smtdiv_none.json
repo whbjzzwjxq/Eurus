@@ -1,23 +1,23 @@
 {
     "exitcode": 1,
     "test_results": {
-        "benchmarks/Sheep/Sheep.t.sol:SheepTest": [
+        "benchmarks/NOVO/NOVO.t.sol:NOVOTest": [
             {
                 "name": "check_gt(uint256,uint256,uint256,uint256,uint256)",
                 "exitcode": 1,
                 "num_models": 1,
                 "models": [
-                    "see ./benchmarks/Sheep/result/smt_gt_smtdiv_model/44.smt2.out"
+                    "see ./benchmarks/NOVO/result/smt_gt_smtdiv_models/41.smt2.out"
                 ],
                 "num_paths": [
-                    80,
+                    75,
                     3,
                     0
                 ],
                 "time": [
-                    2376.676189863996,
-                    136.27325321699755,
-                    2240.4029249140003
+                    1223.389183167019,
+                    96.70066941602272,
+                    1126.6885114579927
                 ],
                 "num_bounded_loops": 0
             }

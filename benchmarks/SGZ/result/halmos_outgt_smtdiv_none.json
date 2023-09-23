@@ -7,8 +7,8 @@
                 "exitcode": 1,
                 "num_models": 2,
                 "models": [
-                    "see /Users/hongbo/code/Eurus/benchmarks/SGZ/result/smt_gt_smtdiv_model/33.smt2.out",
-                    "see /Users/hongbo/code/Eurus/benchmarks/SGZ/result/smt_gt_smtdiv_model/44.smt2.out"
+                    "see /Users/hongbo/code/Eurus/benchmarks/SGZ/result/smt_gt_smtdiv_models/33.smt2.out",
+                    "see /Users/hongbo/code/Eurus/benchmarks/SGZ/result/smt_gt_smtdiv_models/44.smt2.out"
                 ],
                 "num_paths": [
                     136,

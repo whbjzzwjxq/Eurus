@@ -7,9 +7,9 @@
                 "exitcode": 1,
                 "num_models": 3,
                 "models": [
-                    "see ./benchmarks/ShadowFi/result/smt_gt_smtdiv_model/97.smt2.out",
-                    "see ./benchmarks/ShadowFi/result/smt_gt_smtdiv_model/164.smt2.out",
-                    "see ./benchmarks/ShadowFi/result/smt_gt_smtdiv_model/223.smt2.out"
+                    "see ./benchmarks/ShadowFi/result/smt_gt_smtdiv_models/97.smt2.out",
+                    "see ./benchmarks/ShadowFi/result/smt_gt_smtdiv_models/164.smt2.out",
+                    "see ./benchmarks/ShadowFi/result/smt_gt_smtdiv_models/223.smt2.out"
                 ],
                 "num_paths": [
                     257,

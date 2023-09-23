@@ -265,9 +265,6 @@ def halmos_test(
                 )
             succeed = verify_result(bmk_dir, only_gt, smtdiv)
             if succeed:
-                print(
-                    f"Great! Benchmark: {project_name} is solved by setting: only_gt={only_gt}, smtdiv={smtdiv}, timeout={timeout}"
-                )
                 break
 
 
@@ -393,6 +390,7 @@ def verify_result(bmk_dir: str, only_gt: bool, smtdiv: str):
         print(
             f"Benchmark: {project_name} is NOT solved by setting: only_gt={only_gt}, smtdiv={smtdiv}"
         )
+    return succeed
 
 
 def prepare_smtquery(bmk_dir: str, only_gt: bool, smtdiv: str, timeout: int):
