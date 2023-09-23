@@ -254,6 +254,8 @@ def halmos_test(
     result_paths = result_paths[start:end]
 
     for _, _, _, smt_folder in result_paths:
+        if not path.exists(smt_folder):
+            os.mkdir(smt_folder)
         for smtquerys in os.listdir(smt_folder):
             if not smtquerys.endswith("smt2"):
                 continue
