@@ -13,8 +13,12 @@ from typing import List, Tuple
 from impl.dsl import Sketch
 from impl.solidity_builder import BenchmarkBuilder
 from impl.synthesizer import Synthesizer
-from impl.utils import (gen_model_by_z3, gen_result_paths, is_result_sat,
-                        parse_smt_output)
+from impl.utils import (
+    gen_model_by_z3,
+    gen_result_paths,
+    is_result_sat,
+    parse_smt_output,
+)
 
 parser = argparse.ArgumentParser()
 
@@ -122,6 +126,13 @@ parser.add_argument(
     "--fuzz-times",
     type=int,
     default=1000,
+)
+
+# parallel actually doesn't work, don't use it.
+parser.add_argument(
+    "--solver-parallel",
+    help="Allow parallet in solver",
+    action="store_true",
 )
 
 
@@ -242,7 +253,13 @@ def forge_test(bmk_dir: str, timeout: int):
 
 
 def halmos_test(
-    bmk_dir: str, timeout: int, only_gt: bool, smtdiv: str, start: int, end: int
+    bmk_dir: str,
+    timeout: int,
+    only_gt: bool,
+    smtdiv: str,
+    start: int,
+    end: int,
+    parallel: bool,
 ):
     builder = BenchmarkBuilder(bmk_dir)
     synthesizer = Synthesizer(builder.config)
@@ -266,7 +283,10 @@ def halmos_test(
             base_smtquery_resultpath = base_smtquery_path.replace(".smt2", ".smt2.out")
             if not path.exists(base_smtquery_resultpath):
                 gen_model_by_z3(
-                    base_smtquery_path, base_smtquery_resultpath, solver_timeout
+                    base_smtquery_path,
+                    base_smtquery_resultpath,
+                    solver_timeout,
+                    parallel=parallel,
                 )
             succeed = verify_result(bmk_dir, only_gt, smtdiv)
             if succeed:
@@ -464,7 +484,12 @@ def get_sketch_by_func_name(b: BenchmarkBuilder, s: Synthesizer, func_name: str)
 
 
 def fuzz_smtquery(
-    bmk_dir: str, only_gt: bool, smtdiv: str, timeout: int, fuzz_times: int
+    bmk_dir: str,
+    only_gt: bool,
+    smtdiv: str,
+    timeout: int,
+    fuzz_times: int,
+    parallel: bool,
 ):
     pattern = re.compile(r"evm_bvudiv")
     replacement = "bvudiv"
@@ -491,7 +516,11 @@ def fuzz_smtquery(
             base_smtquery_path = path.join(smt_folder, smtquerys)
             base_smtquery_resultpath = base_smtquery_path.replace(".smt2", ".smt2.out")
             if not path.exists(base_smtquery_resultpath):
-                gen_model_by_z3(base_smtquery_path, base_smtquery_resultpath)
+                gen_model_by_z3(
+                    base_smtquery_path,
+                    base_smtquery_resultpath,
+                    parallel=parallel,
+                )
             if not is_result_sat(base_smtquery_resultpath):
                 continue
             with open(base_smtquery_path, "r") as f:
@@ -511,7 +540,12 @@ def fuzz_smtquery(
                     with open(smtquery_path, "w") as f:
                         f.write(new_smtquery)
                 if not path.exists(smtquery_resultpath):
-                    gen_model_by_z3(smtquery_path, smtquery_resultpath, solver_timeout)
+                    gen_model_by_z3(
+                        smtquery_path,
+                        smtquery_resultpath,
+                        solver_timeout,
+                        parallel=parallel,
+                    )
                 if is_result_sat(smtquery_resultpath):
                     # func_name == "check_gt"
                     sketch = get_sketch_by_func_name(builder, synthesizer, func_name)
@@ -534,7 +568,13 @@ def _main():
         if args.halmos:
             prepare_smtquery(bmk_dir, args.gt, args.smtdiv, args.timeout)
             halmos_test(
-                bmk_dir, args.timeout, args.gt, args.smtdiv, args.start, args.end
+                bmk_dir,
+                args.timeout,
+                args.gt,
+                args.smtdiv,
+                args.start,
+                args.end,
+                args.solver_parallel,
             )
         if args.clean:
             clean_result(bmk_dir, args.gt, args.smtdiv, args.start, args.end)
@@ -544,7 +584,14 @@ def _main():
             verify_result(bmk_dir, args.gt, args.smtdiv)
         if args.fuzz_smtdiv:
             prepare_smtquery(bmk_dir, True, "Models", args.timeout)
-            fuzz_smtquery(bmk_dir, True, "Models", args.timeout, args.fuzz_times)
+            fuzz_smtquery(
+                bmk_dir,
+                True,
+                "Models",
+                args.timeout,
+                args.fuzz_times,
+                args.solver_parallel,
+            )
 
 
 if __name__ == "__main__":

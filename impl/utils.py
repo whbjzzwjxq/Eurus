@@ -87,13 +87,16 @@ def gen_result_paths(result_path: str, only_gt: bool, smtdiv: str, sketch_num: i
     return result_paths
 
 
-def query_z3(smtquery: str, timeout: int = 21400, mem_max: int = 31457280):
+def query_z3(
+    smtquery: str, timeout: int = 21400, mem_max: int = 31457280, parallel: bool = False
+):
     timer = time.perf_counter()
     cmds = [
         "z3",
         "--model",
         f"-T:{timeout}",
         f"memory_max_size={mem_max}",
+        f"parallel.enable={str(parallel).lower()}",
         smtquery,
     ]
     print(" ".join(cmds))
@@ -107,8 +110,15 @@ def query_z3(smtquery: str, timeout: int = 21400, mem_max: int = 31457280):
     timecost = time.perf_counter() - timer
     return timecost, proc, err
 
-def gen_model_by_z3(smtquery_path: str, smtquery_resultpath: str, timeout: int = 21400, mem_max: int = 31457280):
-    timecost, proc, err = query_z3(smtquery_path, timeout, mem_max)
+
+def gen_model_by_z3(
+    smtquery_path: str,
+    smtquery_resultpath: str,
+    timeout: int = 21400,
+    mem_max: int = 31457280,
+    parallel: bool = False,
+):
+    timecost, proc, err = query_z3(smtquery_path, timeout, mem_max, parallel)
     if err != "":
         with open(smtquery_resultpath, "w") as f:
             f.write(err)
@@ -122,12 +132,13 @@ def gen_model_by_z3(smtquery_path: str, smtquery_resultpath: str, timeout: int =
             f.write(f"{timecost}\n")
         return
     # status == "sat"
-    assert(status == "sat")
+    assert status == "sat"
     model = results[1]
     with open(smtquery_resultpath, "w") as f:
         f.write(f"{status}\n")
         f.write(f"{timecost}\n")
         f.write(model)
+
 
 def is_result_sat(smtquery_resultpath: str):
     with open(smtquery_resultpath, "r") as f:
