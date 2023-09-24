@@ -445,8 +445,9 @@ def prepare_smtquery(bmk_dir: str, only_gt: bool, smtdiv: str, timeout: int):
             f"{project_name}Test",
             "--forge-build-out",
             ".cache",
-            "--solver-timeout-branching",
-            "100",
+            # Use default setting.
+            # "--solver-timeout-branching",
+            # "100",
             "--solver-timeout-assertion",
             "0",
             "--json-output",
