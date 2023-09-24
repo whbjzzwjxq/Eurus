@@ -1,0 +1,26 @@
+{
+    "exitcode": 0,
+    "test_results": {
+        "benchmarks/Discover/Discover.t.sol:DiscoverTest": [
+            {
+                "name": "check_gt(uint256,uint256,uint256,uint256)",
+                "exitcode": 0,
+                "num_models": 1,
+                "models": [
+                    "see ./benchmarks/Discover/result/smt_gt_smtdiv_models/13.smt2.out"
+                ],
+                "num_paths": [
+                    28,
+                    1,
+                    0
+                ],
+                "time": [
+                    12.657980672000008,
+                    12.65798028200004,
+                    0
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}
