@@ -1,0 +1,28 @@
+{
+    "exitcode": 0,
+    "test_results": {
+        "benchmarks/Sheep/Sheep.t.sol:SheepTest": [
+            {
+                "name": "check_gt(uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 0,
+                "num_models": 3,
+                "models": [
+                    "see ./benchmarks/Sheep/result/smt_gt_smtdiv_models/32.smt2.out",
+                    "see ./benchmarks/Sheep/result/smt_gt_smtdiv_models/44.smt2.out",
+                    "see ./benchmarks/Sheep/result/smt_gt_smtdiv_models/60.smt2.out"
+                ],
+                "num_paths": [
+                    85,
+                    3,
+                    0
+                ],
+                "time": [
+                    117.17309503499928,
+                    117.17309468500025,
+                    0
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}
