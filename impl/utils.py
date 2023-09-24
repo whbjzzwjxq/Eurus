@@ -88,15 +88,15 @@ def gen_result_paths(result_path: str, only_gt: bool, smtdiv: str, sketch_num: i
 
 
 def query_z3(
-    smtquery: str, timeout: int = 21400, mem_max: int = 31457280, parallel: bool = False
+    smtquery: str, timeout: int = 21600, mem_max: int = 31457280, parallel: bool = False
 ):
     timer = time.perf_counter()
     cmds = [
         "z3",
         "--model",
         f"-T:{timeout}",
-        f"memory_max_size={mem_max}",
-        f"parallel.enable={str(parallel).lower()}",
+        # f"memory_max_size={mem_max}",
+        # f"parallel.enable={str(parallel).lower()}",
         smtquery,
     ]
     print(" ".join(cmds))
@@ -114,7 +114,7 @@ def query_z3(
 def gen_model_by_z3(
     smtquery_path: str,
     smtquery_resultpath: str,
-    timeout: int = 21400,
+    timeout: int = 21600,
     mem_max: int = 31457280,
     parallel: bool = False,
 ):

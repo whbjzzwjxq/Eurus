@@ -92,7 +92,7 @@ parser.add_argument(
     "--timeout",
     help="Set the total timeout.",
     type=int,
-    default=3600 * 12,
+    default=3600 * 6,
 )
 
 parser.add_argument(
@@ -264,7 +264,7 @@ def halmos_test(
     builder = BenchmarkBuilder(bmk_dir)
     synthesizer = Synthesizer(builder.config)
     project_name = resolve_project_name(bmk_dir)
-    solver_timeout = timeout // 2
+    solver_timeout = timeout
     _, result_path = prepare_subfolder(bmk_dir)
 
     result_paths = gen_result_paths(
