@@ -445,16 +445,17 @@ def prepare_smtquery(bmk_dir: str, only_gt: bool, smtdiv: str, timeout: int):
             f"{project_name}Test",
             "--forge-build-out",
             ".cache",
+            "--print-potential-counterexample",
             # Use default setting.
             # "--solver-timeout-branching",
-            # "100",
-            "--solver-timeout-assertion",
-            "0",
+            # "100000",
+            # "--solver-timeout-assertion",
+            # "100000",
             "--json-output",
             output_path,
-            "--solver-only-dump",
-            "--dump-smt-queries",
-            smt_folder,
+            # "--solver-only-dump",
+            # "--dump-smt-queries",
+            # smt_folder,
         ]
         if smtdiv == "All":
             cmds.append("--smt-div")
@@ -568,15 +569,15 @@ def _main():
             forge_test(bmk_dir, args.timeout)
         if args.halmos:
             prepare_smtquery(bmk_dir, args.gt, args.smtdiv, args.timeout)
-            halmos_test(
-                bmk_dir,
-                args.timeout,
-                args.gt,
-                args.smtdiv,
-                args.start,
-                args.end,
-                args.solver_parallel,
-            )
+            # halmos_test(
+            #     bmk_dir,
+            #     args.timeout,
+            #     args.gt,
+            #     args.smtdiv,
+            #     args.start,
+            #     args.end,
+            #     args.solver_parallel,
+            # )
         if args.clean:
             clean_result(bmk_dir, args.gt, args.smtdiv, args.start, args.end)
         if args.printgt:
