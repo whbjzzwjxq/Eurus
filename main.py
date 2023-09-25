@@ -450,7 +450,7 @@ def prepare_smtquery(bmk_dir: str, only_gt: bool, smtdiv: str, timeout: int):
             # "--solver-timeout-branching",
             # "100000",
             "--solver-timeout-assertion",
-            "7200",
+            f"{timeout * 1000}",
             "--json-output",
             output_path,
             # "--solver-only-dump",
