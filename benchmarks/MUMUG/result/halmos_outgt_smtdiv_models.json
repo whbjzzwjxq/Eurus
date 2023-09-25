@@ -1,0 +1,26 @@
+{
+    "exitcode": 0,
+    "test_results": {
+        "benchmarks/MUMUG/MUMUG.t.sol:MUMUGTest": [
+            {
+                "name": "check_gt(uint256,uint256,uint256,uint256)",
+                "exitcode": 0,
+                "num_models": 1,
+                "models": [
+                    "see ./benchmarks/MUMUG/result/smt_gt_smtdiv_models/26.smt2.out"
+                ],
+                "num_paths": [
+                    42,
+                    1,
+                    0
+                ],
+                "time": [
+                    27.497159188000012,
+                    27.49715869900001,
+                    0
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}
