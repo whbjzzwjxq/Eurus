@@ -1,0 +1,24 @@
+{
+    "exitcode": 0,
+    "test_results": {
+        "benchmarks/NOVO/NOVO.t.sol:NOVOTest": [
+            {
+                "name": "check_gt(uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 0,
+                "num_models": 0,
+                "models": [],
+                "num_paths": [
+                    79,
+                    3,
+                    0
+                ],
+                "time": [
+                    101.04785464199995,
+                    98.04511855200008,
+                    3.0027285899998333
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}

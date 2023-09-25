@@ -1,0 +1,37 @@
+{
+    "exitcode": 1,
+    "test_results": {
+        "benchmarks/SGZ/SGZ.t.sol:SGZTest": [
+            {
+                "name": "check_gt(uint256,uint256,uint256,uint256)",
+                "exitcode": 1,
+                "num_models": 2,
+                "models": [
+                    {
+                        "p_amt2_uint256": "0x3b7ecca66700b3ba34922e22e10",
+                        "p_amt1_uint256": "0xbd664dc5ba80200000000",
+                        "p_amt0_uint256": "0x1590c74de34f0000000000",
+                        "p_amt3_uint256": "0x1590c7520d1f69189e0006"
+                    },
+                    {
+                        "p_amt2_uint256": "0x2bccea019e77df9aa612452a870",
+                        "p_amt1_uint256": "0x4b0be25f400000000001",
+                        "p_amt0_uint256": "0x12b78e94d62790e420c8fe",
+                        "p_amt3_uint256": "0x12b78e98fff7f9fcbec904"
+                    }
+                ],
+                "num_paths": [
+                    148,
+                    6,
+                    0
+                ],
+                "time": [
+                    874.2714041139998,
+                    298.499022898,
+                    575.7723701759996
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}
