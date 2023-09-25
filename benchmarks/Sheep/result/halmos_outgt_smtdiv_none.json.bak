@@ -1,0 +1,24 @@
+{
+    "exitcode": 0,
+    "test_results": {
+        "benchmarks/Sheep/Sheep.t.sol:SheepTest": [
+            {
+                "name": "check_gt(uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 0,
+                "num_models": 0,
+                "models": [],
+                "num_paths": [
+                    85,
+                    3,
+                    0
+                ],
+                "time": [
+                    121.7600563520001,
+                    118.7547868129999,
+                    3.005261449000045
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}

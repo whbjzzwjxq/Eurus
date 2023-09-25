@@ -1,0 +1,24 @@
+{
+    "exitcode": 0,
+    "test_results": {
+        "benchmarks/TINU/TINU.t.sol:TINUTest": [
+            {
+                "name": "check_gt(uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 0,
+                "num_models": 0,
+                "models": [],
+                "num_paths": [
+                    158,
+                    6,
+                    0
+                ],
+                "time": [
+                    261.570941277,
+                    255.547162716,
+                    6.0237704010000925
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}

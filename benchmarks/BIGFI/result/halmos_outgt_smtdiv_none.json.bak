@@ -1,0 +1,24 @@
+{
+    "exitcode": 0,
+    "test_results": {
+        "benchmarks/BIGFI/BIGFI.t.sol:BIGFITest": [
+            {
+                "name": "check_gt(uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 0,
+                "num_models": 0,
+                "models": [],
+                "num_paths": [
+                    84,
+                    3,
+                    0
+                ],
+                "time": [
+                    131.740773031,
+                    128.738361478,
+                    3.0024035830000457
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}
