@@ -92,7 +92,7 @@ parser.add_argument(
     "--timeout",
     help="Set the total timeout.",
     type=int,
-    default=3600 * 6,
+    default=3600 * 2,
 )
 
 parser.add_argument(
@@ -449,8 +449,8 @@ def prepare_smtquery(bmk_dir: str, only_gt: bool, smtdiv: str, timeout: int):
             # Use default setting.
             # "--solver-timeout-branching",
             # "100000",
-            # "--solver-timeout-assertion",
-            # "100000",
+            "--solver-timeout-assertion",
+            "7200",
             "--json-output",
             output_path,
             # "--solver-only-dump",
