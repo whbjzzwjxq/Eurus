@@ -435,7 +435,7 @@ def halmos_test(
             err_path,
             smt_folder,
             *extra_halmos_options,
-            print_cmd_only,
+            print_cmd_only=print_cmd_only,
         )
 
 
@@ -513,7 +513,7 @@ def _main():
             print_groundtruth(bmk_dir)
         if args.verify:
             verify_result(bmk_dir, args.gt, args.smtdiv, args.verify_result_path)
-        if args.halmos:
+        if args.halmos or args.printcommand:
             halmos_test(
                 bmk_dir,
                 args.timeout,
