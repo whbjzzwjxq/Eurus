@@ -1,0 +1,46 @@
+{
+    "exitcode": 1,
+    "test_results": {
+        "benchmarks/ShadowFi/ShadowFi.t.sol:ShadowFiTest": [
+            {
+                "name": "check_gt(uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 1,
+                "num_models": 3,
+                "models": [
+                    {
+                        "p_amt2_uint256": "0x2481dd5f977a90",
+                        "p_amt4_uint256": "0x308600001b48eb57e000",
+                        "p_amt1_uint256": "0x7a0eefff4ff02001",
+                        "p_amt0_uint256": "0x30860000000000000000",
+                        "p_amt3_uint256": "0x3f43a2d65981"
+                    },
+                    {
+                        "p_amt2_uint256": "0x4ffc00000000",
+                        "p_amt4_uint256": "0x1291000001b49ed57e009",
+                        "p_amt1_uint256": "0x7fe11f00000000000000",
+                        "p_amt0_uint256": "0x129100000000102000009",
+                        "p_amt3_uint256": "0x1000e"
+                    },
+                    {
+                        "p_amt2_uint256": "0x52a3b8f06fa11",
+                        "p_amt4_uint256": "0x1c23800001b48eb57e000",
+                        "p_amt1_uint256": "0x18fc5f91340215c61862d",
+                        "p_amt0_uint256": "0x1c2380000000000000000",
+                        "p_amt3_uint256": "0x13ffe43879fd"
+                    }
+                ],
+                "num_paths": [
+                    275,
+                    12,
+                    0
+                ],
+                "time": [
+                    25370.659200534,
+                    804.7919329139995,
+                    24565.865605827003
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}
