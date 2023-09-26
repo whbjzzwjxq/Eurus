@@ -1,15 +1,19 @@
 {
-    "exitcode": 0,
+    "exitcode": 1,
     "test_results": {
         "benchmarks/Sheep/Sheep.t.sol:SheepTest": [
             {
                 "name": "check_gt(uint256,uint256,uint256,uint256,uint256)",
-                "exitcode": 0,
-                "num_models": 3,
+                "exitcode": 1,
+                "num_models": 1,
                 "models": [
-                    "see ./benchmarks/Sheep/result/smt_gt_smtdiv_models/32.smt2.out",
-                    "see ./benchmarks/Sheep/result/smt_gt_smtdiv_models/44.smt2.out",
-                    "see ./benchmarks/Sheep/result/smt_gt_smtdiv_models/60.smt2.out"
+                    {
+                        "p_amt1_uint256": "0x80e8fa5fcf2b93378",
+                        "p_amt2_uint256": "0x3d24a1f715c51c25",
+                        "p_amt0_uint256": "0x3fffdf0fdb5477cb3907",
+                        "p_amt3_uint256": "0x6469c4a0a8635f16",
+                        "p_amt4_uint256": "0x3fffe0a4ddb9d8303909"
+                    }
                 ],
                 "num_paths": [
                     85,
@@ -17,9 +21,9 @@
                     0
                 ],
                 "time": [
-                    117.17309503499928,
-                    117.17309468500025,
-                    0
+                    10641.631456578,
+                    117.18237085200008,
+                    10524.449077615998
                 ],
                 "num_bounded_loops": 0
             }

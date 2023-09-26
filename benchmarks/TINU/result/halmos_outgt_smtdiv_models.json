@@ -1,18 +1,19 @@
 {
-    "exitcode": 0,
+    "exitcode": 1,
     "test_results": {
         "benchmarks/TINU/TINU.t.sol:TINUTest": [
             {
                 "name": "check_gt(uint256,uint256,uint256,uint256,uint256)",
-                "exitcode": 0,
-                "num_models": 6,
+                "exitcode": 1,
+                "num_models": 1,
                 "models": [
-                    "see ./benchmarks/TINU/result/smt_gt_smtdiv_models/34.smt2.out",
-                    "see ./benchmarks/TINU/result/smt_gt_smtdiv_models/47.smt2.out",
-                    "see ./benchmarks/TINU/result/smt_gt_smtdiv_models/63.smt2.out",
-                    "see ./benchmarks/TINU/result/smt_gt_smtdiv_models/103.smt2.out",
-                    "see ./benchmarks/TINU/result/smt_gt_smtdiv_models/116.smt2.out",
-                    "see ./benchmarks/TINU/result/smt_gt_smtdiv_models/132.smt2.out"
+                    {
+                        "p_amt1_uint256": "0x21b3a8d7bcd78fbc20",
+                        "p_amt2_uint256": "0x34d0d01b4ff013bcd",
+                        "p_amt0_uint256": "0x1031b7a815fba22309ff0",
+                        "p_amt3_uint256": "0xa36ac2a817f4e081a",
+                        "p_amt4_uint256": "0x1031b7b6bda609d5d9ff1"
+                    }
                 ],
                 "num_paths": [
                     158,
@@ -20,9 +21,9 @@
                     0
                 ],
                 "time": [
-                    253.17691757399916,
-                    253.1769177339993,
-                    0
+                    10182.989941863001,
+                    252.21971226900132,
+                    9930.770220744
                 ],
                 "num_bounded_loops": 0
             }
