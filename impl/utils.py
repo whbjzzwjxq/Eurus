@@ -187,8 +187,8 @@ def call_halmos(
         smt_folder,
         *extra_halmos_options,
     ]
+    print(" ".join(cmds))
     if print_cmd_only:
-        print(" ".join(cmds))
         return
     proc, err = None, None
     try:
