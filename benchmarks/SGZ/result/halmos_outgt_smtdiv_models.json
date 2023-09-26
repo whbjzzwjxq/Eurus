@@ -1,18 +1,24 @@
 {
-    "exitcode": 0,
+    "exitcode": 1,
     "test_results": {
         "benchmarks/SGZ/SGZ.t.sol:SGZTest": [
             {
                 "name": "check_gt(uint256,uint256,uint256,uint256)",
-                "exitcode": 0,
-                "num_models": 6,
+                "exitcode": 1,
+                "num_models": 2,
                 "models": [
-                    "see ./benchmarks/SGZ/result/smt_gt_smtdiv_models/36.smt2.out",
-                    "see ./benchmarks/SGZ/result/smt_gt_smtdiv_models/48.smt2.out",
-                    "see ./benchmarks/SGZ/result/smt_gt_smtdiv_models/64.smt2.out",
-                    "see ./benchmarks/SGZ/result/smt_gt_smtdiv_models/98.smt2.out",
-                    "see ./benchmarks/SGZ/result/smt_gt_smtdiv_models/110.smt2.out",
-                    "see ./benchmarks/SGZ/result/smt_gt_smtdiv_models/126.smt2.out"
+                    {
+                        "p_amt1_uint256": "0x1248e13784877037db7658",
+                        "p_amt2_uint256": "0x39c3db411b2252153b61d42b6c1",
+                        "p_amt0_uint256": "0x1680000000000000000000",
+                        "p_amt3_uint256": "0x1680000429d069189e0006"
+                    },
+                    {
+                        "p_amt1_uint256": "0xd5bf5600967e0bddc2d",
+                        "p_amt2_uint256": "0x16169855e30b44aab4d054ba913",
+                        "p_amt0_uint256": "0x8076bf37f66c7400918ad",
+                        "p_amt3_uint256": "0x8076bf7a9373058a718b3"
+                    }
                 ],
                 "num_paths": [
                     148,
@@ -20,9 +26,9 @@
                     0
                 ],
                 "time": [
-                    255.02191938400028,
-                    255.02191931400012,
-                    0
+                    10621.387938392,
+                    254.15054912800008,
+                    10367.237380644001
                 ],
                 "num_bounded_loops": 0
             }
