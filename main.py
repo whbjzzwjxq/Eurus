@@ -421,6 +421,7 @@ def halmos_test(
     for func_name, output_path, err_path, smt_folder in result_paths:
         if not print_cmd_only and (path.exists(output_path) or path.exists(err_path)):
             print(f"Previous result is here, {func_name} had been tested!")
+            continue
         if smtdiv == "All":
             extra_halmos_options = ["--smt-div"]
         elif smtdiv == "Models":
@@ -469,6 +470,7 @@ def halmos_fuzz(
                 print(
                     f"Previous result is here, {func_name}_{name_suffix} had been tested!"
                 )
+                continue
 
             if smtdiv == "All":
                 extra_halmos_options = ["--smt-div"]
