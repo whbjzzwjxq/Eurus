@@ -1,9 +1,11 @@
-import re
-from os import path
-from typing import List, Optional, Tuple
+import json
+import os
 import random
+import re
 import time
+from os import path
 from subprocess import TimeoutExpired, run
+from typing import List, Optional, Tuple
 
 ZFILL_SIZE = 3
 MAX_SKETCH_NUM = 10 ** (ZFILL_SIZE - 1)
@@ -73,9 +75,12 @@ def gen_result_paths(result_path: str, only_gt: bool, smtdiv: str, sketch_num: i
         suffix_smt = "_smtdiv_none"
 
     if only_gt:
-        output = path.join(result_path, f"halmos_outgt{suffix}.json")
-        err_output = path.join(result_path, f"halmos_errgt{suffix}.json")
-        smt_output = path.join(result_path, f"smt_gt{suffix_smt}")
+        idx = "gt"
+        output = path.join(result_path, f"halmos_out{idx}{suffix}.json")
+        err_output = path.join(result_path, f"halmos_err{idx}{suffix}.json")
+        smt_output = path.join(result_path, f"smt_{idx}{suffix_smt}")
+        if not path.exists(smt_output):
+            os.mkdir(smt_output)
         result_paths = [("check_gt", output, err_output, smt_output)]
     else:
         for i in range(sketch_num):
@@ -83,6 +88,8 @@ def gen_result_paths(result_path: str, only_gt: bool, smtdiv: str, sketch_num: i
             output = path.join(result_path, f"halmos_out{idx}{suffix}.json")
             err_output = path.join(result_path, f"halmos_err{idx}{suffix}.json")
             smt_output = path.join(result_path, f"smt_{idx}{suffix_smt}")
+            if not path.exists(smt_output):
+                os.mkdir(smt_output)
             result_paths.append((f"check_cand{idx}", output, err_output, smt_output))
     return result_paths
 
@@ -144,3 +151,54 @@ def is_result_sat(smtquery_resultpath: str):
     with open(smtquery_resultpath, "r") as f:
         status = f.readline().strip()
         return status == "sat"
+
+
+def call_halmos(
+    project_name: str,
+    func_name: str,
+    timeout: int,
+    output_path: str,
+    err_path: str,
+    smt_folder: str,
+    *extra_halmos_options,
+    print_cmd_only: bool = False,
+):
+    """
+    timeout count as seconds.
+    """
+    cmds = [
+        "halmos",
+        "-vvvvv",
+        "--function",
+        f"{func_name}",
+        "--contract",
+        f"{project_name}Test",
+        "--forge-build-out",
+        ".cache",
+        "--print-potential-counterexample",
+        # Use default setting.
+        # "--solver-timeout-branching",
+        # "100000",
+        "--solver-timeout-assertion",
+        f"{timeout * 1000}",
+        "--json-output",
+        output_path,
+        "--dump-smt-queries",
+        smt_folder,
+        *extra_halmos_options,
+    ]
+    if print_cmd_only:
+        print(" ".join(cmds))
+        return
+    proc, err = None, None
+    try:
+        proc = run(cmds, text=True, capture_output=True)
+    # except TimeoutExpired:
+    #     err = {"error": "timeout", "details": ""}
+    except Exception as e:
+        err = {"error": "unknown", "details": str(e)}
+    if proc:
+        print(proc.stdout, proc.stderr)
+    if err:
+        with open(err_path, "w") as f:
+            json.dump(err, f)
