@@ -366,3 +366,11 @@ class BenchmarkBuilder:
             for l in results:
                 f.write(l)
                 f.write("\n")
+
+
+def get_sketch_by_func_name(b: BenchmarkBuilder, s: Synthesizer, func_name: str):
+    if func_name == "check_gt":
+        sketch = b.gt_sketch.symbolic_copy()
+    else:
+        sketch = s.candidates[int(func_name.removeprefix("check_cand"))]
+    return sketch

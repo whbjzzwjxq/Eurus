@@ -153,52 +153,72 @@ def is_result_sat(smtquery_resultpath: str):
         return status == "sat"
 
 
-def call_halmos(
-    project_name: str,
-    func_name: str,
-    timeout: int,
-    output_path: str,
-    err_path: str,
-    smt_folder: str,
-    *extra_halmos_options,
-    print_cmd_only: bool = False,
-):
-    """
-    timeout count as seconds.
-    """
-    cmds = [
-        "halmos",
-        "-vvvvv",
-        "--function",
-        f"{func_name}",
-        "--contract",
-        f"{project_name}Test",
-        "--forge-build-out",
-        ".cache",
-        "--print-potential-counterexample",
-        # Use default setting.
-        # "--solver-timeout-branching",
-        # "100000",
-        "--solver-timeout-assertion",
-        f"{timeout * 1000}",
-        "--json-output",
-        output_path,
-        "--dump-smt-queries",
-        smt_folder,
-        *extra_halmos_options,
-    ]
-    print(" ".join(cmds))
-    if print_cmd_only:
-        return
-    proc, err = None, None
-    try:
-        proc = run(cmds, text=True, capture_output=True)
-    # except TimeoutExpired:
-    #     err = {"error": "timeout", "details": ""}
-    except Exception as e:
-        err = {"error": "unknown", "details": str(e)}
-    if proc:
-        print(proc.stdout, proc.stderr)
-    if err:
-        with open(err_path, "w") as f:
-            json.dump(err, f)
+def prepare_subfolder(bmk_dir: str) -> Tuple[str, str]:
+    cache_path = path.join(bmk_dir, ".cache")
+    if not path.exists(cache_path):
+        os.mkdir(cache_path)
+    result_path = path.join(bmk_dir, "result")
+    if not path.exists(result_path):
+        os.mkdir(result_path)
+    return cache_path, result_path
+
+
+def get_bmk_dirs(i_bmk_dirs: str) -> List[str]:
+    # Don't use an absolute path, because Foundry doesn't support it.
+    benmark_folder = "./benchmarks"
+    bmk_dirs = []
+    if "all" in i_bmk_dirs:
+        for p in os.listdir(benmark_folder):
+            bmk_dir = path.join(benmark_folder, p)
+            if not path.isdir(bmk_dir):
+                continue
+            if not path.exists(path.join(bmk_dir, "_config.yaml")):
+                continue
+            bmk_dirs.append(bmk_dir)
+    else:
+        for bmk_dir in i_bmk_dirs:
+            if not path.isdir(bmk_dir):
+                raise ValueError(
+                    f"Benchmark path should be a directory, current is: {bmk_dir}"
+                )
+            config_file = path.join(bmk_dir, "_config.yaml")
+            if not path.exists(config_file):
+                continue
+
+            bmk_dirs.append(bmk_dir)
+    return bmk_dirs
+
+
+def resolve_project_name(bmk_dir: str):
+    return path.basename(bmk_dir)
+
+
+def load_smt_model(file_path: str) -> List[List[str]]:
+    if not path.exists(file_path):
+        return []
+    if file_path.endswith(".json"):
+        with open(file_path, "r") as f:
+            result = json.load(f)
+        result = list(result["test_results"].values())[0][0]
+        if len(result["models"]) == 0:
+            return []
+        arg_candidates = []
+        for model in result["models"]:
+            if isinstance(model, str):
+                smtout = model.removeprefix("see ")
+                arg_candidates.extend(load_smt_model(smtout))
+            else:
+                arg_candidates.append(
+                    [model[f"p_amt{j}_uint256"] for j in range(len(model))]
+                )
+        return arg_candidates
+    elif file_path.endswith(".smt2.out"):
+        with open(file_path, "r") as f:
+            lines = f.readlines()
+        if lines[0].strip() != "sat":
+            return []
+        values = [parse_smt_output(f"p_amt{j}_uint256", lines) for j in range(10)]
+        values = [v for v in values if v is not None]
+        return [values]
+    else:
+        raise ValueError(f"Unknown file for smt model: {file_path}")
