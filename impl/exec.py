@@ -1126,20 +1126,12 @@ def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
 
         ex.solver = Solver(ctx=ex.solver.ctx)
 
-        start_time = time.perf_counter()
         datadep_formulas = [interpret_div(f) for f in datadep_constraints]
         ex.solver.add(*datadep_formulas)
-        res = ex.solver.check()
-        end_time = time.perf_counter()
-        print(f"Datadep solving: {end_time - start_time}")
-
-        # start_time = time.perf_counter()
         # ctrl_formulas = [interpret_div(f) for f in ctrldep_constraints]
-        # # new_formulas = old_formulas
-        # ex.solver.add(*ctrl_formulas)
-        # res = ex.solver.check()
-        # end_time = time.perf_counter()
-        # print(f"Ctrldep solving: {end_time - start_time}")
+        ctrldep_formulas = ctrldep_constraints
+        ex.solver.add(*ctrldep_formulas)
+        res = ex.solver.check()
         if res == sat:
             model = ex.solver.model()
     elif args.fuzz_smt_div:
