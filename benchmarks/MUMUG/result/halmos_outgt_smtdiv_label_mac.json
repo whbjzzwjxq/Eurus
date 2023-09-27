@@ -1,0 +1,31 @@
+{
+    "exitcode": 0,
+    "test_results": {
+        "benchmarks/MUMUG/MUMUG.t.sol:MUMUGTest": [
+            {
+                "name": "check_gt(uint256,uint256,uint256,uint256)",
+                "exitcode": 1,
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt1_uint256": "0x270622ee20ac00314333",
+                        "p_amt3_uint256": "0xefff0ffbe7bfa4f9e3f",
+                        "p_amt0_uint256": "0x3884008000000000007d",
+                        "p_amt2_uint256": "0x1d53f69525d8a7a0fc9"
+                    }
+                ],
+                "num_paths": [
+                    42,
+                    1,
+                    0
+                ],
+                "time": [
+                    372.9586286260019,
+                    11.201971875008894,
+                    365.71981929198955
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}

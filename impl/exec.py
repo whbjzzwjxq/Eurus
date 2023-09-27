@@ -10,13 +10,15 @@ from argparse import Namespace
 from dataclasses import asdict, dataclass
 from importlib import metadata
 
+import time
+
 from halmos.calldata import Calldata
+from halmos.eurus import interpret_div
 from halmos.pools import process_pool, thread_pool
 from halmos.sevm import *
 from halmos.utils import NamedTimer, color_good, color_warn, hexify
 from halmos.warnings import *
 
-from .eurus import interpret_div
 from .solidity_builder import (BenchmarkBuilder, Synthesizer,
                                get_sketch_by_func_name)
 from .verifier import verify_model
@@ -737,6 +739,8 @@ def run(
             calls=setup_ex.calls.copy(),
             failed=setup_ex.failed,
             error=setup_ex.error,
+            datadep_constraints=[*setup_ex.datadep_constraints],
+            ctrldep_constraints=[*setup_ex.ctrldep_constraints],
         )
     )
 
@@ -1031,9 +1035,10 @@ def run_sequential(run_args: RunArgs) -> List[TestResult]:
         print(
             color_warn(f"Error: {setup_info.sig} failed: {type(err).__name__}: {err}")
         )
-        if args.debug:
-            traceback.print_exc()
-        return []
+        # if args.debug:
+        #     traceback.print_exc()
+        # return []
+        raise err
 
     test_results = []
     for funsig in run_args.funsigs:
@@ -1046,12 +1051,13 @@ def run_sequential(run_args: RunArgs) -> List[TestResult]:
             )
             test_result = run(setup_ex, run_args.abi, fun_info, extended_args)
         except Exception as err:
-            print(f"{color_warn('[SKIP]')} {funsig}")
-            print(color_warn(f"{type(err).__name__}: {err}"))
-            if args.debug:
-                traceback.print_exc()
-            test_results.append(TestResult(funsig, 2))
-            continue
+            # print(f"{color_warn('[SKIP]')} {funsig}")
+            # print(color_warn(f"{type(err).__name__}: {err}"))
+            # if args.debug:
+            #     traceback.print_exc()
+            # test_results.append(TestResult(funsig, 2))
+            # continue
+            raise err
 
         test_results.append(test_result)
 
@@ -1110,7 +1116,32 @@ def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
         if res == sat:
             model = ex.solver.model()
     elif args.label_smt_div:
-        pass
+
+        # c_strs = sorted([str(c) for c in ex.datadep_constraints] + [str(c) for c in ex.ctrldep_constraints])
+        # a_strs = sorted([str(a) for a in ex.solver.assertions()])
+        # datadep_constraints = [f for f in ex.datadep_constraints if not is_true(f)]
+        # ctrldep_constraints = [f for f in ex.ctrldep_constraints if not is_true(f)]
+        datadep_constraints = ex.datadep_constraints
+        ctrldep_constraints = ex.ctrldep_constraints
+
+        ex.solver = Solver(ctx=ex.solver.ctx)
+
+        start_time = time.perf_counter()
+        datadep_formulas = [interpret_div(f) for f in datadep_constraints]
+        ex.solver.add(*datadep_formulas)
+        res = ex.solver.check()
+        end_time = time.perf_counter()
+        print(f"Datadep solving: {end_time - start_time}")
+
+        # start_time = time.perf_counter()
+        # ctrl_formulas = [interpret_div(f) for f in ctrldep_constraints]
+        # # new_formulas = old_formulas
+        # ex.solver.add(*ctrl_formulas)
+        # res = ex.solver.check()
+        # end_time = time.perf_counter()
+        # print(f"Ctrldep solving: {end_time - start_time}")
+        if res == sat:
+            model = ex.solver.model()
     elif args.fuzz_smt_div:
         pass
     else:

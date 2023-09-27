@@ -58,7 +58,7 @@ class FrozenObject(RuntimeError):
     pass
 
 
-def gen_result_paths(result_path: str, only_gt: bool, smtdiv: str, sketch_num: int):
+def gen_result_paths(result_path: str, only_gt: bool, smtdiv: str, sketch_num: int, suffix_spec: str):
     """
     returns list of func_name, output_path, err_path, smt_folder
     """
@@ -73,6 +73,11 @@ def gen_result_paths(result_path: str, only_gt: bool, smtdiv: str, sketch_num: i
     elif smtdiv == "None":
         suffix = "_smtdiv_none"
         suffix_smt = "_smtdiv_none"
+    elif smtdiv == "Label":
+        suffix = "_smtdiv_label"
+        suffix_smt = "_smtdiv_label"
+    suffix += suffix_spec
+    suffix_smt += suffix_spec
 
     if only_gt:
         idx = "gt"

@@ -132,8 +132,14 @@ parser.add_argument(
 parser.add_argument(
     "--smtdiv",
     help="Apply smt-div in which phases",
-    choices=["All", "Models", "None"],
+    choices=["All", "Models", "None", "Label"],
     default="All",
+)
+
+parser.add_argument(
+    "--suffix",
+    help="Special suffix to output",
+    default="",
 )
 
 parser.add_argument(
@@ -224,12 +230,12 @@ def forge_test(bmk_dir: str, timeout: int):
             json.dump(err, f)
 
 
-def clean_result(bmk_dir: str, only_gt: bool, smtdiv: str, start: int, end: int):
+def clean_result(bmk_dir: str, only_gt: bool, smtdiv: str, start: int, end: int, suffix_spec: str):
     builder = BenchmarkBuilder(bmk_dir)
     synthesizer = Synthesizer(builder.config)
     _, result_path = prepare_subfolder(bmk_dir)
     result_paths = gen_result_paths(
-        result_path, only_gt, smtdiv, len(synthesizer.candidates)
+        result_path, only_gt, smtdiv, len(synthesizer.candidates), suffix_spec
     )
     result_paths = result_paths[start:end]
     for _, output_path, err_path, smt_folder in result_paths:
@@ -253,14 +259,14 @@ def print_groundtruth(bmk_dir: str):
         print(str(a))
 
 
-def verify_result(bmk_dir: str, only_gt: bool, smtdiv: str, verify_result_path: str):
+def verify_result(bmk_dir: str, only_gt: bool, smtdiv: str, verify_result_path: str, suffix_spec: str):
     builder = BenchmarkBuilder(bmk_dir)
     synthesizer = Synthesizer(builder.config)
     _, result_path = prepare_subfolder(bmk_dir)
     project_name = resolve_project_name(bmk_dir)
 
     result_paths = gen_result_paths(
-        result_path, only_gt, smtdiv, len(synthesizer.candidates)
+        result_path, only_gt, smtdiv, len(synthesizer.candidates), suffix_spec
     )
 
     verifiers = []
@@ -332,6 +338,7 @@ def halmos_test(
     start: int,
     end: int,
     print_cmd_only: bool,
+    suffix_spec: str
 ):
     builder = BenchmarkBuilder(bmk_dir)
     synthesizer = Synthesizer(builder.config)
@@ -339,7 +346,7 @@ def halmos_test(
     _, result_path = prepare_subfolder(bmk_dir)
 
     result_paths = gen_result_paths(
-        result_path, only_gt, smtdiv, len(synthesizer.candidates)
+        result_path, only_gt, smtdiv, len(synthesizer.candidates), suffix_spec
     )
 
     result_paths = result_paths[start:end]
@@ -354,6 +361,8 @@ def halmos_test(
             extra_halmos_options = ["--solver-smt-div"]
         elif smtdiv == "None":
             extra_halmos_options = []
+        elif smtdiv == "Label":
+            extra_halmos_options = ["--label-smt-div"]
         call_halmos(
             bmk_dir,
             project_name,
@@ -374,6 +383,7 @@ def halmos_fuzz(
     smtdiv: str,
     fuzz_times: int,
     fuzz_seed: int,
+    suffix_spec: str
 ):
     builder = BenchmarkBuilder(bmk_dir)
     synthesizer = Synthesizer(builder.config)
@@ -382,7 +392,7 @@ def halmos_fuzz(
 
     # func_name, output_path, err_path, smt_folder
     result_paths: List[Tuple[str, str, str, str]] = gen_result_paths(
-        result_path, only_gt, smtdiv, len(synthesizer.candidates)
+        result_path, only_gt, smtdiv, len(synthesizer.candidates), suffix_spec
     )
 
     for func_name, output_path, err_path, smt_folder in result_paths:
@@ -438,11 +448,11 @@ def _main():
         if args.forge:
             forge_test(bmk_dir, args.timeout)
         if args.clean:
-            clean_result(bmk_dir, args.gt, args.smtdiv, args.start, args.end)
+            clean_result(bmk_dir, args.gt, args.smtdiv, args.start, args.end, args.suffix)
         if args.printgt:
             print_groundtruth(bmk_dir)
         if args.verify:
-            verify_result(bmk_dir, args.gt, args.smtdiv, args.verify_result_path)
+            verify_result(bmk_dir, args.gt, args.smtdiv, args.verify_result_path, args.suffix)
         if args.halmos or args.printcommand:
             halmos_test(
                 bmk_dir,
@@ -452,6 +462,7 @@ def _main():
                 args.start,
                 args.end,
                 args.printcommand,
+                args.suffix,
             )
         if args.fuzz_smtdiv:
             halmos_fuzz(
@@ -461,6 +472,7 @@ def _main():
                 "Models",
                 args.fuzz_times,
                 args.fuzz_seed,
+                args.suffix,
             )
 
 
