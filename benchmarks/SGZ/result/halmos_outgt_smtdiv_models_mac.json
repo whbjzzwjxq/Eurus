@@ -8,10 +8,10 @@
                 "num_models": 1,
                 "models": [
                     {
-                        "p_amt1_uint256": "0xc45d5cdc031042154d340",
-                        "p_amt0_uint256": "0xff3f5ab340c441f293a30",
-                        "p_amt2_uint256": "0x12350a7f2ccadac18283830bf96",
-                        "p_amt3_uint256": "0x7d2480d4129eca8b62200"
+                        "p_amt1_uint256": "0xf7f3ea85465ab65fd69ec",
+                        "p_amt2_uint256": "0x39dd2631d03db35cad260c42e48",
+                        "p_amt0_uint256": "0xff23ffd52a4a1b50c0000",
+                        "p_amt3_uint256": "0xff240017c750acdaa0006"
                     }
                 ],
                 "num_paths": [
@@ -20,9 +20,9 @@
                     0
                 ],
                 "time": [
-                    2566.3005254169984,
-                    112.63858870799595,
-                    2474.5584604589967
+                    4353.751681833004,
+                    106.4752446670027,
+                    4251.424112375011
                 ],
                 "num_bounded_loops": 0
             }

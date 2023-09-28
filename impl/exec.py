@@ -19,8 +19,7 @@ from halmos.sevm import *
 from halmos.utils import NamedTimer, color_good, color_warn, hexify
 from halmos.warnings import *
 
-from .solidity_builder import (BenchmarkBuilder, Synthesizer,
-                               get_sketch_by_func_name)
+from .solidity_builder import BenchmarkBuilder, Synthesizer, get_sketch_by_func_name
 from .verifier import verify_model
 
 StrModel = Dict[str, str]
@@ -193,33 +192,31 @@ def mk_arg_parser() -> argparse.ArgumentParser:
         "--no-smt-mul", action="store_true", help="do not interpret `*`"
     )
     group_solver.add_argument(
-        "--smt-div", 
-        action="store_true", 
-        help="interpret `/` for both solving branching conditions and assertion violation conditions"
+        "--smt-div",
+        action="store_true",
+        help="interpret `/` for both solving branching conditions and assertion violation conditions",
     )
 
     group_solver.add_argument(
         "--solver-smt-div",
         action="store_true",
-        help="interpret `/` only for solving assertion violation conditions"
+        help="interpret `/` only for solving assertion violation conditions",
     )
 
     group_solver.add_argument(
         "--label-smt-div",
         action="store_true",
-        help="interpret `/` using labeling data/control flow analysis for solving assertion violation conditions"
+        help="interpret `/` using labeling data/control flow analysis for solving assertion violation conditions",
     )
 
     group_solver.add_argument(
         "--fuzz-smt-div",
         action="store_true",
-        help="interpret `/` using fuzzing for solving assertion violation conditions"
+        help="interpret `/` using fuzzing for solving assertion violation conditions",
     )
 
     group_solver.add_argument(
-        "--fuzz-parameter",
-        type=str,
-        help="Format: Threshold;Seed"
+        "--fuzz-parameter", type=str, help="Format: Threshold;Seed"
     )
 
     group_solver.add_argument("--smt-mod", action="store_true", help="interpret `mod`")
@@ -277,14 +274,10 @@ def mk_arg_parser() -> argparse.ArgumentParser:
     group_solver.add_argument(
         "--solver-only-dump",
         action="store_true",
-        help="only dump SMT queries instead of solving assertion violations"
+        help="only dump SMT queries instead of solving assertion violations",
     )
 
-    group_solver.add_argument(
-        "--bmk-dir",
-        type=str,
-        help="Only used by Eurus"
-    )
+    group_solver.add_argument("--bmk-dir", type=str, help="Only used by Eurus")
 
     group_debug.add_argument(
         "--dump-smt-queries",
@@ -1105,7 +1098,20 @@ def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
     res = unknown
     ex.solver.set(timeout=args.solver_timeout_assertion)
 
-    if args.solver_smt_div:
+    if args.solver_only_dump:
+        datadep_constraints_strs = [str(c) for c in ex.datadep_constraints]
+        ctrldep_constraints_strs = [str(c) for c in ex.ctrldep_constraints]
+        with open(os.path.join(args.dump_smt_queries, f"constraints_{idx}.json"), "w") as f:
+            json.dump(
+                {
+                    "datadep": datadep_constraints_strs,
+                    "ctrldep": ctrldep_constraints_strs,
+                },
+                f,
+                indent=4,
+            )
+
+    elif args.solver_smt_div:
         old_formulas = ex.solver.assertions()
         new_formulas = [interpret_div(f) for f in old_formulas]
         # while len(ex.solver.assertions()) > 0:
@@ -1116,21 +1122,19 @@ def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
         if res == sat:
             model = ex.solver.model()
     elif args.label_smt_div:
-
-        # c_strs = sorted([str(c) for c in ex.datadep_constraints] + [str(c) for c in ex.ctrldep_constraints])
-        # a_strs = sorted([str(a) for a in ex.solver.assertions()])
-        # datadep_constraints = [f for f in ex.datadep_constraints if not is_true(f)]
-        # ctrldep_constraints = [f for f in ex.ctrldep_constraints if not is_true(f)]
-        datadep_constraints = ex.datadep_constraints
-        ctrldep_constraints = ex.ctrldep_constraints
-
+        datadep_constraints_strs = [str(c) for c in ex.datadep_constraints]
+        ctrldep_constraints_strs = [str(c) for c in ex.ctrldep_constraints]
+        old_formulas = [*ex.solver.assertions()]
+        new_formulas = []
+        for a in old_formulas:
+            if str(a) in datadep_constraints_strs:
+                na = interpret_div(a)
+            else:
+                na = a
+            na = interpret_div(a)
+            new_formulas.append(na)
         ex.solver = Solver(ctx=ex.solver.ctx)
-
-        datadep_formulas = [interpret_div(f) for f in datadep_constraints]
-        ex.solver.add(*datadep_formulas)
-        # ctrl_formulas = [interpret_div(f) for f in ctrldep_constraints]
-        ctrldep_formulas = ctrldep_constraints
-        ex.solver.add(*ctrldep_formulas)
+        ex.solver.add(*new_formulas)
         res = ex.solver.check()
         if res == sat:
             model = ex.solver.model()
