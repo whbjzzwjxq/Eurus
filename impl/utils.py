@@ -67,15 +67,10 @@ def gen_result_paths(result_path: str, only_gt: bool, smtdiv: str, sketch_num: i
     if smtdiv == "All":
         suffix = ""
         suffix_smt = ""
-    elif smtdiv == "Models":
-        suffix = "_smtdiv_models"
-        suffix_smt = "_smtdiv_models"
-    elif smtdiv == "None":
-        suffix = "_smtdiv_none"
-        suffix_smt = "_smtdiv_none"
-    elif smtdiv == "Label":
-        suffix = "_smtdiv_label"
-        suffix_smt = "_smtdiv_label"
+    else:
+        suffix = f"_smtdiv_{smtdiv.lower()}"
+        suffix_smt = f"_smtdiv_{smtdiv.lower()}"
+    
     suffix += suffix_spec
     suffix_smt += suffix_spec
 

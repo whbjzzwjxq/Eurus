@@ -132,7 +132,7 @@ parser.add_argument(
 parser.add_argument(
     "--smtdiv",
     help="Apply smt-div in which phases",
-    choices=["All", "Models", "None", "Label"],
+    choices=["All", "Models", "None", "DataDep", "CtrlDep", "DataDepOnly", "CtrlDepOnly"],
     default="All",
 )
 
@@ -302,7 +302,6 @@ def call_halmos(
     timeout: int,
     output_path: str,
     err_path: str,
-    smt_folder: str,
     *extra_halmos_options,
 ):
     """
@@ -326,8 +325,6 @@ def call_halmos(
         f"{timeout * 1000}",
         "--json-output",
         output_path,
-        "--dump-smt-queries",
-        smt_folder,
         *extra_halmos_options,
     ]
     try:
@@ -362,16 +359,14 @@ def halmos_test(
         if not print_only and (path.exists(output_path) or path.exists(err_path)):
             print(f"Previous result is here, {func_name} had been tested!")
             continue
-        if smtdiv == "All":
-            extra_halmos_options = ["--smt-div"]
-        elif smtdiv == "Models":
-            extra_halmos_options = ["--solver-smt-div"]
-        elif smtdiv == "None":
-            extra_halmos_options = []
-        elif smtdiv == "Label":
-            extra_halmos_options = ["--label-smt-div"]
+        extra_halmos_options = ["--smtdiv", smtdiv]
         if print_only:
-            extra_halmos_options.append("--solver-only-dump")
+            extra_halmos_options = [
+                "--solver-only-dump",
+                "--dump-smt-queries",
+                smt_folder,
+            ]
+
         call_halmos(
             bmk_dir,
             project_name,
@@ -379,7 +374,6 @@ def halmos_test(
             timeout,
             output_path,
             err_path,
-            smt_folder,
             *extra_halmos_options,
         )
 
@@ -417,15 +411,8 @@ def halmos_fuzz(
                 )
                 continue
 
-            if smtdiv == "All":
-                extra_halmos_options = ["--smt-div"]
-            elif smtdiv == "Models":
-                extra_halmos_options = ["--solver-smt-div"]
-            elif smtdiv == "None":
-                extra_halmos_options = []
-            extra_halmos_options.extend(
-                ["--fuzz-smt-div", "--fuzz-parameter", f"{f};{fuzz_seed}"]
-            )
+            # todo
+            extra_halmos_options = []
             call_halmos(
                 bmk_dir,
                 project_name,

@@ -175,30 +175,6 @@ def mk_arg_parser() -> argparse.ArgumentParser:
         help="interpret `/` for both solving branching conditions and assertion violation conditions"
     )
 
-    group_solver.add_argument(
-        "--solver-smt-div",
-        action="store_true",
-        help="interpret `/` only for solving assertion violation conditions"
-    )
-
-    group_solver.add_argument(
-        "--label-smt-div",
-        action="store_true",
-        help="interpret `/` using labeling data/control flow analysis for solving assertion violation conditions"
-    )
-
-    group_solver.add_argument(
-        "--fuzz-smt-div",
-        action="store_true",
-        help="interpret `/` using fuzzing for solving assertion violation conditions"
-    )
-
-    group_solver.add_argument(
-        "--fuzz-parameter",
-        type=str,
-        help="Format: Threshold;Seed"
-    )
-
     group_solver.add_argument("--smt-mod", action="store_true", help="interpret `mod`")
     group_solver.add_argument(
         "--smt-div-by-const", action="store_true", help="interpret division by constant"
@@ -251,20 +227,6 @@ def mk_arg_parser() -> argparse.ArgumentParser:
         help="run assertion solvers in parallel",
     )
 
-    group_solver.add_argument(
-        "--solver-only-dump",
-        action="store_true",
-        help="only dump SMT queries instead of solving assertion violations"
-    )
-
-    group_debug.add_argument(
-        "--dump-smt-queries",
-        metavar="DUMP_FILENAME",
-        default="",
-        type=str,
-        help="give the file path to dump SMT queries of solving assertion violations",
-    )
-
     # internal options
     group_internal = parser.add_argument_group("Internal options")
 
@@ -290,6 +252,30 @@ def mk_arg_parser() -> argparse.ArgumentParser:
         "--print-potential-counterexample",
         action="store_true",
         help="print potentially invalid counterexamples",
+    )
+
+    # eurus_options
+    group_eurus = parser.add_argument_group("Eurus options")
+
+    group_solver.add_argument(
+        "--solver-only-dump",
+        action="store_true",
+        help="only dump smt query, never execute",
+    )
+
+    group_eurus.add_argument(
+        "--dump-smt-queries",
+        metavar="DUMP_FILENAME",
+        default="",
+        type=str,
+        help="give the file path to dump SMT queries of solving assertion violations",
+    )
+
+    group_eurus.add_argument(
+        "--smtdiv",
+        help="Apply smt-div in which phases",
+        choices=["All", "Models", "None", "DataDepDiv", "CtrlDepDiv", "DataDepOnly", "CtrlDepOnly"],
+        default="All",
     )
 
     return parser

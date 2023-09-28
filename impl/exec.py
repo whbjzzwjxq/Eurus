@@ -1111,7 +1111,7 @@ def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
                 indent=4,
             )
 
-    elif args.solver_smt_div:
+    elif args.smtdiv == "Models":
         old_formulas = ex.solver.assertions()
         new_formulas = [interpret_div(f) for f in old_formulas]
         # while len(ex.solver.assertions()) > 0:
@@ -1121,7 +1121,7 @@ def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
         res = ex.solver.check()
         if res == sat:
             model = ex.solver.model()
-    elif args.label_smt_div:
+    elif args.smtdiv == "DataDepDiv":
         datadep_constraints_strs = [str(c) for c in ex.datadep_constraints]
         ctrldep_constraints_strs = [str(c) for c in ex.ctrldep_constraints]
         old_formulas = [*ex.solver.assertions()]
@@ -1138,10 +1138,39 @@ def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
         res = ex.solver.check()
         if res == sat:
             model = ex.solver.model()
-    elif args.fuzz_smt_div:
-        pass
+    elif args.smtdiv == "CtrlDepDiv":
+        datadep_constraints_strs = [str(c) for c in ex.datadep_constraints]
+        ctrldep_constraints_strs = [str(c) for c in ex.ctrldep_constraints]
+        old_formulas = [*ex.solver.assertions()]
+        new_formulas = []
+        for a in old_formulas:
+            if str(a) in ctrldep_constraints_strs:
+                na = interpret_div(a)
+            else:
+                na = a
+            na = interpret_div(a)
+            new_formulas.append(na)
+        ex.solver = Solver(ctx=ex.solver.ctx)
+        ex.solver.add(*new_formulas)
+        res = ex.solver.check()
+        if res == sat:
+            model = ex.solver.model()
+    elif args.smtdiv == "DataDepOnly":
+        new_formulas = ex.datadep_constraints
+        ex.solver = Solver(ctx=ex.solver.ctx)
+        ex.solver.add(*new_formulas)
+        res = ex.solver.check()
+        if res == sat:
+            model = ex.solver.model()
+    elif args.smtdiv == "CtrlDepOnly":
+        new_formulas = ex.ctrldep_constraints
+        ex.solver = Solver(ctx=ex.solver.ctx)
+        ex.solver.add(*new_formulas)
+        res = ex.solver.check()
+        if res == sat:
+            model = ex.solver.model()
     else:
-        # default or --smt-div turning on.
+        # --smtdiv in ("All", "None").
         res = ex.solver.check()
         if res == sat:
             model = ex.solver.model()
@@ -1215,7 +1244,7 @@ def mk_options(args: Namespace) -> Dict:
         "add": not args.no_smt_add,
         "sub": not args.no_smt_sub,
         "mul": not args.no_smt_mul,
-        "div": args.smt_div,
+        "div": args.smtdiv == "All",
         "mod": args.smt_mod,
         "divByConst": args.smt_div_by_const,
         "modByConst": args.smt_mod_by_const,
@@ -1475,7 +1504,7 @@ def exec_halmos(*arg_strs) -> MainResult:
 
         result = MainResult(0, test_results_map)
 
-        if args.json_output:
+        if args.json_output and not args.solver_only_dump:
             with open(args.json_output, "w") as json_file:
                 json.dump(asdict(result), json_file, indent=4)
 
