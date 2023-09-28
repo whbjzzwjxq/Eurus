@@ -842,7 +842,6 @@ def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
                 na = interpret_div(a)
             else:
                 na = a
-            na = interpret_div(a)
             new_formulas.append(na)
         ex.solver = Solver(ctx=ex.solver.ctx)
         ex.solver.set(timeout=args.solver_timeout_assertion)
@@ -860,7 +859,6 @@ def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
                 na = interpret_div(a)
             else:
                 na = a
-            na = interpret_div(a)
             new_formulas.append(na)
         ex.solver = Solver(ctx=ex.solver.ctx)
         ex.solver.set(timeout=args.solver_timeout_assertion)
