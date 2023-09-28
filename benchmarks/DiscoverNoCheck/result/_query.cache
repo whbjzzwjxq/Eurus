@@ -1,0 +1,36 @@
+- skipping the remapping
+No files changed, compilation skipped
+
+Running 1 test for benchmarks/Discover/Discover_query.t.sol:ContractTest
+[32m[PASS][0m test_query() (gas: 136220)
+Logs:
+  ----query starts----
+  ----queryBlockTimestamp starts----
+  uint256 blockTimestamp: 1654501818
+  ----queryBlockTimestamp ends----
+  ----queryUniswapV2Pair starts----pair
+  uint112 reserve0pair: 19811554285664651588959
+  uint112 reserve1pair: 12147765912566297044558
+  uint32 blockTimestampLastpair: 1654497610
+  uint256 kLastpair: 240657614061763162729453454536640212219454075
+  uint256 price0CumulativeLastpair: 2745108143450717659830230984376055006264
+  uint256 price1CumulativeLastpair: 5093292101492579051002459678125122695956
+  ----queryUniswapV2Pair ends----pair
+  ----queryERC20 starts----disc
+  uint256 totalSupplydisc: 99999771592634687573343730
+  uint256 balanceOfdiscpair: 12147765912566297044558
+  uint256 balanceOfdiscattacker: 0
+  uint256 balanceOfdiscdisc: 0
+  uint256 balanceOfdiscethpledge: 603644007472699128296549
+  ----queryERC20 ends----disc
+  ----queryERC20 starts----usdt
+  uint256 totalSupplyusdt: 4979997922172658408539526181
+  uint256 balanceOfusdtpair: 19811554285664651588959
+  uint256 balanceOfusdtattacker: 4000000000000000000
+  uint256 balanceOfusdtdisc: 0
+  uint256 balanceOfusdtethpledge: 17359200000000000000000
+  ----queryERC20 ends----usdt
+  ----query ends----
+
+Test result: [32mok[0m. 1 passed; 0 failed; 0 skipped; finished in 666.26ms
+Ran 1 test suites: 1 tests passed, 0 failed, 0 skipped (1 total tests)
