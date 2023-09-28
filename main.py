@@ -132,7 +132,7 @@ parser.add_argument(
 parser.add_argument(
     "--smtdiv",
     help="Apply smt-div in which phases",
-    choices=["All", "Models", "None", "DataDep", "CtrlDep", "DataDepOnly", "CtrlDepOnly"],
+    choices=["All", "Models", "None", "DataDepDiv", "CtrlDepDiv", "DataDepOnly", "CtrlDepOnly"],
     default="All",
 )
 
@@ -359,7 +359,7 @@ def halmos_test(
         if not print_only and (path.exists(output_path) or path.exists(err_path)):
             print(f"Previous result is here, {func_name} had been tested!")
             continue
-        extra_halmos_options = ["--smtdiv", smtdiv]
+        extra_halmos_options = [f"--smtdiv={smtdiv}"]
         if print_only:
             extra_halmos_options = [
                 "--solver-only-dump",

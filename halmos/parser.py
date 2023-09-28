@@ -278,4 +278,11 @@ def mk_arg_parser() -> argparse.ArgumentParser:
         default="All",
     )
 
+    group_eurus.add_argument(
+        "--bmk-dir",
+        help="The directory of benchmark",
+        type=str,
+        default="",
+    )
+
     return parser
