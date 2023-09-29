@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Discover is Context, IERC20, Ownable {
+contract USDT is Context, IERC20, Ownable {
     mapping(address => uint256) private _balances;
 
     mapping(address => mapping(address => uint256)) private _allowances;
@@ -16,8 +16,8 @@ contract Discover is Context, IERC20, Ownable {
     string public _name;
 
     constructor() {
-        _name = "Discover";
-        _symbol = "Discover";
+        _name = "Tether USD";
+        _symbol = "USDT";
         _decimals = 18;
         _totalSupply = 30000000000000000000000000;
         _balances[msg.sender] = _totalSupply;

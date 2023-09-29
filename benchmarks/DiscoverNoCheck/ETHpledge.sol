@@ -206,7 +206,9 @@ contract ETHpledge is IERC20, Ownable {
         uint256 lpusdtamount = usdt.balanceOf(_lpaddr);
         uint256 lpotheramount = other.balanceOf(_lpaddr);
 
-        _price = (lpusdtamount * 10 ** 18) / lpotheramount;
+        unchecked {
+            _price = (lpusdtamount * 10 ** 18) / lpotheramount;   
+        }
     }
 
     function pledgein(

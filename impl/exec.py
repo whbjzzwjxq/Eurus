@@ -809,17 +809,19 @@ def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
     ex.solver.set(timeout=args.solver_timeout_assertion)
 
     if args.solver_only_dump:
-        datadep_constraints_strs = [str(c) for c in ex.datadep_constraints]
-        ctrldep_constraints_strs = [str(c) for c in ex.ctrldep_constraints]
-        with open(os.path.join(args.dump_smt_queries, f"constraints_{idx}.json"), "w") as f:
-            json.dump(
-                {
-                    "datadep": datadep_constraints_strs,
-                    "ctrldep": ctrldep_constraints_strs,
-                },
-                f,
-                indent=4,
-            )
+        # datadep_constraints_strs = [str(c) for c in ex.datadep_constraints]
+        # ctrldep_constraints_strs = [str(c) for c in ex.ctrldep_constraints]
+        # with open(os.path.join(args.dump_smt_queries, f"constraints_{idx}.json"), "w") as f:
+        #     json.dump(
+        #         {
+        #             "datadep": datadep_constraints_strs,
+        #             "ctrldep": ctrldep_constraints_strs,
+        #         },
+        #         f,
+        #         indent=4,
+        #     )
+        with open(os.path.join(args.dump_smt_queries, f"{idx}.smt2"), "w") as f:
+            f.write(ex.solver.to_smt2())
 
     elif args.smtdiv == "Models":
         old_formulas = ex.solver.assertions()

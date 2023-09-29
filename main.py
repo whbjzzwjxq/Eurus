@@ -327,6 +327,7 @@ def call_halmos(
         output_path,
         *extra_halmos_options,
     ]
+    print(" ".join(args))
     try:
         exec_halmos(*args)
     except Exception as err:
@@ -362,6 +363,7 @@ def halmos_test(
         extra_halmos_options = [f"--smtdiv={smtdiv}"]
         if print_only:
             extra_halmos_options = [
+                *extra_halmos_options,
                 "--solver-only-dump",
                 "--dump-smt-queries",
                 smt_folder,
