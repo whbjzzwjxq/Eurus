@@ -1,0 +1,31 @@
+{
+    "exitcode": 0,
+    "test_results": {
+        "benchmarks/Discover/Discover.t.sol:DiscoverTest": [
+            {
+                "name": "check_gt(uint256,uint256,uint256,uint256)",
+                "exitcode": 1,
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt2_uint256": "0xe20577e8ab803d3d5f",
+                        "p_amt0_uint256": "0xfa858627da23ffbfe7722",
+                        "p_amt1_uint256": "0x2117d7e84e71e68f5dcf",
+                        "p_amt3_uint256": "0xfa85c49b104c7101e7cfc"
+                    }
+                ],
+                "num_paths": [
+                    29,
+                    1,
+                    0
+                ],
+                "time": [
+                    309.46855954200146,
+                    4.859838625008706,
+                    304.6087075410178
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}

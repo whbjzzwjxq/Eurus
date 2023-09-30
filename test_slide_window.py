@@ -21,9 +21,8 @@ def exec(slide_window_udiv_on: bool):
         bp = Extract(lo - 1, lo - width, b)
         range_limit(a, 2**(hi - width), 2**(hi - 1))
         range_limit(b, 2**(lo - width), 2**(lo - 1))
-        r = ZeroExt((hi - lo) + width, UDiv(ap, bp)) << (hi - lo)
-        res = ZeroExt(256 - r.size(), r)
-        return res
+        r = ZeroExt(256 - width, UDiv(ap, bp)) << (hi - lo)
+        return r
 
     x44153 = Extract(7, 0, p_amt1_uint256)
     x60416 = BitVecVal(78, 8) + x44153

@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: AGPL-3.0
-import argparse
 import json
 import os
 import re
@@ -10,10 +9,8 @@ from argparse import Namespace
 from dataclasses import asdict, dataclass
 from importlib import metadata
 
-import time
-
 from halmos.calldata import Calldata
-from halmos.eurus import interpret_div
+from halmos.eurus import interpret_div, hack_interpret_div_discover
 from halmos.pools import process_pool, thread_pool
 from halmos.sevm import *
 from halmos.utils import NamedTimer, color_good, color_warn, hexify
@@ -475,7 +472,7 @@ def run(
             f"# of potential paths involving assertion violations: {len(execs_to_model)} / {len(exs)}"
         )
 
-    timer.create_subtimer("models")
+    models_timer = timer.create_subtimer("models")
 
     if len(execs_to_model) > 1 and args.solver_parallel:
         if args.verbose >= 1:
@@ -494,7 +491,7 @@ def run(
             model = res.model
             if model is not None:
                 timer.pause()
-                path_timer.pause()
+                models_timer.pause()
                 arg_candidates = [
                     model.get(f"p_amt{j}_uint256", "") for j in range(len(model))
                 ]
@@ -503,7 +500,7 @@ def run(
                 verifier = [(func_name, sketch, [arg_candidates])]
                 feasiable = verify_model(bmk_dir, verifier)
                 timer.resume()
-                path_timer.resume()
+                models_timer.resume()
                 if feasiable:
                     break
 
@@ -810,32 +807,19 @@ def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
     res = unknown
     ex.solver.set(timeout=args.solver_timeout_assertion)
 
-    if args.solver_only_dump:
-        # datadep_constraints_strs = [str(c) for c in ex.datadep_constraints]
-        # ctrldep_constraints_strs = [str(c) for c in ex.ctrldep_constraints]
-        # with open(os.path.join(args.dump_smt_queries, f"constraints_{idx}.json"), "w") as f:
-        #     json.dump(
-        #         {
-        #             "datadep": datadep_constraints_strs,
-        #             "ctrldep": ctrldep_constraints_strs,
-        #         },
-        #         f,
-        #         indent=4,
-        #     )
-        with open(os.path.join(args.dump_smt_queries, f"{idx}.smt2"), "w") as f:
-            f.write(ex.solver.to_smt2())
+    # if "DiscoverNoCheck" in args.bmk_dir and args.smtdiv == "Models":
+    #     old_formulas = ex.solver.assertions()
+    #     new_formulas = [hack_interpret_div_discover(f) for f in old_formulas]
+    #     ex.solver = Solver(ctx=ex.solver.ctx)
+    #     ex.solver.set(timeout=args.solver_timeout_assertion)
+    #     ex.solver.add(*new_formulas)
 
-    elif args.smtdiv == "Models":
+    if args.smtdiv == "Models":
         old_formulas = ex.solver.assertions()
         new_formulas = [interpret_div(f) for f in old_formulas]
-        # while len(ex.solver.assertions()) > 0:
-        #     ex.solver.pop()
         ex.solver = Solver(ctx=ex.solver.ctx)
         ex.solver.set(timeout=args.solver_timeout_assertion)
         ex.solver.add(*new_formulas)
-        res = ex.solver.check()
-        if res == sat:
-            model = ex.solver.model()
     elif args.smtdiv == "DataDepDiv":
         datadep_constraints_strs = [str(c) for c in ex.datadep_constraints]
         ctrldep_constraints_strs = [str(c) for c in ex.ctrldep_constraints]
@@ -850,9 +834,6 @@ def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
         ex.solver = Solver(ctx=ex.solver.ctx)
         ex.solver.set(timeout=args.solver_timeout_assertion)
         ex.solver.add(*new_formulas)
-        res = ex.solver.check()
-        if res == sat:
-            model = ex.solver.model()
     elif args.smtdiv == "CtrlDepDiv":
         datadep_constraints_strs = [str(c) for c in ex.datadep_constraints]
         ctrldep_constraints_strs = [str(c) for c in ex.ctrldep_constraints]
@@ -867,27 +848,35 @@ def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
         ex.solver = Solver(ctx=ex.solver.ctx)
         ex.solver.set(timeout=args.solver_timeout_assertion)
         ex.solver.add(*new_formulas)
-        res = ex.solver.check()
-        if res == sat:
-            model = ex.solver.model()
     elif args.smtdiv == "DataDepOnly":
         new_formulas = [interpret_div(c) for c in ex.datadep_constraints]
         ex.solver = Solver(ctx=ex.solver.ctx)
         ex.solver.set(timeout=args.solver_timeout_assertion)
         ex.solver.add(*new_formulas)
-        res = ex.solver.check()
-        if res == sat:
-            model = ex.solver.model()
     elif args.smtdiv == "CtrlDepOnly":
         new_formulas = [interpret_div(c) for c in ex.ctrldep_constraints]
         ex.solver = Solver(ctx=ex.solver.ctx)
         ex.solver.set(timeout=args.solver_timeout_assertion)
         ex.solver.add(*new_formulas)
-        res = ex.solver.check()
-        if res == sat:
-            model = ex.solver.model()
     else:
         # --smtdiv in ("All", "None").
+        pass
+
+    if args.solver_only_dump:
+        # datadep_constraints_strs = [str(c) for c in ex.datadep_constraints]
+        # ctrldep_constraints_strs = [str(c) for c in ex.ctrldep_constraints]
+        # with open(os.path.join(args.dump_smt_queries, f"constraints_{idx}.json"), "w") as f:
+        #     json.dump(
+        #         {
+        #             "datadep": datadep_constraints_strs,
+        #             "ctrldep": ctrldep_constraints_strs,
+        #         },
+        #         f,
+        #         indent=4,
+        #     )
+        with open(os.path.join(args.dump_smt_queries, f"{idx}.smt2"), "w") as f:
+            f.write(ex.solver.to_smt2())
+    else:
         res = ex.solver.check()
         if res == sat:
             model = ex.solver.model()

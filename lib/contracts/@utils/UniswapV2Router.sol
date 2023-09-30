@@ -590,12 +590,12 @@ contract UniswapV2Router is IUniswapV2Router {
         );
         uint256 balanceBefore = IERC20(path[path.length - 1]).balanceOf(to);
         _swapSupportingFeeOnTransferTokens(path, to);
-        emit PrintCompare(IERC20(path[path.length - 1]).balanceOf(to) - balanceBefore, amountOutMin, ">=");
-        require(
-            IERC20(path[path.length - 1]).balanceOf(to) - balanceBefore >=
-                amountOutMin,
-            "UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT"
-        );
+        // emit PrintCompare(IERC20(path[path.length - 1]).balanceOf(to) - balanceBefore, amountOutMin, ">=");
+        // require(
+        //     IERC20(path[path.length - 1]).balanceOf(to) - balanceBefore >=
+        //         amountOutMin,
+        //     "UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT"
+        // );
     }
 
     function swapExactETHForTokensSupportingFeeOnTransferTokens(
