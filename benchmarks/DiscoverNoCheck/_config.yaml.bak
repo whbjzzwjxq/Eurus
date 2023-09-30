@@ -1,9 +1,9 @@
 # Information for benchmarks building.
-project_name: "Discover"
+project_name: "DiscoverNoCheck"
 
 ctrt_name2cls:
   - ["usdt", "USDT"]
-  - ["disc", "Discover"]
+  - ["disc", "DiscoverNoCheck"]
   - ["pair", "UniswapV2Pair"]
   - ["factory", "UniswapV2Factory"]
   - ["router", "UniswapV2Router"]
@@ -11,7 +11,7 @@ ctrt_name2cls:
 
 ctrt_name2deploy:
   - ["usdt", ""]
-  - ["disc", "new Discover()"]
+  - ["disc", "new DiscoverNoCheck()"]
   - ["pair", ""]
   - ["factory", ""]
   - ["router", ""]

@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 
-import "./Discover.sol";
+import "./DiscoverNoCheck.sol";
 import "./ETHpledge.sol";
 
 import "@utils/QueryBlockchain.sol";
@@ -14,7 +14,7 @@ import {UniswapV2Router} from "@utils/NoCheck/UniswapV2Router.sol";
 
 contract DiscoverNoCheckTest is Test, BlockLoader {
     USDT usdt;
-    Discover disc;
+    DiscoverNoCheck disc;
     UniswapV2Pair pair;
     UniswapV2Factory factory;
     UniswapV2Router router;
@@ -44,7 +44,7 @@ contract DiscoverNoCheckTest is Test, BlockLoader {
         attacker = address(this);
         vm.startPrank(owner);
         usdt = new USDT();
-        disc = new Discover();
+        disc = new DiscoverNoCheck();
         pair = new UniswapV2Pair(
             address(usdt),
             address(disc),
