@@ -392,7 +392,7 @@ def run(
     #
 
     timer = NamedTimer("time")
-    timer.create_subtimer("paths")
+    path_timer = timer.create_subtimer("paths")
 
     options = mk_options(args)
     sevm = SEVM(options)
@@ -494,6 +494,7 @@ def run(
             model = res.model
             if model is not None:
                 timer.pause()
+                path_timer.pause()
                 arg_candidates = [
                     model.get(f"p_amt{j}_uint256", "") for j in range(len(model))
                 ]
@@ -502,6 +503,7 @@ def run(
                 verifier = [(func_name, sketch, [arg_candidates])]
                 feasiable = verify_model(bmk_dir, verifier)
                 timer.resume()
+                path_timer.resume()
                 if feasiable:
                     break
 
