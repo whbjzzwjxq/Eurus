@@ -4,11 +4,12 @@ from typing import Callable
 
 def slide_window_udiv(a, b):
     hi = 160
-    lo = 85
-    width = 64
+    lo = 80
+    width = 16
     ap = Extract(hi - 1, hi - width, a)
     bp = Extract(lo - 1, lo - width, b)
-    r = ZeroExt(256 - width, UDiv(ap, bp)) << (hi - lo)
+    res = UDiv(ap, bp) | If(ULE(ap, bp), BitVecVal(1, width), BitVecVal(0, width))
+    r = ZeroExt(256 - width, res) << (hi - lo)
     return r
 
 def hack_interpret_div_discover(node: Ast) -> Ast:
@@ -20,11 +21,10 @@ def hack_interpret_div_discover(node: Ast) -> Ast:
         # (let ((?x60661 (evm_bvudiv ?x60644 ?x60444)))
         a = node.children()[0]
         b = node.children()[1]
-        # if a.decl().name() == "bvadd" and b.decl().name() == "bvadd":
-        #     node = slide_window_udiv(a, b)
-        # else:
-        #     node = UDiv(a, b)
-        node = UDiv(a, b)
+        if a.decl().name() == "bvadd" and b.decl().name() == "bvadd":
+            node = slide_window_udiv(a, b)
+        else:
+            node = UDiv(a, b)
     return node
 
 

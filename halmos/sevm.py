@@ -133,6 +133,9 @@ create2_magic_address: int = 0xBBBB0000
 new_address_offset: int = 1
 
 
+def interpret_simplify(expr, *args, **kwargs):
+    return simplify(expr, *args, *kwargs)
+
 def id_str(x: Any) -> str:
     return hexify(x).replace(" ", "")
 
@@ -219,7 +222,7 @@ def iter_bytes(x: Any, _byte_length: int = -1):
         # size in bytes
         size = x.size() // 8
         return [
-            simplify(Extract((size - 1 - i) * 8 + 7, (size - 1 - i) * 8, x))
+            interpret_simplify(Extract((size - 1 - i) * 8 + 7, (size - 1 - i) * 8, x))
             for i in range(size)
         ]
 
@@ -251,7 +254,7 @@ def uint256(x: BitVecRef) -> BitVecRef:
         raise ValueError(x)
     if bitsize == 256:
         return x
-    return simplify(ZeroExt(256 - bitsize, x))
+    return interpret_simplify(ZeroExt(256 - bitsize, x))
 
 
 def uint160(x: BitVecRef) -> BitVecRef:
@@ -261,9 +264,9 @@ def uint160(x: BitVecRef) -> BitVecRef:
     if bitsize == 160:
         return x
     if bitsize > 160:
-        return simplify(Extract(159, 0, x))
+        return interpret_simplify(Extract(159, 0, x))
     else:
-        return simplify(ZeroExt(160 - bitsize, x))
+        return interpret_simplify(ZeroExt(160 - bitsize, x))
 
 
 def con(n: int, size_bits=256) -> Word:
@@ -323,7 +326,7 @@ def wload(
     wrapped = [BitVecVal(i, BitVecSort8) if not is_bv(i) else i for i in memslice]
 
     # BitVecSorts[size * 8]
-    return simplify(concat(wrapped))
+    return interpret_simplify(concat(wrapped))
 
 
 def wstore(
@@ -333,7 +336,7 @@ def wstore(
         raise ValueError(val)
     wextend(mem, loc, size)
     for i in range(size):
-        mem[loc + i] = simplify(
+        mem[loc + i] = interpret_simplify(
             Extract((size - 1 - i) * 8 + 7, (size - 1 - i) * 8, val)
         )
 
@@ -387,13 +390,13 @@ def extract_bytes(data: BitVecRef, byte_offset: int, size_bytes: int) -> BitVecR
     lo = n - byte_offset * 8 - size_bytes * 8
     lo = 0 if lo < 0 else lo
 
-    val = simplify(Extract(hi, lo, data))
+    val = interpret_simplify(Extract(hi, lo, data))
 
     zero_padding = size_bytes * 8 - val.size()
     if zero_padding < 0:
         raise ValueError(val)
     if zero_padding > 0:
-        val = simplify(Concat(val, con(0, zero_padding)))
+        val = interpret_simplify(Concat(val, con(0, zero_padding)))
 
     return val
 
@@ -503,7 +506,7 @@ class State:
     def push(self, v: Word) -> None:
         if not (eq(v.sort(), BitVecSort256) or is_bool(v)):
             raise ValueError(v)
-        self.stack.append(simplify(v))
+        self.stack.append(interpret_simplify(v))
 
     def pop(self) -> Word:
         return self.stack.pop()
@@ -526,7 +529,7 @@ class State:
         if full:
             wstore(self.memory, loc, 32, val)
         else:  # mstore8
-            wstore_bytes(self.memory, loc, 1, [simplify(Extract(7, 0, val))])
+            wstore_bytes(self.memory, loc, 1, [interpret_simplify(Extract(7, 0, val))])
 
     def mload(self) -> None:
         loc: int = self.mloc()
@@ -857,7 +860,7 @@ class Exec:  # an execution path
 
     def check(self, cond: Any) -> Any:
         self.solver.push()
-        self.solver.add(simplify(cond))
+        self.solver.add(interpret_simplify(cond))
         result = self.solver.check()
         self.solver.pop()
         return result
@@ -877,7 +880,7 @@ class Exec:  # an execution path
                     return val0
         # empty array
         elif not self.symbolic and re.search(r"^storage_.+_00$", str(array)):
-            # note: simplifying empty array access might have a negative impact on solver performance
+            # note: interpret_simplifying empty array access might have a negative impact on solver performance
             return con(0)
         return Select(array, key)
 
@@ -1015,8 +1018,8 @@ class Storage:
                     x = arg00.arg(0)
                     y = arg00.arg(1)
                     if arg1.decl().name() == "bvadd" and arg1.num_args() == 2:
-                        if eq(arg1.arg(0), simplify(Extract(7, 0, x))) and eq(
-                            arg1.arg(1), simplify(Extract(7, 0, y))
+                        if eq(arg1.arg(0), interpret_simplify(Extract(7, 0, x))) and eq(
+                            arg1.arg(1), interpret_simplify(Extract(7, 0, y))
                         ):
                             return x + y
         return expr
@@ -1094,8 +1097,8 @@ class SolidityStorage(Storage):
         loc = cls.normalize(loc)
         if loc.decl().name() == "sha3_512":  # m[k] : hash(k.m)
             args = loc.arg(0)
-            offset = simplify(Extract(511, 256, args))
-            base = simplify(Extract(255, 0, args))
+            offset = interpret_simplify(Extract(511, 256, args))
+            base = interpret_simplify(Extract(255, 0, args))
             return cls.decode(base) + (offset, con(0))
         elif loc.decl().name() == "sha3_256":  # a[i] : hash(a)+i
             base = loc.arg(0)
@@ -1178,8 +1181,8 @@ class GenericStorage(Storage):
         loc = cls.normalize(loc)
         if loc.decl().name() == "sha3_512":  # hash(hi,lo), recursively
             args = loc.arg(0)
-            hi = cls.decode(simplify(Extract(511, 256, args)))
-            lo = cls.decode(simplify(Extract(255, 0, args)))
+            hi = cls.decode(interpret_simplify(Extract(511, 256, args)))
+            lo = cls.decode(interpret_simplify(Extract(255, 0, args)))
             return cls.simple_hash(Concat(hi, lo))
         elif loc.decl().name().startswith("sha3_"):
             return cls.simple_hash(cls.decode(loc.arg(0)))
@@ -1204,7 +1207,7 @@ class GenericStorage(Storage):
         # simple injective function for collision-free (though not secure) hash semantics, comprising:
         # - left-shift by 256 bits to ensure sufficient logical domain space
         # - an additional 1-bit for disambiguation (e.g., between map[key] vs array[i][j])
-        return simplify(Concat(x, con(0, 257)))
+        return interpret_simplify(Concat(x, con(0, 257)))
 
     @classmethod
     def add_all(cls, args: List) -> BitVecRef:
@@ -1212,9 +1215,9 @@ class GenericStorage(Storage):
         res = con(0, bitsize)
         for x in args:
             if x.size() < bitsize:
-                x = simplify(ZeroExt(bitsize - x.size(), x))
+                x = interpret_simplify(ZeroExt(bitsize - x.size(), x))
             res += x
-        return simplify(res)
+        return interpret_simplify(res)
 
 
 SomeStorage = TypeVar("SomeStorage", bound=Storage)
@@ -1505,9 +1508,9 @@ class SEVM:
         if op == EVM.ADDMOD:
             # to avoid add overflow; and to be a multiple of 8-bit
             r1 = self.arith(
-                ex, EVM.ADD, simplify(ZeroExt(8, w1)), simplify(ZeroExt(8, w2))
+                ex, EVM.ADD, interpret_simplify(ZeroExt(8, w1)), interpret_simplify(ZeroExt(8, w2))
             )
-            r2 = self.arith(ex, EVM.MOD, simplify(r1), simplify(ZeroExt(8, w3)))
+            r2 = self.arith(ex, EVM.MOD, interpret_simplify(r1), interpret_simplify(ZeroExt(8, w3)))
             if r1.size() != 264:
                 raise ValueError(r1)
             if r2.size() != 264:
@@ -1516,9 +1519,9 @@ class SEVM:
         elif op == EVM.MULMOD:
             # to avoid mul overflow
             r1 = self.arith(
-                ex, EVM.MUL, simplify(ZeroExt(256, w1)), simplify(ZeroExt(256, w2))
+                ex, EVM.MUL, interpret_simplify(ZeroExt(256, w1)), interpret_simplify(ZeroExt(256, w2))
             )
-            r2 = self.arith(ex, EVM.MOD, simplify(r1), simplify(ZeroExt(256, w3)))
+            r2 = self.arith(ex, EVM.MOD, interpret_simplify(r1), interpret_simplify(ZeroExt(256, w3)))
             if r1.size() != 512:
                 raise ValueError(r1)
             if r2.size() != 512:
@@ -1567,7 +1570,7 @@ class SEVM:
 
         # assume balance is enough; otherwise ignore this path
         # note: evm requires enough balance even for self-transfer
-        balance_cond = simplify(UGE(ex.balance_of(caller), value))
+        balance_cond = interpret_simplify(UGE(ex.balance_of(caller), value))
         ex.add_to_solver(balance_cond, datadep=True, utils=True)
         ex.path.append(str(balance_cond))
 
@@ -1861,14 +1864,14 @@ class SEVM:
                 # vm.assume(bool)
                 elif (
                     eq(arg.sort(), BitVecSorts[(4 + 32) * 8])
-                    and simplify(Extract(287, 256, arg)) == hevm_cheat_code.assume_sig
+                    and interpret_simplify(Extract(287, 256, arg)) == hevm_cheat_code.assume_sig
                 ):
-                    assume_cond = simplify(is_non_zero(Extract(255, 0, arg)))
+                    assume_cond = interpret_simplify(is_non_zero(Extract(255, 0, arg)))
                     ex.add_to_solver(assume_cond, datadep=True, utils=False)
                     ex.path.append(str(assume_cond))
                 # vm.getCode(string)
                 elif (
-                    simplify(Extract(arg_size * 8 - 1, arg_size * 8 - 32, arg))
+                    interpret_simplify(Extract(arg_size * 8 - 1, arg_size * 8 - 32, arg))
                     == hevm_cheat_code.get_code_sig
                 ):
                     calldata = bytes.fromhex(hex(arg.as_long())[2:])
@@ -1894,7 +1897,7 @@ class SEVM:
                 # vm.prank(address)
                 elif (
                     eq(arg.sort(), BitVecSorts[(4 + 32) * 8])
-                    and simplify(Extract(287, 256, arg)) == hevm_cheat_code.prank_sig
+                    and interpret_simplify(Extract(287, 256, arg)) == hevm_cheat_code.prank_sig
                 ):
                     result = ex.prank.prank(uint160(Extract(255, 0, arg)))
                     if not result:
@@ -1904,7 +1907,7 @@ class SEVM:
                 # vm.startPrank(address)
                 elif (
                     eq(arg.sort(), BitVecSorts[(4 + 32) * 8])
-                    and simplify(Extract(287, 256, arg))
+                    and interpret_simplify(Extract(287, 256, arg))
                     == hevm_cheat_code.start_prank_sig
                 ):
                     result = ex.prank.startPrank(uint160(Extract(255, 0, arg)))
@@ -1915,25 +1918,25 @@ class SEVM:
                 # vm.stopPrank()
                 elif (
                     eq(arg.sort(), BitVecSorts[4 * 8])
-                    and simplify(Extract(31, 0, arg)) == hevm_cheat_code.stop_prank_sig
+                    and interpret_simplify(Extract(31, 0, arg)) == hevm_cheat_code.stop_prank_sig
                 ):
                     ex.prank.stopPrank()
                 # vm.deal(address,uint256)
                 elif (
                     eq(arg.sort(), BitVecSorts[(4 + 32 * 2) * 8])
-                    and simplify(Extract(543, 512, arg)) == hevm_cheat_code.deal_sig
+                    and interpret_simplify(Extract(543, 512, arg)) == hevm_cheat_code.deal_sig
                 ):
                     who = uint160(Extract(511, 256, arg))
-                    amount = simplify(Extract(255, 0, arg))
+                    amount = interpret_simplify(Extract(255, 0, arg))
                     ex.balance_update(who, amount)
                 # vm.store(address,bytes32,bytes32)
                 elif (
                     eq(arg.sort(), BitVecSorts[(4 + 32 * 3) * 8])
-                    and simplify(Extract(799, 768, arg)) == hevm_cheat_code.store_sig
+                    and interpret_simplify(Extract(799, 768, arg)) == hevm_cheat_code.store_sig
                 ):
                     store_account = uint160(Extract(767, 512, arg))
-                    store_slot = simplify(Extract(511, 256, arg))
-                    store_value = simplify(Extract(255, 0, arg))
+                    store_slot = interpret_simplify(Extract(511, 256, arg))
+                    store_value = interpret_simplify(Extract(255, 0, arg))
                     store_account_addr = self.resolve_address_alias(ex, store_account)
                     if store_account_addr is not None:
                         self.sstore(ex, store_account_addr, store_slot, store_value)
@@ -1944,10 +1947,10 @@ class SEVM:
                 # vm.load(address,bytes32)
                 elif (
                     eq(arg.sort(), BitVecSorts[(4 + 32 * 2) * 8])
-                    and simplify(Extract(543, 512, arg)) == hevm_cheat_code.load_sig
+                    and interpret_simplify(Extract(543, 512, arg)) == hevm_cheat_code.load_sig
                 ):
                     load_account = uint160(Extract(511, 256, arg))
-                    load_slot = simplify(Extract(255, 0, arg))
+                    load_slot = interpret_simplify(Extract(255, 0, arg))
                     load_account_addr = self.resolve_address_alias(ex, load_account)
                     if load_account_addr is not None:
                         ret = self.sload(ex, load_account_addr, load_slot)
@@ -1958,40 +1961,40 @@ class SEVM:
                 # vm.fee(uint256)
                 elif (
                     eq(arg.sort(), BitVecSorts[(4 + 32) * 8])
-                    and simplify(Extract(287, 256, arg)) == hevm_cheat_code.fee_sig
+                    and interpret_simplify(Extract(287, 256, arg)) == hevm_cheat_code.fee_sig
                 ):
-                    ex.block.basefee = simplify(Extract(255, 0, arg))
+                    ex.block.basefee = interpret_simplify(Extract(255, 0, arg))
                 # vm.chainId(uint256)
                 elif (
                     eq(arg.sort(), BitVecSorts[(4 + 32) * 8])
-                    and simplify(Extract(287, 256, arg)) == hevm_cheat_code.chainid_sig
+                    and interpret_simplify(Extract(287, 256, arg)) == hevm_cheat_code.chainid_sig
                 ):
-                    ex.block.chainid = simplify(Extract(255, 0, arg))
+                    ex.block.chainid = interpret_simplify(Extract(255, 0, arg))
                 # vm.coinbase(address)
                 elif (
                     eq(arg.sort(), BitVecSorts[(4 + 32) * 8])
-                    and simplify(Extract(287, 256, arg)) == hevm_cheat_code.coinbase_sig
+                    and interpret_simplify(Extract(287, 256, arg)) == hevm_cheat_code.coinbase_sig
                 ):
                     ex.block.coinbase = uint160(Extract(255, 0, arg))
                 # vm.difficulty(uint256)
                 elif (
                     eq(arg.sort(), BitVecSorts[(4 + 32) * 8])
-                    and simplify(Extract(287, 256, arg))
+                    and interpret_simplify(Extract(287, 256, arg))
                     == hevm_cheat_code.difficulty_sig
                 ):
-                    ex.block.difficulty = simplify(Extract(255, 0, arg))
+                    ex.block.difficulty = interpret_simplify(Extract(255, 0, arg))
                 # vm.roll(uint256)
                 elif (
                     eq(arg.sort(), BitVecSorts[(4 + 32) * 8])
-                    and simplify(Extract(287, 256, arg)) == hevm_cheat_code.roll_sig
+                    and interpret_simplify(Extract(287, 256, arg)) == hevm_cheat_code.roll_sig
                 ):
-                    ex.block.number = simplify(Extract(255, 0, arg))
+                    ex.block.number = interpret_simplify(Extract(255, 0, arg))
                 # vm.warp(uint256)
                 elif (
                     eq(arg.sort(), BitVecSorts[(4 + 32) * 8])
-                    and simplify(Extract(287, 256, arg)) == hevm_cheat_code.warp_sig
+                    and interpret_simplify(Extract(287, 256, arg)) == hevm_cheat_code.warp_sig
                 ):
-                    ex.block.timestamp = simplify(Extract(255, 0, arg))
+                    ex.block.timestamp = interpret_simplify(Extract(255, 0, arg))
                 # vm.etch(address,bytes)
                 elif extract_funsig(arg) == hevm_cheat_code.etch_sig:
                     who = extract_bytes(arg, 4 + 12, 20)
@@ -2146,7 +2149,7 @@ class SEVM:
                     int.from_bytes(create_hexcode, "big"), len(create_hexcode) * 8
                 )
             code_hash = ex.sha3_data(create_hexcode, create_hexcode.size() // 8)
-            hash_data = simplify(Concat(con(0xFF, 8), caller, salt, code_hash))
+            hash_data = interpret_simplify(Concat(con(0xFF, 8), caller, salt, code_hash))
             new_addr = uint160(ex.sha3_data(hash_data, 85))
 
         if new_addr in ex.code:
@@ -2256,8 +2259,8 @@ class SEVM:
 
         visited = ex.jumpis.get(jid, {True: 0, False: 0})
 
-        cond_true = simplify(is_non_zero(cond))
-        cond_false = simplify(is_zero(cond))
+        cond_true = interpret_simplify(is_non_zero(cond))
+        cond_false = interpret_simplify(is_zero(cond))
 
         potential_true: bool = ex.check(cond_true) != unsat
         potential_false: bool = ex.check(cond_false) != unsat
@@ -2323,7 +2326,7 @@ class SEVM:
         # otherwise, create a new execution for feasible targets
         elif self.options["sym_jump"]:
             for target in ex.pgm.valid_jump_destinations():
-                target_reachable = simplify(dst == target)
+                target_reachable = interpret_simplify(dst == target)
                 if ex.check(target_reachable) != unsat:  # jump
                     if self.options.get("debug"):
                         print(f"We can jump to {target} with model {ex.solver.model()}")

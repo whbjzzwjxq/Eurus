@@ -807,14 +807,13 @@ def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
     res = unknown
     ex.solver.set(timeout=args.solver_timeout_assertion)
 
-    # if "DiscoverNoCheck" in args.bmk_dir and args.smtdiv == "Models":
-    #     old_formulas = ex.solver.assertions()
-    #     new_formulas = [hack_interpret_div_discover(f) for f in old_formulas]
-    #     ex.solver = Solver(ctx=ex.solver.ctx)
-    #     ex.solver.set(timeout=args.solver_timeout_assertion)
-    #     ex.solver.add(*new_formulas)
-
-    if args.smtdiv == "Models":
+    if args.smtdiv == "HackFirstDev":
+        old_formulas = ex.solver.assertions()
+        new_formulas = [hack_interpret_div_discover(f) for f in old_formulas]
+        ex.solver = Solver(ctx=ex.solver.ctx)
+        ex.solver.set(timeout=args.solver_timeout_assertion)
+        ex.solver.add(*new_formulas)
+    elif args.smtdiv == "Models":
         old_formulas = ex.solver.assertions()
         new_formulas = [interpret_div(f) for f in old_formulas]
         ex.solver = Solver(ctx=ex.solver.ctx)
@@ -877,9 +876,14 @@ def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
         with open(os.path.join(args.dump_smt_queries, f"{idx}.smt2"), "w") as f:
             f.write(ex.solver.to_smt2())
     else:
+        ex.solver.set(unsat_core=True)
         res = ex.solver.check()
         if res == sat:
             model = ex.solver.model()
+        else:
+            for c in ex.solver.unsat_core():
+                idx = int(str(c).removeprefix('f'))
+                print(new_formulas[idx])
 
     return package_result(model, idx, res, args)
 

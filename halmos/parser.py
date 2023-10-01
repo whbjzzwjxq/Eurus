@@ -274,7 +274,7 @@ def mk_arg_parser() -> argparse.ArgumentParser:
     group_eurus.add_argument(
         "--smtdiv",
         help="Apply smt-div in which phases",
-        choices=["All", "Models", "None", "DataDepDiv", "CtrlDepDiv", "DataDepOnly", "CtrlDepOnly"],
+        choices=["All", "Models", "None", "DataDepDiv", "CtrlDepDiv", "DataDepOnly", "CtrlDepOnly", "HackFirstDev"],
         default="All",
     )
 

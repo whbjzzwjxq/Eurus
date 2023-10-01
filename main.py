@@ -132,7 +132,7 @@ parser.add_argument(
 parser.add_argument(
     "--smtdiv",
     help="Apply smt-div in which phases",
-    choices=["All", "Models", "None", "DataDepDiv", "CtrlDepDiv", "DataDepOnly", "CtrlDepOnly"],
+    choices=["All", "Models", "None", "DataDepDiv", "CtrlDepDiv", "DataDepOnly", "CtrlDepOnly", "HackFirstDev"],
     default="All",
 )
 
