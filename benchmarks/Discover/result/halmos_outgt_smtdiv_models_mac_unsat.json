@@ -1,28 +1,28 @@
 {
     "exitcode": 0,
     "test_results": {
-        "benchmarks/MUMUG/MUMUG.t.sol:MUMUGTest": [
+        "benchmarks/Discover/Discover.t.sol:DiscoverTest": [
             {
                 "name": "check_gt(uint256,uint256,uint256,uint256)",
                 "exitcode": 1,
                 "num_models": 1,
                 "models": [
                     {
-                        "p_amt2_uint256": "0x3bc0fc6a0fc1d9cbfff",
-                        "p_amt0_uint256": "0x76c6a938040a047d73e1",
-                        "p_amt1_uint256": "0x7e56852569aa6d533ea",
-                        "p_amt3_uint256": "0x76d6c2ebfa7737818c07"
+                        "p_amt0_uint256": "0x1e3d01825fd10532608",
+                        "p_amt3_uint256": "0x1e7b74b888424732be2",
+                        "p_amt2_uint256": "0x5130030385a28cd02d",
+                        "p_amt1_uint256": "0x3635c9adc5dea00000"
                     }
                 ],
                 "num_paths": [
-                    42,
+                    28,
                     1,
                     0
                 ],
                 "time": [
-                    125.62932333303615,
-                    10.224431000009645,
-                    115.40486504195724
+                    14.765787124051712,
+                    4.871418165974319,
+                    9.894356915960088
                 ],
                 "num_bounded_loops": 0
             }

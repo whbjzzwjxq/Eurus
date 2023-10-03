@@ -1,0 +1,32 @@
+{
+    "exitcode": 0,
+    "test_results": {
+        "benchmarks/TINU/TINU.t.sol:TINUTest": [
+            {
+                "name": "check_gt(uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 1,
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x20803e341900580f9a801",
+                        "p_amt4_uint256": "0x20803e42c0aabfc26a802",
+                        "p_amt3_uint256": "0x3d93a7ac894495555",
+                        "p_amt2_uint256": "0x3dc197ebb64936aa8c",
+                        "p_amt1_uint256": "0xde0b6b3a7640000"
+                    }
+                ],
+                "num_paths": [
+                    158,
+                    6,
+                    0
+                ],
+                "time": [
+                    1384.157670125016,
+                    95.67260724998778,
+                    1288.4850612499868
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}

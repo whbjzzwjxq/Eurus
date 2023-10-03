@@ -10,14 +10,15 @@ from dataclasses import asdict, dataclass
 from importlib import metadata
 
 from halmos.calldata import Calldata
-from halmos.eurus import interpret_div, hack_interpret_div_discover
+from halmos.eurus import *
+from halmos.parser import mk_arg_parser
 from halmos.pools import process_pool, thread_pool
 from halmos.sevm import *
 from halmos.utils import NamedTimer, color_good, color_warn, hexify
 from halmos.warnings import *
-from halmos.parser import mk_arg_parser
 
-from .solidity_builder import BenchmarkBuilder, Synthesizer, get_sketch_by_func_name
+from .solidity_builder import (BenchmarkBuilder, Synthesizer,
+                               get_sketch_by_func_name)
 from .verifier import verify_model
 
 StrModel = Dict[str, str]
@@ -798,27 +799,21 @@ def gen_model_from_sexpr(fn_args: GenModelArgs) -> ModelWithContext:
 def is_unknown(result: CheckSatResult, model: Model) -> bool:
     return result == unknown or (result == sat and not is_model_valid(model))
 
-
 def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
     if args.verbose >= 1:
         print(f"Checking path condition (path id: {idx+1})")
 
     model = None
     res = unknown
+    extra_dict = {}
     ex.solver.set(timeout=args.solver_timeout_assertion)
 
     if args.smtdiv == "HackFirstDev":
         old_formulas = ex.solver.assertions()
         new_formulas = [hack_interpret_div_discover(f) for f in old_formulas]
-        ex.solver = Solver(ctx=ex.solver.ctx)
-        ex.solver.set(timeout=args.solver_timeout_assertion)
-        ex.solver.add(*new_formulas)
     elif args.smtdiv == "Models":
         old_formulas = ex.solver.assertions()
         new_formulas = [interpret_div(f) for f in old_formulas]
-        ex.solver = Solver(ctx=ex.solver.ctx)
-        ex.solver.set(timeout=args.solver_timeout_assertion)
-        ex.solver.add(*new_formulas)
     elif args.smtdiv == "DataDepDiv":
         datadep_constraints_strs = [str(c) for c in ex.datadep_constraints]
         ctrldep_constraints_strs = [str(c) for c in ex.ctrldep_constraints]
@@ -830,9 +825,6 @@ def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
             else:
                 na = a
             new_formulas.append(na)
-        ex.solver = Solver(ctx=ex.solver.ctx)
-        ex.solver.set(timeout=args.solver_timeout_assertion)
-        ex.solver.add(*new_formulas)
     elif args.smtdiv == "CtrlDepDiv":
         datadep_constraints_strs = [str(c) for c in ex.datadep_constraints]
         ctrldep_constraints_strs = [str(c) for c in ex.ctrldep_constraints]
@@ -844,61 +836,63 @@ def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
             else:
                 na = a
             new_formulas.append(na)
-        ex.solver = Solver(ctx=ex.solver.ctx)
-        ex.solver.set(timeout=args.solver_timeout_assertion)
-        ex.solver.add(*new_formulas)
     elif args.smtdiv == "DataDepOnly":
         new_formulas = [interpret_div(c) for c in ex.datadep_constraints]
-        ex.solver = Solver(ctx=ex.solver.ctx)
-        ex.solver.set(timeout=args.solver_timeout_assertion)
-        ex.solver.add(*new_formulas)
     elif args.smtdiv == "CtrlDepOnly":
         new_formulas = [interpret_div(c) for c in ex.ctrldep_constraints]
-        ex.solver = Solver(ctx=ex.solver.ctx)
-        ex.solver.set(timeout=args.solver_timeout_assertion)
-        ex.solver.add(*new_formulas)
     else:
         # --smtdiv in ("All", "None").
-        pass
+        new_formulas = ex.solver.assertions()
 
     if args.solver_only_dump:
-        # datadep_constraints_strs = [str(c) for c in ex.datadep_constraints]
-        # ctrldep_constraints_strs = [str(c) for c in ex.ctrldep_constraints]
-        # with open(os.path.join(args.dump_smt_queries, f"constraints_{idx}.json"), "w") as f:
-        #     json.dump(
-        #         {
-        #             "datadep": datadep_constraints_strs,
-        #             "ctrldep": ctrldep_constraints_strs,
-        #         },
-        #         f,
-        #         indent=4,
-        #     )
         with open(os.path.join(args.dump_smt_queries, f"{idx}.smt2"), "w") as f:
             f.write(ex.solver.to_smt2())
     else:
-        ex.solver.set(unsat_core=True)
-        res = ex.solver.check()
-        if res == sat:
-            model = ex.solver.model()
+        if args.unsat_core:
+            old_formulas = new_formulas
+            replaced_para = "p_amt1_uint256"
+            for i in range(10):
+                value = 10 ** (18+i)
+                ex.solver = Solver(ctx=ex.solver.ctx)
+                ex.solver.set(timeout=args.solver_timeout_assertion)
+                new_formulas = []
+                for f in old_formulas:
+                    n = replace_nodes_dfs(f, lambda n: n.decl().name() == replaced_para, lambda _: BitVecVal(value, 256))
+                    new_formulas.append(n)
+                for f_idx, f in enumerate(new_formulas):
+                    ex.solver.assert_and_track(f, f"f{f_idx}")
+                # parameters = get_parameters_object(ex.solver)
+                ex.solver.set(unsat_core=True)
+                res = ex.solver.check()
+                if res == sat:
+                    model = ex.solver.model()
+                    extra_dict = {replaced_para: hex(value)}
+                    break
+                else:
+                    unsat_core = []
+                    for c in ex.solver.unsat_core():
+                        f_idx = int(str(c).removeprefix('f'))
+                        unsat_core.append(old_formulas[f_idx].sexpr())
+                    with open(os.path.join(args.bmk_dir, "result", f"{idx}-{i}-{replaced_para}.unsatcore"), "w") as f:
+                        f.writelines(unsat_core)
         else:
-            for c in ex.solver.unsat_core():
-                idx = int(str(c).removeprefix('f'))
-                print(new_formulas[idx])
+            ex.solver = Solver(ctx=ex.solver.ctx)
+            ex.solver.set(timeout=args.solver_timeout_assertion)
+            ex.solver.add(*new_formulas)
+            res = ex.solver.check()
+            if res == sat:
+                model = ex.solver.model()
 
-    return package_result(model, idx, res, args)
+    return package_result(model, idx, res, args, extra_dict)
 
 
 def package_result(
-    model: Optional[UnionType[Model, str]],
+    model: Optional[Model],
     idx: int,
     result: CheckSatResult,
     args: Namespace,
+    extra_dict: StrModel
 ) -> ModelWithContext:
-    if result == unsat:
-        if args.verbose >= 1:
-            print(f"  Invalid path; ignored (path id: {idx+1})")
-        return ModelWithContext(None, None, idx, result)
-
     if result == sat:
         if args.verbose >= 1:
             print(f"  Valid path; counterexample generated (path id: {idx+1})")
@@ -906,14 +900,15 @@ def package_result(
         # convert model into string to avoid pickling errors for z3 (ctypes) objects containing pointers
         is_valid = None
         if model:
-            if isinstance(model, str):
-                is_valid = True
-                model = f"see {model}"
-            else:
-                is_valid = is_model_valid(model)
-                model = to_str_model(model, args.print_full_model)
-
+            is_valid = is_model_valid(model)
+            model: StrModel = to_str_model(model, args.print_full_model)
+            model.update(extra_dict)
         return ModelWithContext(model, is_valid, idx, result)
+    
+    elif result == unsat:
+        if args.verbose >= 1:
+            print(f"  Invalid path; ignored (path id: {idx+1})")
+        return ModelWithContext(None, None, idx, result)
 
     else:
         if args.verbose >= 1:

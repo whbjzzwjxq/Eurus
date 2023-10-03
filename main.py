@@ -132,7 +132,16 @@ parser.add_argument(
 parser.add_argument(
     "--smtdiv",
     help="Apply smt-div in which phases",
-    choices=["All", "Models", "None", "DataDepDiv", "CtrlDepDiv", "DataDepOnly", "CtrlDepOnly", "HackFirstDev"],
+    choices=[
+        "All",
+        "Models",
+        "None",
+        "DataDepDiv",
+        "CtrlDepDiv",
+        "DataDepOnly",
+        "CtrlDepOnly",
+        "HackFirstDev",
+    ],
     default="All",
 )
 
@@ -151,6 +160,12 @@ parser.add_argument(
 parser.add_argument(
     "--fuzz_seed",
     type=int,
+)
+
+parser.add_argument(
+    "--unsat-core",
+    help="Use unsat-core based solution.",
+    action="store_true",
 )
 
 
@@ -333,14 +348,15 @@ def call_halmos(
 
 def halmos_test(
     bmk_dir: str,
-    timeout: int,
-    only_gt: bool,
-    smtdiv: str,
-    start: int,
-    end: int,
-    print_only: bool,
-    suffix_spec: str,
+    args,
 ):
+    timeout: int = args.timeout
+    only_gt: bool = args.gt
+    smtdiv: str = args.smtdiv
+    start: int = args.start
+    end: int = args.end
+    print_only: bool = args.printsmt
+    suffix_spec: str = args.suffix
     builder = BenchmarkBuilder(bmk_dir)
     synthesizer = Synthesizer(builder.config)
     project_name = resolve_project_name(bmk_dir)
@@ -364,6 +380,10 @@ def halmos_test(
                 "--dump-smt-queries",
                 smt_folder,
             ]
+        if args.unsat_core:
+            extra_halmos_options.append(
+                "--unsat-core",
+            )
 
         call_halmos(
             bmk_dir,
@@ -453,13 +473,7 @@ def _main():
         if args.halmos or args.printsmt:
             halmos_test(
                 bmk_dir,
-                args.timeout,
-                args.gt,
-                args.smtdiv,
-                args.start,
-                args.end,
-                args.printsmt,
-                args.suffix,
+                args
             )
         if args.fuzz_smtdiv:
             halmos_fuzz(

@@ -285,4 +285,10 @@ def mk_arg_parser() -> argparse.ArgumentParser:
         default="",
     )
 
+    group_eurus.add_argument(
+        "--unsat-core",
+        help="Use unsat-core based solution.",
+        action="store_true",
+    )
+
     return parser

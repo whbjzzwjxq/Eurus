@@ -1,0 +1,510 @@
+(and (= ((_ extract 255 80) p_amt0_uint256)
+        #x00000000000000000000000000000000000000000000)
+     (bvule ((_ extract 79 0) p_amt0_uint256) #x9a00d8a261c6a3b873e1))(= p_amt3_uint256
+   (bvadd #x00000000000000000000000000000000000000000000001019b3f66d33041826
+          p_amt0_uint256))(let ((a!1 (bvmul #x00000000000000000000000000010000000000000000000000000000
+                  (concat #x0000000000000000000000000000
+                          ((_ extract 111 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256)))))
+      (a!3 (bvmul #x00000000000000000000000000000000000000000000000000006448fae0bbc7
+                  (concat ((_ extract 255 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256)))))
+      (a!4 (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                  (concat ((_ extract 255 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256))))))
+(let ((a!2 (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                  (bvmul p_amt2_uint256
+                         (concat #x000000000000000000000000000000000000
+                                 ((_ extract 223 112) a!1)))))
+      (a!5 (bvadd #x00000000000000000000000000000000000000000000000000000019c00f1e3b
+                  (bvmul #xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+                         (bvudiv (bvadd #xfffffffffffffffffffffffffffffffff1aba94dba7006972724cada16676ee7
+                                        a!3)
+                                 (bvadd #x000000000000000000000000000000000000000000006dbcc12d9d941456a45d
+                                        a!4)))))
+      (a!6 (bvmul #xff
+                  ((_ extract 7 0)
+                    (bvudiv (bvadd #xfffffffffffffffffffffffffffffffff1aba94dba7006972724cada16676ee7
+                                   a!3)
+                            (bvadd #x000000000000000000000000000000000000000000006dbcc12d9d941456a45d
+                                   a!4)))))
+      (a!9 (bvmul #x00000000000000000000000000000000000000000000000000000000000003e8
+                  (bvmul p_amt2_uint256
+                         (concat #x000000000000000000000000000000000000
+                                 ((_ extract 223 112) a!1))))))
+(let ((a!7 ((_ extract 111 8)
+             (bvmul #x000000000000000000e8d4a51000
+                    (concat ((_ extract 111 8) a!5) (bvadd #x3b a!6))))))
+(let ((a!8 (bvudiv a!2
+                   (bvadd (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                                 p_amt2_uint256)
+                          (bvmul #x00000000000000000000000000000000000000000000000000000000000003e8
+                                 (concat #x000000000000000000000000000000000000
+                                         a!7
+                                         #x00)))))
+      (a!10 (bvudiv a!9
+                    (bvadd (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                                  (concat #x000000000000000000000000000000000000
+                                          a!7
+                                          #x00))
+                           (bvmul #xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc1b
+                                  p_amt2_uint256)))))
+(let ((a!11 (bvmul #x000000000000000000000000000000000000000000000000000000000000000a
+                   (concat ((_ extract 255 8)
+                             (bvadd #x0000000000000000000000000000000000000000000000000000000000000001
+                                    a!10))
+                           (bvadd #x01 ((_ extract 7 0) a!10))))))
+(let ((a!12 (concat #b0
+                    ((_ extract 255 1)
+                      (bvadd (bvmul #x000000000000000000000000000000000000000000000000000000000000000a
+                                    a!8)
+                             a!11)))))
+  (bvule p_amt3_uint256
+         (bvadd (bvudiv a!12
+                        #x000000000000000000000000000000000000000000000000000000000000000a)
+                p_amt0_uint256
+                (bvmul #xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+                       p_amt1_uint256)))))))))(let ((a!1 (bvmul #x00000000000000000000000000010000000000000000000000000000
+                  (concat #x0000000000000000000000000000
+                          ((_ extract 111 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256)))))
+      (a!3 (bvmul #x00000000000000000000000000000000000000000000000000006448fae0bbc7
+                  (concat ((_ extract 255 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256)))))
+      (a!4 (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                  (concat ((_ extract 255 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256))))))
+(let ((a!2 (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                  (bvmul p_amt2_uint256
+                         (concat #x000000000000000000000000000000000000
+                                 ((_ extract 223 112) a!1)))))
+      (a!5 (bvadd #x00000000000000000000000000000000000000000000000000000019c00f1e3b
+                  (bvmul #xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+                         (bvudiv (bvadd #xfffffffffffffffffffffffffffffffff1aba94dba7006972724cada16676ee7
+                                        a!3)
+                                 (bvadd #x000000000000000000000000000000000000000000006dbcc12d9d941456a45d
+                                        a!4)))))
+      (a!6 (bvmul #xff
+                  ((_ extract 7 0)
+                    (bvudiv (bvadd #xfffffffffffffffffffffffffffffffff1aba94dba7006972724cada16676ee7
+                                   a!3)
+                            (bvadd #x000000000000000000000000000000000000000000006dbcc12d9d941456a45d
+                                   a!4)))))
+      (a!9 (bvmul #x00000000000000000000000000000000000000000000000000000000000003e8
+                  (bvmul p_amt2_uint256
+                         (concat #x000000000000000000000000000000000000
+                                 ((_ extract 223 112) a!1))))))
+(let ((a!7 ((_ extract 111 8)
+             (bvmul #x000000000000000000e8d4a51000
+                    (concat ((_ extract 111 8) a!5) (bvadd #x3b a!6))))))
+(let ((a!8 (bvudiv a!2
+                   (bvadd (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                                 p_amt2_uint256)
+                          (bvmul #x00000000000000000000000000000000000000000000000000000000000003e8
+                                 (concat #x000000000000000000000000000000000000
+                                         a!7
+                                         #x00)))))
+      (a!10 (bvudiv a!9
+                    (bvadd (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                                  (concat #x000000000000000000000000000000000000
+                                          a!7
+                                          #x00))
+                           (bvmul #xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc1b
+                                  p_amt2_uint256)))))
+(let ((a!11 (bvmul #x000000000000000000000000000000000000000000000000000000000000000a
+                   (concat ((_ extract 255 8)
+                             (bvadd #x0000000000000000000000000000000000000000000000000000000000000001
+                                    a!10))
+                           (bvadd #x01 ((_ extract 7 0) a!10))))))
+(let ((a!12 (concat #b0
+                    ((_ extract 255 1)
+                      (bvadd (bvmul #x000000000000000000000000000000000000000000000000000000000000000a
+                                    a!8)
+                             a!11)))))
+  (and (= ((_ extract 255 77)
+            (bvudiv a!12
+                    #x000000000000000000000000000000000000000000000000000000000000000a))
+          #b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000)
+       (bvule ((_ extract 76 0)
+                (bvudiv a!12
+                        #x000000000000000000000000000000000000000000000000000000000000000a))
+              #b10101001011010000001011000111111000010100101011110110100000000000000000000000))))))))(let ((a!1 (bvmul #x00000000000000000000000000010000000000000000000000000000
+                  (concat #x0000000000000000000000000000
+                          ((_ extract 111 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256)))))
+      (a!3 (bvmul #x00000000000000000000000000000000000000000000000000006448fae0bbc7
+                  (concat ((_ extract 255 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256)))))
+      (a!4 (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                  (concat ((_ extract 255 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256))))))
+(let ((a!2 (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                  (bvmul p_amt2_uint256
+                         (concat #x000000000000000000000000000000000000
+                                 ((_ extract 223 112) a!1)))))
+      (a!5 (bvadd #x00000000000000000000000000000000000000000000000000000019c00f1e3b
+                  (bvmul #xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+                         (bvudiv (bvadd #xfffffffffffffffffffffffffffffffff1aba94dba7006972724cada16676ee7
+                                        a!3)
+                                 (bvadd #x000000000000000000000000000000000000000000006dbcc12d9d941456a45d
+                                        a!4)))))
+      (a!6 (bvmul #xff
+                  ((_ extract 7 0)
+                    (bvudiv (bvadd #xfffffffffffffffffffffffffffffffff1aba94dba7006972724cada16676ee7
+                                   a!3)
+                            (bvadd #x000000000000000000000000000000000000000000006dbcc12d9d941456a45d
+                                   a!4)))))
+      (a!9 (bvmul #x00000000000000000000000000000000000000000000000000000000000003e8
+                  (bvmul p_amt2_uint256
+                         (concat #x000000000000000000000000000000000000
+                                 ((_ extract 223 112) a!1))))))
+(let ((a!7 ((_ extract 111 8)
+             (bvmul #x000000000000000000e8d4a51000
+                    (concat ((_ extract 111 8) a!5) (bvadd #x3b a!6))))))
+(let ((a!8 (bvudiv a!2
+                   (bvadd (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                                 p_amt2_uint256)
+                          (bvmul #x00000000000000000000000000000000000000000000000000000000000003e8
+                                 (concat #x000000000000000000000000000000000000
+                                         a!7
+                                         #x00)))))
+      (a!10 (bvudiv a!9
+                    (bvadd (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                                  (concat #x000000000000000000000000000000000000
+                                          a!7
+                                          #x00))
+                           (bvmul #xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc1b
+                                  p_amt2_uint256)))))
+(let ((a!11 (bvadd a!8
+                   (concat ((_ extract 255 8)
+                             (bvadd #x0000000000000000000000000000000000000000000000000000000000000001
+                                    a!10))
+                           (bvadd #x01 ((_ extract 7 0) a!10)))))
+      (a!12 (bvmul #x000000000000000000000000000000000000000000000000000000000000000a
+                   (concat ((_ extract 255 8)
+                             (bvadd #x0000000000000000000000000000000000000000000000000000000000000001
+                                    a!10))
+                           (bvadd #x01 ((_ extract 7 0) a!10))))))
+  (= a!11
+     (bvudiv (bvadd (bvmul #x000000000000000000000000000000000000000000000000000000000000000a
+                           a!8)
+                    a!12)
+             #x000000000000000000000000000000000000000000000000000000000000000a)))))))(let ((a!1 (bvmul #x00000000000000000000000000010000000000000000000000000000
+                  (concat #x0000000000000000000000000000
+                          ((_ extract 111 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256)))))
+      (a!3 (bvmul #x00000000000000000000000000000000000000000000000000006448fae0bbc7
+                  (concat ((_ extract 255 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256)))))
+      (a!4 (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                  (concat ((_ extract 255 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256))))))
+(let ((a!2 (bvmul #x00000000000000000000000000000000000000000000000000000000000003e8
+                  (bvmul p_amt2_uint256
+                         (concat #x000000000000000000000000000000000000
+                                 ((_ extract 223 112) a!1)))))
+      (a!5 (bvadd #x00000000000000000000000000000000000000000000000000000019c00f1e3b
+                  (bvmul #xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+                         (bvudiv (bvadd #xfffffffffffffffffffffffffffffffff1aba94dba7006972724cada16676ee7
+                                        a!3)
+                                 (bvadd #x000000000000000000000000000000000000000000006dbcc12d9d941456a45d
+                                        a!4)))))
+      (a!6 (bvmul #xff
+                  ((_ extract 7 0)
+                    (bvudiv (bvadd #xfffffffffffffffffffffffffffffffff1aba94dba7006972724cada16676ee7
+                                   a!3)
+                            (bvadd #x000000000000000000000000000000000000000000006dbcc12d9d941456a45d
+                                   a!4)))))
+      (a!9 (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                  (bvmul p_amt2_uint256
+                         (concat #x000000000000000000000000000000000000
+                                 ((_ extract 223 112) a!1))))))
+(let ((a!7 ((_ extract 111 8)
+             (bvmul #x000000000000000000e8d4a51000
+                    (concat ((_ extract 111 8) a!5) (bvadd #x3b a!6))))))
+(let ((a!8 (bvudiv a!2
+                   (bvadd (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                                 (concat #x000000000000000000000000000000000000
+                                         a!7
+                                         #x00))
+                          (bvmul #xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc1b
+                                 p_amt2_uint256))))
+      (a!10 (bvudiv a!9
+                    (bvadd (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                                  p_amt2_uint256)
+                           (bvmul #x00000000000000000000000000000000000000000000000000000000000003e8
+                                  (concat #x000000000000000000000000000000000000
+                                          a!7
+                                          #x00))))))
+(let ((a!11 (bvadd a!10
+                   (concat ((_ extract 255 8)
+                             (bvadd #x0000000000000000000000000000000000000000000000000000000000000001
+                                    a!8))
+                           (bvadd #x01 ((_ extract 7 0) a!8))))))
+  (bvule (concat ((_ extract 255 8)
+                   (bvadd #x0000000000000000000000000000000000000000000000000000000000000001
+                          a!8))
+                 (bvadd #x01 ((_ extract 7 0) a!8)))
+         a!11))))))(let ((a!1 (bvmul #x00000000000000000000000000010000000000000000000000000000
+                  (concat #x0000000000000000000000000000
+                          ((_ extract 111 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256)))))
+      (a!2 (bvmul #x00000000000000000000000000000000000000000000000000006448fae0bbc7
+                  (concat ((_ extract 255 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256)))))
+      (a!3 (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                  (concat ((_ extract 255 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256))))))
+(let ((a!4 (bvadd #x00000000000000000000000000000000000000000000000000000019c00f1e3b
+                  (bvmul #xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+                         (bvudiv (bvadd #xfffffffffffffffffffffffffffffffff1aba94dba7006972724cada16676ee7
+                                        a!2)
+                                 (bvadd #x000000000000000000000000000000000000000000006dbcc12d9d941456a45d
+                                        a!3)))))
+      (a!5 (bvmul #xff
+                  ((_ extract 7 0)
+                    (bvudiv (bvadd #xfffffffffffffffffffffffffffffffff1aba94dba7006972724cada16676ee7
+                                   a!2)
+                            (bvadd #x000000000000000000000000000000000000000000006dbcc12d9d941456a45d
+                                   a!3))))))
+(let ((a!6 ((_ extract 111 8)
+             (bvmul #x000000000000000000e8d4a51000
+                    (concat ((_ extract 111 8) a!4) (bvadd #x3b a!5))))))
+(let ((a!7 (bvudiv (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                          p_amt2_uint256
+                          (concat #x000000000000000000000000000000000000
+                                  ((_ extract 223 112) a!1)))
+                   (bvadd (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                                 p_amt2_uint256)
+                          (bvmul #x00000000000000000000000000000000000000000000000000000000000003e8
+                                 (concat #x000000000000000000000000000000000000
+                                         a!6
+                                         #x00))))))
+  (bvule a!7
+         (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                p_amt2_uint256
+                (concat #x000000000000000000000000000000000000
+                        ((_ extract 223 112) a!1))))))))(let ((a!1 (bvmul #x00000000000000000000000000010000000000000000000000000000
+                  (concat #x0000000000000000000000000000
+                          ((_ extract 111 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256))))))
+(let ((a!2 (bvudiv (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                          p_amt2_uint256
+                          (concat #x000000000000000000000000000000000000
+                                  ((_ extract 223 112) a!1)))
+                   (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                          p_amt2_uint256))))
+  (or (= p_amt2_uint256
+         #x0000000000000000000000000000000000000000000000000000000000000000)
+      (= (concat #x000000000000000000000000000000000000
+                 ((_ extract 223 112) a!1))
+         a!2))))(= p_amt2_uint256
+   (bvudiv (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                  p_amt2_uint256)
+           #x00000000000000000000000000000000000000000000000000000000000003e5))(bvule (bvudiv (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                      p_amt2_uint256)
+               #x00000000000000000000000000000000000000000000000000000000000003e5)
+       (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+              p_amt2_uint256))(bvule p_amt1_uint256 p_amt0_uint256)(let ((a!1 (bvmul #x00000000000000000000000000010000000000000000000000000000
+                  (concat #x0000000000000000000000000000
+                          ((_ extract 111 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256)))))
+      (a!2 (bvmul #x00000000000000000000000000000000000000000000000000006448fae0bbc7
+                  (concat ((_ extract 255 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256)))))
+      (a!3 (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                  (concat ((_ extract 255 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256))))))
+(let ((a!4 (bvadd #x00000000000000000000000000000000000000000000000000000019c00f1e3b
+                  (bvmul #xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+                         (bvudiv (bvadd #xfffffffffffffffffffffffffffffffff1aba94dba7006972724cada16676ee7
+                                        a!2)
+                                 (bvadd #x000000000000000000000000000000000000000000006dbcc12d9d941456a45d
+                                        a!3)))))
+      (a!5 (bvmul #xff
+                  ((_ extract 7 0)
+                    (bvudiv (bvadd #xfffffffffffffffffffffffffffffffff1aba94dba7006972724cada16676ee7
+                                   a!2)
+                            (bvadd #x000000000000000000000000000000000000000000006dbcc12d9d941456a45d
+                                   a!3))))))
+(let ((a!6 ((_ extract 111 8)
+             (bvmul #x000000000000000000e8d4a51000
+                    (concat ((_ extract 111 8) a!4) (bvadd #x3b a!5))))))
+(let ((a!7 (bvudiv (bvmul #x00000000000000000000000000000000000000000000000000000000000003e8
+                          p_amt2_uint256
+                          (concat #x000000000000000000000000000000000000
+                                  ((_ extract 223 112) a!1)))
+                   (bvadd (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                                 (concat #x000000000000000000000000000000000000
+                                         a!6
+                                         #x00))
+                          (bvmul #xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc1b
+                                 p_amt2_uint256)))))
+  (bvule a!7
+         (bvmul #x00000000000000000000000000000000000000000000000000000000000003e8
+                p_amt2_uint256
+                (concat #x000000000000000000000000000000000000
+                        ((_ extract 223 112) a!1))))))))(let ((a!1 (bvmul #x00000000000000000000000000000000000000000000000000006448fae0bbc7
+                  (concat ((_ extract 255 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256)))))
+      (a!2 (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                  (concat ((_ extract 255 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256))))))
+(let ((a!3 (bvadd #x00000000000000000000000000000000000000000000000000000019c00f1e3b
+                  (bvmul #xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+                         (bvudiv (bvadd #xfffffffffffffffffffffffffffffffff1aba94dba7006972724cada16676ee7
+                                        a!1)
+                                 (bvadd #x000000000000000000000000000000000000000000006dbcc12d9d941456a45d
+                                        a!2)))))
+      (a!4 (bvmul #xff
+                  ((_ extract 7 0)
+                    (bvudiv (bvadd #xfffffffffffffffffffffffffffffffff1aba94dba7006972724cada16676ee7
+                                   a!1)
+                            (bvadd #x000000000000000000000000000000000000000000006dbcc12d9d941456a45d
+                                   a!2))))))
+(let ((a!5 ((_ extract 111 8)
+             (bvmul #x000000000000000000e8d4a51000
+                    (concat ((_ extract 111 8) a!3) (bvadd #x3b a!4))))))
+(let ((a!6 (bvudiv (bvadd (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                                 (concat #x000000000000000000000000000000000000
+                                         a!5
+                                         #x00))
+                          (bvmul #xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc1b
+                                 p_amt2_uint256))
+                   #x00000000000000000000000000000000000000000000000000000000000003e5)))
+  (= (bvadd (concat #x000000000000000000000000000000000000 a!5 #x00)
+            (bvmul #xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+                   p_amt2_uint256))
+     a!6)))))(let ((a!1 (bvmul #x00000000000000000000000000000000000000000000000000006448fae0bbc7
+                  (concat ((_ extract 255 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256)))))
+      (a!2 (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                  (concat ((_ extract 255 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256))))))
+(let ((a!3 (bvadd #x00000000000000000000000000000000000000000000000000000019c00f1e3b
+                  (bvmul #xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+                         (bvudiv (bvadd #xfffffffffffffffffffffffffffffffff1aba94dba7006972724cada16676ee7
+                                        a!1)
+                                 (bvadd #x000000000000000000000000000000000000000000006dbcc12d9d941456a45d
+                                        a!2)))))
+      (a!4 (bvmul #xff
+                  ((_ extract 7 0)
+                    (bvudiv (bvadd #xfffffffffffffffffffffffffffffffff1aba94dba7006972724cada16676ee7
+                                   a!1)
+                            (bvadd #x000000000000000000000000000000000000000000006dbcc12d9d941456a45d
+                                   a!2))))))
+(let ((a!5 ((_ extract 111 8)
+             (bvmul #x000000000000000000e8d4a51000
+                    (concat ((_ extract 111 8) a!3) (bvadd #x3b a!4))))))
+(let ((a!6 (bvadd (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                         (concat #x000000000000000000000000000000000000
+                                 a!5
+                                 #x00))
+                  (bvmul #xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc1b
+                         p_amt2_uint256))))
+  (bvule (bvudiv a!6
+                 #x00000000000000000000000000000000000000000000000000000000000003e5)
+         a!6)))))(let ((a!1 (bvmul #x00000000000000000000000000010000000000000000000000000000
+                  (concat #x0000000000000000000000000000
+                          ((_ extract 111 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256))))))
+(let ((a!2 (bvmul #x00000000000000000000000000000000000000000000000000000000000003e8
+                  (bvmul p_amt2_uint256
+                         (concat #x000000000000000000000000000000000000
+                                 ((_ extract 223 112) a!1))))))
+  (= (bvmul p_amt2_uint256
+            (concat #x000000000000000000000000000000000000
+                    ((_ extract 223 112) a!1)))
+     (bvudiv a!2
+             #x00000000000000000000000000000000000000000000000000000000000003e8))))(let ((a!1 (bvmul #x00000000000000000000000000010000000000000000000000000000
+                  (concat #x0000000000000000000000000000
+                          ((_ extract 111 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256))))))
+(let ((a!2 (bvudiv (bvmul #x00000000000000000000000000000000000000000000000000000000000003e8
+                          p_amt2_uint256
+                          (concat #x000000000000000000000000000000000000
+                                  ((_ extract 223 112) a!1)))
+                   #x00000000000000000000000000000000000000000000000000000000000003e8)))
+  (bvule a!2
+         (bvmul #x00000000000000000000000000000000000000000000000000000000000003e8
+                p_amt2_uint256
+                (concat #x000000000000000000000000000000000000
+                        ((_ extract 223 112) a!1))))))(let ((a!1 (bvmul #x00000000000000000000000000010000000000000000000000000000
+                  (concat #x0000000000000000000000000000
+                          ((_ extract 111 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256))))))
+(let ((a!2 (bvudiv (bvmul p_amt2_uint256
+                          (concat #x000000000000000000000000000000000000
+                                  ((_ extract 223 112) a!1)))
+                   (concat #x000000000000000000000000000000000000
+                           ((_ extract 223 112) a!1)))))
+  (or (= ((_ extract 223 112) a!1) #x0000000000000000000000000000)
+      (= p_amt2_uint256 a!2))))(let ((a!1 (bvmul #x00000000000000000000000000000000000000000000000000006448fae0bbc7
+                  (concat ((_ extract 255 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256)))))
+      (a!2 (bvmul #x00000000000000000000000000000000000000000000000000000000000003e5
+                  (concat ((_ extract 255 8)
+                            (bvadd #x000000000000000000000000000000000000000000002494406489dc06c78c1f
+                                   p_amt1_uint256))
+                          (bvadd #x1f ((_ extract 7 0) p_amt1_uint256))))))
+  (bvule (bvudiv p_amt2_uint256
+                 #x000000000000000000000000000000000000000000000000000000e8d4a51000)
+         (bvudiv (bvadd #xfffffffffffffffffffffffffffffffff1aba94dba7006972724cada16676ee7
+                        a!1)
+                 (bvadd #x000000000000000000000000000000000000000000006dbcc12d9d941456a45d
+                        a!2))))(not (= p_amt2_uint256
+        #x0000000000000000000000000000000000000000000000000000000000000000))

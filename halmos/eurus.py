@@ -1,6 +1,6 @@
 from z3 import *
 
-from typing import Callable
+from typing import Callable, List
 
 def slide_window_udiv(a, b):
     hi = 160
@@ -38,9 +38,30 @@ def replace_nodes_dfs(
     node: Ast, filter: Callable[[Ast], bool], action: Callable[[Ast], Ast]
 ) -> Ast:
     if is_const(node):
+        if filter(node):
+            node = action(node)
         return node
     elif is_ast(node):
         args = [replace_nodes_dfs(arg, filter, action) for arg in node.children()]
         if filter(node):
             node = action(node)
         return node.decl()(*args)
+    else:
+        raise ValueError("Corner case")
+
+def get_nodes(node: Ast, filter: Callable[[Ast], bool]) -> List[Ast]:
+    results = []
+    if filter(node):
+        results.append(node)
+    for c in node.children():
+        results.extend(get_nodes(c, filter))
+    return results
+
+def get_parameters_object(s: Solver) -> List[BitVecRef]:
+    formulas = s.assertions()
+    results = set()
+    for f in formulas:
+        r = get_nodes(f, lambda n: n.decl().name().startswith("p_"))
+        results.update(r)
+    results = sorted(list(results), key=lambda r: r.decl().name())
+    return results
