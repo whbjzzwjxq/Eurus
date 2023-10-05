@@ -1,0 +1,25 @@
+{
+    "test_results": {
+        "./benchmarks/ShadowFi": [
+            {
+                "name": "check_gt",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x4b77cf162a4780000000",
+                        "p_amt1_uint256": "0xde0b6b3a7640000",
+                        "p_amt2_uint256": "0x24c10a02ec9d8e",
+                        "p_amt3_uint256": "0x6eeb6237e1a",
+                        "p_amt4_uint256": "0x4bb1f158bc4088000000"
+                    }
+                ],
+                "time": [
+                    0.008721375023014843,
+                    0,
+                    0.008721375023014843
+                ],
+                "feasible": true
+            }
+        ]
+    }
+}

@@ -1,0 +1,25 @@
+{
+    "test_results": {
+        "./benchmarks/NOVO": [
+            {
+                "name": "check_gt",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x1bc16d674ec80000",
+                        "p_amt1_uint256": "0xde0b6b3a7640000",
+                        "p_amt2_uint256": "0x1a9918bda100ea0",
+                        "p_amt3_uint256": "0x0",
+                        "p_amt4_uint256": "0x1bd6cecabb601900"
+                    }
+                ],
+                "time": [
+                    0.009562875027768314,
+                    0,
+                    0.009562875027768314
+                ],
+                "feasible": false
+            }
+        ]
+    }
+}

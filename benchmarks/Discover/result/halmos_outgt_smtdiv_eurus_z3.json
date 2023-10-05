@@ -1,1 +1,24 @@
-{"test_results": {"./benchmarks/Discover": [{"name": "check_gt", "num_models": 1, "models": [{"p_amt0_uint256": "0x28b637f9080e5c00000", "p_amt1_uint256": "0x28b5851e2acfac00000", "p_amt2_uint256": "0x2145621a3ee42200000", "p_amt3_uint256": "0x28d594525dd77400000"}], "time": [0.008963708998635411, 0, 0.008963708998635411]}]}}
+{
+    "test_results": {
+        "./benchmarks/Discover": [
+            {
+                "name": "check_gt",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x28b637f9080e5c00000",
+                        "p_amt1_uint256": "0x28b5851e2acfac00000",
+                        "p_amt2_uint256": "0x2145621a3ee42200000",
+                        "p_amt3_uint256": "0x28d594525dd77400000"
+                    }
+                ],
+                "time": [
+                    0.007299542019609362,
+                    0,
+                    0.007299542019609362
+                ],
+                "feasible": true
+            }
+        ]
+    }
+}

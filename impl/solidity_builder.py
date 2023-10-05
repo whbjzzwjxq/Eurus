@@ -52,7 +52,7 @@ class BenchmarkBuilder:
 
         # Uniswap pairs.
         self.uniswap_pairs: List[str] = [
-            name for name, role in self.roles.items() if len(role.uniswap_order) != 0
+            name for name, role in self.roles.items() if role.is_uniswap
         ]
 
         # Uniswap pairs to token_names
@@ -248,6 +248,9 @@ class BenchmarkBuilder:
 
         nop = ["function nop(uint256 amount) internal pure {", "return;", "}"]
 
+        return [*printer, *attack_goal, *nop]
+    
+    def gen_actions(self) -> List[str]:
         # Actions
         actions = []
         extra_actions = self.config.extra_actions
@@ -313,8 +316,7 @@ class BenchmarkBuilder:
             ]
             add_func_to_actions(sync)
 
-        all = [*printer, *attack_goal, *nop, *actions, *self.extra_actions]
-        return all
+        return [*actions, *self.extra_actions]
 
     def gen_gt_for_forge_and_halmos(self) -> List[str]:
         # Build groundtruth test for forge
@@ -336,6 +338,7 @@ class BenchmarkBuilder:
             *self.gen_state_varibles(),
             *self.gen_setup(),
             *self.gen_helper_funcs(),
+            *self.gen_actions(),
             *self.gen_gt_for_forge_and_halmos(),
             *self.gen_candidates(),
             "}",

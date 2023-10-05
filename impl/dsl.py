@@ -1,9 +1,12 @@
 from decimal import Decimal
-from typing import Dict, List
+from typing import Dict, List, Any
 
-from impl.config import DefiRoles
+from impl.config import DefiRoles, Config
 
 from .utils import *
+
+LAMBDA_CONSTR = Any
+ACTION_SUMMARY = Tuple[List[str], List[LAMBDA_CONSTR]]
 
 
 class DSLAction:
@@ -27,7 +30,7 @@ class DSLAction:
             and (self.args_in_name == __value.args_in_name)
             and (self.args == __value.args)
         )
-    
+
     @property
     def func_sig(self) -> str:
         return "_".join([self.action_name, *self.args_in_name])
@@ -51,6 +54,8 @@ class DSLAction:
             return self.args_in_name[:-2]
         elif self.action_name in ("breaklr",):
             return self.args_in_name[:-1]
+        elif self.action_name in ("burn",):
+            return self.args_in_name[0:]
         else:
             raise ValueError(
                 f"This action: {self.action_name} doesn't have a role as swap_pair"
@@ -116,6 +121,105 @@ class DSLAction:
             return self.swap_pairs[0] in roles[self.defi_entry].hacked_pairs
         return True
 
+    def gen_constraints(self, config: Config) -> ACTION_SUMMARY:
+        roles: Dict[str, DefiRoles] = config.roles
+        if self.action_name == "nop":
+            return ([], [])
+        elif self.action_name == "swap":
+            is_uniswap = roles[self.swap_pairs[0]].is_uniswap
+            if is_uniswap:
+                b0a = f"balanceOf{self.asset0}attacker"
+                b0p = f"balanceOf{self.asset0}{self.swap_pairs[0]}"
+                b1a = f"balanceOf{self.asset1}attacker"
+                b1p = f"balanceOf{self.asset1}{self.swap_pairs[0]}"
+                return (
+                    [
+                        b0a,
+                        b0p,
+                        b1a,
+                        b1p,
+                    ],
+                    [
+                        # fmt: off
+                        # Transfer asset0 from attacker to pair
+                        lambda s: s.__getattr__(f"new_{b0a}") == s.__getattr__(f"old_{b0a}") - s.arg_0,
+                        lambda s: s.__getattr__(f"new_{b0p}") == s.__getattr__(f"old_{b0p}") + s.arg_0,
+
+                        # Transfer asset1 from pair to attacker
+                        lambda s: s.__getattr__(f"new_{b1a}") == s.__getattr__(f"old_{b1a}") + s.amtOut,
+                        lambda s: s.__getattr__(f"new_{b1p}") == s.__getattr__(f"old_{b1p}") - s.amtOut * 1000 / 997,
+
+                        # Invariant X * Y == K
+                        lambda s: s.__getattr__(f"new_{b0p}") * s.__getattr__(f"new_{b1p}") == s.__getattr__(f"old_{b0p}") * s.__getattr__(f"old_{b1p}"),
+                        # fmt: on
+                    ],
+                )
+            else:
+                oracle = "pair"
+                b0a = f"balanceOf{self.asset0}attacker"
+                b0p = f"balanceOf{self.asset0}{oracle}"
+                b1a = f"balanceOf{self.asset1}attacker"
+                b1p = f"balanceOf{self.asset1}{oracle}"
+                return (
+                    [
+                        b0a,
+                        b0p,
+                        b1a,
+                        b1p,
+                    ],
+                    [
+                        # fmt: off
+                        # Transfer asset0 from attacker to pair
+                        lambda s: s.__getattr__(f"new_{b0a}") == s.__getattr__(f"old_{b0a}") - s.arg_0,
+                        lambda s: s.__getattr__(f"new_{b0p}") == s.__getattr__(f"old_{b0p}") + s.arg_0,
+
+                        # Transfer asset1 from pair to attacker
+                        lambda s: s.__getattr__(f"new_{b1a}") == s.__getattr__(f"old_{b1a}") + s.amtOut,
+                        lambda s: s.__getattr__(f"new_{b1p}") == s.__getattr__(f"old_{b1p}") - s.amtOut,
+
+                        # Invariant Delta(X) / Delta(Y) == X / Y
+                        lambda s: s.amtOut * s.__getattr__(f"old_{b0p}") == s.arg_0 * s.__getattr__(f"old_{b1p}"),
+                        # fmt: on
+                    ],
+                )
+        elif self.action_name == "borrow":
+            b0a = f"balanceOf{self.asset0}attacker"
+            return (
+                [b0a],
+                [
+                    # fmt: off
+                    lambda s: s.__getattr__(f"new_{b0a}") == s.__getattr__(f"old_{b0a}") + s.arg_0,
+                    # fmt: on
+                ],
+            )
+        elif self.action_name == "payback":
+            b0a = f"balanceOf{self.asset0}attacker"
+            return (
+                [b0a],
+                [
+                    # fmt: off
+                    lambda s: s.__getattr__(f"new_{b0a}") == s.__getattr__(f"old_{b0a}") - s.arg_0,
+                    lambda s: s.arg_0 == s.arg_x0 * 1000 / 997,
+                    # fmt: on
+                ],
+            )
+        elif self.action_name == "burn":
+            b0p = f"balanceOf{self.asset0}{self.swap_pairs[0]}"
+            return (
+                [b0p],
+                [
+                    # fmt: off
+                    lambda s: s.__getattr__(f"new_{b0p}") == s.__getattr__(f"old_{b0p}") - s.arg_0,
+                    # fmt: on
+                ],
+            )
+        elif self.action_name == "sync":
+            return ([], [])
+        elif self.action_name == "breaklr":
+            return ([], [])
+        elif self.action_name == "transaction":
+            return ([], [])
+
 
 class NOP(DSLAction):
     def __init__(
@@ -168,12 +272,12 @@ class Payback(DSLAction):
 class Burn(DSLAction):
     def __init__(
         self,
-        oracle: str,
+        pair: str,
         asset: str,
         amount: str,
         concrete: bool = False,
     ) -> None:
-        super().__init__("burn", [oracle, asset], [amount], concrete)
+        super().__init__("burn", [pair, asset], [amount], concrete)
 
 
 class BreakLR(DSLAction):
@@ -322,7 +426,7 @@ class Sketch:
         return checker
 
     def output_verify(self, func_name: str, args: List[str]) -> List[str]:
-        assert(len(args) == self.param_num)
+        assert len(args) == self.param_num
         func_body = []
         for i, p in enumerate(args):
             func_body.append(f"uint256 amt{i} = {p};")

@@ -21,6 +21,10 @@ class DefiRoles:
     hacked_assets: List[str] = field(default_factory=list)
     hacked_pairs: List[str] = field(default_factory=list)
 
+    @property
+    def is_uniswap(self) -> bool:
+        return len(self.uniswap_order) != 0
+
 
 @dataclass
 class Config:

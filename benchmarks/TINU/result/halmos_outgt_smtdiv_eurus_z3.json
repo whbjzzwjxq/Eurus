@@ -1,0 +1,25 @@
+{
+    "test_results": {
+        "./benchmarks/TINU": [
+            {
+                "name": "check_gt",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x1bc16d674ec80000",
+                        "p_amt1_uint256": "0xde0b6b3a7640000",
+                        "p_amt2_uint256": "0x5c69ac4727ff5c0000",
+                        "p_amt3_uint256": "0xa8faf254ba6d400",
+                        "p_amt4_uint256": "0x1bd6cecabb601900"
+                    }
+                ],
+                "time": [
+                    0.0072156660025939345,
+                    0,
+                    0.0072156660025939345
+                ],
+                "feasible": true
+            }
+        ]
+    }
+}

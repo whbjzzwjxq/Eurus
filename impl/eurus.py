@@ -1,3 +1,4 @@
+import re
 import time
 from typing import Any, Callable, Dict, List, Tuple
 
@@ -8,7 +9,12 @@ from z3 import *
 
 from impl.solidity_builder import BenchmarkBuilder, get_sketch_by_func_name
 from impl.synthesizer import Synthesizer
-from impl.utils import gen_result_paths, prepare_subfolder, resolve_project_name
+from impl.utils import (
+    gen_result_paths,
+    get_bmk_dirs,
+    prepare_subfolder,
+    resolve_project_name,
+)
 from impl.verifier import verify_model
 
 SolverType = Any
@@ -23,8 +29,8 @@ VTYPE = gp.GRB.CONTINUOUS
 
 
 class VAR:
-
     names = set()
+
     def __init__(self, name: str, solver: SolverType, value: int = None) -> None:
         if name in self.names:
             raise ValueError("Duplicated names!")
@@ -69,6 +75,7 @@ class StateGetter:
         post_state: Dict[str, VAR],
         init_state: Dict[str, VAR],
         params: List[VAR],
+        param_offset: int,
         solver: SolverType,
     ) -> None:
         self.idx = idx
@@ -76,6 +83,7 @@ class StateGetter:
         self.post_state = post_state
         self.init_state = init_state
         self.params = params
+        self.param_offset = param_offset
         self.solver = solver
 
     def __getattr__(self, __name: str) -> Any:
@@ -89,7 +97,11 @@ class StateGetter:
             r = self.post_state[key].var_obj
             return r
         elif __name.startswith("arg_"):
-            idx = int(__name.removeprefix("arg_"))
+            idx = __name.removeprefix("arg_")
+            if idx.startswith("x"):
+                idx = int(idx.removeprefix("x"))
+            else:
+                idx = int(idx) + self.param_offset
             r = self.params[idx].var_obj
             return r
         elif __name.startswith("init_"):
@@ -107,6 +119,7 @@ class StateGetter:
 
 
 LAMBDA_CONSTR = Callable[[StateGetter], Any]
+ACTION_SUMMARY = Tuple[List[str], List[LAMBDA_CONSTR]]
 
 
 class FinancialAction:
@@ -128,12 +141,12 @@ class FinancialExecution:
         solver: SolverType,
         init_state: Dict[str, int],
         attack_goal: LAMBDA_CONSTR,
-        useful_vars: List[str],
+        rw_vars: List[str],
     ) -> None:
         self.sketch = sketch
         self.solver = solver
         self.states: List[Dict[str, VAR]] = []
-        self.useful_vars = useful_vars
+        self.rw_vars = rw_vars
         for _ in range(len(sketch) + 1):
             self.states.append({})
         self.params: List[VAR] = []
@@ -147,6 +160,7 @@ class FinancialExecution:
         self,
         idx: int,
         func: LAMBDA_CONSTR,
+        param_offset: int,
     ):
         init_state = self.states[0]
         pre_state = self.states[idx]
@@ -155,7 +169,13 @@ class FinancialExecution:
         else:
             post_state = {}
         getter = StateGetter(
-            idx, pre_state, post_state, init_state, self.params, self.solver
+            idx,
+            pre_state,
+            post_state,
+            init_state,
+            self.params,
+            param_offset,
+            self.solver,
         )
         if Z3_OR_GB:
             self.solver.add(func(getter))
@@ -164,7 +184,7 @@ class FinancialExecution:
 
     def execute(self):
         for k in self.init_state:
-            if k not in self.useful_vars:
+            if k not in self.rw_vars:
                 continue
             v = self.init_state.get(k, 0)
             nk = k + str(0)
@@ -187,14 +207,17 @@ class FinancialExecution:
                     if Z3_OR_GB:
                         self.solver.add(pre_state[k].var_obj == post_state[nk].var_obj)
                     else:
-                        self.solver.addConstr(pre_state[k].var_obj == post_state[nk].var_obj)
+                        self.solver.addConstr(
+                            pre_state[k].var_obj == post_state[nk].var_obj
+                        )
+            param_offset = len(self.params)
             for i in range(param_num):
                 k = f"amt{i + len(self.params)}"
                 var = self._default_var(k)
                 self.params.append(var)
             for func in action.constraints:
-                self.handle_constraint(idx, func)
-        self.handle_constraint(idx+1, self.attack_goal)
+                self.handle_constraint(idx, func, param_offset)
+        self.handle_constraint(idx + 1, self.attack_goal, len(self.params))
 
 
 def setup_solver(timeout: bool):
@@ -210,6 +233,32 @@ def setup_solver(timeout: bool):
     return solver
 
 
+def autogen_financial_formula(
+    bmk_dir: str,
+) -> Tuple[LAMBDA_CONSTR, List[str], Dict[str, ACTION_SUMMARY]]:
+    builder = BenchmarkBuilder(bmk_dir)
+    config = builder.config
+    synthesizer = Synthesizer(builder.config)
+
+    attack_goal_varstr = config.attack_goal.split("+ ")[1]
+    # fmt: off
+    attack_goal = lambda s: s.__getattr__(f"old_{attack_goal_varstr}") >= s.__getattr__(f"init_{attack_goal_varstr}") + PROFIT
+    # fmt: on
+    rw_vars = []
+    for token in builder.erc20_tokens:
+        for user in builder.token_users:
+            rw_vars.append(f"balanceOf{token}{user}")
+
+    action2constraints: Dict[str, ACTION_SUMMARY] = {}
+    for sketch in synthesizer.candidates:
+        for action in sketch.pure_actions:
+            if action.func_sig in action2constraints:
+                continue
+            action2constraints[action.func_sig] = action.gen_constraints(config)
+
+    return attack_goal, rw_vars, action2constraints
+
+
 def eurus_test(bmk_dir, args):
     timeout: int = args.timeout
     only_gt: bool = args.gt
@@ -219,6 +268,8 @@ def eurus_test(bmk_dir, args):
     smtdiv = f"Eurus_{args.solver}"
     global Z3_OR_GB
     Z3_OR_GB = args.solver == "z3"
+
+    VAR.names = set()
 
     builder = BenchmarkBuilder(bmk_dir)
     builder.get_initial_state()
@@ -230,88 +281,9 @@ def eurus_test(bmk_dir, args):
         result_path, only_gt, smtdiv, len(synthesizer.candidates), suffix_spec
     )
     result_paths = result_paths[start:end]
-
-    all_actions: Dict[str, Dict[str, Tuple[List[str], List[LAMBDA_CONSTR]]]] = {
-        "Discover": {
-            "borrow_disc": (
-                ["balanceOfdiscattacker"],
-                [
-                    lambda s: s.new_balanceOfdiscattacker
-                    == s.old_balanceOfdiscattacker + s.arg_0,
-                ],
-            ),
-            "swap_pair_disc_usdt": (
-                [
-                    "balanceOfusdtattacker",
-                    "balanceOfusdtpair",
-                    "balanceOfdiscattacker",
-                    "balanceOfdiscpair",
-                ],
-                [
-                    # transfer DISC from attacker to pair
-                    lambda s: s.new_balanceOfdiscattacker
-                    == s.old_balanceOfdiscattacker - s.arg_1,
-                    lambda s: s.new_balanceOfdiscpair
-                    == s.old_balanceOfdiscpair + s.arg_1,
-                    # transfer USDT from pair to attacker
-                    lambda s: s.new_balanceOfusdtattacker
-                    == s.old_balanceOfusdtattacker + s.amtOut,
-                    lambda s: s.new_balanceOfusdtpair
-                    == s.old_balanceOfusdtpair - s.amtOut * 1000 / 997,
-                    # invariant
-                    lambda s: s.new_balanceOfusdtpair * s.new_balanceOfdiscpair
-                    == s.old_balanceOfusdtpair * s.old_balanceOfdiscpair,
-                ],
-            ),
-            "swap_ethpledge_usdt_disc": (
-                [
-                    "balanceOfusdtattacker",
-                    "balanceOfusdtpair",
-                    "balanceOfdiscattacker",
-                    "balanceOfdiscpair",
-                ],
-                [
-                    # transfer USDT from attacker to pair
-                    lambda s: s.new_balanceOfusdtattacker
-                    == s.old_balanceOfusdtattacker - s.arg_2,
-                    lambda s: s.new_balanceOfusdtpair
-                    == s.old_balanceOfusdtpair + s.arg_2,
-                    # transfer DISC from pair to attacker
-                    lambda s: s.new_balanceOfdiscattacker
-                    == s.old_balanceOfdiscattacker + s.amtOut,
-                    lambda s: s.new_balanceOfdiscpair
-                    == s.old_balanceOfdiscpair - s.amtOut,
-                    # invariant
-                    lambda s: s.amtOut * s.old_balanceOfusdtpair
-                    == s.old_balanceOfdiscpair * s.arg_2,
-                ],
-            ),
-            "payback_disc": (
-                ["balanceOfdiscattacker"],
-                [
-                    lambda s: s.new_balanceOfdiscattacker
-                    == s.old_balanceOfdiscattacker - s.arg_3,
-                    lambda s: s.arg_3 == s.arg_0 * 1000 / 997,
-                ],
-            ),
-        }
-    }
-    all_attack_goals: Dict[str, LAMBDA_CONSTR] = {
-        "Discover": lambda s: s.old_balanceOfusdtattacker
-        >= s.init_balanceOfusdtattacker + PROFIT,
-    }
-    all_useful_variables: Dict[str, List[str]] = {
-        "Discover": [
-            "balanceOfusdtattacker",
-            "balanceOfusdtpair",
-            "balanceOfdiscattacker",
-            "balanceOfdiscpair",
-        ]
-    }
     init_state = {k: int(v) for k, (_, v) in builder.init_state.items()}
 
-    attack_goal = all_attack_goals[project_name]
-    useful_vars = all_useful_variables[project_name]
+    attack_goal, rw_vars, action_constraints = autogen_financial_formula(bmk_dir)
 
     for func_name, output_path, _, _ in result_paths:
         solver = setup_solver(timeout)
@@ -320,11 +292,11 @@ def eurus_test(bmk_dir, args):
         param_nums = [a.param_num for a in origin_sketch.pure_actions]
         actions = []
         for name, p_num in zip(action_names, param_nums):
-            write_vars, constraints = all_actions[project_name][name]
+            write_vars, constraints = action_constraints[name]
             action = FinancialAction(p_num, write_vars, constraints)
             actions.append(action)
 
-        exec = FinancialExecution(actions, solver, init_state, attack_goal, useful_vars)
+        exec = FinancialExecution(actions, solver, init_state, attack_goal, rw_vars)
 
         exec.execute()
 
@@ -347,6 +319,11 @@ def eurus_test(bmk_dir, args):
                 print(f"{p.name}: {v}")
                 param_ints.append(v)
             model = [param_ints]
+            feasible = verify_model(bmk_dir, [(func_name, origin_sketch, model)])
+            if feasible:
+                print("Result is feasible in realworld!")
+            else:
+                print("Result is NOT feasible in realworld!")
             result = {
                 "test_results": {
                     bmk_dir: [
@@ -357,16 +334,13 @@ def eurus_test(bmk_dir, args):
                                 {f"p_{p.name}_uint256": str(p) for p in exec.params}
                             ],
                             "time": [timecost, 0, timecost],
+                            "feasible": feasible,
                         }
                     ]
                 }
             }
             with open(output_path, "w") as f:
-                json.dump(result, f)
-            if verify_model(bmk_dir, [(func_name, origin_sketch, model)]):
-                print("Result is feasible in realworld!")
-            else:
-                print("Result is NOT feasible in realworld!")
+                json.dump(result, f, indent=4)
 
         else:
             print(f"Solution is NOT found.")
