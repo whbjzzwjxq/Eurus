@@ -17,8 +17,7 @@ from halmos.sevm import *
 from halmos.utils import NamedTimer, color_good, color_warn, hexify
 from halmos.warnings import *
 
-from .solidity_builder import (BenchmarkBuilder, Synthesizer,
-                               get_sketch_by_func_name)
+from .solidity_builder import BenchmarkBuilder, Synthesizer, get_sketch_by_func_name
 from .verifier import verify_model
 
 StrModel = Dict[str, str]
@@ -799,6 +798,7 @@ def gen_model_from_sexpr(fn_args: GenModelArgs) -> ModelWithContext:
 def is_unknown(result: CheckSatResult, model: Model) -> bool:
     return result == unknown or (result == sat and not is_model_valid(model))
 
+
 def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
     if args.verbose >= 1:
         print(f"Checking path condition (path id: {idx+1})")
@@ -849,39 +849,75 @@ def gen_model(args: Namespace, idx: int, ex: Exec) -> ModelWithContext:
             f.write(ex.solver.to_smt2())
     else:
         if args.unsat_core:
+            # Doesn't work.
+            # Will update later.
             old_formulas = new_formulas
-            replaced_para = "p_amt1_uint256"
-            for i in range(10):
-                value = 10 ** (18+i)
-                ex.solver = Solver(ctx=ex.solver.ctx)
-                ex.solver.set(timeout=args.solver_timeout_assertion)
+            concretized_param = "p_amt1_uint256"
+            concretized_param_obj = get_parameters_object(ex.solver)[1]
+            value = 1
+            i = 0
+            while res != sat:
+                main_solver = Solver(ctx=ex.solver.ctx)
+                main_solver.set(timeout=args.solver_timeout_assertion)
                 new_formulas = []
                 for f in old_formulas:
-                    n = replace_nodes_dfs(f, lambda n: n.decl().name() == replaced_para, lambda _: BitVecVal(value, 256))
+                    n = replace_nodes_dfs(
+                        f,
+                        lambda n: n.decl().name() == concretized_param,
+                        lambda _: BitVecVal(value, 256),
+                    )
                     new_formulas.append(n)
                 for f_idx, f in enumerate(new_formulas):
-                    ex.solver.assert_and_track(f, f"f{f_idx}")
-                # parameters = get_parameters_object(ex.solver)
-                ex.solver.set(unsat_core=True)
-                res = ex.solver.check()
+                    main_solver.assert_and_track(f, f"f{f_idx}")
+                main_solver.set(unsat_core=True)
+                res = main_solver.check()
                 if res == sat:
-                    model = ex.solver.model()
-                    extra_dict = {replaced_para: hex(value)}
+                    model = main_solver.model()
+                    extra_dict = {concretized_param: hex(value)}
                     break
-                else:
-                    unsat_core = []
-                    for c in ex.solver.unsat_core():
-                        f_idx = int(str(c).removeprefix('f'))
-                        unsat_core.append(old_formulas[f_idx].sexpr())
-                    with open(os.path.join(args.bmk_dir, "result", f"{idx}-{i}-{replaced_para}.unsatcore"), "w") as f:
-                        f.writelines(unsat_core)
+                unsat_core = []
+                unsat_core_strs = []
+                related_params = set()
+                for c in main_solver.unsat_core():
+                    f_idx = int(str(c).removeprefix("f"))
+                    unsat_constraint = old_formulas[f_idx]
+                    unsat_core.append(unsat_constraint)
+                    unsat_core_strs.append(unsat_constraint.sexpr())
+                    related_subnodes = get_subnodes(
+                        unsat_constraint, lambda n: n.decl().name().startswith("p_")
+                    )
+                    related_params.update([n.decl().name() for n in related_subnodes])
+                related_constraints = []
+                for f in old_formulas:
+                    for p in related_params:
+                        if contains_subnode(f, concretized_param) and contains_subnode(
+                            f, p
+                        ):
+                            related_constraints.append(f)
+                sub_solver = Solver(ctx=ex.solver.ctx)
+                sub_solver.set(timeout=args.solver_timeout_assertion)
+                sub_solver.add(*unsat_core)
+                sub_solver.add(*related_constraints)
+                print(sub_solver.sexpr())
+                sub_res = sub_solver.check()
+                if sub_res == unsat:
+                    raise ValueError("Impossible to be unsat!")
+                sub_model = sub_solver.model()
+                value = int(hexify(sub_model[concretized_param_obj]), 16)
+                output_dir = os.path.join(
+                    args.dump_smt_queries,
+                    f"{idx}-{i}-{concretized_param}-unsatcore.smt2",
+                )
+                with open(output_dir, "w") as f:
+                    f.writelines(unsat_core_strs)
+                i += 1
         else:
-            ex.solver = Solver(ctx=ex.solver.ctx)
-            ex.solver.set(timeout=args.solver_timeout_assertion)
-            ex.solver.add(*new_formulas)
-            res = ex.solver.check()
+            main_solver = Solver(ctx=ex.solver.ctx)
+            main_solver.set(timeout=args.solver_timeout_assertion)
+            main_solver.add(*new_formulas)
+            res = main_solver.check()
             if res == sat:
-                model = ex.solver.model()
+                model = main_solver.model()
 
     return package_result(model, idx, res, args, extra_dict)
 
@@ -891,7 +927,7 @@ def package_result(
     idx: int,
     result: CheckSatResult,
     args: Namespace,
-    extra_dict: StrModel
+    extra_dict: StrModel,
 ) -> ModelWithContext:
     if result == sat:
         if args.verbose >= 1:
@@ -904,7 +940,7 @@ def package_result(
             model: StrModel = to_str_model(model, args.print_full_model)
             model.update(extra_dict)
         return ModelWithContext(model, is_valid, idx, result)
-    
+
     elif result == unsat:
         if args.verbose >= 1:
             print(f"  Invalid path; ignored (path id: {idx+1})")

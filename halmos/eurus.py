@@ -49,19 +49,24 @@ def replace_nodes_dfs(
     else:
         raise ValueError("Corner case")
 
-def get_nodes(node: Ast, filter: Callable[[Ast], bool]) -> List[Ast]:
+def get_subnodes(node: Ast, filter: Callable[[Ast], bool]) -> List[Ast]:
     results = []
     if filter(node):
         results.append(node)
     for c in node.children():
-        results.extend(get_nodes(c, filter))
+        results.extend(get_subnodes(c, filter))
     return results
 
 def get_parameters_object(s: Solver) -> List[BitVecRef]:
     formulas = s.assertions()
     results = set()
     for f in formulas:
-        r = get_nodes(f, lambda n: n.decl().name().startswith("p_"))
+        r = get_subnodes(f, lambda n: n.decl().name().startswith("p_"))
         results.update(r)
     results = sorted(list(results), key=lambda r: r.decl().name())
     return results
+
+def contains_subnode(f: Ast, a: str):
+    if f.decl().name() == a:
+        return True
+    return any(contains_subnode(c, a) for c in f.children())

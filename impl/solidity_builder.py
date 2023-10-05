@@ -64,7 +64,7 @@ class BenchmarkBuilder:
         self.erc20_tokens = [name for name, role in self.roles.items() if role.is_erc20]
 
         # Map state_variable name to its type and initial value.
-        self.init_states: Dict[str, Tuple[str, str]] = {}
+        self.init_state: Dict[str, Tuple[str, str]] = {}
 
         # Will print token_users' initial balances.
         self.token_users = [c for c in self.ctrt_names if c in self.roles] + [
@@ -122,7 +122,7 @@ class BenchmarkBuilder:
             type_str, sv_name, sv_val = result
             type_str = type_str.removeprefix(" ")
             sv_name = sv_name.removesuffix(":")
-            self.init_states[sv_name] = (type_str, sv_val)
+            self.init_state[sv_name] = (type_str, sv_val)
             output_str = f"{type_str} {sv_name} = {sv_val};"
             states.append(output_str)
         return states
@@ -208,7 +208,7 @@ class BenchmarkBuilder:
             addr = f"address({u})" if u != "attacker" else u
             for t in self.erc20_tokens:
                 sv_name = f"balanceOf{t}{u}"
-                _, val = self.init_states.get(sv_name, ("uint256", "0"))
+                _, val = self.init_state.get(sv_name, ("uint256", "0"))
                 if val != "0":
                     stmt = f"{t}.transfer({addr}, {sv_name});"
                     all.append(stmt)
