@@ -15,7 +15,12 @@ contract BGLDTest is Test, BlockLoader {
     UniswapV2Factory factory;
     UniswapV2Router router;
     address attacker;
-    address constant owner = address(0x123456);
+    address owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
+    address bgldAddr;
+    address wbnbAddr;
+    address pairAddr;
+    address factoryAddr;
+    address routerAddr;
     uint256 blockTimestamp = 1670859422;
     uint112 reserve0pair = 8795812119540504580;
     uint112 reserve1pair = 231743012965866;
@@ -36,7 +41,9 @@ contract BGLDTest is Test, BlockLoader {
         attacker = address(this);
         vm.startPrank(owner);
         bgld = new BGLD();
+        bgldAddr = address(bgld);
         wbnb = new WBNB();
+        wbnbAddr = address(wbnb);
         pair = new UniswapV2Pair(
             address(wbnb),
             address(bgld),
@@ -47,13 +54,16 @@ contract BGLDTest is Test, BlockLoader {
             price0CumulativeLastpair,
             price1CumulativeLastpair
         );
+        pairAddr = address(pair);
         factory = new UniswapV2Factory(
             address(0xdead),
             address(pair),
             address(0x0),
             address(0x0)
         );
+        factoryAddr = address(factory);
         router = new UniswapV2Router(address(factory), address(0xdead));
+        routerAddr = address(router);
         bgld.mint(100e18);
         // Initialize balances and mock flashloan.
         wbnb.transfer(address(pair), balanceOfwbnbpair);

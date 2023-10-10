@@ -17,7 +17,13 @@ contract MUMUGTest is Test, BlockLoader {
     UniswapV2Router router;
     MuBank mubank;
     address attacker;
-    address constant owner = address(0x123456);
+    address owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
+    address muAddr;
+    address usdceAddr;
+    address pairAddr;
+    address factoryAddr;
+    address routerAddr;
+    address mubankAddr;
     uint256 blockTimestamp = 1670635293;
     uint112 reserve0pair = 110596398651;
     uint112 reserve1pair = 172739951491310439336991;
@@ -40,7 +46,9 @@ contract MUMUGTest is Test, BlockLoader {
         attacker = address(this);
         vm.startPrank(owner);
         mu = new Mu(totalSupplymu);
+        muAddr = address(mu);
         usdce = new USDCE();
+        usdceAddr = address(usdce);
         pair = new UniswapV2Pair(
             address(usdce),
             address(mu),
@@ -51,14 +59,18 @@ contract MUMUGTest is Test, BlockLoader {
             price0CumulativeLastpair,
             price1CumulativeLastpair
         );
+        pairAddr = address(pair);
         factory = new UniswapV2Factory(
             address(0xdead),
             address(pair),
             address(0x0),
             address(0x0)
         );
+        factoryAddr = address(factory);
         router = new UniswapV2Router(address(factory), address(0xdead));
+        routerAddr = address(router);
         mubank = new MuBank(address(router), address(pair), address(mu));
+        mubankAddr = address(mubank);
         // Initialize balances and mock flashloan.
         usdce.transfer(address(pair), balanceOfusdcepair);
         mu.transfer(address(pair), balanceOfmupair);

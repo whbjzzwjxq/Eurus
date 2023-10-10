@@ -15,7 +15,12 @@ contract BIGFITest is Test, BlockLoader {
     UniswapV2Factory factory;
     UniswapV2Router router;
     address attacker;
-    address constant owner = address(0x123456);
+    address owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
+    address bigfiAddr;
+    address usdtAddr;
+    address pairAddr;
+    address factoryAddr;
+    address routerAddr;
     uint256 blockTimestamp = 1679488640;
     uint112 reserve0pair = 107480664198219600542112;
     uint112 reserve1pair = 9310990259680030849404;
@@ -44,7 +49,9 @@ contract BIGFITest is Test, BlockLoader {
             [uint256(4), uint256(4), uint256(4), uint256(50)],
             0x602546D439EA254f3372c3985840750C6B9c6dDB
         );
+        bigfiAddr = address(bigfi);
         usdt = new USDT();
+        usdtAddr = address(usdt);
         pair = new UniswapV2Pair(
             address(usdt),
             address(bigfi),
@@ -55,13 +62,16 @@ contract BIGFITest is Test, BlockLoader {
             price0CumulativeLastpair,
             price1CumulativeLastpair
         );
+        pairAddr = address(pair);
         factory = new UniswapV2Factory(
             address(0xdead),
             address(pair),
             address(0x0),
             address(0x0)
         );
+        factoryAddr = address(factory);
         router = new UniswapV2Router(address(factory), address(0xdead));
+        routerAddr = address(router);
         // Initialize balances and mock flashloan.
         usdt.transfer(address(pair), balanceOfusdtpair);
         bigfi.transfer(address(pair), balanceOfbigfipair);

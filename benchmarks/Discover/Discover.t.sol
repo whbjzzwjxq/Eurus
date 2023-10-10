@@ -17,7 +17,13 @@ contract DiscoverTest is Test, BlockLoader {
     UniswapV2Router router;
     ETHpledge ethpledge;
     address attacker;
-    address constant owner = address(0x123456);
+    address owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
+    address usdtAddr;
+    address discAddr;
+    address pairAddr;
+    address factoryAddr;
+    address routerAddr;
+    address ethpledgeAddr;
     uint256 blockTimestamp = 1654501818;
     uint112 reserve0pair = 19811554285664651588959;
     uint112 reserve1pair = 12147765912566297044558;
@@ -41,7 +47,9 @@ contract DiscoverTest is Test, BlockLoader {
         attacker = address(this);
         vm.startPrank(owner);
         usdt = new USDT();
+        usdtAddr = address(usdt);
         disc = new Discover();
+        discAddr = address(disc);
         pair = new UniswapV2Pair(
             address(usdt),
             address(disc),
@@ -52,13 +60,16 @@ contract DiscoverTest is Test, BlockLoader {
             price0CumulativeLastpair,
             price1CumulativeLastpair
         );
+        pairAddr = address(pair);
         factory = new UniswapV2Factory(
             address(0xdead),
             address(pair),
             address(0x0),
             address(0x0)
         );
+        factoryAddr = address(factory);
         router = new UniswapV2Router(address(factory), address(0xdead));
+        routerAddr = address(router);
         ethpledge = new ETHpledge(
             address(usdt),
             address(disc),
@@ -66,6 +77,7 @@ contract DiscoverTest is Test, BlockLoader {
             address(0xdead),
             address(pair)
         );
+        ethpledgeAddr = address(ethpledge);
         // Initialize balances and mock flashloan.
         usdt.transfer(address(pair), balanceOfusdtpair);
         disc.transfer(address(pair), balanceOfdiscpair);

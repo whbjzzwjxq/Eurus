@@ -15,7 +15,12 @@ contract SheepTest is Test, BlockLoader {
     UniswapV2Factory factory;
     UniswapV2Router router;
     address attacker;
-    address constant owner = address(0x123456);
+    address owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
+    address sheepAddr;
+    address wbnbAddr;
+    address pairAddr;
+    address factoryAddr;
+    address routerAddr;
     uint256 blockTimestamp = 1676025497;
     uint112 reserve0pair = 30014300506936992470;
     uint112 reserve1pair = 38470984903412245858;
@@ -49,7 +54,9 @@ contract SheepTest is Test, BlockLoader {
             address(0x0),
             owner
         );
+        sheepAddr = address(sheep);
         wbnb = new WBNB();
+        wbnbAddr = address(wbnb);
         pair = new UniswapV2Pair(
             address(sheep),
             address(wbnb),
@@ -60,13 +67,16 @@ contract SheepTest is Test, BlockLoader {
             price0CumulativeLastpair,
             price1CumulativeLastpair
         );
+        pairAddr = address(pair);
         factory = new UniswapV2Factory(
             address(0xdead),
             address(pair),
             address(0x0),
             address(0x0)
         );
+        factoryAddr = address(factory);
         router = new UniswapV2Router(address(factory), address(0xdead));
+        routerAddr = address(router);
         // Initialize balances and mock flashloan.
         wbnb.transfer(address(pair), balanceOfwbnbpair);
         sheep.transfer(address(pair), balanceOfsheeppair);

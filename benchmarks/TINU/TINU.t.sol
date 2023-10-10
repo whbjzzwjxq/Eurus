@@ -15,7 +15,12 @@ contract TINUTest is Test, BlockLoader {
     UniswapV2Factory factory;
     UniswapV2Router router;
     address attacker;
-    address constant owner = address(0x123456);
+    address owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
+    address tinuAddr;
+    address wethAddr;
+    address pairAddr;
+    address factoryAddr;
+    address routerAddr;
     uint256 blockTimestamp = 1674717035;
     uint112 reserve0pair = 1781945970074638149262;
     uint112 reserve1pair = 22144561461014981232;
@@ -41,7 +46,9 @@ contract TINUTest is Test, BlockLoader {
             payable(0x9980A74fCBb1936Bc79Ddecbd4148f7511598521),
             payable(0xEBA4a1e0ff3baF18A9D2910874Ffaee11911Cc31)
         );
+        tinuAddr = address(tinu);
         weth = new WETH();
+        wethAddr = address(weth);
         pair = new UniswapV2Pair(
             address(tinu),
             address(weth),
@@ -52,13 +59,16 @@ contract TINUTest is Test, BlockLoader {
             price0CumulativeLastpair,
             price1CumulativeLastpair
         );
+        pairAddr = address(pair);
         factory = new UniswapV2Factory(
             address(0xdead),
             address(pair),
             address(0x0),
             address(0x0)
         );
+        factoryAddr = address(factory);
         router = new UniswapV2Router(address(factory), address(0xdead));
+        routerAddr = address(router);
         tinu.afterDeploy(address(router), address(pair));
         // Initialize balances and mock flashloan.
         weth.transfer(address(pair), balanceOfwethpair);

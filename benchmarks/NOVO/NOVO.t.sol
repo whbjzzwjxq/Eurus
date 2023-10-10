@@ -15,7 +15,12 @@ contract NOVOTest is Test, BlockLoader {
     UniswapV2Factory factory;
     UniswapV2Router router;
     address attacker;
-    address constant owner = address(0x123456);
+    address owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
+    address wbnbAddr;
+    address novoAddr;
+    address pairAddr;
+    address factoryAddr;
+    address routerAddr;
     uint256 blockTimestamp = 1653831935;
     uint112 reserve0pair = 120090152116998645;
     uint112 reserve1pair = 395001031454274158328;
@@ -38,7 +43,9 @@ contract NOVOTest is Test, BlockLoader {
         attacker = address(this);
         vm.startPrank(owner);
         wbnb = new WBNB();
+        wbnbAddr = address(wbnb);
         novo = new NOVO();
+        novoAddr = address(novo);
         pair = new UniswapV2Pair(
             address(novo),
             address(wbnb),
@@ -49,13 +56,16 @@ contract NOVOTest is Test, BlockLoader {
             price0CumulativeLastpair,
             price1CumulativeLastpair
         );
+        pairAddr = address(pair);
         factory = new UniswapV2Factory(
             address(0xdead),
             address(pair),
             address(0x0),
             address(0x0)
         );
+        factoryAddr = address(factory);
         router = new UniswapV2Router(address(factory), address(0xdead));
+        routerAddr = address(router);
         novo.afterDeploy(address(pair));
         // Initialize balances and mock flashloan.
         novo.transfer(address(novo), balanceOfnovonovo);

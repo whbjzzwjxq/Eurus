@@ -15,7 +15,12 @@ contract SGZTest is Test, BlockLoader {
     UniswapV2Factory factory;
     UniswapV2Router router;
     address attacker;
-    address constant owner = address(0x123456);
+    address owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
+    address usdtAddr;
+    address sgzAddr;
+    address pairAddr;
+    address factoryAddr;
+    address routerAddr;
     uint256 blockTimestamp = 1657743400;
     uint112 reserve0pair = 75972570174789479868300310831021;
     uint112 reserve1pair = 90560725378390149771577;
@@ -38,7 +43,9 @@ contract SGZTest is Test, BlockLoader {
         attacker = address(this);
         vm.startPrank(owner);
         usdt = new USDT();
+        usdtAddr = address(usdt);
         sgz = new SGZ(address(usdt));
+        sgzAddr = address(sgz);
         pair = new UniswapV2Pair(
             address(sgz),
             address(usdt),
@@ -49,13 +56,16 @@ contract SGZTest is Test, BlockLoader {
             price0CumulativeLastpair,
             price1CumulativeLastpair
         );
+        pairAddr = address(pair);
         factory = new UniswapV2Factory(
             address(0xdead),
             address(pair),
             address(0x0),
             address(0x0)
         );
+        factoryAddr = address(factory);
         router = new UniswapV2Router(address(factory), address(0xdead));
+        routerAddr = address(router);
         sgz.afterDeploy(address(router), address(pair));
         // Initialize balances and mock flashloan.
         usdt.transfer(address(sgz), balanceOfusdtsgz);

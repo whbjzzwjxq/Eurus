@@ -3,6 +3,8 @@ import subprocess
 from os import path
 from typing import Dict, List, Tuple
 
+from .foundry_toolset import DEFAULT_ACCOUNT
+
 from .config import Config, init_config
 from .dsl import *
 from .synthesizer import Synthesizer
@@ -148,7 +150,8 @@ class BenchmarkBuilder:
         contract_interfaces = [f"{v} {k};" for k, v in self.ctrt_name2cls.items()]
         users = [
             f"address attacker;",
-            "address constant owner = address(0x123456);",
+            f"address owner = address({DEFAULT_ACCOUNT});",
+            *[f"address {c}Addr;" for c in self.ctrt_names],
         ]
         states = self.get_initial_state()
         all = [*contract_interfaces, *users, *states]
@@ -196,6 +199,7 @@ class BenchmarkBuilder:
             else:
                 d_stmt = f"{ctrt_name} = {stmt};"
             all.append(d_stmt)
+            all.append(f"{ctrt_name}Addr = address({ctrt_name});")
 
         all.extend(self.extra_deployments)
 

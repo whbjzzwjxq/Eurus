@@ -15,7 +15,12 @@ contract AESTest is Test, BlockLoader {
     UniswapV2Factory factory;
     UniswapV2Router router;
     address attacker;
-    address constant owner = address(0x123456);
+    address owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
+    address aesAddr;
+    address usdtAddr;
+    address pairAddr;
+    address factoryAddr;
+    address routerAddr;
     uint256 blockTimestamp = 1670403423;
     uint112 reserve0pair = 64026931732834970073285;
     uint112 reserve1pair = 3976072419420817555481090;
@@ -48,7 +53,9 @@ contract AESTest is Test, BlockLoader {
                 0x3777aeec31907057c16F0b4dDC34A6B0a5dC53b6
             ]
         );
+        aesAddr = address(aes);
         usdt = new USDT();
+        usdtAddr = address(usdt);
         pair = new UniswapV2Pair(
             address(usdt),
             address(aes),
@@ -59,13 +66,16 @@ contract AESTest is Test, BlockLoader {
             price0CumulativeLastpair,
             price1CumulativeLastpair
         );
+        pairAddr = address(pair);
         factory = new UniswapV2Factory(
             address(0xdead),
             address(pair),
             address(0x0),
             address(0x0)
         );
+        factoryAddr = address(factory);
         router = new UniswapV2Router(address(factory), address(0xdead));
+        routerAddr = address(router);
         aes.afterDeploy(address(router), address(pair));
         // Initialize balances and mock flashloan.
         usdt.transfer(address(pair), balanceOfusdtpair);

@@ -20,7 +20,15 @@ contract NMBTest is Test, BlockLoader {
     UniswapV2Router router;
     GNIMBStaking Gnimbstaking;
     address attacker;
-    address constant owner = address(0x123456);
+    address owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
+    address nbuAddr;
+    address nimbAddr;
+    address GnimbAddr;
+    address pairnbunimbAddr;
+    address pairnbuGnimbAddr;
+    address factoryAddr;
+    address routerAddr;
+    address GnimbstakingAddr;
     uint256 blockTimestamp = 1670230642;
     uint112 reserve0pairnbuGnimb = 9725236852721155802678243;
     uint112 reserve1pairnbuGnimb = 1016511225892673227992;
@@ -59,8 +67,11 @@ contract NMBTest is Test, BlockLoader {
         attacker = address(this);
         vm.startPrank(owner);
         nbu = new NBU();
+        nbuAddr = address(nbu);
         nimb = new NIMB();
+        nimbAddr = address(nimb);
         Gnimb = new GNIMB();
+        GnimbAddr = address(Gnimb);
         pairnbunimb = new UniswapV2Pair(
             address(nbu),
             address(nimb),
@@ -71,6 +82,7 @@ contract NMBTest is Test, BlockLoader {
             price0CumulativeLastpairnbunimb,
             price1CumulativeLastpairnbunimb
         );
+        pairnbunimbAddr = address(pairnbunimb);
         pairnbuGnimb = new UniswapV2Pair(
             address(Gnimb),
             address(nbu),
@@ -81,13 +93,16 @@ contract NMBTest is Test, BlockLoader {
             price0CumulativeLastpairnbuGnimb,
             price1CumulativeLastpairnbuGnimb
         );
+        pairnbuGnimbAddr = address(pairnbuGnimb);
         factory = new UniswapV2Factory(
             address(0xdead),
             address(pairnbunimb),
             address(pairnbuGnimb),
             address(0x0)
         );
+        factoryAddr = address(factory);
         router = new UniswapV2Router(address(factory), address(0xdead));
+        routerAddr = address(router);
         Gnimbstaking = new GNIMBStaking(
             address(nbu),
             address(nimb),
@@ -95,6 +110,7 @@ contract NMBTest is Test, BlockLoader {
             address(router),
             50
         );
+        GnimbstakingAddr = address(Gnimbstaking);
         Gnimb.transfer(address(Gnimbstaking), 1500000 ether);
         Gnimb.transfer(attacker, 150000 ether);
         vm.stopPrank();
