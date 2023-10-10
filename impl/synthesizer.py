@@ -235,15 +235,11 @@ class Synthesizer:
                 continue
             exist_candidates.append(s)
 
-    def output_default(
-        self, flashloan_amount: Decimal, constraints: List[str]
-    ) -> List[str]:
+    def output_default(self, constraints: List[str]) -> List[str]:
         func_bodys: List[str] = []
         for idx, c in enumerate(self.candidates):
             func_bodys.extend(
-                c.output(
-                    f"check_cand{str(idx).zfill(ZFILL_SIZE)}", flashloan_amount, constraints
-                )
+                c.output(f"check_cand{str(idx).zfill(ZFILL_SIZE)}", constraints)
             )
         return func_bodys
 

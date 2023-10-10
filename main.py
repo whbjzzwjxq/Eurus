@@ -18,7 +18,7 @@ from impl.utils import (
     resolve_project_name,
 )
 from impl.verifier import verify_model
-from impl.exec import exec_halmos
+from impl.halmos import exec_halmos
 
 parser = argparse.ArgumentParser()
 
@@ -195,6 +195,11 @@ def prepare(bmk_dir: str):
         cache_path,
         "--match-path",
         output_file,
+        "--extra-output",
+        "storageLayout",
+        "metadata",
+        "--root",
+        os.getcwd(),
     ]
     try:
         out = run(cmds, text=True, check=True, capture_output=True)
@@ -213,9 +218,7 @@ def forge_test(bmk_dir: str, timeout: int):
     cmds = [
         "forge",
         "test",
-        "-C",
-        bmk_dir,
-        "-vvvv",
+        "-vvv",
         "--cache-path",
         cache_path,
         "--match-path",

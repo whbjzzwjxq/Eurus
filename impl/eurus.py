@@ -6,6 +6,7 @@ import json
 
 import gurobipy as gp
 from z3 import *
+from impl.foundry_toolset import deploy_contract, init_anvil
 
 from impl.solidity_builder import BenchmarkBuilder, get_sketch_by_func_name
 from impl.synthesizer import Synthesizer
@@ -17,7 +18,7 @@ from impl.utils import (
 )
 from impl.verifier import verify_model
 
-from .hacking_constraints import hacking_constraints
+from .financial_constraints import hacking_constraints
 
 SolverType = Any
 DECIMAL = 18
@@ -276,8 +277,13 @@ def eurus_test(bmk_dir, args):
     smtdiv = f"Eurus_{args.solver}"
     global Z3_OR_GB
     Z3_OR_GB = args.solver == "z3"
-
     VAR.names = set()
+
+    anvil_proc = init_anvil()
+
+    out = deploy_contract(bmk_dir)
+
+    
 
     builder = BenchmarkBuilder(bmk_dir)
     builder.get_initial_state()

@@ -49,3 +49,7 @@ def verify_model(bmk_dir: str, verifiers: List[Tuple[str, Sketch, List[List[str]
     verified_sketches = sorted(verified_sketches)
     os.remove(verify_sol_path)
     return len(verified_sketches) != 0
+
+
+def verify_model_on_anvil(address: str, ):
+    pass

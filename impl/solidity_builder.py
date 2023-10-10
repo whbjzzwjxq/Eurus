@@ -1,6 +1,5 @@
 import os
 import subprocess
-from decimal import Decimal
 from os import path
 from typing import Dict, List, Tuple
 
@@ -73,7 +72,6 @@ class BenchmarkBuilder:
 
         actions = [init_action_from_list(a, True) for a in self.config.groundtruth]
         self.gt_sketch = Sketch(actions)
-        self.flashloan_amount = Decimal(self.gt_sketch.actions[0].amount)
 
     def get_initial_state(self) -> List[str]:
         # Handle the initial states print by foundry.
@@ -249,7 +247,7 @@ class BenchmarkBuilder:
         nop = ["function nop(uint256 amount) internal pure {", "return;", "}"]
 
         return [*printer, *attack_goal, *nop]
-    
+
     def gen_actions(self) -> List[str]:
         # Actions
         actions = []
@@ -322,14 +320,14 @@ class BenchmarkBuilder:
         # Build groundtruth test for forge
         test_gt = self.gt_sketch.output_test("test_gt")
         check_gt = self.gt_sketch.symbolic_copy().output(
-            "check_gt", self.flashloan_amount, self.extra_constraints
+            "check_gt", self.extra_constraints
         )
         all = [*test_gt, *check_gt]
         return all
 
     def gen_candidates(self) -> List[str]:
         synthesizer = Synthesizer(self.config)
-        return synthesizer.output_default(self.flashloan_amount, self.extra_constraints)
+        return synthesizer.output_default(self.extra_constraints)
 
     def output(self, output_path: str):
         results = [

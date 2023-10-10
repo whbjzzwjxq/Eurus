@@ -73,6 +73,11 @@ This test is for testing whether the ground truth works or not.
 forge test -vvv --match-path ./benchmarks/Discover/Discover.t.sol
 ```
 
+### Use anvil
+```bash
+anvil --no-mining --timestamp 0 --base-fee 0 --gas-price 0
+```
+
 ## Tips
 Halmos will use the same cache directory as foundry.toml.
 

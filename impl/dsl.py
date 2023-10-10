@@ -1,12 +1,13 @@
-from decimal import Decimal
-from typing import Dict, List, Any
+from typing import Dict, List
 
-from impl.config import DefiRoles, Config
+from impl.config import Config, DefiRoles
+from impl.financial_constraints import (
+    ACTION_SUMMARY,
+    gen_summary_ratioswap,
+    gen_summary_uniswap,
+)
 
 from .utils import *
-
-LAMBDA_CONSTR = Any
-ACTION_SUMMARY = Tuple[List[str], List[LAMBDA_CONSTR]]
 
 
 class DSLAction:
@@ -128,59 +129,12 @@ class DSLAction:
         elif self.action_name == "swap":
             is_uniswap = roles[self.swap_pairs[0]].is_uniswap
             if is_uniswap:
-                b0a = f"balanceOf{self.asset0}attacker"
-                b0p = f"balanceOf{self.asset0}{self.swap_pairs[0]}"
-                b1a = f"balanceOf{self.asset1}attacker"
-                b1p = f"balanceOf{self.asset1}{self.swap_pairs[0]}"
-                return (
-                    [
-                        b0a,
-                        b0p,
-                        b1a,
-                        b1p,
-                    ],
-                    [
-                        # fmt: off
-                        # Transfer asset0 from attacker to pair
-                        lambda s: s.__getattr__(f"new_{b0a}") == s.__getattr__(f"old_{b0a}") - s.arg_0,
-                        lambda s: s.__getattr__(f"new_{b0p}") == s.__getattr__(f"old_{b0p}") + s.arg_0,
-
-                        # Transfer asset1 from pair to attacker
-                        lambda s: s.__getattr__(f"new_{b1a}") == s.__getattr__(f"old_{b1a}") + s.amtOut,
-                        lambda s: s.__getattr__(f"new_{b1p}") == s.__getattr__(f"old_{b1p}") - s.amtOut * 1000 / 997,
-
-                        # Invariant X * Y == K
-                        lambda s: s.__getattr__(f"new_{b0p}") * s.__getattr__(f"new_{b1p}") == s.__getattr__(f"old_{b0p}") * s.__getattr__(f"old_{b1p}"),
-                        # fmt: on
-                    ],
+                return gen_summary_uniswap(
+                    self.swap_pairs[0], "attacker", self.asset0, self.asset1, "arg_0"
                 )
             else:
-                oracle = "pair"
-                b0a = f"balanceOf{self.asset0}attacker"
-                b0p = f"balanceOf{self.asset0}{oracle}"
-                b1a = f"balanceOf{self.asset1}attacker"
-                b1p = f"balanceOf{self.asset1}{oracle}"
-                return (
-                    [
-                        b0a,
-                        b0p,
-                        b1a,
-                        b1p,
-                    ],
-                    [
-                        # fmt: off
-                        # Transfer asset0 from attacker to pair
-                        lambda s: s.__getattr__(f"new_{b0a}") == s.__getattr__(f"old_{b0a}") - s.arg_0,
-                        lambda s: s.__getattr__(f"new_{b0p}") == s.__getattr__(f"old_{b0p}") + s.arg_0,
-
-                        # Transfer asset1 from pair to attacker
-                        lambda s: s.__getattr__(f"new_{b1a}") == s.__getattr__(f"old_{b1a}") + s.amtOut,
-                        lambda s: s.__getattr__(f"new_{b1p}") == s.__getattr__(f"old_{b1p}") - s.amtOut,
-
-                        # Invariant Delta(X) / Delta(Y) == X / Y
-                        lambda s: s.amtOut * s.__getattr__(f"old_{b0p}") == s.arg_0 * s.__getattr__(f"old_{b1p}"),
-                        # fmt: on
-                    ],
+                return gen_summary_ratioswap(
+                    self.swap_pairs[0], "pair", "attacker", self.asset0, self.asset1, "arg_0"
                 )
         elif self.action_name == "borrow":
             b0a = f"balanceOf{self.asset0}attacker"
@@ -396,14 +350,13 @@ class Sketch:
     def output(
         self,
         func_name: str,
-        flashloan_amount: Decimal,
         constraints: List[str] = None,
     ) -> List[str]:
         if constraints is None:
             constraints = []
         # Here, all of benchmarks have flashloan.
         constraints = [
-            f"{self.actions[-1].amount} == {self.actions[0].amount} + {int(flashloan_amount * Decimal(0.003))}",
+            f"{self.actions[-1].amount} == {self.actions[0].amount} * 1000 / 997",
             *constraints,
         ]
 
