@@ -177,7 +177,7 @@ contract NOVOTest is Test, BlockLoader {
         printBalance("After step0 ");
         swap_pair_wbnb_novo(wbnb.balanceOf(attacker));
         printBalance("After step1 ");
-        burn_pair_novo(113951614e9);
+        burn_pair_novo(0.113951614e18);
         printBalance("After step2 ");
         sync_pair();
         printBalance("After step3 ");
@@ -195,7 +195,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 51000000000000001);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
@@ -212,7 +212,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 51000000000000001);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
@@ -229,7 +229,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 51000000000000001);
+        vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
@@ -246,7 +246,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 51000000000000001);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
@@ -264,7 +264,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 51000000000000001);
+        vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
@@ -282,7 +282,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 51000000000000001);
+        vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
@@ -302,7 +302,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 51000000000000001);
+        vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
@@ -321,7 +321,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 51000000000000001);
+        vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
@@ -341,7 +341,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 51000000000000001);
+        vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
@@ -361,7 +361,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 51000000000000001);
+        vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
@@ -383,7 +383,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 51000000000000001);
+        vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
@@ -404,7 +404,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 51000000000000001);
+        vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
@@ -426,7 +426,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 51000000000000001);
+        vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
@@ -448,7 +448,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 51000000000000001);
+        vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
@@ -472,7 +472,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
-        vm.assume(amt8 == amt0 + 51000000000000001);
+        vm.assume(amt8 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
@@ -495,7 +495,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
-        vm.assume(amt7 == amt0 + 51000000000000001);
+        vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
@@ -519,7 +519,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
-        vm.assume(amt8 == amt0 + 51000000000000001);
+        vm.assume(amt8 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);

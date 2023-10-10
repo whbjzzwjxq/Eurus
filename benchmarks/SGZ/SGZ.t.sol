@@ -177,7 +177,7 @@ contract SGZTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == amt0 + 300000000000000006);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_sgz(amt1);
         breaklr_pair_sgz();
@@ -192,7 +192,7 @@ contract SGZTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == amt0 + 300000000000000006);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_sgz(amt1);
         breaklr_pair_sgz();
@@ -207,7 +207,7 @@ contract SGZTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == amt0 + 300000000000000006);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_sgz(amt0);
         swap_pair_sgz_usdt(amt1);
         breaklr_pair_sgz();
@@ -223,7 +223,7 @@ contract SGZTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 300000000000000006);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_sgz(amt1);
         breaklr_pair_sgz();
@@ -239,7 +239,7 @@ contract SGZTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == amt0 + 300000000000000006);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_sgz(amt1);
         breaklr_pair_sgz();
@@ -256,7 +256,7 @@ contract SGZTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 300000000000000006);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_sgz(amt0);
         swap_pair_sgz_usdt(amt1);
         breaklr_pair_sgz();
@@ -272,7 +272,7 @@ contract SGZTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == amt0 + 300000000000000006);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_sgz(amt0);
         swap_pair_sgz_usdt(amt1);
         breaklr_pair_sgz();
@@ -289,7 +289,7 @@ contract SGZTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 300000000000000006);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_sgz(amt1);
         breaklr_pair_sgz();
@@ -307,7 +307,7 @@ contract SGZTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 300000000000000006);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_sgz(amt0);
         swap_pair_sgz_usdt(amt1);
         breaklr_pair_sgz();

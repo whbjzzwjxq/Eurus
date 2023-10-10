@@ -2,7 +2,7 @@ import time
 
 from z3 import *
 
-from impl.solidity_builder import BenchmarkBuilder, get_sketch_by_func_name
+from impl.benchmark_builder import BenchmarkBuilder, get_sketch_by_func_name
 from impl.synthesizer import Synthesizer
 from impl.verifier import verify_model
 

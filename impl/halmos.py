@@ -17,7 +17,7 @@ from halmos.sevm import *
 from halmos.utils import NamedTimer, color_good, color_warn, hexify
 from halmos.warnings import *
 
-from .solidity_builder import BenchmarkBuilder, Synthesizer, get_sketch_by_func_name
+from .benchmark_builder import BenchmarkBuilder, Synthesizer, get_sketch_by_func_name
 from .verifier import verify_model
 
 StrModel = Dict[str, str]

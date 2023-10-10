@@ -50,7 +50,7 @@ groundtruth:
   - ["transaction", "Gnimbstaking", "Gnimb", "0"]
   - ["swap", "pairnbunimb", "nbu", "nimb", "nbu.balanceOf(attacker)"]
   - ["swap", "pairnbuGnimb", "Gnimb", "nbu", "Gnimb.balanceOf(attacker)"]
-  - ["swap", "pairnbunimb", "nbu", "nimb", "3 ether"]
+  - ["swap", "pairnbunimb", "nbu", "nimb", "3e18"]
   - ["payback", "nimb", "100000000e18 * 1003 / 1000"]
 
 # Information for search space building.

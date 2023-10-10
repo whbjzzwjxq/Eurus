@@ -6,7 +6,7 @@ from subprocess import run
 from typing import List, Tuple
 
 from .dsl import Sketch
-from .solidity_builder import BenchmarkBuilder
+from .benchmark_builder import BenchmarkBuilder
 from .utils import prepare_subfolder
 
 

@@ -1,23 +1,19 @@
-import re
 import time
 from typing import Any, Callable, Dict, List, Tuple
-
 import json
-
 import gurobipy as gp
 from z3 import *
-from impl.foundry_toolset import deploy_contract, init_anvil
+from .foundry_toolset import deploy_contract, init_anvil
 
-from impl.solidity_builder import BenchmarkBuilder, get_sketch_by_func_name
-from impl.synthesizer import Synthesizer
-from impl.utils import (
+from .benchmark_builder import BenchmarkBuilder, get_sketch_by_func_name
+from .synthesizer import Synthesizer
+from .utils import (
     gen_result_paths,
     get_bmk_dirs,
     prepare_subfolder,
     resolve_project_name,
 )
-from impl.verifier import verify_model
-
+from .verifier import verify_model
 from .financial_constraints import hacking_constraints
 
 SolverType = Any
@@ -210,7 +206,10 @@ class FinancialExecution:
                 post_state[nk] = self._default_var(nk)
                 if pure_k not in write_vars:
                     if Z3_OR_GB:
-                        self.solver.assert_and_track(pre_state[k].var_obj == post_state[nk].var_obj, f"Step: {idx}, State: {k}")
+                        self.solver.assert_and_track(
+                            pre_state[k].var_obj == post_state[nk].var_obj,
+                            f"Step: {idx}, State: {k}",
+                        )
                     else:
                         self.solver.addConstr(
                             pre_state[k].var_obj == post_state[nk].var_obj
@@ -282,8 +281,6 @@ def eurus_test(bmk_dir, args):
     anvil_proc = init_anvil()
 
     out = deploy_contract(bmk_dir)
-
-    
 
     builder = BenchmarkBuilder(bmk_dir)
     builder.get_initial_state()

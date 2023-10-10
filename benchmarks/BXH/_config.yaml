@@ -36,7 +36,7 @@ attack_goal: "usdt.balanceOf(attacker) >= 1e18 + balanceOfusdtattacker"
 groundtruth:
   - ["borrow", "usdt", "2500000e18"]
   - ["swap", "pair", "usdt", "bxh", "usdt.balanceOf(attacker)"]
-  - ["transaction", "bxhstaking", "bxh", "10 ether"]
+  - ["transaction", "bxhstaking", "bxh", "10e18"]
   - ["swap", "pair", "bxh", "usdt", "bxh.balanceOf(attacker)"]
   - ["payback", "usdt", "2500000e18 * 1003 / 1000"]
 

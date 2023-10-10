@@ -1,7 +1,7 @@
 import itertools
 from typing import List, Tuple
 
-from impl.utils import List
+from .utils import List
 
 from .config import Config
 from .dsl import *

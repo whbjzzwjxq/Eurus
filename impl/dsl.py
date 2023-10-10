@@ -1,7 +1,7 @@
 from typing import Dict, List
 
-from impl.config import Config, DefiRoles
-from impl.financial_constraints import (
+from .config import Config, DefiRoles
+from .financial_constraints import (
     ACTION_SUMMARY,
     gen_summary_ratioswap,
     gen_summary_uniswap,
@@ -153,7 +153,7 @@ class DSLAction:
                 [
                     # fmt: off
                     lambda s: s.__getattr__(f"new_{b0a}") == s.__getattr__(f"old_{b0a}") - s.arg_0,
-                    lambda s: s.arg_0 == s.arg_x0 * 1000 / 997,
+                    lambda s: s.arg_0 == s.arg_x0 * 1003 / 1000,
                     # fmt: on
                 ],
             )
@@ -356,7 +356,7 @@ class Sketch:
             constraints = []
         # Here, all of benchmarks have flashloan.
         constraints = [
-            f"{self.actions[-1].amount} == {self.actions[0].amount} * 1000 / 997",
+            f"{self.actions[-1].amount} == {self.actions[0].amount} * 1003 / 1000",
             *constraints,
         ]
 

