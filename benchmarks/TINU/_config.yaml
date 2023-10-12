@@ -22,7 +22,7 @@ extra_actions:
 
 extra_deployments:
   - "tinu.afterDeploy(address(router), address(pair));"
-extra_constraints: []
+extra_statements: []
 
 attack_goal: "weth.balanceOf(attacker) >= 1e18 + balanceOfwethattacker"
 

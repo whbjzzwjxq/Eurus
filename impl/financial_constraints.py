@@ -74,8 +74,8 @@ def gen_summary_ratioswap(
 
 hacking_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
     "NMB": {
-        "transaction_Gnimbstaking_Gnimb": (
-            ["balanceOfGnimbattacker", "balanceOfGnimbGnimbstaking"],
+        "transaction_gnimbstaking_gnimb": (
+            ["balanceOfgnimbattacker", "balanceOfgnimbgnimbstaking"],
             [],
         )
     },

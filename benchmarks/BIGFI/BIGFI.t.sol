@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+import "./AttackContract.sol";
 import "./BIGFI.sol";
 import "@utils/QueryBlockchain.sol";
 import "forge-std/Test.sol";
@@ -14,13 +15,15 @@ contract BIGFITest is Test, BlockLoader {
     UniswapV2Pair pair;
     UniswapV2Factory factory;
     UniswapV2Router router;
+    AttackContract attackContract;
+    address owner;
     address attacker;
-    address owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
     address bigfiAddr;
     address usdtAddr;
     address pairAddr;
     address factoryAddr;
     address routerAddr;
+    address attackContractAddr;
     uint256 blockTimestamp = 1679488640;
     uint112 reserve0pair = 107480664198219600542112;
     uint112 reserve1pair = 9310990259680030849404;
@@ -36,9 +39,7 @@ contract BIGFITest is Test, BlockLoader {
     uint256 balanceOfusdtattacker = 0;
 
     function setUp() public {
-        vm.warp(blockTimestamp);
-        attacker = address(this);
-        vm.startPrank(owner);
+        owner = address(this);
         bigfi = new BIGFI(
             owner,
             "Big finance",
@@ -72,12 +73,14 @@ contract BIGFITest is Test, BlockLoader {
         factoryAddr = address(factory);
         router = new UniswapV2Router(address(factory), address(0xdead));
         routerAddr = address(router);
+        attackContract = new AttackContract();
+        attackContractAddr = address(attackContract);
+        attacker = address(attackContract);
         // Initialize balances and mock flashloan.
         usdt.transfer(address(pair), balanceOfusdtpair);
         bigfi.transfer(address(pair), balanceOfbigfipair);
         usdt.approve(attacker, UINT256_MAX);
         bigfi.approve(attacker, UINT256_MAX);
-        vm.stopPrank();
     }
 
     function printBalance(string memory tips) public {
@@ -118,9 +121,17 @@ contract BIGFITest is Test, BlockLoader {
             bigfi.decimals()
         );
         emit log_string("");
-        emit log_string("Attacker Balances: ");
-        queryERC20BalanceDecimals(address(usdt), attacker, usdt.decimals());
-        queryERC20BalanceDecimals(address(bigfi), attacker, bigfi.decimals());
+        emit log_string("Attackcontract Balances: ");
+        queryERC20BalanceDecimals(
+            address(usdt),
+            address(attackContract),
+            usdt.decimals()
+        );
+        queryERC20BalanceDecimals(
+            address(bigfi),
+            address(attackContract),
+            bigfi.decimals()
+        );
         emit log_string("");
         emit log_string("");
         emit log_string("");
@@ -187,6 +198,7 @@ contract BIGFITest is Test, BlockLoader {
     }
 
     function test_gt() public {
+        vm.startPrank(attacker);
         borrow_usdt(200000e18);
         printBalance("After step0 ");
         swap_pair_usdt_bigfi(usdt.balanceOf(attacker));
@@ -200,6 +212,7 @@ contract BIGFITest is Test, BlockLoader {
         payback_usdt(200600e18);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
+        vm.stopPrank();
     }
 
     function check_gt(
@@ -209,6 +222,7 @@ contract BIGFITest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bigfi(amt1);
@@ -217,6 +231,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_bigfi_usdt(amt3);
         payback_usdt(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand000(
@@ -226,6 +241,7 @@ contract BIGFITest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bigfi(amt1);
@@ -233,6 +249,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_bigfi_usdt(amt3);
         payback_usdt(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand001(
@@ -243,6 +260,7 @@ contract BIGFITest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bigfi(amt1);
@@ -251,6 +269,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_bigfi_usdt(amt4);
         payback_usdt(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand002(
@@ -260,6 +279,7 @@ contract BIGFITest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bigfi(amt1);
@@ -268,6 +288,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_bigfi_usdt(amt3);
         payback_usdt(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand003(
@@ -278,6 +299,7 @@ contract BIGFITest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bigfi(amt1);
@@ -286,6 +308,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_bigfi_usdt(amt4);
         payback_usdt(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand004(
@@ -296,6 +319,7 @@ contract BIGFITest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bigfi(amt1);
@@ -305,6 +329,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_bigfi_usdt(amt4);
         payback_usdt(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand005(
@@ -316,6 +341,7 @@ contract BIGFITest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bigfi(amt1);
@@ -325,6 +351,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_bigfi_usdt(amt5);
         payback_usdt(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand006(
@@ -335,6 +362,7 @@ contract BIGFITest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bigfi(amt1);
@@ -344,6 +372,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_bigfi_usdt(amt4);
         payback_usdt(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand007(
@@ -355,6 +384,7 @@ contract BIGFITest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bigfi(amt1);
@@ -364,6 +394,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_bigfi_usdt(amt5);
         payback_usdt(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand008(
@@ -375,6 +406,7 @@ contract BIGFITest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bigfi(amt1);
@@ -385,6 +417,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_bigfi_usdt(amt5);
         payback_usdt(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand009(
@@ -397,6 +430,7 @@ contract BIGFITest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bigfi(amt1);
@@ -407,6 +441,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_bigfi_usdt(amt6);
         payback_usdt(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand010(
@@ -418,6 +453,7 @@ contract BIGFITest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bigfi(amt1);
@@ -428,6 +464,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_bigfi_usdt(amt5);
         payback_usdt(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand011(
@@ -440,6 +477,7 @@ contract BIGFITest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bigfi(amt1);
@@ -450,6 +488,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_bigfi_usdt(amt6);
         payback_usdt(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand012(
@@ -462,6 +501,7 @@ contract BIGFITest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bigfi(amt1);
@@ -473,6 +513,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_bigfi_usdt(amt6);
         payback_usdt(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand013(
@@ -486,6 +527,7 @@ contract BIGFITest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt8 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bigfi(amt1);
@@ -497,6 +539,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_bigfi_usdt(amt7);
         payback_usdt(amt8);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand014(
@@ -509,6 +552,7 @@ contract BIGFITest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bigfi(amt1);
@@ -520,6 +564,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_bigfi_usdt(amt6);
         payback_usdt(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand015(
@@ -533,6 +578,7 @@ contract BIGFITest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt8 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bigfi(amt1);
@@ -545,5 +591,6 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_bigfi_usdt(amt7);
         payback_usdt(amt8);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 }

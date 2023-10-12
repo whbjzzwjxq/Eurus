@@ -4,52 +4,50 @@ project_name: "NMB"
 ctrt_name2cls:
   - ["nbu", "NBU"]
   - ["nimb", "NIMB"]
-  - ["Gnimb", "GNIMB"]
+  - ["gnimb", "GNIMB"]
   - ["pairnbunimb", "UniswapV2Pair"]
-  - ["pairnbuGnimb", "UniswapV2Pair"]
+  - ["pairnbugnimb", "UniswapV2Pair"]
   - ["factory", "UniswapV2Factory"]
   - ["router", "UniswapV2Router"]
-  - ["Gnimbstaking", "GNIMBStaking"]
+  - ["gnimbstaking", "GNIMBStaking"]
 
 ctrt_name2deploy:
   - ["nbu", "new NBU()"]
   - ["nimb", "new NIMB()"]
-  - ["Gnimb", "new GNIMB()"]
+  - ["gnimb", "new GNIMB()"]
   - ["pairnbunimb", ""]
-  - ["pairnbuGnimb", ""]
+  - ["pairnbugnimb", ""]
   - ["factory", ""]
   - ["router", ""]
   - [
-      "Gnimbstaking",
+      "gnimbstaking",
       "new GNIMBStaking(
       address(nbu),
       address(nimb),
-      address(Gnimb), address(router), 50)",
+      address(gnimb), address(router), 50)",
     ]
 
 extra_actions:
-  - "function transaction_Gnimbstaking_Gnimb(uint256 amount) internal {
-    Gnimbstaking.getReward();
+  - "function transaction_gnimbstaking_gnimb(uint256 amount) internal {
+    gnimbstaking.getReward();
     }"
 
 extra_deployments:
-  - "Gnimb.transfer(address(Gnimbstaking), 1500000 ether);"
-  - "Gnimb.transfer(attacker, 150000 ether);"
-  - "vm.stopPrank();"
-  - "Gnimb.approve(address(Gnimbstaking), type(uint256).max);"
-  - "Gnimbstaking.stake(Gnimb.balanceOf(attacker));"
-  - "vm.warp(blockTimestamp + 8 * 24 * 60 * 60);"
-  - "vm.startPrank(owner);"
-extra_constraints: []
+  - "gnimb.transfer(address(gnimbstaking), 1500000 ether);"
+  - "gnimb.transfer(attacker, 150000 ether);"
+  - "attackContract.setUp(address(gnimb), address(gnimbstaking));"
+
+extra_statements:
+  - "vm.warp(block.timestamp + 8 * 24 * 60 * 60);"
 
 attack_goal: "nbu.balanceOf(attacker) >= 1e18 + balanceOfnbuattacker"
 
 groundtruth:
   - ["borrow", "nimb", "100000000e18"]
   - ["swap", "pairnbunimb", "nimb", "nbu", "nimb.balanceOf(attacker)"]
-  - ["transaction", "Gnimbstaking", "Gnimb", "0"]
+  - ["transaction", "gnimbstaking", "gnimb", "0"]
   - ["swap", "pairnbunimb", "nbu", "nimb", "nbu.balanceOf(attacker)"]
-  - ["swap", "pairnbuGnimb", "Gnimb", "nbu", "Gnimb.balanceOf(attacker)"]
+  - ["swap", "pairnbugnimb", "gnimb", "nbu", "gnimb.balanceOf(attacker)"]
   - ["swap", "pairnbunimb", "nbu", "nimb", "3e18"]
   - ["payback", "nimb", "100000000e18 * 1003 / 1000"]
 
@@ -63,7 +61,7 @@ roles:
     is_asset: true
     is_erc20: true
     is_stablecoin: false
-  "Gnimb":
+  "gnimb":
     is_asset: true
     is_erc20: true
     is_stablecoin: false
@@ -74,15 +72,15 @@ roles:
       "nbu": ["nimb", "nbu"]
       "nimb": ["nimb", "nbu"]
     is_oracle: true
-  "pairnbuGnimb":
+  "pairnbugnimb":
     is_swappair: true
-    uniswap_order: ["Gnimb", "nbu"]
+    uniswap_order: ["gnimb", "nbu"]
     support_swaps:
-      "nbu": ["Gnimb", "nbu"]
-      "Gnimb": ["Gnimb", "nbu"]
+      "nbu": ["gnimb", "nbu"]
+      "gnimb": ["gnimb", "nbu"]
     is_oracle: true
-  "Gnimbstaking":
+  "gnimbstaking":
     is_defientry: true
-    hacked_assets: ["Gnimb"]
+    hacked_assets: ["gnimb"]
 
 pattern: "BuySell Manipulation"

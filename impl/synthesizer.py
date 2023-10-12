@@ -235,14 +235,6 @@ class Synthesizer:
                 continue
             exist_candidates.append(s)
 
-    def output_default(self, constraints: List[str]) -> List[str]:
-        func_bodys: List[str] = []
-        for idx, c in enumerate(self.candidates):
-            func_bodys.extend(
-                c.output(f"check_cand{str(idx).zfill(ZFILL_SIZE)}", constraints)
-            )
-        return func_bodys
-
     def gen_candidates_buysell(self) -> List[Sketch]:
         assets = [k for k, v in self.roles.items() if v.is_asset]
         stable_coins = [k for k, v in self.roles.items() if v.is_stablecoin]

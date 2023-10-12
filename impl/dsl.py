@@ -134,7 +134,12 @@ class DSLAction:
                 )
             else:
                 return gen_summary_ratioswap(
-                    self.swap_pairs[0], "pair", "attacker", self.asset0, self.asset1, "arg_0"
+                    self.swap_pairs[0],
+                    "pair",
+                    "attacker",
+                    self.asset0,
+                    self.asset1,
+                    "arg_0",
                 )
         elif self.action_name == "borrow":
             b0a = f"balanceOf{self.asset0}attacker"
@@ -308,6 +313,24 @@ class Sketch:
     def param_num(self):
         return sum(n.param_num for n in self.pure_actions)
 
+    @property
+    def args(self):
+        r = []
+        for a in self.pure_actions:
+            r.extend(a.args)
+        return r
+
+    def concretize(self, args: List[str]) -> "Sketch":
+        assert len(args) == self.param_num
+        actions = []
+        n = 0
+        for a in self.actions:
+            act_args = args[n : a.param_num]
+            act = DSLAction(a.action_name, a.args_in_name, act_args, True)
+            actions.append(act)
+            n += a.param_num
+        return Sketch(actions)
+
     def __eq__(self, __value: "Sketch") -> bool:
         if self.pure_len != __value.pure_len:
             return False
@@ -331,33 +354,17 @@ class Sketch:
     def check_implemented(self, roles: Dict[str, DefiRoles]) -> bool:
         return all(a.check_implemented(roles) for a in self.pure_actions)
 
-    def output_test(self, func_name: str) -> List[str]:
-        func_body = []
-        for idx, s in enumerate(self.pure_actions):
-            func_body.append(f"{str(s)};")
-            func_body.append(f'printBalance("After step{idx} ");')
-
-        final_assert = 'require(attackGoal(), "Attack failed!");'
-
-        checker = [
-            f"function {func_name}() public " + "{",
-            *func_body,
-            final_assert,
-            "}",
-        ]
-        return checker
-
     def output(
         self,
         func_name: str,
-        constraints: List[str] = None,
+        pre_statements: List[str] = None,
     ) -> List[str]:
-        if constraints is None:
-            constraints = []
+        if pre_statements is None:
+            pre_statements = []
         # Here, all of benchmarks have flashloan.
-        constraints = [
-            f"{self.actions[-1].amount} == {self.actions[0].amount} * 1003 / 1000",
-            *constraints,
+        pre_statements = [
+            f"vm.assume({self.actions[-1].amount} == {self.actions[0].amount} * 1003 / 1000);",
+            *pre_statements,
         ]
 
         params = [f"uint256 amt{i}" for i in range(self.param_num)]
@@ -367,29 +374,38 @@ class Sketch:
         for s in self.pure_actions:
             func_body.append(f"{str(s)};")
 
-        final_assert = "assert(!attackGoal());"
-
         checker = [
             f"function {func_name}({param_str}) public " + "{",
-            *[f"vm.assume({c});" for c in constraints],
+            f"vm.startPrank(attacker);",
+            *pre_statements,
             *func_body,
-            final_assert,
+            "assert(!attackGoal());",
+            f"vm.stopPrank();",
             "}",
         ]
         return checker
 
-    def output_verify(self, func_name: str, args: List[str]) -> List[str]:
-        assert len(args) == self.param_num
+    def output_verify(
+        self,
+        func_name: str,
+        pre_statements: List[str] = None,
+        print_balance: bool = False,
+    ) -> List[str]:
         func_body = []
-        for i, p in enumerate(args):
-            func_body.append(f"uint256 amt{i} = {p};")
-        for s in self.pure_actions:
-            func_body.append(f"{str(s)};")
-        final_require = 'require(attackGoal(), "Attack failed!");'
+        # action must be concrete
+        for idx, a in enumerate(self.pure_actions):
+            if not a.concrete:
+                raise ValueError("Try to verify a sketch with non-concretized actions!")
+            func_body.append(f"{str(a)};")
+            if print_balance:
+                func_body.append(f'printBalance("After step{idx} ");')
         verifier = [
             f"function {func_name}() public " + "{",
+            f"vm.startPrank(attacker);",
+            *pre_statements,
             *func_body,
-            final_require,
+            'require(attackGoal(), "Attack failed!");',
+            f"vm.stopPrank();",
             "}",
         ]
         return verifier

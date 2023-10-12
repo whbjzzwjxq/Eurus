@@ -26,7 +26,7 @@ extra_actions:
 
 extra_deployments: []
 
-extra_constraints: []
+extra_statements: []
 
 attack_goal: "usdce.balanceOf(attacker) >= 1e6 + balanceOfusdceattacker"
 

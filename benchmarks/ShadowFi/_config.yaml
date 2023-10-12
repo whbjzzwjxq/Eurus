@@ -23,7 +23,8 @@ extra_actions:
 extra_deployments:
   - "sdf.afterDeploy(address(router), address(pair));"
 
-extra_constraints: []
+extra_statements:
+  - "vm.warp(blockTimestamp);"
 
 attack_goal: "wbnb.balanceOf(attacker) >= 1e18 + balanceOfwbnbattacker"
 

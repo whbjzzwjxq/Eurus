@@ -30,7 +30,7 @@ extra_actions:
 
 extra_deployments:
   - "bbox.afterDeploy(address(router), address(pair));"
-extra_constraints: []
+extra_statements: []
 
 attack_goal: "wbnb.balanceOf(attacker) >= 1e18 + balanceOfwbnbattacker"
 

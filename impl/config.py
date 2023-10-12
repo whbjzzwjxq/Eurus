@@ -24,7 +24,8 @@ class DefiRoles:
     @property
     def is_uniswap(self) -> bool:
         return len(self.uniswap_order) != 0
-
+    
+AttackCtrtName = "attackContract"
 
 @dataclass
 class Config:
@@ -32,9 +33,14 @@ class Config:
     ctrt_name2cls: List[Tuple[str, str]] = field(default_factory=list)
     ctrt_name2deploy: List[Tuple[str, str]] = field(default_factory=list)
 
+    # Manually encoded implementations for actions
     extra_actions: List[str] = field(default_factory=list)
+
+    # Manually encoded deployments for contracts
     extra_deployments: List[str] = field(default_factory=list)
-    extra_constraints: List[str] = field(default_factory=list)
+
+    # Manually encoded deployments for contracts
+    extra_statements: List[str] = field(default_factory=list)
 
     attack_goal: str = ""
     groundtruth: List[List[str]] = field(default_factory=list)
@@ -48,6 +54,14 @@ class Config:
         for k in keys:
             r = DefiRoles(**self.roles[k])
             self.roles[k] = r
+        self.roles[AttackCtrtName] = DefiRoles()
+        keys = [k for k, _ in self.ctrt_name2cls]
+        if AttackCtrtName not in keys:
+            self.ctrt_name2cls.append((AttackCtrtName, "AttackContract"))
+        
+        keys = [k for k, _ in self.ctrt_name2deploy]
+        if AttackCtrtName not in keys:
+            self.ctrt_name2deploy.append((AttackCtrtName, ""))
 
 
 def init_config(bmk_dir: str) -> Config:

