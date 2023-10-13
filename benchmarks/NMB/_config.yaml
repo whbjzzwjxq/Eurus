@@ -40,7 +40,7 @@ extra_deployments:
 extra_statements:
   - "vm.warp(block.timestamp + 8 * 24 * 60 * 60);"
 
-attack_goal: "nbu.balanceOf(attacker) >= 1e18 + balanceOfnbuattacker"
+attack_goal_str: "nbu"
 
 groundtruth:
   - ["borrow", "nimb", "100000000e18"]

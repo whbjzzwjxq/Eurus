@@ -24,7 +24,7 @@ extra_deployments:
   - "sgz.afterDeploy(address(router), address(pair));"
 extra_statements: []
 
-attack_goal: "usdt.balanceOf(attacker) >= 1e18 + balanceOfusdtattacker"
+attack_goal_str: "usdt"
 
 groundtruth:
   - ["borrow", "usdt", "100e18"]

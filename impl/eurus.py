@@ -1,28 +1,31 @@
 import time
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 import json
 import gurobipy as gp
 from z3 import *
 from .foundry_toolset import LazyStorage, deploy_contract, init_anvil
 
-from .benchmark_builder import BenchmarkBuilder, get_sketch_by_func_name, AttackCtrtName
+from .benchmark_builder import BenchmarkBuilder, get_sketch_by_func_name
 from .synthesizer import Synthesizer
 from .utils import (
     gen_result_paths,
-    get_bmk_dirs,
     prepare_subfolder,
     resolve_project_name,
 )
 from .verifier import verify_model
-from .financial_constraints import hacking_constraints
+from .financial_constraints import (
+    ACTION_SUMMARY,
+    LAMBDA_CONSTR,
+    gen_attack_goal,
+    hacking_constraints,
+)
 
 SolverType = Any
 DECIMAL = 18
 SCALE = 10**DECIMAL
-PROFIT = 10**18 / SCALE
 global Z3_OR_GB
 Z3_OR_GB = True
-TRACK_UNSAT = False
+TRACK_UNSAT = True
 LB = 0
 UB = 2**64 - 1
 VTYPE = gp.GRB.CONTINUOUS
@@ -72,9 +75,20 @@ class VAR:
         return hex(self.as_int)
 
 
-class Storage:
-    def __init__(self, prev_storage: "VarGetter") -> None:
-        pass
+class VarCreator:
+    def __init__(self) -> None:
+        self.var_names = set()
+
+    def __getattr__(self, __name: str) -> int:
+        if __name.startswith("old_"):
+            key = __name.removeprefix("old_")
+        elif __name.startswith("new_"):
+            key = __name.removeprefix("new_")
+        else:
+            key = ""
+        if key != "":
+            self.var_names.add(key)
+        return 1
 
 
 class VarGetter:
@@ -88,9 +102,9 @@ class VarGetter:
         solver: SolverType,
     ) -> None:
         self.idx = idx
+        self.init_state = init_state
         self.pre_state = pre_state
         self.post_state = post_state
-        self.init_state = init_state
         self.params = params
         self.solver = solver
 
@@ -105,6 +119,7 @@ class VarGetter:
             r = self.post_state[key].var_obj
             return r
         elif __name.startswith("arg_"):
+            key = __name.removeprefix("arg_")
             r = self.params[key].var_obj
             return r
         elif __name.startswith("init_"):
@@ -112,17 +127,13 @@ class VarGetter:
             r = self.init_state[key].var_obj
             return r
         else:
+            # Internal variable
             k = __name + str(idx)
-            # internal variable
             if k not in self.pre_state:
                 v = VAR(k, self.solver, None)
                 self.pre_state[k] = v
             r = self.pre_state[k].var_obj
             return r
-
-
-LAMBDA_CONSTR = Callable[[VarGetter], Any]
-ACTION_SUMMARY = Tuple[List[str], List[LAMBDA_CONSTR]]
 
 
 class FinancialAction:
@@ -148,29 +159,30 @@ class FinancialExecution:
         self.sketch = sketch
         self.solver = solver
         self.states: List[Dict[str, VAR]] = []
-        for _ in range(len(sketch) + 1):
-            self.states.append({})
-        self.params: List[VAR] = []
+        self.params: List[Dict[str, VAR]] = []
+        self.all_params: List[VAR] = []
         self.init_state = init_state
         self.attack_goal = attack_goal
 
     def _default_var(self, k: str):
         return VAR(k, self.solver, None)
-    
+
     def add_constraint(self, c: Any, name: str = None):
         if Z3_OR_GB:
             if TRACK_UNSAT:
+                if name is None:
+                    raise ValueError("Name is not given!")
                 self.solver.assert_and_track(c, name)
             else:
                 self.solver.add(c)
         else:
             self.solver.addConstr(c)
 
-    def handle_constraint(
+    def gen_constraint(
         self,
         idx: int,
         func: LAMBDA_CONSTR,
-        param_offset: int,
+        constraint_name: str,
     ):
         init_state = self.states[0]
         pre_state = self.states[idx]
@@ -178,31 +190,66 @@ class FinancialExecution:
             post_state = self.states[idx + 1]
         else:
             post_state = {}
+        if idx < len(self.params):
+            params = self.params[idx]
+        else:
+            params = {}
         getter = VarGetter(
             idx,
+            init_state,
             pre_state,
             post_state,
-            init_state,
-            self.params,
-            param_offset,
+            params,
             self.solver,
         )
         c = func(getter)
-        name = f"Step: {idx}, {str(c)}"
-        self.add_constraint(c, name)
+        self.add_constraint(c, constraint_name)
 
     def execute(self):
-        for k in self.init_state:
-            if k not in self.rw_vars:
-                continue
-            v = self.init_state.get(k, 0)
-            nk = k + str(0)
-            var = VAR(nk, self.solver, int(v))
-            self.states[0][nk] = var
+        # Init params
+        for idx, action in enumerate(self.sketch):
+            # Assume there are two actions written as:
+            # act0(p0, p1), act1(p0).
+            # p0 in act1 is named as p2.
+            # p_x0 in act1 is the actual p0.
+            params = {}
+            param_num = action.param_num
+            for i in range(param_num):
+                param_offset = len(self.all_params)
+                k = f"amt{i + param_offset}"
+                var = self._default_var(k)
+                params[f"{i}"] = var
+                self.all_params.append(var)
+            for idx, p in enumerate(self.all_params):
+                params[f"x{idx}"] = p
+            self.params.append(params)
 
+        # Init storage variables
+        creator = VarCreator()
+        for idx, action in enumerate(self.sketch):
+            for func in action.constraints:
+                try:
+                    _ = func(creator)
+                except Exception:
+                    pass
+        var_names = sorted(list(creator.var_names))
+        for idx in range(len(self.sketch) + 1):
+            s = {}
+            for v in var_names:
+                v_name = v + str(idx)
+                s[v_name] = self._default_var(v_name)
+            self.states.append(s)
+
+        # Generate constraints
+        # Generate constraints for initial storage variables
+        for v in var_names:
+            value = int(self.init_state.get(v))
+            c = VAR(v, self.solver, value).var_obj == self.states[0][v + str(0)].var_obj
+            self.add_constraint(c, f"Initial: {v}")
+
+        # Generate constraints for computation between steps
         for idx, action in enumerate(self.sketch):
             write_vars = action.write_vars
-            param_num = action.param_num
             pre_state = self.states[idx]
             if idx < len(self.states) - 1:
                 post_state = self.states[idx + 1]
@@ -211,30 +258,16 @@ class FinancialExecution:
             for k in pre_state:
                 pure_k = k.removesuffix(str(idx))
                 nk = pure_k + str(idx + 1)
-                post_state[nk] = self._default_var(nk)
                 if pure_k not in write_vars:
-                    if Z3_OR_GB:
-                        if TRACK_UNSAT:
-                            self.solver.assert_and_track(
-                                pre_state[k].var_obj == post_state[nk].var_obj,
-                                f"Step: {idx}, State: {k}",
-                            )
-                        else:
-                            self.solver.add(
-                                pre_state[k].var_obj == post_state[nk].var_obj,
-                            )
-                    else:
-                        self.solver.addConstr(
-                            pre_state[k].var_obj == post_state[nk].var_obj
-                        )
-            param_offset = len(self.params)
-            for i in range(param_num):
-                k = f"amt{i + len(self.params)}"
-                var = self._default_var(k)
-                self.params.append(var)
-            for func in action.constraints:
-                self.handle_constraint(idx, func, param_offset)
-        self.handle_constraint(idx + 1, self.attack_goal, len(self.params))
+                    self.add_constraint(
+                        pre_state[k].var_obj == post_state[nk].var_obj,
+                        f"Step: {idx}, State: {k}",
+                    )
+            for f_idx, func in enumerate(action.constraints):
+                self.gen_constraint(idx, func, f"Step: {idx}, {f_idx}")
+
+        # Generate constraint for attack goal
+        self.gen_constraint(idx + 1, self.attack_goal, "AttackGoal")
 
 
 def setup_solver(timeout: bool):
@@ -259,17 +292,9 @@ def autogen_financial_formula(
     synthesizer = Synthesizer(config)
     project_name = config.project_name
 
-    attack_goal_varstr = config.attack_goal.split("+ ")[1]
-    # fmt: off
-    attack_goal = lambda s: s.__getattr__(f"old_{attack_goal_varstr}") >= s.__getattr__(f"init_{attack_goal_varstr}") + PROFIT
-    # fmt: on
-    # rw_vars = []
-    # for token in builder.erc20_tokens:
-    #     for user in builder.token_users:
-    #         if user != AttackCtrtName:
-    #             rw_vars.append(f"balanceOf{token}{user}")
-    #         else:
-    #             rw_vars.append(f"balanceOf{token}attacker")
+    token, amount = config.attack_goal
+
+    attack_goal = gen_attack_goal(token, amount, SCALE)
 
     action2constraints: Dict[str, ACTION_SUMMARY] = {}
     for sketch in synthesizer.candidates:
@@ -342,7 +367,7 @@ def eurus_test(bmk_dir: str, args):
         if res == sat:
             print(f"Solution is found.")
             param_ints = []
-            for p in exec.params:
+            for p in exec.all_params:
                 v = str(p)
                 print(f"{p.name}: {v}")
                 param_ints.append(v)
@@ -359,7 +384,7 @@ def eurus_test(bmk_dir: str, args):
                             "name": func_name,
                             "num_models": 1,
                             "models": [
-                                {f"p_{p.name}_uint256": str(p) for p in exec.params}
+                                {f"p_{p.name}_uint256": str(p) for p in exec.all_params}
                             ],
                             "time": [timecost, 0, timecost],
                             "feasible": feasible,

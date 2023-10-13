@@ -26,7 +26,7 @@ extra_deployments:
 extra_statements:
   - "vm.warp(blockTimestamp);"
 
-attack_goal: "wbnb.balanceOf(attacker) >= 1e18 + balanceOfwbnbattacker"
+attack_goal_str: "wbnb"
 
 groundtruth:
   - ["borrow", "wbnb", "1e16"]

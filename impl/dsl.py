@@ -5,6 +5,7 @@ from .financial_constraints import (
     ACTION_SUMMARY,
     gen_summary_ratioswap,
     gen_summary_uniswap,
+    gen_summary_transfer,
 )
 
 from .utils import *
@@ -142,36 +143,15 @@ class DSLAction:
                     "arg_0",
                 )
         elif self.action_name == "borrow":
-            b0a = f"balanceOf{self.asset0}attacker"
-            return (
-                [b0a],
-                [
-                    # fmt: off
-                    lambda s: s.__getattr__(f"new_{b0a}") == s.__getattr__(f"old_{b0a}") + s.arg_0,
-                    # fmt: on
-                ],
-            )
+            return gen_summary_transfer("owner", "attacker", self.asset0, "arg_0")
         elif self.action_name == "payback":
-            b0a = f"balanceOf{self.asset0}attacker"
-            return (
-                [b0a],
-                [
-                    # fmt: off
-                    lambda s: s.__getattr__(f"new_{b0a}") == s.__getattr__(f"old_{b0a}") - s.arg_0,
-                    lambda s: s.arg_0 == s.arg_x0 * 1003 / 1000,
-                    # fmt: on
-                ],
+            invariant = lambda s: s.arg_0 == s.arg_x0 * 1003 / 1000
+            write_vars, constraints = gen_summary_transfer(
+                "attacker", "owner", self.asset0, "arg_0"
             )
+            return (write_vars, [*constraints, invariant])
         elif self.action_name == "burn":
-            b0p = f"balanceOf{self.asset0}{self.swap_pairs[0]}"
-            return (
-                [b0p],
-                [
-                    # fmt: off
-                    lambda s: s.__getattr__(f"new_{b0p}") == s.__getattr__(f"old_{b0p}") - s.arg_0,
-                    # fmt: on
-                ],
-            )
+            return gen_summary_transfer("attacker", "0xdead", self.asset0, "arg_0")
         elif self.action_name == "sync":
             return ([], [])
         elif self.action_name == "breaklr":
@@ -325,7 +305,7 @@ class Sketch:
         actions = []
         n = 0
         for a in self.actions:
-            act_args = args[n : n+a.param_num]
+            act_args = args[n : n + a.param_num]
             act = DSLAction(a.action_name, a.args_in_name, act_args, True)
             actions.append(act)
             n += a.param_num

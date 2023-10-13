@@ -32,7 +32,7 @@ extra_actions:
 extra_deployments: []
 extra_statements: []
 
-attack_goal: "usdt.balanceOf(attacker) >= 1e18 + balanceOfusdtattacker"
+attack_goal_str: "usdt"
 
 groundtruth:
   - ["borrow", "disc", "24000e18"]

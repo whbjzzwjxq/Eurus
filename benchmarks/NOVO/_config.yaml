@@ -24,7 +24,7 @@ extra_deployments:
   - "novo.afterDeploy(address(pair));"
 extra_statements: []
 
-attack_goal: "wbnb.balanceOf(attacker) >= 1e18 + balanceOfwbnbattacker"
+attack_goal_str: "wbnb"
 
 groundtruth:
   - ["borrow", "wbnb", "17e18"]

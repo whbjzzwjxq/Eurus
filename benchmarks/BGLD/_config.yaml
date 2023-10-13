@@ -35,7 +35,7 @@ extra_deployments: [bgld.mint(100e18);]
 
 extra_statements: []
 
-attack_goal: "wbnb.balanceOf(attacker) >= 1e18 + balanceOfwbnbattacker"
+attack_goal_str: "wbnb"
 
 groundtruth:
   - ["borrow", "wbnb", "125e18"]

@@ -1,6 +1,7 @@
-from typing import Dict, Any, Tuple, List
+from typing import Callable, Dict, Any, Tuple, List
 
-LAMBDA_CONSTR = Any
+# lambda VarGetter => constraint
+LAMBDA_CONSTR = Callable[[Any], Any]
 ACTION_SUMMARY = Tuple[List[str], List[LAMBDA_CONSTR]]
 
 
@@ -17,8 +18,8 @@ def merge_summary(*summs: ACTION_SUMMARY) -> ACTION_SUMMARY:
 def gen_summary_transfer(
     _from: str, _to: str, token: str, amt: str, percent: float = None
 ) -> ACTION_SUMMARY:
-    bal_from = f"balanceOf{token}{_from}"
-    bal_to = f"balanceOf{token}{_to}"
+    bal_from = f"{token}._balances[{_from}]"
+    bal_to = f"{token}._balances[{_to}]"
     write_vars = [
         bal_from,
         bal_to,
@@ -47,8 +48,8 @@ def gen_summary_uniswap(
 ) -> ACTION_SUMMARY:
     s_in = gen_summary_transfer(user, pair, asset0, amt)
     s_out = gen_summary_transfer(pair, user, asset1, "amtOut", percent=997 / 1000)
-    bal_pair_asset0 = f"balanceOf{asset0}{pair}"
-    bal_pair_asset1 = f"balanceOf{asset1}{pair}"
+    bal_pair_asset0 = f"{asset0}._balances[{pair}]"
+    bal_pair_asset1 = f"{asset1}._balances[{pair}]"
     invariant = [
         lambda s: s.__getattr__(f"new_{bal_pair_asset0}")
         * s.__getattr__(f"new_{bal_pair_asset1}")
@@ -63,13 +64,21 @@ def gen_summary_ratioswap(
 ) -> ACTION_SUMMARY:
     s_in = gen_summary_transfer(user, pair, asset0, amt)
     s_out = gen_summary_transfer(pair, user, asset1, "amtOut")
-    bal_pair_asset0 = f"balanceOf{asset0}{oracle}"
-    bal_pair_asset1 = f"balanceOf{asset1}{oracle}"
+    bal_pair_asset0 = f"{asset0}._balances[{oracle}]"
+    bal_pair_asset1 = f"{asset1}._balances[{oracle}]"
     invariant = [
         lambda s: s.__getattr__("amtOut") * s.__getattr__(f"old_{bal_pair_asset0}")
         == s.__getattr__(f"{amt}") * s.__getattr__(f"old_{bal_pair_asset1}"),
     ]
     return merge_summary(s_in, s_out, ([], invariant))
+
+
+def gen_attack_goal(token: str, amount: str, scale: int) -> LAMBDA_CONSTR:
+    attack_goal_varstr = f"{token}._balances[attacker]"
+    # fmt: off
+    attack_goal = lambda s: s.__getattr__(f"old_{attack_goal_varstr}") >= s.__getattr__(f"init_{attack_goal_varstr}") + int(float(amount)) / scale
+    # fmt: on
+    return attack_goal
 
 
 hacking_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
@@ -81,32 +90,30 @@ hacking_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
     },
     "BXH": {
         "transaction_bxhstaking_bxh": (
-            ["balanceOfusdtattacker", "balanceOfusdtbxhstaking"],
+            ["usdt._balances[attacker]", "usdt.balances[bxhstaking]"],
             [
                 lambda s: s.amtIn == s.arg_0,
                 lambda s: s.amtIn >= 0,
                 lambda s: s.amtIn <= 10,
                 lambda s: s.amountInWithFee == s.amtIn * 10000,
-                lambda s: s.numerator == s.amountInWithFee * s.old_balanceOfusdtpair,
+                lambda s: s.numerator == s.amountInWithFee * s.__getattr__("old_usdt._balances[pair]"),
                 lambda s: s.denominator
-                == s.old_balanceOfbxhpair * 10000 + s.amountInWithFee,
+                == s.__getattr__("old_bxh._balances[pair]") * 10000 + s.amountInWithFee,
                 lambda s: s.amtOut * s.denominator == s.numerator,
-                lambda s: s.new_balanceOfusdtbxhstaking
-                == s.old_balanceOfusdtbxhstaking - s.amtOut,
-                lambda s: s.new_balanceOfusdtattacker
-                == s.old_balanceOfusdtattacker + s.amtOut,
+                lambda s: s.__getattr__("new_usdt._balances[bxhstaking]")
+                == s.__getattr__("old_usdt._balances[bxhstaking]") - s.amtOut,
+                lambda s: s.__getattr__("new_usdt._balances[attacker]")
+                == s.__getattr__("old_usdt._balances[attacker]") + s.amtOut,
             ],
         )
     },
     "MUMUG": {
         "swap_mubank_usdce_mu": (
             [
-                "balanceOfusdtattacker",
+                "usdt._balances[attacker]",
                 "balanceOfusdtbxhstaking",
             ],
-            [
-
-            ]
+            [],
         )
-    }
+    },
 }

@@ -242,15 +242,16 @@ class BenchmarkBuilder:
         printer.append("}")
 
         # Attack goal
-        attack_goal = [
+        token, amount = self.attack_goal
+        attack_goal_func = [
             "function attackGoal() public view returns (bool) {",
-            f"return {self.attack_goal};",
+            f"return {token}.balanceOf(attacker) >= {amount} + balanceOf{token}attacker;",
             "}",
         ]
 
         nop = ["function nop(uint256 amount) internal pure {", "return;", "}"]
 
-        return [*printer, *attack_goal, *nop]
+        return [*printer, *attack_goal_func, *nop]
 
     def gen_actions(self) -> List[str]:
         # Actions
@@ -375,7 +376,9 @@ class BenchmarkBuilder:
                 jdx = str(j).zfill(3)
                 actual_name = f"test_verify_{func_name}_{jdx}"
                 concre_sketch = candidate.concretize(args)
-                results.extend(concre_sketch.output_verify(actual_name, self.extra_statements))
+                results.extend(
+                    concre_sketch.output_verify(actual_name, self.extra_statements)
+                )
         results.extend(["}"])
         with open(output_path, "w") as f:
             for l in results:

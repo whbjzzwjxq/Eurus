@@ -28,7 +28,7 @@ extra_deployments: []
 
 extra_statements: []
 
-attack_goal: "usdce.balanceOf(attacker) >= 1e6 + balanceOfusdceattacker"
+attack_goal_str: "usdce;1e6"
 
 groundtruth:
   - ["borrow", "mu", "99000e18"]

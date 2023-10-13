@@ -24,7 +24,7 @@ extra_deployments:
   - "tinu.afterDeploy(address(router), address(pair));"
 extra_statements: []
 
-attack_goal: "weth.balanceOf(attacker) >= 1e18 + balanceOfwethattacker"
+attack_goal_str: "weth"
 
 groundtruth:
   - ["borrow", "weth", "22e18"]

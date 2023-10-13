@@ -94,7 +94,7 @@ class CastStorageInfo:
     contract: str
 
 
-def parse_cast_storage_info(lines: List[str]):
+def parse_cast_storage_info(lines: List[str]) -> Dict[str, CastStorageInfo]:
     # |Name|Type|Slot|Offset|Bytes|Value|Contract|
     results = {}
     for l in lines:
@@ -182,11 +182,13 @@ def deploy_contract(bmk_dir: str):
     lines = out.stdout.splitlines(keepends=False)
 
     init_storage = parse_cast_storage_info(lines)
-    ctrt_name2addr = {}
+    ctrt_name2addr: Dict[str, str] = {}
 
     for role in config.roles:
         addr_var = init_storage[f"{role}Addr"]
-        ctrt_name2addr[role] = addr_var
+        ctrt_name2addr[role] = int2address(int(addr_var.value))
+    ctrt_name2addr["attacker"] = ctrt_name2addr["attackContract"]
+    ctrt_name2addr["owner"] = address
     return snapshot_id, ctrt_name2addr
 
 
@@ -202,17 +204,12 @@ class LazyStorage:
         "WBNB",
     ]
 
-    def __init__(
-        self, bmk_dir: str, ctrt_name2addr: Dict[str, CastStorageInfo]
-    ) -> None:
+    def __init__(self, bmk_dir: str, ctrt_name2addr: Dict[str, str]) -> None:
         self.bmk_dir = bmk_dir
         self.config = init_config(bmk_dir)
         self.project_name = self.config.project_name
-        self.ctrt_name2addr: Dict[str, str] = {}
+        self.ctrt_name2addr: Dict[str, str] = ctrt_name2addr
         self.ctrt_name2stor_layout: Dict[str, StorageLayout] = {}
-
-        for ctrt_name, stor_info in ctrt_name2addr.items():
-            self.ctrt_name2addr[ctrt_name] = int2address(int(stor_info.value))
 
         cache_path, _ = prepare_subfolder(bmk_dir)
 
@@ -241,7 +238,7 @@ class LazyStorage:
                 compile_output = json.load(f)
                 self.add_layout(ctrt_name, compile_output["storageLayout"])
 
-        self._cache = {}
+        self._cache: Dict[str, str] = {}
 
     def add_layout(self, ctrt_name: str, contract_layout: Dict[str, dict]):
         label_defs = [

@@ -17,15 +17,17 @@ class DefiRoles:
 
     support_swaps: Dict[str, List[str]] = field(default_factory=dict)
     uniswap_order: List[str] = field(default_factory=list)
-    
+
     hacked_assets: List[str] = field(default_factory=list)
     hacked_pairs: List[str] = field(default_factory=list)
 
     @property
     def is_uniswap(self) -> bool:
         return len(self.uniswap_order) != 0
-    
+
+
 AttackCtrtName = "attackContract"
+
 
 @dataclass
 class Config:
@@ -42,9 +44,9 @@ class Config:
     # Manually encoded deployments for contracts
     extra_statements: List[str] = field(default_factory=list)
 
-    attack_goal: str = ""
+    attack_goal_str: str = ""
     groundtruth: List[List[str]] = field(default_factory=list)
-    
+
     # Used for synthesizer
     roles: Dict[str, DefiRoles] = field(default_factory=dict)
     pattern: str = "None"
@@ -58,10 +60,14 @@ class Config:
         keys = [k for k, _ in self.ctrt_name2cls]
         if AttackCtrtName not in keys:
             self.ctrt_name2cls.append((AttackCtrtName, "AttackContract"))
-        
+
         keys = [k for k, _ in self.ctrt_name2deploy]
         if AttackCtrtName not in keys:
             self.ctrt_name2deploy.append((AttackCtrtName, ""))
+        if ";" in self.attack_goal_str:
+            self.attack_goal = tuple(self.attack_goal_str.split(";"))
+        else:
+            self.attack_goal = (self.attack_goal_str, "1e18")
 
 
 def init_config(bmk_dir: str) -> Config:
