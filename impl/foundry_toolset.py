@@ -2,8 +2,17 @@ import os
 from os import path
 from subprocess import Popen, run
 
+from typing import List, Dict, Tuple
+
+from dataclasses import dataclass
+
+import re
+
 import requests
 import json
+
+from impl.storage.read import StorageDescriber, StorageLayout, TypeDescriber, get_var
+from impl.storage.utils import bytes2address, int2address
 
 from .config import init_config
 
@@ -16,19 +25,20 @@ ATTACK_PK = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
 DEFAULT_HOST = "http://127.0.0.1"
 DEFAULT_PORT = "8545"
 
-def init_anvil():
+
+def init_anvil(timestamp: str):
     cmd = [
         "anvil",
         "--timestamp",
-        "0",
+        timestamp,
         "--base-fee",
         "0",
         "--gas-price",
         "0",
         "--code-size-limit",
-        str(10 ** 8),
+        str(10**8),
         "--gas-limit",
-        str(10 ** 8),
+        str(10**8),
     ]
     return Popen(cmd)
 
@@ -38,18 +48,64 @@ def create_snapshot() -> str:
         "id": 1337,
         "jsonrpc": "2.0",
         "method": "evm_snapshot",
-        "params": []
+        "params": [],
     }
     url = f"{DEFAULT_HOST}:{DEFAULT_PORT}"
-    headers = {
-        "Content-Type": "application/json"
-    }
+    headers = {"Content-Type": "application/json"}
     response = requests.post(url, data=json.dumps(payload), headers=headers)
     if response.status_code == 200:
         # snapshot id.
         return response.json()["result"]
     else:
-        raise RuntimeError(f"Create snapshot failed! Error: {response.status_code} - {response.text}")
+        raise RuntimeError(
+            f"Create snapshot failed! Error: {response.status_code} - {response.text}"
+        )
+
+
+def recover_snapshot(idx: str):
+    payload = {
+        "id": 1337,
+        "jsonrpc": "2.0",
+        "method": "evm_revert",
+        "params": [idx],
+    }
+    url = f"{DEFAULT_HOST}:{DEFAULT_PORT}"
+    headers = {"Content-Type": "application/json"}
+    response = requests.post(url, data=json.dumps(payload), headers=headers)
+    if response.status_code == 200:
+        if response.json()["result"]:
+            return
+    else:
+        raise RuntimeError(
+            f"Revert to snapshot: {idx} failed! Error: {response.status_code} - {response.text}"
+        )
+
+
+storage_regex = re.compile(r"\|[\w\s\|]+\|")
+
+
+@dataclass
+class CastStorageInfo:
+    type: str
+    slot: str
+    offset: str
+    bytes: str
+    value: str
+    contract: str
+
+
+def parse_cast_storage_info(lines: List[str]):
+    # |Name|Type|Slot|Offset|Bytes|Value|Contract|
+    results = {}
+    for l in lines:
+        if not storage_regex.match(l):
+            continue
+        record = l.split("|")
+        record = [r.strip() for r in record if r]
+        if record[0] == "Name":
+            continue
+        results[record[0]] = CastStorageInfo(*record[1:])
+    return results
 
 
 def deploy_contract(bmk_dir: str):
@@ -72,7 +128,7 @@ def deploy_contract(bmk_dir: str):
         "metadata",
         "--root",
         os.getcwd(),
-        path.join(bmk_dir, f"{project_name}.t.sol:{project_name}Test")
+        path.join(bmk_dir, f"{project_name}.t.sol:{project_name}Test"),
     ]
     try:
         out = run(cmd, text=True, capture_output=True)
@@ -86,7 +142,7 @@ def deploy_contract(bmk_dir: str):
             address = l.removeprefix("Deployed to: ").strip()
     if address is None:
         raise ValueError("Unknown address for deployment.")
-    
+
     # Run setup
     cmd = [
         "cast",
@@ -96,7 +152,7 @@ def deploy_contract(bmk_dir: str):
         "--private-key",
         DEFAULT_PK,
         "--gas-limit",
-        str(10 ** 8),
+        str(10**8),
         address,
         "setUp()",
         "",
@@ -106,15 +162,128 @@ def deploy_contract(bmk_dir: str):
     except Exception as err:
         print(f"Setup contract:{project_name} failed!")
         raise err
-    
+
     # Run snapshot
     snapshot_id = create_snapshot()
-    
+
     # Query storage to get the address of contracts
     cmd = [
         "cast",
         "storage",
+        "--silent",
         address,
     ]
+    try:
+        out = run(cmd, text=True, capture_output=True)
+    except Exception as err:
+        print(f"Query storage contract:{project_name} failed!")
+        raise err
+
     lines = out.stdout.splitlines(keepends=False)
 
+    init_storage = parse_cast_storage_info(lines)
+    ctrt_name2addr = {}
+
+    for role in config.roles:
+        addr_var = init_storage[f"{role}Addr"]
+        ctrt_name2addr[role] = addr_var
+    return snapshot_id, ctrt_name2addr
+
+
+class LazyStorage:
+    uniswap_pair_ctrt = "UniswapV2Pair"
+    uniswap_factory_ctrt = "UniswapV2Factory"
+    uniswap_router_ctrt = "UniswapV2Router"
+    attack_ctrt = "AttackContract"
+    default_erc20_tokens = [
+        "USDCE",
+        "USDT",
+        "WETH",
+        "WBNB",
+    ]
+
+    def __init__(
+        self, bmk_dir: str, ctrt_name2addr: Dict[str, CastStorageInfo]
+    ) -> None:
+        self.bmk_dir = bmk_dir
+        self.config = init_config(bmk_dir)
+        self.project_name = self.config.project_name
+        self.ctrt_name2addr: Dict[str, str] = {}
+        self.ctrt_name2stor_layout: Dict[str, StorageLayout] = {}
+
+        for ctrt_name, stor_info in ctrt_name2addr.items():
+            self.ctrt_name2addr[ctrt_name] = int2address(int(stor_info.value))
+
+        cache_path, _ = prepare_subfolder(bmk_dir)
+
+        sol_file_cache: dict = {}
+        with open(path.join(cache_path, "solidity-files-cache.json"), "r") as f:
+            sol_file_cache = json.load(f)["files"]
+
+        for ctrt_name, ctrt_filename in self.config.ctrt_name2cls:
+            if ctrt_filename in (
+                self.uniswap_pair_ctrt,
+                self.uniswap_factory_ctrt,
+                self.uniswap_router_ctrt,
+                *self.default_erc20_tokens,
+            ):
+                key = f"lib/contracts/@utils/{ctrt_filename}.sol"
+            else:
+                key = f"benchmarks/{self.project_name}/{ctrt_filename}.sol"
+            compiled_file = list(
+                sol_file_cache[key]["artifacts"][ctrt_filename].values()
+            )[0]
+            source_output = path.join(
+                ".cache",
+                compiled_file,
+            )
+            with open(source_output, "r") as f:
+                compile_output = json.load(f)
+                self.add_layout(ctrt_name, compile_output["storageLayout"])
+
+        self._cache = {}
+
+    def add_layout(self, ctrt_name: str, contract_layout: Dict[str, dict]):
+        label_defs = [
+            StorageDescriber(storage_describer)
+            for storage_describer in contract_layout["storage"]
+        ]
+        type_def_mapping: Dict[str, TypeDescriber] = {}
+        types_layout = contract_layout["types"]
+        for type_name, _ in types_layout.items():
+            type_def_mapping[type_name] = TypeDescriber(type_name, types_layout)
+        self.ctrt_name2stor_layout[ctrt_name] = (label_defs, type_def_mapping)
+
+    def parse_key(self, key: str) -> Tuple[str, str, List[str]]:
+        # A.userInfo[attacker].userId
+        ctrt_name, var = key.split(".", 1)
+
+        # userInfo[attacker]; userId
+        vars = var.split(".")
+        temps = []
+        for v in vars:
+            ks = v.split("[")
+            for k in ks:
+                k = k.strip("]")
+                temps.append(k)
+        var_name = temps[0]
+        keys = []
+        for t in temps[1:]:
+            if t in self.ctrt_name2addr:
+                keys.append(self.ctrt_name2addr[t])
+            else:
+                keys.append(t)
+
+        return ctrt_name, var_name, keys
+
+    def get(self, key: str):
+        if key in self._cache:
+            return self._cache[key]
+        ctrt_name, var_name, keys = self.parse_key(key)
+        if ctrt_name not in self.ctrt_name2addr:
+            raise ValueError(f"Unknown contract: {ctrt_name}")
+        ctrt_addr = self.ctrt_name2addr[ctrt_name]
+        layout = self.ctrt_name2stor_layout[ctrt_name]
+        value = get_var(ctrt_addr, var_name, keys, layout)
+        self._cache[key] = value
+        return value

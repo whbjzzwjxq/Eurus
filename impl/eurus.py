@@ -3,9 +3,9 @@ from typing import Any, Callable, Dict, List, Tuple
 import json
 import gurobipy as gp
 from z3 import *
-from .foundry_toolset import deploy_contract, init_anvil
+from .foundry_toolset import LazyStorage, deploy_contract, init_anvil
 
-from .benchmark_builder import BenchmarkBuilder, get_sketch_by_func_name
+from .benchmark_builder import BenchmarkBuilder, get_sketch_by_func_name, AttackCtrtName
 from .synthesizer import Synthesizer
 from .utils import (
     gen_result_paths,
@@ -22,6 +22,7 @@ SCALE = 10**DECIMAL
 PROFIT = 10**18 / SCALE
 global Z3_OR_GB
 Z3_OR_GB = True
+TRACK_UNSAT = False
 LB = 0
 UB = 2**64 - 1
 VTYPE = gp.GRB.CONTINUOUS
@@ -39,10 +40,14 @@ class VAR:
         if Z3_OR_GB:
             if value is not None:
                 self.var_obj = value / SCALE
-            else:
+            elif TRACK_UNSAT:
                 self.var_obj = Real(name)
                 self.solver.assert_and_track(self.var_obj >= LB, f"LB{len(self.names)}")
                 self.solver.assert_and_track(self.var_obj <= UB, f"UB{len(self.names)}")
+            else:
+                self.var_obj = Real(name)
+                self.solver.add(self.var_obj >= LB)
+                self.solver.add(self.var_obj <= UB)
         else:
             if value is not None:
                 self.var_obj = value / SCALE
@@ -67,15 +72,19 @@ class VAR:
         return hex(self.as_int)
 
 
-class StateGetter:
+class Storage:
+    def __init__(self, prev_storage: "VarGetter") -> None:
+        pass
+
+
+class VarGetter:
     def __init__(
         self,
         idx: int,
+        init_state: Dict[str, VAR],
         pre_state: Dict[str, VAR],
         post_state: Dict[str, VAR],
-        init_state: Dict[str, VAR],
-        params: List[VAR],
-        param_offset: int,
+        params: Dict[str, VAR],
         solver: SolverType,
     ) -> None:
         self.idx = idx
@@ -83,7 +92,6 @@ class StateGetter:
         self.post_state = post_state
         self.init_state = init_state
         self.params = params
-        self.param_offset = param_offset
         self.solver = solver
 
     def __getattr__(self, __name: str) -> Any:
@@ -97,12 +105,7 @@ class StateGetter:
             r = self.post_state[key].var_obj
             return r
         elif __name.startswith("arg_"):
-            idx = __name.removeprefix("arg_")
-            if idx.startswith("x"):
-                idx = int(idx.removeprefix("x"))
-            else:
-                idx = int(idx) + self.param_offset
-            r = self.params[idx].var_obj
+            r = self.params[key].var_obj
             return r
         elif __name.startswith("init_"):
             key = __name.removeprefix("init_") + str(0)
@@ -118,7 +121,7 @@ class StateGetter:
             return r
 
 
-LAMBDA_CONSTR = Callable[[StateGetter], Any]
+LAMBDA_CONSTR = Callable[[VarGetter], Any]
 ACTION_SUMMARY = Tuple[List[str], List[LAMBDA_CONSTR]]
 
 
@@ -139,14 +142,12 @@ class FinancialExecution:
         self,
         sketch: List[FinancialAction],
         solver: SolverType,
-        init_state: Dict[str, int],
+        init_state: LazyStorage,
         attack_goal: LAMBDA_CONSTR,
-        rw_vars: List[str],
     ) -> None:
         self.sketch = sketch
         self.solver = solver
         self.states: List[Dict[str, VAR]] = []
-        self.rw_vars = rw_vars
         for _ in range(len(sketch) + 1):
             self.states.append({})
         self.params: List[VAR] = []
@@ -155,6 +156,15 @@ class FinancialExecution:
 
     def _default_var(self, k: str):
         return VAR(k, self.solver, None)
+    
+    def add_constraint(self, c: Any, name: str = None):
+        if Z3_OR_GB:
+            if TRACK_UNSAT:
+                self.solver.assert_and_track(c, name)
+            else:
+                self.solver.add(c)
+        else:
+            self.solver.addConstr(c)
 
     def handle_constraint(
         self,
@@ -168,7 +178,7 @@ class FinancialExecution:
             post_state = self.states[idx + 1]
         else:
             post_state = {}
-        getter = StateGetter(
+        getter = VarGetter(
             idx,
             pre_state,
             post_state,
@@ -177,11 +187,9 @@ class FinancialExecution:
             param_offset,
             self.solver,
         )
-        if Z3_OR_GB:
-            c = func(getter)
-            self.solver.assert_and_track(c, f"Step: {idx}, {str(c)}")
-        else:
-            self.solver.addConstr(func(getter))
+        c = func(getter)
+        name = f"Step: {idx}, {str(c)}"
+        self.add_constraint(c, name)
 
     def execute(self):
         for k in self.init_state:
@@ -206,10 +214,15 @@ class FinancialExecution:
                 post_state[nk] = self._default_var(nk)
                 if pure_k not in write_vars:
                     if Z3_OR_GB:
-                        self.solver.assert_and_track(
-                            pre_state[k].var_obj == post_state[nk].var_obj,
-                            f"Step: {idx}, State: {k}",
-                        )
+                        if TRACK_UNSAT:
+                            self.solver.assert_and_track(
+                                pre_state[k].var_obj == post_state[nk].var_obj,
+                                f"Step: {idx}, State: {k}",
+                            )
+                        else:
+                            self.solver.add(
+                                pre_state[k].var_obj == post_state[nk].var_obj,
+                            )
                     else:
                         self.solver.addConstr(
                             pre_state[k].var_obj == post_state[nk].var_obj
@@ -240,7 +253,7 @@ def setup_solver(timeout: bool):
 
 def autogen_financial_formula(
     bmk_dir: str,
-) -> Tuple[LAMBDA_CONSTR, List[str], Dict[str, ACTION_SUMMARY]]:
+) -> Tuple[LAMBDA_CONSTR, Dict[str, ACTION_SUMMARY]]:
     builder = BenchmarkBuilder(bmk_dir)
     config = builder.config
     synthesizer = Synthesizer(config)
@@ -250,10 +263,13 @@ def autogen_financial_formula(
     # fmt: off
     attack_goal = lambda s: s.__getattr__(f"old_{attack_goal_varstr}") >= s.__getattr__(f"init_{attack_goal_varstr}") + PROFIT
     # fmt: on
-    rw_vars = []
-    for token in builder.erc20_tokens:
-        for user in builder.token_users:
-            rw_vars.append(f"balanceOf{token}{user}")
+    # rw_vars = []
+    # for token in builder.erc20_tokens:
+    #     for user in builder.token_users:
+    #         if user != AttackCtrtName:
+    #             rw_vars.append(f"balanceOf{token}{user}")
+    #         else:
+    #             rw_vars.append(f"balanceOf{token}attacker")
 
     action2constraints: Dict[str, ACTION_SUMMARY] = {}
     for sketch in synthesizer.candidates:
@@ -264,10 +280,10 @@ def autogen_financial_formula(
 
     action2constraints.update(hacking_constraints.get(project_name, {}))
 
-    return attack_goal, rw_vars, action2constraints
+    return attack_goal, action2constraints
 
 
-def eurus_test(bmk_dir, args):
+def eurus_test(bmk_dir: str, args):
     timeout: int = args.timeout
     only_gt: bool = args.gt
     start: int = args.start
@@ -278,23 +294,24 @@ def eurus_test(bmk_dir, args):
     Z3_OR_GB = args.solver == "z3"
     VAR.names = set()
 
-    anvil_proc = init_anvil()
-
-    out = deploy_contract(bmk_dir)
-
     builder = BenchmarkBuilder(bmk_dir)
     builder.get_initial_state()
     synthesizer = Synthesizer(builder.config)
     project_name = resolve_project_name(bmk_dir)
     _, result_path = prepare_subfolder(bmk_dir)
 
+    anvil_proc = init_anvil(timestamp=builder.init_state["blockTimestamp"][1])
+
+    snapshot_id, ctrt_name2addr = deploy_contract(bmk_dir)
+
+    init_state = LazyStorage(bmk_dir, ctrt_name2addr)
+
     result_paths = gen_result_paths(
         result_path, only_gt, smtdiv, len(synthesizer.candidates), suffix_spec
     )
     result_paths = result_paths[start:end]
-    init_state = {k: int(v) for k, (_, v) in builder.init_state.items()}
 
-    attack_goal, rw_vars, action_constraints = autogen_financial_formula(bmk_dir)
+    attack_goal, action_constraints = autogen_financial_formula(bmk_dir)
 
     for func_name, output_path, _, _ in result_paths:
         solver = setup_solver(timeout)
@@ -307,7 +324,7 @@ def eurus_test(bmk_dir, args):
             action = FinancialAction(p_num, write_vars, constraints)
             actions.append(action)
 
-        exec = FinancialExecution(actions, solver, init_state, attack_goal, rw_vars)
+        exec = FinancialExecution(actions, solver, init_state, attack_goal)
 
         exec.execute()
 
@@ -355,8 +372,10 @@ def eurus_test(bmk_dir, args):
 
         else:
             print(f"Solution is NOT found.")
-            if Z3_OR_GB:
+            if Z3_OR_GB and TRACK_UNSAT:
                 unsat_core = solver.unsat_core()
                 print("Unsat core:")
                 for assertion in unsat_core:
                     print(assertion)
+
+    anvil_proc.kill()

@@ -42,8 +42,12 @@ def verify_model(bmk_dir: str, verifiers: List[Tuple[str, Sketch, List[List[str]
         print(err)
         return False
     lines = out.stdout.splitlines()
-    result = json.loads(lines[-1])
-    result = list(result.values())[0]["test_results"]
+    try:
+        result = json.loads(lines[-1])
+        result = list(result.values())[0]["test_results"]
+    except Exception as err:
+        print(out.stderr)
+        raise err
     result.pop("test_gt()")
     verified_sketches = [k for k, v in result.items() if v["status"] == "Success"]
     verified_sketches = sorted(verified_sketches)

@@ -325,7 +325,7 @@ class Sketch:
         actions = []
         n = 0
         for a in self.actions:
-            act_args = args[n : a.param_num]
+            act_args = args[n : n+a.param_num]
             act = DSLAction(a.action_name, a.args_in_name, act_args, True)
             actions.append(act)
             n += a.param_num
