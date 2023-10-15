@@ -1,0 +1,24 @@
+{
+    "test_results": {
+        "./benchmarks/MUMUG": [
+            {
+                "name": "check_gt",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x548456ab7b9c7400000",
+                        "p_amt1_uint256": "0x5483e7a5c5ff3800000",
+                        "p_amt2_uint256": "0x2f0382f01cd18400000",
+                        "p_amt3_uint256": "0x54c53f60bbb9d800000"
+                    }
+                ],
+                "time": [
+                    0.25122104201000184,
+                    0,
+                    0.25122104201000184
+                ],
+                "feasible": true
+            }
+        ]
+    }
+}

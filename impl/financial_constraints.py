@@ -103,6 +103,35 @@ def gen_summary_getAmountsOut(
     ]
 
 
+def gen_summary_getAmountsIn(
+    amountIn: str,
+    amountOut: str,
+    reserveIn: str,
+    reserveOut: str,
+    scale: int = 1000,
+    fee: int = 3,
+    suffix: str = "",
+):
+    # Return amountIn
+    # require(amountOut > 0, "UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT");
+    # require(
+    #     reserveIn > 0 && reserveOut > 0,
+    #     "UniswapV2Library: INSUFFICIENT_LIQUIDITY"
+    # );
+    # uint256 numerator = reserveIn * amountOut * 1000;
+    # uint256 denominator = (reserveOut - amountOut) * 997;
+    # amountIn = numerator / denominator + 1;
+    numeratorSuf = f"numeratorSuf{suffix}"
+    denominatorSuf = f"denominator{suffix}"
+    return [
+        # fmt: off
+        lambda s: s.get(numeratorSuf) == s.get(reserveIn) * s.get(amountOut) * scale,
+        lambda s: s.get(denominatorSuf) == (s.get(reserveOut) - s.get(amountOut)) * (scale - fee),
+        lambda s: (s.get(amountIn) - 1) * s.get(denominatorSuf) == s.get(numeratorSuf),
+        # fmt: on
+    ]
+
+
 def gen_summary_uniswap(
     pair: str,
     user: str,
@@ -122,8 +151,12 @@ def gen_summary_uniswap(
     if transfer1 is None:
         transfer1 = gen_summary_transfer
     amtOutSuf = f"amtOut{suffix}"
-    s_in = transfer0(user, pair, asset0, amtIn, percent_in=percent_in0, percent_out=percent_out0)
-    s_out = transfer1(pair, user, asset1, amtOutSuf, percent_in=percent_in1, percent_out=percent_out1)
+    s_in = transfer0(
+        user, pair, asset0, amtIn, percent_in=percent_in0, percent_out=percent_out0
+    )
+    s_out = transfer1(
+        pair, user, asset1, amtOutSuf, percent_in=percent_in1, percent_out=percent_out1
+    )
     bal_pair_asset0 = f"old_{asset0}.balanceOf({pair})"
     bal_pair_asset1 = f"old_{asset1}.balanceOf({pair})"
     extra_constraints = gen_summary_getAmountsOut(
@@ -151,9 +184,13 @@ def gen_summary_ratioswap(
         transfer0 = gen_summary_transfer
     if transfer1 is None:
         transfer1 = gen_summary_transfer
-    s_in = gen_summary_transfer(user, pair, asset0, amtIn, percent_in=percent_in0, percent_out=percent_out0)
+    s_in = gen_summary_transfer(
+        user, pair, asset0, amtIn, percent_in=percent_in0, percent_out=percent_out0
+    )
     amtOutSuf = f"amtOut{suffix}"
-    s_out = gen_summary_transfer(pair, user, asset1, amtOutSuf, percent_in=percent_in1, percent_out=percent_out1)
+    s_out = gen_summary_transfer(
+        pair, user, asset1, amtOutSuf, percent_in=percent_in1, percent_out=percent_out1
+    )
     bal_pair_asset0 = f"{asset0}.balanceOf({oracle})"
     bal_pair_asset1 = f"{asset1}.balanceOf({oracle})"
     invariant = [
@@ -236,7 +273,9 @@ def gen_BXH_transaction_bxhstaking_bxh():
 
 def gen_BGLD_burn_pair_bgld():
     burn_summary = gen_summary_transfer("pair", "dead", "bgld", "arg_0", percent_out=1)
-    burn_summary2 = gen_summary_transfer("attacker", "dead", "bgld", "arg_0", percent_out=1.1)
+    burn_summary2 = gen_summary_transfer(
+        "attacker", "dead", "bgld", "arg_0", percent_out=1.1
+    )
     bal_victim = f"new_bgld.balanceOf(pair)"
     bal_attacker = f"old_bgld.balanceOf(attacker)"
     extra_constraints = [
@@ -244,6 +283,39 @@ def gen_BGLD_burn_pair_bgld():
         lambda s: s.get("arg_0") * 11 <= s.get(bal_attacker),
     ]
     return merge_summary(burn_summary, burn_summary2, ([], extra_constraints))
+
+
+def gen_MUMUG_swap_mubank_usdce_mu():
+    _adjusted_amount = "_adjusted_amount"
+    mu_coin_amount = "mu_coin_amount"
+
+    reserve0 = "old_usdce.balanceOf(pair)"
+    reserve0p = "reserve0"
+    reserve1 = "old_mu.balanceOf(pair)"
+
+    amount = "amount"
+    amountIN = "amountIN"
+    amountOUT = "amountOUT"
+
+    s_in = gen_summary_transfer("attacker", "pair", "usdce", _adjusted_amount)
+    s_out = gen_summary_transfer("pair", "attacker", "mu", mu_coin_amount)
+
+    extra_constraints = [
+        # _adjusted_amount = (amount / (10 ** (18 - _decimals)));
+        lambda s: s.get(_adjusted_amount) == s.get("arg_0") / (10**12),
+        lambda s: s.get(amount) == s.get("arg_0"),
+        # (uint112 reserve0, uint112 reserve1) = Pair(pair_).getReserves(); //MU/USDC.e TJ LP
+        # reserve0 = reserve0 * (10 ** 12);
+        lambda s: s.get(reserve0p) == s.get(reserve0) * (10**12),
+        # uint256 amountIN = router.getAmountIn(amount, reserve1, reserve0);
+        *gen_summary_getAmountsIn(amountIN, amount, reserve1, reserve0p),
+        # uint256 amountOUT = router.getAmountOut(amount, reserve0, reserve1);
+        *gen_summary_getAmountsOut(amount, amountOUT, reserve0p, reserve1, suffix="out"),
+        # uint256 mu_coin_bond_amount = (((((amountIN + amountOUT) * 10)) / 2) / 10);
+        # (uint256 mu_coin_swap_amount, uint256 mu_coin_amount) = _mu_bond_quote(amount);
+        lambda s: s.get(mu_coin_amount) == (s.get(amountIN) + s.get(amountOUT)) / 2,
+    ]
+    return merge_summary(s_in, s_out, ([], extra_constraints))
 
 
 hacking_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
@@ -254,15 +326,16 @@ hacking_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
         "transaction_bxhstaking_bxh": gen_BXH_transaction_bxhstaking_bxh(),
     },
     "BGLD": {
-        "swap_pair_wbnb_bgld": gen_summary_uniswap("pair", "attacker", "wbnb", "bgld", "arg_0", percent_in1=0.9),
-        "swap_pair_bgld_wbnb": gen_summary_uniswap("pair", "attacker", "bgld", "wbnb", "arg_0", percent_out0=1.1),
+        "swap_pair_wbnb_bgld": gen_summary_uniswap(
+            "pair", "attacker", "wbnb", "bgld", "arg_0", percent_in1=0.9
+        ),
+        "swap_pair_bgld_wbnb": gen_summary_uniswap(
+            "pair", "attacker", "bgld", "wbnb", "arg_0", percent_out0=1.1
+        ),
         "burn_pair_bgld": gen_BGLD_burn_pair_bgld(),
     },
     "MUMUG": {
-        "swap_mubank_usdce_mu": (
-            [],
-            [],
-        )
+        "swap_mubank_usdce_mu": gen_MUMUG_swap_mubank_usdce_mu(),
     },
 }
 

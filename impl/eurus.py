@@ -177,6 +177,8 @@ class FinancialExecution:
             if TRACK_UNSAT:
                 if name is None:
                     raise ValueError("Name is not given!")
+                if isinstance(c, bool):
+                    return
                 self.solver.assert_and_track(c, name)
             else:
                 self.solver.add(c)
@@ -213,13 +215,10 @@ class FinancialExecution:
     def execute(self):
         # Init params
         # hack_params = [
-        #     100000000e18,
-        #     100000000e18,
-        #     0,
-        #     162e18,
-        #     266000e18,
-        #     3e18,
-        #     (100000000e18 * 1003) / 1000,
+        #     99000e18,
+        #     99000e18,
+        #     22960e18,
+        #     99297e18,
         # ]
         for idx, action in enumerate(self.sketch):
             # Assume there are two actions written as:
