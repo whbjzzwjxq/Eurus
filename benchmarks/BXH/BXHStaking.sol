@@ -250,7 +250,7 @@ contract BXHStaking is Ownable, ReentrancyGuard{
         require(amountIn > 0, 'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
 
-        uint256 feeBase = 10000;
+        uint256 feeBase = 1000;
 
         uint amountInWithFee = amountIn.mul(feeBase.sub(feeFactor));
         uint numerator = amountInWithFee.mul(reserveOut);
@@ -594,7 +594,7 @@ contract BXHStaking is Ownable, ReentrancyGuard{
         uint256 bonusMin = 0;
         uint256 bonusMax = userAmount;
         require(_amountInToken >= bonusMin && _amountInToken <= bonusMax, "deposit amount need in range");
-        uint256 _fee = 0;
+        uint256 _fee = 3;
         uint256 amountTokenOut = 0;
         (uint112 _reserve0, uint112 _reserve1, ) = IUniswapV2Pair(_pair).getReserves();
         address rewardToken;

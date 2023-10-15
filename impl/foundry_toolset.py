@@ -26,11 +26,11 @@ DEFAULT_HOST = "http://127.0.0.1"
 DEFAULT_PORT = "8545"
 
 
-def init_anvil(timestamp: str):
+def init_anvil(timestamp: int):
     cmd = [
         "anvil",
         "--timestamp",
-        timestamp,
+        str(timestamp),
         "--base-fee",
         "0",
         "--gas-price",
@@ -79,9 +79,22 @@ def recover_snapshot(idx: str):
         raise RuntimeError(
             f"Revert to snapshot: {idx} failed! Error: {response.status_code} - {response.text}"
         )
-
-
-storage_regex = re.compile(r"\|[\w\s\|]+\|")
+    
+def set_nomining():
+    # Run setup
+    cmd = [
+        "cast",
+        "rpc",
+        "evm_setAutomine",
+        "false",
+        "--rpc-url",
+        f"{DEFAULT_HOST}:{DEFAULT_PORT}",
+    ]
+    try:
+        out = run(cmd, text=True, capture_output=True)
+    except Exception as err:
+        print(f"Set nomining failed!")
+        raise err
 
 
 @dataclass
@@ -97,6 +110,7 @@ class CastStorageInfo:
 def parse_cast_storage_info(lines: List[str]) -> Dict[str, CastStorageInfo]:
     # |Name|Type|Slot|Offset|Bytes|Value|Contract|
     results = {}
+    storage_regex = re.compile(r"\|[\w\s\|]+\|")
     for l in lines:
         if not storage_regex.match(l):
             continue
@@ -189,6 +203,7 @@ def deploy_contract(bmk_dir: str):
         ctrt_name2addr[role] = int2address(int(addr_var.value))
     ctrt_name2addr["attacker"] = ctrt_name2addr["attackContract"]
     ctrt_name2addr["owner"] = address
+    ctrt_name2addr["dead"] = "0x000000000000000000000000000000000000dEaD"
     return snapshot_id, ctrt_name2addr
 
 
@@ -204,12 +219,15 @@ class LazyStorage:
         "WBNB",
     ]
 
-    def __init__(self, bmk_dir: str, ctrt_name2addr: Dict[str, str]) -> None:
+    def __init__(
+        self, bmk_dir: str, ctrt_name2addr: Dict[str, str], timestamp: str
+    ) -> None:
         self.bmk_dir = bmk_dir
         self.config = init_config(bmk_dir)
         self.project_name = self.config.project_name
         self.ctrt_name2addr: Dict[str, str] = ctrt_name2addr
         self.ctrt_name2stor_layout: Dict[str, StorageLayout] = {}
+        self.timestamp = timestamp
 
         cache_path, _ = prepare_subfolder(bmk_dir)
 
@@ -251,6 +269,17 @@ class LazyStorage:
             type_def_mapping[type_name] = TypeDescriber(type_name, types_layout)
         self.ctrt_name2stor_layout[ctrt_name] = (label_defs, type_def_mapping)
 
+    def bind_value(self, value_str: str) -> str:
+        if value_str in self.ctrt_name2addr:
+            return self.ctrt_name2addr[value_str]
+        elif value_str.startswith("uint256"):
+            # uint256(0)
+            v = value_str.removeprefix("uint256(").removesuffix(")")
+            v = "0x" + hex(int(v)).removeprefix("0x").zfill(64)
+            return v
+        else:
+            return value_str
+
     def parse_key(self, key: str) -> Tuple[str, str, List[str]]:
         # A.userInfo[attacker].userId
         ctrt_name, var = key.split(".", 1)
@@ -264,23 +293,55 @@ class LazyStorage:
                 k = k.strip("]")
                 temps.append(k)
         var_name = temps[0]
-        keys = []
-        for t in temps[1:]:
-            if t in self.ctrt_name2addr:
-                keys.append(self.ctrt_name2addr[t])
-            else:
-                keys.append(t)
-
+        keys = [self.bind_value(v) for v in temps[1:]]
         return ctrt_name, var_name, keys
 
+    def parse_func_call(self, key: str) -> Tuple[str, str, List[str]]:
+        func_name2sig = {
+            "balanceOf": "balanceOf(address)(uint256)",
+        }
+        # A.balanceOf(pair)
+        ctrt_name, func_call = key.split(".", 1)
+
+        # balanceOf, pair)
+        func_name, func_args = func_call.split("(")
+
+        # pair
+        func_args = func_args.strip(")")
+        func_sig = func_name2sig[func_name]
+        func_args = [self.bind_value(v) for v in func_args.split(",")]
+        return ctrt_name, func_sig, func_args
+
     def get(self, key: str):
+        # A.balanceOf(
+        func_call_regex = re.compile(r"\w*\.\w*\(.*")
+
+        # vm.warp(block.timestamp + )
+        vmwarp_regex = re.compile(r"vm\.warp\((.*)\)")
         if key in self._cache:
             return self._cache[key]
-        ctrt_name, var_name, keys = self.parse_key(key)
-        if ctrt_name not in self.ctrt_name2addr:
-            raise ValueError(f"Unknown contract: {ctrt_name}")
-        ctrt_addr = self.ctrt_name2addr[ctrt_name]
-        layout = self.ctrt_name2stor_layout[ctrt_name]
-        value = get_var(ctrt_addr, var_name, keys, layout)
+        if key == "block.timestamp":
+            value = self.timestamp
+            for stmt in self.config.extra_statements:
+                m = vmwarp_regex.match(stmt)
+                if m:
+                    expr: str = m.groups()[0]
+                    expr = expr.replace("block.timestamp", value)
+                    value = str(eval(expr))
+        elif func_call_regex.match(key):
+            ctrt_name, func_sig, func_args = self.parse_func_call(key)
+            if ctrt_name not in self.ctrt_name2addr:
+                raise ValueError(f"Unknown contract: {ctrt_name}")
+            ctrt_addr = self.ctrt_name2addr[ctrt_name]
+            cmd = ["cast", "call", ctrt_addr, func_sig, *func_args]
+            output = run(cmd, capture_output=True, text=True)
+            value = output.stdout.strip().removesuffix("\n")
+        else:
+            ctrt_name, var_name, keys = self.parse_key(key)
+            if ctrt_name not in self.ctrt_name2addr:
+                raise ValueError(f"Unknown contract: {ctrt_name}")
+            ctrt_addr = self.ctrt_name2addr[ctrt_name]
+            layout = self.ctrt_name2stor_layout[ctrt_name]
+            value = get_var(ctrt_addr, var_name, keys, layout)
         self._cache[key] = value
         return value

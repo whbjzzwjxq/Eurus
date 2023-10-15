@@ -241,17 +241,23 @@ class Getter:
     def __init__(self, ctrt_addr: str, base: bytes):
         self.ctrt_addr = ctrt_addr
         self.base = base
+        self.depth = 0
 
     def get(self, keys: List[str], depth: int, base: bytes) -> str:
         raise NotImplementedError
 
 
 class MappingGetter(Getter):
-    def __init__(self, type_info: TypeDescriber, ctrt_addr: str, base: bytes):
+    def __init__(self, type_info: Mapping, ctrt_addr: str, base: bytes):
         super().__init__(ctrt_addr, base)
-        self.next_getter: Getter = None
-        self.depth = 1
-        self.value_t: ValueType = type_info.value_t
+        if type_info.value_t.is_normal_type():
+            self.next_getter: Getter = None
+            self.depth = 1
+            self.value_t: ValueType = type_info.value_t
+        else:
+            self.next_getter: Getter = type_info.value_t.gen_getter(ctrt_addr, base)
+            self.depth = self.next_getter.depth + 1
+            self.value_t: ValueType = type_info.value_t
         self.is_key_padding = type_info.key_t.type_str not in ("string", "bytes")
 
     def size(self):
@@ -298,7 +304,7 @@ class DynamicByteArrayGetter(Getter):
         if index >= self.size():
             raise Exception("Index out of range")
         if self.depth == 1:
-            return self.final_t.decode(address.hex(), 0, self.ctrt_addr)
+            return self.final_t.decode(self.ctrt_addr, address.hex(), 0)
         else:
             return self.next_getter.get(keys, depth + 1, address)
 
@@ -331,15 +337,15 @@ class StructGetter(Getter):
 
     def get(self, keys: List[str], depth: int, base: bytes):
         cur_key = keys[depth]
-        index = int(cur_key)
+        index = self.members_name.index(cur_key)
         if index >= self.size():
             raise Exception("Index out of range")
-        stor_descri = self.members[index]
-        address = self.count_address(base, stor_descri.slot)
+        stor_info = self.members[index]
+        address = self.count_address(base, stor_info.slot)
         getter = self.members_getter[index]
         if getter is None:
             type_info = self.members_t[index]
-            return type_info.decode(address.hex(), stor_descri.offset, self.ctrt_addr)
+            return type_info.decode(self.ctrt_addr, address.hex(), stor_info.offset)
         else:
             return getter.get(keys, depth + 1, address)
 
@@ -391,8 +397,9 @@ def get_var(
     stor_info = stor_infos[0]
     type_info = type_def_mapping[stor_info.type]
     _type = get_type(type_info, type_def_mapping)
-    result = _type.decode(ctrt_addr, stor_info.slot, stor_info.offset)
-    getter: Getter = _type.gen_getter(ctrt_addr, stor_info.slot)
     if len(keys) != 0:
+        getter: Getter = _type.gen_getter(ctrt_addr, stor_info.slot)
         result = getter.get(keys, 0, slot_num2bytes(stor_info.slot))
+    else:
+        result = _type.decode(ctrt_addr, stor_info.slot, stor_info.offset)
     return result

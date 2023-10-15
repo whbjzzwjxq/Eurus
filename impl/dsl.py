@@ -3,6 +3,8 @@ from typing import Dict, List
 from .config import Config, DefiRoles
 from .financial_constraints import (
     ACTION_SUMMARY,
+    gen_summary_burn,
+    gen_summary_payback,
     gen_summary_ratioswap,
     gen_summary_uniswap,
     gen_summary_transfer,
@@ -145,13 +147,11 @@ class DSLAction:
         elif self.action_name == "borrow":
             return gen_summary_transfer("owner", "attacker", self.asset0, "arg_0")
         elif self.action_name == "payback":
-            invariant = lambda s: s.arg_0 == s.arg_x0 * 1003 / 1000
-            write_vars, constraints = gen_summary_transfer(
-                "attacker", "owner", self.asset0, "arg_0"
+            return gen_summary_payback(
+                "attacker", "owner", self.asset0, "arg_x0", "arg_0"
             )
-            return (write_vars, [*constraints, invariant])
         elif self.action_name == "burn":
-            return gen_summary_transfer("attacker", "0xdead", self.asset0, "arg_0")
+            return gen_summary_burn(self.swap_pairs[0], self.asset0, "arg_0")
         elif self.action_name == "sync":
             return ([], [])
         elif self.action_name == "breaklr":

@@ -3,8 +3,8 @@ from typing import Any, Dict, List, Tuple
 import json
 import gurobipy as gp
 from z3 import *
-from .foundry_toolset import LazyStorage, deploy_contract, init_anvil
-
+from .foundry_toolset import LazyStorage, deploy_contract, init_anvil, set_nomining
+import re
 from .benchmark_builder import BenchmarkBuilder, get_sketch_by_func_name
 from .synthesizer import Synthesizer
 from .utils import (
@@ -18,11 +18,11 @@ from .financial_constraints import (
     LAMBDA_CONSTR,
     gen_attack_goal,
     hacking_constraints,
+    SCALE,
+    DECIMAL,
 )
 
 SolverType = Any
-DECIMAL = 18
-SCALE = 10**DECIMAL
 global Z3_OR_GB
 Z3_OR_GB = True
 TRACK_UNSAT = True
@@ -61,9 +61,14 @@ class VAR:
     def as_float(self) -> float:
         if Z3_OR_GB:
             model = self.solver.model()
-            return (
-                float(model[self.var_obj].as_decimal(DECIMAL).removesuffix("?")) * SCALE
-            )
+            if model[self.var_obj] is None:
+                r = 0
+            else:
+                r = (
+                    float(model[self.var_obj].as_decimal(DECIMAL).removesuffix("?"))
+                    * SCALE
+                )
+            return r
         else:
             return self.var_obj.x * SCALE
 
@@ -79,7 +84,7 @@ class VarCreator:
     def __init__(self) -> None:
         self.var_names = set()
 
-    def __getattr__(self, __name: str) -> int:
+    def get(self, __name: str) -> int:
         if __name.startswith("old_"):
             key = __name.removeprefix("old_")
         elif __name.startswith("new_"):
@@ -108,14 +113,14 @@ class VarGetter:
         self.params = params
         self.solver = solver
 
-    def __getattr__(self, __name: str) -> Any:
+    def get(self, __name: str) -> Any:
         idx = self.idx
         if __name.startswith("old_"):
-            key = __name.removeprefix("old_") + str(idx)
+            key = __name.removeprefix("old_")
             r = self.pre_state[key].var_obj
             return r
         elif __name.startswith("new_"):
-            key = __name.removeprefix("new_") + str(idx + 1)
+            key = __name.removeprefix("new_")
             r = self.post_state[key].var_obj
             return r
         elif __name.startswith("arg_"):
@@ -123,7 +128,7 @@ class VarGetter:
             r = self.params[key].var_obj
             return r
         elif __name.startswith("init_"):
-            key = __name.removeprefix("init_") + str(0)
+            key = __name.removeprefix("init_")
             r = self.init_state[key].var_obj
             return r
         else:
@@ -207,6 +212,15 @@ class FinancialExecution:
 
     def execute(self):
         # Init params
+        # hack_params = [
+        #     100000000e18,
+        #     100000000e18,
+        #     0,
+        #     162e18,
+        #     266000e18,
+        #     3e18,
+        #     (100000000e18 * 1003) / 1000,
+        # ]
         for idx, action in enumerate(self.sketch):
             # Assume there are two actions written as:
             # act0(p0, p1), act1(p0).
@@ -218,6 +232,7 @@ class FinancialExecution:
                 param_offset = len(self.all_params)
                 k = f"amt{i + param_offset}"
                 var = self._default_var(k)
+                # var = VAR(k, self.solver, hack_params[i + param_offset])
                 params[f"{i}"] = var
                 self.all_params.append(var)
             for idx, p in enumerate(self.all_params):
@@ -233,38 +248,32 @@ class FinancialExecution:
                 except Exception:
                     pass
         var_names = sorted(list(creator.var_names))
-        for idx in range(len(self.sketch) + 1):
-            s = {}
-            for v in var_names:
-                v_name = v + str(idx)
-                s[v_name] = self._default_var(v_name)
-            self.states.append(s)
 
-        # Generate constraints
-        # Generate constraints for initial storage variables
+        s = {}
         for v in var_names:
             value = int(self.init_state.get(v))
-            c = VAR(v, self.solver, value).var_obj == self.states[0][v + str(0)].var_obj
-            self.add_constraint(c, f"Initial: {v}")
+            var = VAR(v + str(0), self.solver, value)
+            s[v] = var
+        self.states.append(s)
+
+        # Write to storage variables
+        for idx, action in enumerate(self.sketch):
+            write_vars = action.write_vars
+            # Post state
+            i = idx + 1
+            s = {}
+            for v in var_names:
+                if v in write_vars:
+                    v_name = v + str(i)
+                    s[v] = self._default_var(v_name)
+                else:
+                    s[v] = self.states[idx][v]
+            self.states.append(s)
 
         # Generate constraints for computation between steps
         for idx, action in enumerate(self.sketch):
-            write_vars = action.write_vars
-            pre_state = self.states[idx]
-            if idx < len(self.states) - 1:
-                post_state = self.states[idx + 1]
-            else:
-                post_state = {}
-            for k in pre_state:
-                pure_k = k.removesuffix(str(idx))
-                nk = pure_k + str(idx + 1)
-                if pure_k not in write_vars:
-                    self.add_constraint(
-                        pre_state[k].var_obj == post_state[nk].var_obj,
-                        f"Step: {idx}, State: {k}",
-                    )
             for f_idx, func in enumerate(action.constraints):
-                self.gen_constraint(idx, func, f"Step: {idx}, {f_idx}")
+                self.gen_constraint(idx, func, f"Step{idx}_{f_idx}")
 
         # Generate constraint for attack goal
         self.gen_constraint(idx + 1, self.attack_goal, "AttackGoal")
@@ -281,6 +290,7 @@ def setup_solver(timeout: bool):
         solver.params.NumericFocus = 3
         solver.params.TimeLimit = timeout
         solver.params.NonConvex = 2
+        # solver.Params.Presolve = 0
     return solver
 
 
@@ -325,11 +335,13 @@ def eurus_test(bmk_dir: str, args):
     project_name = resolve_project_name(bmk_dir)
     _, result_path = prepare_subfolder(bmk_dir)
 
-    anvil_proc = init_anvil(timestamp=builder.init_state["blockTimestamp"][1])
+    timestamp = builder.init_state["blockTimestamp"][1]
+
+    anvil_proc = init_anvil(timestamp=int(timestamp) - 1)
 
     snapshot_id, ctrt_name2addr = deploy_contract(bmk_dir)
 
-    init_state = LazyStorage(bmk_dir, ctrt_name2addr)
+    init_state = LazyStorage(bmk_dir, ctrt_name2addr, timestamp)
 
     result_paths = gen_result_paths(
         result_path, only_gt, smtdiv, len(synthesizer.candidates), suffix_spec
@@ -357,11 +369,16 @@ def eurus_test(bmk_dir: str, args):
             print(solver.sexpr())
 
         start_time = time.perf_counter()
-        if Z3_OR_GB:
-            res = solver.check()
-        else:
-            solver.optimize()
-            res = sat if solver.status == gp.GRB.OPTIMAL else unsat
+        try:
+            if Z3_OR_GB:
+                res = solver.check()
+            else:
+                solver.optimize()
+                res = sat if solver.status == gp.GRB.OPTIMAL else unsat
+        except KeyboardInterrupt:
+            print("Stop solving.")
+            anvil_proc.kill()
+            return
         timecost = time.perf_counter() - start_time
         print(f"Timecost is: {timecost}.")
         if res == sat:
@@ -400,7 +417,12 @@ def eurus_test(bmk_dir: str, args):
             if Z3_OR_GB and TRACK_UNSAT:
                 unsat_core = solver.unsat_core()
                 print("Unsat core:")
-                for assertion in unsat_core:
-                    print(assertion)
+                names = [str(assertion) for assertion in unsat_core]
+                imple_regex = re.compile(r"Implies\((.*),.*")
+                for c in solver.assertions():
+                    m = imple_regex.match(str(c))
+                    n = m.groups()[0]
+                    if n in names:
+                        print(c)
 
     anvil_proc.kill()
