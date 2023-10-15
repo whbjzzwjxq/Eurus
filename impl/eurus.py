@@ -339,90 +339,93 @@ def eurus_test(bmk_dir: str, args):
 
     anvil_proc = init_anvil(timestamp=int(timestamp) - 1)
 
-    snapshot_id, ctrt_name2addr = deploy_contract(bmk_dir)
+    try:
+        snapshot_id, ctrt_name2addr = deploy_contract(bmk_dir)
 
-    init_state = LazyStorage(bmk_dir, ctrt_name2addr, timestamp)
+        init_state = LazyStorage(bmk_dir, ctrt_name2addr, timestamp)
 
-    result_paths = gen_result_paths(
-        result_path, only_gt, smtdiv, len(synthesizer.candidates), suffix_spec
-    )
-    result_paths = result_paths[start:end]
+        result_paths = gen_result_paths(
+            result_path, only_gt, smtdiv, len(synthesizer.candidates), suffix_spec
+        )
+        result_paths = result_paths[start:end]
 
-    attack_goal, action_constraints = autogen_financial_formula(bmk_dir)
+        attack_goal, action_constraints = autogen_financial_formula(bmk_dir)
 
-    for func_name, output_path, _, _ in result_paths:
-        solver = setup_solver(timeout)
-        origin_sketch = get_sketch_by_func_name(builder, synthesizer, func_name)
-        action_names = [a.func_sig for a in origin_sketch.pure_actions]
-        param_nums = [a.param_num for a in origin_sketch.pure_actions]
-        actions = []
-        for name, p_num in zip(action_names, param_nums):
-            write_vars, constraints = action_constraints[name]
-            action = FinancialAction(p_num, write_vars, constraints)
-            actions.append(action)
+        for func_name, output_path, _, _ in result_paths:
+            solver = setup_solver(timeout)
+            origin_sketch = get_sketch_by_func_name(builder, synthesizer, func_name)
+            action_names = [a.func_sig for a in origin_sketch.pure_actions]
+            param_nums = [a.param_num for a in origin_sketch.pure_actions]
+            actions = []
+            for name, p_num in zip(action_names, param_nums):
+                write_vars, constraints = action_constraints[name]
+                action = FinancialAction(p_num, write_vars, constraints)
+                actions.append(action)
 
-        exec = FinancialExecution(actions, solver, init_state, attack_goal)
+            exec = FinancialExecution(actions, solver, init_state, attack_goal)
 
-        exec.execute()
+            exec.execute()
 
-        if Z3_OR_GB:
-            print(solver.sexpr())
-
-        start_time = time.perf_counter()
-        try:
             if Z3_OR_GB:
-                res = solver.check()
-            else:
-                solver.optimize()
-                res = sat if solver.status == gp.GRB.OPTIMAL else unsat
-        except KeyboardInterrupt:
-            print("Stop solving.")
-            anvil_proc.kill()
-            return
-        timecost = time.perf_counter() - start_time
-        print(f"Timecost is: {timecost}.")
-        if res == sat:
-            print(f"Solution is found.")
-            param_ints = []
-            for p in exec.all_params:
-                v = str(p)
-                print(f"{p.name}: {v}")
-                param_ints.append(v)
-            model = [param_ints]
-            feasible = verify_model(bmk_dir, [(func_name, origin_sketch, model)])
-            if feasible:
-                print("Result is feasible in realworld!")
-            else:
-                print("Result is NOT feasible in realworld!")
-            result = {
-                "test_results": {
-                    bmk_dir: [
-                        {
-                            "name": func_name,
-                            "num_models": 1,
-                            "models": [
-                                {f"p_{p.name}_uint256": str(p) for p in exec.all_params}
-                            ],
-                            "time": [timecost, 0, timecost],
-                            "feasible": feasible,
-                        }
-                    ]
+                print(solver.sexpr())
+
+            start_time = time.perf_counter()
+            try:
+                if Z3_OR_GB:
+                    res = solver.check()
+                else:
+                    solver.optimize()
+                    res = sat if solver.status == gp.GRB.OPTIMAL else unsat
+            except KeyboardInterrupt:
+                print("Stop solving.")
+                anvil_proc.kill()
+                return
+            timecost = time.perf_counter() - start_time
+            print(f"Timecost is: {timecost}.")
+            if res == sat:
+                print(f"Solution is found.")
+                param_ints = []
+                for p in exec.all_params:
+                    v = str(p)
+                    print(f"{p.name}: {v}")
+                    param_ints.append(v)
+                model = [param_ints]
+                feasible = verify_model(bmk_dir, [(func_name, origin_sketch, model)])
+                if feasible:
+                    print("Result is feasible in realworld!")
+                else:
+                    print("Result is NOT feasible in realworld!")
+                result = {
+                    "test_results": {
+                        bmk_dir: [
+                            {
+                                "name": func_name,
+                                "num_models": 1,
+                                "models": [
+                                    {f"p_{p.name}_uint256": str(p) for p in exec.all_params}
+                                ],
+                                "time": [timecost, 0, timecost],
+                                "feasible": feasible,
+                            }
+                        ]
+                    }
                 }
-            }
-            with open(output_path, "w") as f:
-                json.dump(result, f, indent=4)
+                with open(output_path, "w") as f:
+                    json.dump(result, f, indent=4)
 
-        else:
-            print(f"Solution is NOT found.")
-            if Z3_OR_GB and TRACK_UNSAT:
-                unsat_core = solver.unsat_core()
-                print("Unsat core:")
-                names = [str(assertion) for assertion in unsat_core]
-                imple_regex = re.compile(r"Implies\((.*),.*")
-                for c in solver.assertions():
-                    m = imple_regex.match(str(c))
-                    n = m.groups()[0]
-                    if n in names:
-                        print(c)
-
-    anvil_proc.kill()
+            else:
+                print(f"Solution is NOT found.")
+                if Z3_OR_GB and TRACK_UNSAT:
+                    unsat_core = solver.unsat_core()
+                    print("Unsat core:")
+                    names = [str(assertion) for assertion in unsat_core]
+                    imple_regex = re.compile(r"Implies\((.*),.*")
+                    for c in solver.assertions():
+                        m = imple_regex.match(str(c))
+                        n = m.groups()[0]
+                        if n in names:
+                            print(c)
+        anvil_proc.kill()
+    except Exception as err:
+        anvil_proc.kill()
+        raise err

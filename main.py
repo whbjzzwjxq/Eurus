@@ -213,35 +213,23 @@ def prepare(bmk_dir: str):
 
 def forge_test(bmk_dir: str, timeout: int):
     project_name = resolve_project_name(bmk_dir)
-    test_solfile = path.join(bmk_dir, f"{project_name}_forge.t.sol")
+    test_solfile = path.join(bmk_dir, f"{project_name}.t.sol")
     cache_path, result_path = prepare_subfolder(bmk_dir)
     cmds = [
         "forge",
         "test",
-        "-vvv",
+        "-vvvv",
         "--cache-path",
         cache_path,
         "--match-path",
         test_solfile,
-        "--allow-failure",
+        "--extra-output",
+        "storageLayout",
+        "metadata",
+        "--root",
+        os.getcwd(),
     ]
-    out = {}
-    err = {}
-    timer = time.perf_counter()
-    try:
-        out = run(cmds, timeout=timeout, text=True, check=True, capture_output=True)
-    except TimeoutExpired:
-        err = {"error": "timeout", "details": ""}
-    except Exception as e:
-        err = {"error": "unknown", "details": str(e)}
-    if out:
-        timecost = time.perf_counter() - timer
-        out = {"time": timecost, "result": str(out)}
-        with open(path.join(result_path, "forge_out.json"), "w") as f:
-            json.dump(out, f)
-    if err:
-        with open(path.join(result_path, "forge_err.json"), "w") as f:
-            json.dump(err, f)
+    run(cmds, timeout=timeout)
 
 
 def clean_result(

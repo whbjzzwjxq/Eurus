@@ -8,6 +8,7 @@ DECIMAL = 18
 # DECIMAL = 0
 SCALE = 10**DECIMAL
 
+
 def merge_summary(*summs: ACTION_SUMMARY) -> ACTION_SUMMARY:
     write_vars = []
     constraints = []
@@ -26,7 +27,8 @@ def gen_summary_transfer(
     _to: str,
     token: str,
     amt: str,
-    percent: float = None,
+    percent_in: float = 1,
+    percent_out: float = 1,
 ) -> ACTION_SUMMARY:
     bal_from = f"{token}.balanceOf({_from})"
     bal_to = f"{token}.balanceOf({_to})"
@@ -36,18 +38,11 @@ def gen_summary_transfer(
     ]
     # Return nothing
     # fmt: off
-    if percent:
-        constraints = [
-            # Transfer token
-            lambda s: s.get(f"new_{bal_from}") == s.get(f"old_{bal_from}") - s.get(f"{amt}"),
-            lambda s: s.get(f"new_{bal_to}") == s.get(f"old_{bal_to}") + s.get(f"{amt}") * percent,
-        ]
-    else:
-        constraints = [
-            # Transfer token
-            lambda s: s.get(f"new_{bal_from}") == s.get(f"old_{bal_from}") - s.get(f"{amt}"),
-            lambda s: s.get(f"new_{bal_to}") == s.get(f"old_{bal_to}") + s.get(f"{amt}"),
-        ]
+    constraints = [
+        # Transfer token
+        lambda s: s.get(f"new_{bal_from}") == s.get(f"old_{bal_from}") - s.get(f"{amt}") * percent_out,
+        lambda s: s.get(f"new_{bal_to}") == s.get(f"old_{bal_to}") + s.get(f"{amt}") * percent_in,
+    ]
     # fmt: on
     return write_vars, constraints
 
@@ -68,12 +63,7 @@ def gen_summary_payback(
     return write_vars, [*constraints, interest_rate]
 
 
-def gen_summary_burn(
-    victim: str,
-    asset: str,
-    amt: str,
-    min: int = 2000
-):
+def gen_summary_burn(victim: str, asset: str, amt: str, min: int = 2):
     burn_summary = gen_summary_transfer(victim, "dead", asset, amt)
     bal_victim = f"new_{asset}.balanceOf({victim})"
     extra_constraints = [lambda s: s.get(bal_victim) > min / SCALE]
@@ -122,14 +112,18 @@ def gen_summary_uniswap(
     suffix: str = "",
     transfer0: TransferSignature = None,
     transfer1: TransferSignature = None,
+    percent_in0: float = 1,
+    percent_out0: float = 1,
+    percent_in1: float = 997 / 1000,
+    percent_out1: float = 1,
 ) -> ACTION_SUMMARY:
     if transfer0 is None:
         transfer0 = gen_summary_transfer
     if transfer1 is None:
         transfer1 = gen_summary_transfer
     amtOutSuf = f"amtOut{suffix}"
-    s_in = transfer0(user, pair, asset0, amtIn)
-    s_out = transfer1(pair, user, asset1, amtOutSuf, percent=997 / 1000)
+    s_in = transfer0(user, pair, asset0, amtIn, percent_in=percent_in0, percent_out=percent_out0)
+    s_out = transfer1(pair, user, asset1, amtOutSuf, percent_in=percent_in1, percent_out=percent_out1)
     bal_pair_asset0 = f"old_{asset0}.balanceOf({pair})"
     bal_pair_asset1 = f"old_{asset1}.balanceOf({pair})"
     extra_constraints = gen_summary_getAmountsOut(
@@ -145,18 +139,21 @@ def gen_summary_ratioswap(
     asset0: str,
     asset1: str,
     amtIn: str,
-    percent: float = None,
     suffix: str = "",
     transfer0: TransferSignature = None,
     transfer1: TransferSignature = None,
+    percent_in0: float = 1,
+    percent_out0: float = 1,
+    percent_in1: float = 1,
+    percent_out1: float = 1,
 ) -> ACTION_SUMMARY:
     if transfer0 is None:
         transfer0 = gen_summary_transfer
     if transfer1 is None:
         transfer1 = gen_summary_transfer
-    s_in = gen_summary_transfer(user, pair, asset0, amtIn)
+    s_in = gen_summary_transfer(user, pair, asset0, amtIn, percent_in=percent_in0, percent_out=percent_out0)
     amtOutSuf = f"amtOut{suffix}"
-    s_out = gen_summary_transfer(pair, user, asset1, amtOutSuf, percent=percent)
+    s_out = gen_summary_transfer(pair, user, asset1, amtOutSuf, percent_in=percent_in1, percent_out=percent_out1)
     bal_pair_asset0 = f"{asset0}.balanceOf({oracle})"
     bal_pair_asset1 = f"{asset1}.balanceOf({oracle})"
     invariant = [
@@ -237,6 +234,18 @@ def gen_BXH_transaction_bxhstaking_bxh():
     return merge_summary(reward_summary, transfer_summary)
 
 
+def gen_BGLD_burn_pair_bgld():
+    burn_summary = gen_summary_transfer("pair", "dead", "bgld", "arg_0", percent_out=1)
+    burn_summary2 = gen_summary_transfer("attacker", "dead", "bgld", "arg_0", percent_out=1.1)
+    bal_victim = f"new_bgld.balanceOf(pair)"
+    bal_attacker = f"old_bgld.balanceOf(attacker)"
+    extra_constraints = [
+        lambda s: s.get(bal_victim) > 2 / SCALE,
+        lambda s: s.get("arg_0") * 11 <= s.get(bal_attacker),
+    ]
+    return merge_summary(burn_summary, burn_summary2, ([], extra_constraints))
+
+
 hacking_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
     "NMB": {
         "transaction_gnimbstaking_gnimb": gen_NMB_transaction_gnimbstaking_gnimb(),
@@ -245,7 +254,9 @@ hacking_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
         "transaction_bxhstaking_bxh": gen_BXH_transaction_bxhstaking_bxh(),
     },
     "BGLD": {
-
+        "swap_pair_wbnb_bgld": gen_summary_uniswap("pair", "attacker", "wbnb", "bgld", "arg_0", percent_in1=0.9),
+        "swap_pair_bgld_wbnb": gen_summary_uniswap("pair", "attacker", "bgld", "wbnb", "arg_0", percent_out0=1.1),
+        "burn_pair_bgld": gen_BGLD_burn_pair_bgld(),
     },
     "MUMUG": {
         "swap_mubank_usdce_mu": (
@@ -256,11 +267,6 @@ hacking_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
 }
 
 refine_constraints: Dict[str, Dict[int, List[LAMBDA_CONSTR]]] = {
-    "ShadowFi": {
-
-    },
-    "BXH": {
-
-    },
-
+    "ShadowFi": {},
+    "BXH": {},
 }
