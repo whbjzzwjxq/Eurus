@@ -6,19 +6,19 @@
                 "num_models": 1,
                 "models": [
                     {
-                        "p_amt0_uint256": "0x0",
-                        "p_amt1_uint256": "0x0",
-                        "p_amt2_uint256": "0x1aaa55b69f4d1f0",
-                        "p_amt3_uint256": "0x0",
-                        "p_amt4_uint256": "0x0"
+                        "p_amt0_uint256": "0x97c9ce4cf6d5c0000",
+                        "p_amt1_uint256": "0x97ae0cdf8f86f8000",
+                        "p_amt2_uint256": "0x49f37c70280188",
+                        "p_amt3_uint256": "0x6f05b59d3b2000",
+                        "p_amt4_uint256": "0x983e6118758708000"
                     }
                 ],
                 "time": [
-                    0.0020876670023426414,
+                    0.02643800002988428,
                     0,
-                    0.0020876670023426414
+                    0.02643800002988428
                 ],
-                "feasible": false
+                "feasible": true
             }
         ]
     }
