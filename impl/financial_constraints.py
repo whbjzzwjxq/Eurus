@@ -200,6 +200,42 @@ def gen_summary_ratioswap(
     ]
     return merge_summary(s_in, s_out, ([], invariant))
 
+def gen_uniswap_inv(pair: str, asset0: str, asset1: str, swap_for_1: bool, suffix: str = ""):
+    # uint256 balance0Adjusted = balance0 * 1000 - amount0In * 3;
+    # uint256 balance1Adjusted = balance1 * 1000 - amount1In * 3;
+    # require(
+    #     balance0Adjusted * balance1Adjusted >=
+    #         uint256(_reserve0) * _reserve1 * 1e6,
+    #     "UniswapV2: K"
+    # );
+    new_balance0 = f"new_{asset0}.balanceOf({pair})"
+    new_balance1 = f"new_{asset1}.balanceOf({pair})"
+    old_balance0 = f"old_{asset0}.balanceOf({pair})"
+    old_balance1 = f"old_{asset1}.balanceOf({pair})"
+    amount0In = f"amount0In{suffix}"
+    amount1In = f"amount1In{suffix}"
+    balance0Adjusted = f"balance0Adjusted{suffix}"
+    balance1Adjusted = f"balance1Adjusted{suffix}"
+
+    if swap_for_1:
+        constraints = [
+            lambda s: s.get(amount0In) == s.get(new_balance0) - s.get(old_balance0),
+            lambda s: s.get(amount1In) == 0,
+        ]
+    else:
+        constraints = [
+            lambda s: s.get(amount1In) == s.get(new_balance1) - s.get(old_balance1),
+            lambda s: s.get(amount0In) == 0,
+        ]
+    constraints.extend(
+        [
+            lambda s: s.get(balance0Adjusted) == s.get(new_balance0) * 1000 - s.get(amount0In) * 3,
+            lambda s: s.get(balance1Adjusted) == s.get(new_balance1) * 1000 - s.get(amount1In) * 3,
+            lambda s: s.get(balance0Adjusted) * s.get(balance1Adjusted) >= s.get(old_balance0) * s.get(old_balance1) * 1e6
+        ]
+    )
+    return constraints
+
 
 def gen_attack_goal(token: str, amount: str, scale: int) -> LAMBDA_CONSTR:
     attack_goal_varstr = f"{token}.balanceOf(attacker)"
@@ -318,6 +354,61 @@ def gen_MUMUG_swap_mubank_usdce_mu():
     return merge_summary(s_in, s_out, ([], extra_constraints))
 
 
+def gen_AES_transfer(_from: str, _to: str, token: str, amt: str):
+    if _from == "pair":
+        r = gen_summary_transfer(_from, _to, token, amt, percent_in=0.9, percent_out=0.93)
+    elif _to == "pair":
+        r = gen_summary_transfer(_from, _to, token, amt, percent_in=0.97, percent_out=1)
+    else:
+        r = gen_summary_transfer(_from, _to, token, amt)
+    return r
+
+def gen_AES_swap_pair_usdt_aes():
+    user = "attacker"
+    pair = "pair"
+    asset0 = "usdt"
+    asset1 = "aes"
+    amtIn = "arg_0"
+    amtOutSuf = f"amtOut"
+    s_in = gen_summary_transfer(user, pair, asset0, amtIn)
+    s_out = gen_AES_transfer(pair, user, asset1, amtOutSuf)
+    bal_pair_asset0 = f"old_{asset0}.balanceOf({pair})"
+    bal_pair_asset1 = f"old_{asset1}.balanceOf({pair})"
+    extra_constraints = [
+        *gen_summary_getAmountsOut(amtIn, amtOutSuf, bal_pair_asset0, bal_pair_asset1),
+        # *gen_uniswap_inv("pair", "usdt", "aes", True, "_inv")
+    ]
+    return merge_summary(s_in, s_out, ([], extra_constraints))
+
+def gen_AES_swap_pair_aes_usdt():
+    user = "attacker"
+    pair = "pair"
+    asset0 = "aes"
+    asset1 = "usdt"
+    amtIn = "arg_0"
+    amtOutSuf = f"amtOut"
+    s_in = gen_AES_transfer(user, pair, asset0, amtIn)
+    s_out = gen_summary_transfer(pair, user, asset1, amtOutSuf)
+    bal_pair_asset0 = f"old_{asset0}.balanceOf({pair})"
+    bal_pair_asset1 = f"old_{asset1}.balanceOf({pair})"
+    extra_constraints = gen_summary_getAmountsOut(
+        amtIn, amtOutSuf, bal_pair_asset0, bal_pair_asset1
+    )
+    return merge_summary(s_in, s_out, ([], extra_constraints))
+
+
+def gen_AES_burn_pair_aes():
+    burn_summary = gen_summary_transfer("pair", "dead", "aes", "arg_0")
+    burn_summary2 = gen_summary_transfer("attacker", "dead", "aes", "arg_0", percent_out=0.5)
+    bal_victim = f"new_aes.balanceOf(pair)"
+    bal_attacker = f"old_aes.balanceOf(attacker)"
+    extra_constraints = [
+        lambda s: s.get(bal_victim) > 2 / SCALE,
+        lambda s: s.get("arg_0") <= s.get(bal_attacker),
+    ]
+    return merge_summary(burn_summary, burn_summary2, ([], extra_constraints))
+
+
 hacking_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
     "NMB": {
         "transaction_gnimbstaking_gnimb": gen_NMB_transaction_gnimbstaking_gnimb(),
@@ -337,6 +428,11 @@ hacking_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
     "MUMUG": {
         "swap_mubank_usdce_mu": gen_MUMUG_swap_mubank_usdce_mu(),
     },
+    "AES": {
+        "swap_pair_usdt_aes": gen_AES_swap_pair_usdt_aes(),
+        "swap_pair_aes_usdt": gen_AES_swap_pair_aes_usdt(),
+        "burn_pair_aes": gen_AES_burn_pair_aes(),
+    }
 }
 
 refine_constraints: Dict[str, Dict[int, List[LAMBDA_CONSTR]]] = {

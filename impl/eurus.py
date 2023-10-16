@@ -59,6 +59,8 @@ class VAR:
 
     @property
     def as_float(self) -> float:
+        if isinstance(self.var_obj, float):
+            return self.var_obj * SCALE
         if Z3_OR_GB:
             model = self.solver.model()
             if model[self.var_obj] is None:
@@ -212,14 +214,11 @@ class FinancialExecution:
         c = func(getter)
         self.add_constraint(c, constraint_name)
 
+    def get_hack_param(self, idx: int):
+        return None
+
     def execute(self):
         # Init params
-        # hack_params = [
-        #     99000e18,
-        #     99000e18,
-        #     22960e18,
-        #     99297e18,
-        # ]
         for idx, action in enumerate(self.sketch):
             # Assume there are two actions written as:
             # act0(p0, p1), act1(p0).
@@ -230,8 +229,11 @@ class FinancialExecution:
             for i in range(param_num):
                 param_offset = len(self.all_params)
                 k = f"amt{i + param_offset}"
-                var = self._default_var(k)
-                # var = VAR(k, self.solver, hack_params[i + param_offset])
+                hack_param = self.get_hack_param(i + param_offset)
+                if hack_param is None:
+                    var = self._default_var(k)
+                else:
+                    var = VAR(k, self.solver, hack_param)
                 params[f"{i}"] = var
                 self.all_params.append(var)
             for idx, p in enumerate(self.all_params):
@@ -401,7 +403,10 @@ def eurus_test(bmk_dir: str, args):
                                 "name": func_name,
                                 "num_models": 1,
                                 "models": [
-                                    {f"p_{p.name}_uint256": str(p) for p in exec.all_params}
+                                    {
+                                        f"p_{p.name}_uint256": str(p)
+                                        for p in exec.all_params
+                                    }
                                 ],
                                 "time": [timecost, 0, timecost],
                                 "feasible": feasible,

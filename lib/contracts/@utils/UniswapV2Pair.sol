@@ -243,6 +243,10 @@ contract UniswapV2Pair is UniswapV2ERC20, IUniswapV2Pair {
         uint256 amount1In = balance1 > _reserve1 - amount1Out
             ? balance1 - (_reserve1 - amount1Out)
             : 0;
+        // emit Transfer(address(0xdead), address(0xdead), amount0In);
+        // emit Transfer(address(0xdead), address(0xdead), amount0Out);
+        // emit Transfer(address(0xdead), address(0xdead), amount1In);
+        // emit Transfer(address(0xdead), address(0xdead), amount1Out);
         require(
             amount0In > 0 || amount1In > 0,
             "UniswapV2: INSUFFICIENT_INPUT_AMOUNT"

