@@ -1,0 +1,24 @@
+{
+    "test_results": {
+        "./benchmarks/SGZ": [
+            {
+                "name": "check_gt",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x3782dace9d900000",
+                        "p_amt1_uint256": "0x30927f74c9de0000",
+                        "p_amt2_uint256": "0x938fc5294cef58000000000",
+                        "p_amt3_uint256": "0x37ad7cbe56ddfe00"
+                    }
+                ],
+                "time": [
+                    0.03942258399911225,
+                    0,
+                    0.03942258399911225
+                ],
+                "feasible": true
+            }
+        ]
+    }
+}

@@ -418,6 +418,11 @@ def gen_AES_burn_pair_aes():
     return merge_summary(burn_summary, burn_summary2, (extra_writevars, extra_constraints))
 
 
+def gen_SGZ_breaklr_pair_sgz():
+    transfer_summary0 = gen_summary_transfer("sgz", "pair", "sgz", "old_sgz.balanceOf(sgz)")
+    transfer_summary1 = gen_summary_transfer("sgz", "pair", "usdt", "old_usdt.balanceOf(sgz)")
+    return merge_summary(transfer_summary0, transfer_summary1)
+
 hacking_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
     "NMB": {
         "transaction_gnimbstaking_gnimb": gen_NMB_transaction_gnimbstaking_gnimb(),
@@ -441,6 +446,9 @@ hacking_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
         "swap_pair_usdt_aes": gen_AES_swap_pair_usdt_aes(),
         "swap_pair_aes_usdt": gen_AES_swap_pair_aes_usdt(),
         "burn_pair_aes": gen_AES_burn_pair_aes(),
+    },
+    "SGZ": {
+        "breaklr_pair_sgz": gen_SGZ_breaklr_pair_sgz(),
     }
 }
 
