@@ -229,6 +229,7 @@ def forge_test(bmk_dir: str, timeout: int):
         "--root",
         os.getcwd(),
     ]
+    print(" ".join(cmds))
     run(cmds, timeout=timeout)
 
 

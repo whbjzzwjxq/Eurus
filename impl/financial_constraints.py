@@ -355,13 +355,15 @@ def gen_MUMUG_swap_mubank_usdce_mu():
 
 
 def gen_AES_transfer(_from: str, _to: str, token: str, amt: str):
+    write_vars = ["aes.swapFeeTotal"]
+    c = [
+        lambda s: s.get("new_aes.swapFeeTotal") == s.get("old_aes.swapFeeTotal") + s.get(amt) * 0.01
+    ]
     if _from == "pair":
         r = gen_summary_transfer(_from, _to, token, amt, percent_in=0.9, percent_out=0.93)
-    elif _to == "pair":
-        r = gen_summary_transfer(_from, _to, token, amt, percent_in=0.97, percent_out=1)
     else:
-        r = gen_summary_transfer(_from, _to, token, amt)
-    return r
+        r = gen_summary_transfer(_from, _to, token, amt, percent_in=0.97, percent_out=1)
+    return merge_summary(r, (write_vars, c))
 
 def gen_AES_swap_pair_usdt_aes():
     user = "attacker"
@@ -398,15 +400,22 @@ def gen_AES_swap_pair_aes_usdt():
 
 
 def gen_AES_burn_pair_aes():
-    burn_summary = gen_summary_transfer("pair", "dead", "aes", "arg_0")
-    burn_summary2 = gen_summary_transfer("attacker", "dead", "aes", "arg_0", percent_out=0.5)
+    arg_0 = "arg_0"
+    burn_amount = "burn_amount"
+    burn_summary = gen_summary_transfer("pair", "dead", "aes", burn_amount)
+    burn_summary2 = gen_summary_transfer("attacker", "dead", "aes", arg_0, percent_out=0.5)
     bal_victim = f"new_aes.balanceOf(pair)"
     bal_attacker = f"old_aes.balanceOf(attacker)"
+    extra_writevars = [
+        "aes.swapFeeTotal"
+    ]
     extra_constraints = [
         lambda s: s.get(bal_victim) > 2 / SCALE,
-        lambda s: s.get("arg_0") <= s.get(bal_attacker),
+        lambda s: s.get(arg_0) <= s.get(bal_attacker),
+        lambda s: s.get(burn_amount) == s.get(arg_0) * 0.7 + s.get("old_aes.swapFeeTotal") * 6,
+        lambda s: s.get("new_aes.swapFeeTotal") == 0,
     ]
-    return merge_summary(burn_summary, burn_summary2, ([], extra_constraints))
+    return merge_summary(burn_summary, burn_summary2, (extra_writevars, extra_constraints))
 
 
 hacking_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {

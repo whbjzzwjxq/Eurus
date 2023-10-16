@@ -912,8 +912,6 @@ contract AES is ERC20, Ownable {
         address to,
         uint256 amount
     ) internal {
-        emit Transfer(address(0xdead), address(0xdead), balanceOf(from));
-        emit Transfer(address(0xdead), address(0xdead), amount);
         uint256 burnAmount = amount.mul(3).div(100);
         uint256 otherAmount = amount.mul(1).div(100);
         uint256 feeAmount = amount.mul(10).div(100);
@@ -925,12 +923,18 @@ contract AES is ERC20, Ownable {
     }
 
     function distributeFee() public {
-        uint256 mokeyFeeTotal = swapFeeTotal.mul(2);
-        super._transfer(uniswapV2Pair, monkeyWallet, mokeyFeeTotal);
-        super._transfer(uniswapV2Pair, birdWallet, swapFeeTotal);
-        super._transfer(uniswapV2Pair, foundationWallet, swapFeeTotal);
-        super._transfer(uniswapV2Pair, technologyWallet, swapFeeTotal);
-        super._transfer(uniswapV2Pair, marketingWallet, swapFeeTotal);
+        // uint256 mokeyFeeTotal = swapFeeTotal.mul(2);
+        // super._transfer(uniswapV2Pair, monkeyWallet, mokeyFeeTotal);
+        // super._transfer(uniswapV2Pair, birdWallet, swapFeeTotal);
+        // super._transfer(uniswapV2Pair, foundationWallet, swapFeeTotal);
+        // super._transfer(uniswapV2Pair, technologyWallet, swapFeeTotal);
+        // super._transfer(uniswapV2Pair, marketingWallet, swapFeeTotal);
+        // swapFeeTotal = 0;
+        uint256 outputTotal = swapFeeTotal.mul(6);
+        if (outputTotal >= balanceOf(uniswapV2Pair)) {
+            outputTotal = balanceOf(uniswapV2Pair) - 1;
+        }
+        super._transfer(uniswapV2Pair, monkeyWallet, outputTotal);
         swapFeeTotal = 0;
     }
 
