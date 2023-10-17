@@ -3,6 +3,8 @@ from typing import Any, Dict, List, Tuple
 import json
 import gurobipy as gp
 from z3 import *
+
+from impl.dsl import Sketch
 from .foundry_toolset import LazyStorage, deploy_contract, init_anvil, set_nomining
 import re
 from .benchmark_builder import BenchmarkBuilder, get_sketch_by_func_name
@@ -17,7 +19,8 @@ from .financial_constraints import (
     ACTION_SUMMARY,
     LAMBDA_CONSTR,
     gen_attack_goal,
-    hacking_constraints,
+    hack_constraints,
+    refine_constraints,
     SCALE,
     DECIMAL,
 )
@@ -36,7 +39,7 @@ class VAR:
 
     def __init__(self, name: str, solver: SolverType, value: int = None) -> None:
         if name in self.names:
-            raise ValueError("Duplicated names!")
+            raise ValueError(f"Duplicated name: {name}!")
         self.names.add(name)
         self.name = name
         self.solver = solver
@@ -314,9 +317,73 @@ def autogen_financial_formula(
                 continue
             action2constraints[action.func_sig] = action.gen_constraints(config)
 
-    action2constraints.update(hacking_constraints.get(project_name, {}))
+    action2constraints.update(hack_constraints.get(project_name, {}))
 
     return attack_goal, action2constraints
+
+
+def eurus_solve(
+    solver: SolverType,
+    bmk_dir: str,
+    func_name: str,
+    origin_sketch: Sketch,
+    output_path: str,
+    exec: FinancialExecution,
+    refine_loop: int,
+) -> bool:
+    start_time = time.perf_counter()
+    if Z3_OR_GB:
+        res = solver.check()
+    else:
+        solver.optimize()
+        res = sat if solver.status == gp.GRB.OPTIMAL else unsat
+    timecost = time.perf_counter() - start_time
+    print(f"Timecost is: {timecost}.")
+    if res == sat:
+        print(f"Solution is found.")
+        param_ints = []
+        for p in exec.all_params:
+            v = str(p)
+            print(f"{p.name}: {v}")
+            param_ints.append(v)
+        model = [param_ints]
+        feasible = verify_model(bmk_dir, [(func_name, origin_sketch, model)])
+        if feasible:
+            print("Result is feasible in realworld!")
+        else:
+            print("Result is NOT feasible in realworld!")
+        result = {
+            "test_results": {
+                bmk_dir: [
+                    {
+                        "name": func_name,
+                        "num_models": 1,
+                        "models": [
+                            {f"p_{p.name}_uint256": str(p) for p in exec.all_params}
+                        ],
+                        "time": [timecost, 0, timecost],
+                        "feasible": feasible,
+                        "refine_loop": refine_loop,
+                    }
+                ]
+            }
+        }
+        with open(output_path, "w") as f:
+            json.dump(result, f, indent=4)
+
+    else:
+        print(f"Solution is NOT found.")
+        if Z3_OR_GB and TRACK_UNSAT:
+            unsat_core = solver.unsat_core()
+            print("Unsat core:")
+            names = [str(assertion) for assertion in unsat_core]
+            imple_regex = re.compile(r"Implies\((.*),.*")
+            for c in solver.assertions():
+                m = imple_regex.match(str(c))
+                n = m.groups()[0]
+                if n in names:
+                    print(c)
+    return feasible
 
 
 def eurus_test(bmk_dir: str, args):
@@ -367,68 +434,34 @@ def eurus_test(bmk_dir: str, args):
 
             exec.execute()
 
-            if Z3_OR_GB:
-                print(solver.sexpr())
-
-            start_time = time.perf_counter()
-            try:
+            feasible = False
+            idx = 0
+            while not feasible:
                 if Z3_OR_GB:
-                    res = solver.check()
-                else:
-                    solver.optimize()
-                    res = sat if solver.status == gp.GRB.OPTIMAL else unsat
-            except KeyboardInterrupt:
-                print("Stop solving.")
-                anvil_proc.kill()
-                return
-            timecost = time.perf_counter() - start_time
-            print(f"Timecost is: {timecost}.")
-            if res == sat:
-                print(f"Solution is found.")
-                param_ints = []
-                for p in exec.all_params:
-                    v = str(p)
-                    print(f"{p.name}: {v}")
-                    param_ints.append(v)
-                model = [param_ints]
-                feasible = verify_model(bmk_dir, [(func_name, origin_sketch, model)])
-                if feasible:
-                    print("Result is feasible in realworld!")
-                else:
-                    print("Result is NOT feasible in realworld!")
-                result = {
-                    "test_results": {
-                        bmk_dir: [
-                            {
-                                "name": func_name,
-                                "num_models": 1,
-                                "models": [
-                                    {
-                                        f"p_{p.name}_uint256": str(p)
-                                        for p in exec.all_params
-                                    }
-                                ],
-                                "time": [timecost, 0, timecost],
-                                "feasible": feasible,
-                            }
-                        ]
-                    }
-                }
-                with open(output_path, "w") as f:
-                    json.dump(result, f, indent=4)
-
-            else:
-                print(f"Solution is NOT found.")
-                if Z3_OR_GB and TRACK_UNSAT:
-                    unsat_core = solver.unsat_core()
-                    print("Unsat core:")
-                    names = [str(assertion) for assertion in unsat_core]
-                    imple_regex = re.compile(r"Implies\((.*),.*")
-                    for c in solver.assertions():
-                        m = imple_regex.match(str(c))
-                        n = m.groups()[0]
-                        if n in names:
-                            print(c)
+                    print(solver.sexpr())
+                feasible = eurus_solve(
+                    solver, bmk_dir, func_name, origin_sketch, output_path, exec, idx
+                )
+                refinements = refine_constraints.get(project_name, [])
+                if len(refinements) <= idx:
+                    break
+                refinement = refinements[idx]
+                for s_sig, v in refinement.items():
+                    s_idx = origin_sketch.get_action_idx_by_sig(s_sig)
+                    if s_idx == -1:
+                        raise ValueError(
+                            f"Unknown function signature: {s_sig} in project: {project_name}"
+                        )
+                    for f_idx, func in enumerate(v):
+                        exec.gen_constraint(
+                            s_idx, func, f"Ref{idx}_Step{s_idx}_{f_idx}"
+                        )
+                # if Z3_OR_GB:
+                #     solver.reset()
+                # else:
+                #     # Gurobi doesn't require it.
+                #     pass
+                idx += 1
         anvil_proc.kill()
     except Exception as err:
         anvil_proc.kill()

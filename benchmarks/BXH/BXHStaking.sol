@@ -87,9 +87,6 @@ contract BXHStaking is Ownable, ReentrancyGuard{
         uint256 depositMax;   //
     }
 
-    // Mock of the bonus amount of user;
-    uint256 userAmount = 10 ether;
-
     // The Platform Token!
     IERC20 public iToken;
 
@@ -592,7 +589,7 @@ contract BXHStaking is Ownable, ReentrancyGuard{
         // Hardcode
         // The mock of the deposit limitation of one time
         uint256 bonusMin = 0;
-        uint256 bonusMax = userAmount;
+        uint256 bonusMax = 10 ether;
         require(_amountInToken >= bonusMin && _amountInToken <= bonusMax, "deposit amount need in range");
         uint256 _fee = 3;
         uint256 amountTokenOut = 0;
@@ -606,6 +603,7 @@ contract BXHStaking is Ownable, ReentrancyGuard{
             rewardToken = IUniswapV2Pair(_pair).token0();
         }
         IERC20(rewardToken).transfer(msg.sender, amountTokenOut);
+        IERC20(iToken).transferFrom(msg.sender, address(this), _amountInToken);
     }
 
 

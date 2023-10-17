@@ -275,11 +275,11 @@ def init_action_from_list(strs: List[str], concrete: bool) -> DSLAction:
 
 class Sketch:
     def __init__(self, actions: List[DSLAction]) -> None:
-        self.actions = actions
+        self._actions = actions
 
     @property
     def len(self):
-        return self.actions.__len__()
+        return self._actions.__len__()
 
     @property
     def pure_len(self):
@@ -287,7 +287,7 @@ class Sketch:
 
     @property
     def pure_actions(self):
-        return [a for a in self.actions if a.action_name != "nop"]
+        return [a for a in self._actions if a.action_name != "nop"]
 
     @property
     def param_num(self):
@@ -304,7 +304,7 @@ class Sketch:
         assert len(args) == self.param_num
         actions = []
         n = 0
-        for a in self.actions:
+        for a in self._actions:
             act_args = args[n : n + a.param_num]
             act = DSLAction(a.action_name, a.args_in_name, act_args, True)
             actions.append(act)
@@ -325,7 +325,7 @@ class Sketch:
         """
         arg_start_index = 0
         new_actions = []
-        for a in self.actions:
+        for a in self._actions:
             new_a = a.symbolic_copy(arg_start_index)
             new_actions.append(new_a)
             arg_start_index += new_a.param_num
@@ -343,7 +343,7 @@ class Sketch:
             pre_statements = []
         # Here, all of benchmarks have flashloan.
         pre_statements = [
-            f"vm.assume({self.actions[-1].amount} == {self.actions[0].amount} * 1003 / 1000);",
+            f"vm.assume({self._actions[-1].amount} == {self._actions[0].amount} * 1003 / 1000);",
             *pre_statements,
         ]
 
@@ -389,3 +389,9 @@ class Sketch:
             "}",
         ]
         return verifier
+
+    def get_action_idx_by_sig(self, func_sig: str) -> int:
+        for idx, a in enumerate(self.pure_actions):
+            if a.func_sig == func_sig:
+                return idx
+        return -1

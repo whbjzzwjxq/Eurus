@@ -54,7 +54,7 @@ def verify_model(bmk_dir: str, verifiers: List[Tuple[str, Sketch, List[List[str]
         if v["status"] == "Success":
             verified_sketches.append(k)
         else:
-            print(f"Contrat {k}: failed, reason: {v.get('reason', '')}")
+            print(f"Model {k}: failed, reason: {v.get('reason', '')}")
     verified_sketches = sorted(verified_sketches)
     os.remove(verify_sol_path)
     return len(verified_sketches) != 0

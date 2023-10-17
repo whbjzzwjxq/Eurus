@@ -198,6 +198,7 @@ contract BXHTest is Test, BlockLoader {
     }
 
     function transaction_bxhstaking_bxh(uint256 amount) internal {
+        bxh.approve(address(bxhstaking), amount);
         bxhstaking.deposit(address(pair), amount);
     }
 

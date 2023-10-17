@@ -286,25 +286,28 @@ def gen_NMB_transaction_gnimbstaking_gnimb():
 
 
 def gen_BXH_transaction_bxhstaking_bxh():
-    balances_bxh_pair = f"bxh.balanceOf(pair)"
-    balances_usdt_pair = f"usdt.balanceOf(pair)"
-    amount_base = "amtIn"
+    balances_bxh_pair = f"old_bxh.balanceOf(pair)"
+    balances_usdt_pair = f"old_usdt.balanceOf(pair)"
+    amount_in = "amtIn"
     amount_out = "amtOut"
 
-    reward_base_amount = [lambda s: s.get("arg_0") == s.get(amount_base)]
+    reward_base_amount = [lambda s: s.get("arg_0") == s.get(amount_in)]
 
     #
     reward_amount = gen_summary_getAmountsOut(
-        amount_base, amount_out, balances_bxh_pair, balances_usdt_pair
+        amount_in, amount_out, balances_bxh_pair, balances_usdt_pair
     )
 
     extra_constraints = [*reward_base_amount, *reward_amount]
 
     reward_summary = ([], extra_constraints)
-    transfer_summary = gen_summary_transfer(
+    transfer_summary0 = gen_summary_transfer(
         "bxhstaking", "attacker", "usdt", amount_out
     )
-    return merge_summary(reward_summary, transfer_summary)
+    transfer_summary1 = gen_summary_transfer(
+        "attacker", "bxhstaking", "bxh", amount_in
+    )
+    return merge_summary(reward_summary, transfer_summary0, transfer_summary1)
 
 
 def gen_BGLD_burn_pair_bgld():
@@ -423,7 +426,22 @@ def gen_SGZ_breaklr_pair_sgz():
     transfer_summary1 = gen_summary_transfer("sgz", "pair", "usdt", "old_usdt.balanceOf(sgz)")
     return merge_summary(transfer_summary0, transfer_summary1)
 
-hacking_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
+def gen_ShadowFi_refinement():
+    transfer_limit = 1e15 / SCALE
+    return []
+
+
+def gen_BXH_refinement():
+    return [
+        {
+            "transaction_bxhstaking_bxh": [
+                lambda s: s.get("amtIn") >= 0,
+                lambda s: s.get("amtIn") <= 10e18 / SCALE,
+            ]
+        }
+    ]
+
+hack_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
     "NMB": {
         "transaction_gnimbstaking_gnimb": gen_NMB_transaction_gnimbstaking_gnimb(),
     },
@@ -452,7 +470,7 @@ hacking_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
     }
 }
 
-refine_constraints: Dict[str, Dict[int, List[LAMBDA_CONSTR]]] = {
-    "ShadowFi": {},
-    "BXH": {},
+refine_constraints: Dict[str, List[Dict[str, List[LAMBDA_CONSTR]]]] = {
+    "ShadowFi": gen_ShadowFi_refinement(),
+    "BXH": gen_BXH_refinement(),
 }
