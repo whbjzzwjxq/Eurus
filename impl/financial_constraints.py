@@ -427,16 +427,31 @@ def gen_SGZ_breaklr_pair_sgz():
     return merge_summary(transfer_summary0, transfer_summary1)
 
 def gen_ShadowFi_refinement():
-    transfer_limit = 1e15 / SCALE
-    return []
+    trans_limit = 1e14 / SCALE
+    return [
+        {
+            "burn_pair_sdf": [
+                lambda s: s.get("old_sdf.balanceOf(pair)") - s.get("new_sdf.balanceOf(pair)") <= trans_limit,
+            ]
+        },
+        {
+            "swap_pair_sdf_wbnb": [
+                lambda s: s.get("old_sdf.balanceOf(attacker)") - s.get("new_sdf.balanceOf(attacker)") <= trans_limit,
+            ]
+        }
+    ]
 
 
 def gen_BXH_refinement():
+    stake_min = 0
+    stake_max = 10e18 / SCALE
     return [
         {
             "transaction_bxhstaking_bxh": [
-                lambda s: s.get("amtIn") >= 0,
-                lambda s: s.get("amtIn") <= 10e18 / SCALE,
+                # BonusMin
+                lambda s: s.get("amtIn") >= stake_min,
+                # BonusMax
+                lambda s: s.get("amtIn") <= stake_max,
             ]
         }
     ]

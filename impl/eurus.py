@@ -340,7 +340,7 @@ def eurus_solve(
     timecost = time.perf_counter() - start_time
     print(f"Timecost is: {timecost}.")
     if res == sat:
-        print(f"Solution is found.")
+        print(f"Solution is found in loop: {refine_loop}.")
         param_ints = []
         for p in exec.all_params:
             v = str(p)
@@ -372,7 +372,7 @@ def eurus_solve(
             json.dump(result, f, indent=4)
 
     else:
-        print(f"Solution is NOT found.")
+        print(f"Solution is NOT found in loop: {refine_loop}.")
         if Z3_OR_GB and TRACK_UNSAT:
             unsat_core = solver.unsat_core()
             print("Unsat core:")

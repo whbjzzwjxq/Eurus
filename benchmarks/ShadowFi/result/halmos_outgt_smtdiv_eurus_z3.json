@@ -6,19 +6,20 @@
                 "num_models": 1,
                 "models": [
                     {
-                        "p_amt0_uint256": "0x8e3f50b173c100000",
-                        "p_amt1_uint256": "0x8f8c61d24b7260000",
-                        "p_amt2_uint256": "0x426ca844a1827",
-                        "p_amt3_uint256": "0x4563918244f40",
-                        "p_amt4_uint256": "0x8eac8fa7be98e0000"
+                        "p_amt0_uint256": "0x176fc20b1d6bad000000",
+                        "p_amt1_uint256": "0x176fdc1073fc87000000",
+                        "p_amt2_uint256": "0x5af30e7c1d76",
+                        "p_amt3_uint256": "0x53444835ec58",
+                        "p_amt4_uint256": "0x1781c1db8842c9000000"
                     }
                 ],
                 "time": [
-                    0.02925345895346254,
+                    0.018859292031265795,
                     0,
-                    0.02925345895346254
+                    0.018859292031265795
                 ],
-                "feasible": false
+                "feasible": true,
+                "refine_loop": 2
             }
         ]
     }
