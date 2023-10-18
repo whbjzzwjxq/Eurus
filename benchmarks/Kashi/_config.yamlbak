@@ -1,0 +1,68 @@
+project_name: "Kashi"
+
+# Abstract name of a DeFi contract and its class name.
+ctrt_name2cls:
+  - ["xsushi", "XSushi"]
+  - ["mim", "MIM"]
+  - ["weth", "WETH"]
+  - ["pair_mim_weth", "UniswapV2Pair"]
+  - ["pair_xsushi_weth", "UniswapV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+  - ["bentobox", "BentoBoxV1"]
+  - ["cauldron", "CauldronMediumRiskV1"]
+
+# For contract deployment
+ctrt_name2deploy:
+  - ["xsushi", ""]
+  - ["mim", ""]
+  - ["weth", ""]
+  - ["pair_mim_weth", ""]
+  - ["pair_xsushi_weth", ""]
+  - ["factory", ""]
+  - ["router", ""]
+  - ["bentobox", "new BentoBoxV1(wethAddr);"]
+  - ["cauldron", "new CauldronMediumRiskV1(bentoBoxAddr, magicInternetMoneyAddr, xSushiAddr)"]
+
+extra_actions:
+  - "function swap_cauldron_mim_xsushi(uint256 amount) public {
+        xSUSHI.approve(address(bentbox), type(uint256).max);
+        bentbox.deposit(address(xSUSHI), address(this), address(this), 0, amount);
+        cauldron.addCollateral(address(this), false, amount);
+        cauldron.borrow(address(this), 800_000 * 1e18);
+    }"
+
+extra_deployments: []
+
+extra_statements: []
+
+attack_goal_str: "xsushi;1e18"
+
+groundtruth:
+  - ["borrow", "mu", "99000e18"]
+  - ["swap", "pair", "mu", "usdce", "99000e18"]
+  - ["swap", "mubank", "usdce", "mu", "22960e18"]
+  - ["payback", "mu", "99297e18"]
+
+roles:
+  "usdce":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "mu":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: false
+  "mubank":
+    is_swappair: true
+    support_swaps:
+      "usdce": ["mu", "usdce"]
+  "pair":
+    is_swappair: true
+    uniswap_order: ["usdce", "mu"]
+    support_swaps:
+      "mu": ["mu", "usdce"]
+      "usdce": ["mu", "usdce"]
+    is_oracle: true
+
+pattern: "Price Discrepancy"
