@@ -1,0 +1,26 @@
+{
+    "test_results": {
+        "./benchmarks/RADTDAO": [
+            {
+                "name": "check_gt",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x13909492363453000000",
+                        "p_amt1_uint256": "0x13909179361f3f000000",
+                        "p_amt2_uint256": "0x2ab1496a4476ca000000",
+                        "p_amt3_uint256": "0x71f31c27206f180000",
+                        "p_amt4_uint256": "0x139f9b292da9bb000000"
+                    }
+                ],
+                "time": [
+                    0.0196629580023,
+                    0,
+                    0.0196629580023
+                ],
+                "feasible": true,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

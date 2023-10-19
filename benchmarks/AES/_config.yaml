@@ -40,7 +40,7 @@ attack_goal_str: "usdt"
 groundtruth:
   - ["borrow", "usdt", "100000e18"]
   - ["swap", "pair", "usdt", "aes", "usdt.balanceOf(attacker)"]
-  - ["burn", "pair", "aes", "aes.balanceOf(pairAddr)"]
+  - ["burn", "pair", "aes", "aes.balanceOf(address(pair))"]
   - ["sync", "pair"]
   - ["swap", "pair", "aes", "usdt", "aes.balanceOf(attacker)"]
   - ["payback", "usdt", "100000e18 * 1003 / 1000"]

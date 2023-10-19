@@ -1,0 +1,59 @@
+# Information for benchmarks building.
+project_name: "RADTDAO"
+
+ctrt_name2cls:
+  - ["radt", "RADTDAO"]
+  - ["usdt", "USDT"]
+  - ["pair", "UniswapV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+  - ["wrapper", "Wrapper"]
+
+ctrt_name2deploy:
+  - ["radt", "new RADTDAO()"]
+  - ["usdt", ""]
+  - ["pair", ""]
+  - ["factory", ""]
+  - ["router", ""]
+  - ["wrapper", "new Wrapper(address(radt))"]
+
+extra_actions:
+  - "function burn_pair_radt(uint256 amount) internal {
+      wrapper.withdraw(address(owner), address(pair), amount);
+    }"
+
+extra_deployments:
+  - "radt.afterDeploy(address(pair), address(wrapper));"
+
+extra_statements: []
+
+attack_goal_str: "usdt"
+
+groundtruth:
+  - ["borrow", "usdt", "1000e18"]
+  - ["swap", "pair", "usdt", "radt", "usdt.balanceOf(attacker)"]
+  - ["burn", "pair", "radt", "radt.balanceOf(address(pair)) * 100 / 9"]
+  - ["sync", "pair"]
+  - ["swap", "pair", "radt", "usdt", "radt.balanceOf(attacker)"]
+  - ["payback", "usdt", "1000e18 * 1003 / 1000"]
+
+# Information for search space building.
+roles:
+  "usdt":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "radt":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: false
+    is_burnable: true
+  "pair":
+    is_swappair: true
+    uniswap_order: ["usdt", "radt"]
+    support_swaps:
+      "usdt": ["usdt", "radt"]
+      "radt": ["usdt", "radt"]
+    is_oracle: true
+
+pattern: "Token Burn"

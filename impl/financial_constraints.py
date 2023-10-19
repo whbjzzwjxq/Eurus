@@ -426,6 +426,25 @@ def gen_SGZ_breaklr_pair_sgz():
     transfer_summary1 = gen_summary_transfer("sgz", "pair", "usdt", "old_usdt.balanceOf(sgz)")
     return merge_summary(transfer_summary0, transfer_summary1)
 
+def gen_RADTDAO_burn_pair_radt():
+    # uint256 backAmount = amount / 100;
+    # uint256 keepAmount = amount / 2000;
+    # uint256 burnAmount = token.balanceOf(to) - backAmount - keepAmount;
+    # token.transferFrom(to, from, backAmount);
+    # token.transferFrom(to, address(0xdead), burnAmount);
+    amt = "arg_0"
+    backAmount = "backAmount"
+    keepAmount = "keepAmount"
+    burnAmount = "burnAmount"
+    constraints = [
+        lambda s: s.get(backAmount) == s.get(amt) / 100,
+        lambda s: s.get(keepAmount) == s.get(amt) / 2000,
+        lambda s: s.get(burnAmount) == s.get("old_radt.balanceOf(pair)") - s.get(backAmount) - s.get(keepAmount),
+    ]
+    transfer_summary0 = gen_summary_transfer("pair", "owner", "radt", backAmount)
+    transfer_summary1 = gen_summary_transfer("pair", "dead", "radt", burnAmount)
+    return merge_summary(transfer_summary0, transfer_summary1, ([], constraints))
+
 def gen_ShadowFi_refinement():
     trans_limit = 1e14 / SCALE
     return [
@@ -482,6 +501,9 @@ hack_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
     },
     "SGZ": {
         "breaklr_pair_sgz": gen_SGZ_breaklr_pair_sgz(),
+    },
+    "RADTDAO": {
+        "burn_pair_radt": gen_RADTDAO_burn_pair_radt(),
     }
 }
 
