@@ -115,9 +115,6 @@ contract NMBTest is Test, BlockLoader {
         attackContract = new AttackContract();
         attackContractAddr = address(attackContract);
         attacker = address(attackContract);
-        gnimb.transfer(address(gnimbstaking), 1500000 ether);
-        gnimb.transfer(attacker, 150000 ether);
-        attackContract.setUp(address(gnimb), address(gnimbstaking));
         // Initialize balances and mock flashloan.
         nbu.transfer(address(pairnbunimb), balanceOfnbupairnbunimb);
         nimb.transfer(address(pairnbunimb), balanceOfnimbpairnbunimb);
@@ -126,6 +123,9 @@ contract NMBTest is Test, BlockLoader {
         nbu.approve(attacker, UINT256_MAX);
         nimb.approve(attacker, UINT256_MAX);
         gnimb.approve(attacker, UINT256_MAX);
+        gnimb.transfer(address(gnimbstaking), 1500000 ether);
+        gnimb.transfer(attacker, 150000 ether);
+        attackContract.setUp(address(gnimb), address(gnimbstaking));
     }
 
     function printBalance(string memory tips) public {

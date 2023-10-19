@@ -73,12 +73,12 @@ contract TINUTest is Test, BlockLoader {
         attackContract = new AttackContract();
         attackContractAddr = address(attackContract);
         attacker = address(attackContract);
-        tinu.afterDeploy(address(router), address(pair));
         // Initialize balances and mock flashloan.
         weth.transfer(address(pair), balanceOfwethpair);
         tinu.transfer(address(pair), balanceOftinupair);
         weth.approve(attacker, UINT256_MAX);
         tinu.approve(attacker, UINT256_MAX);
+        tinu.afterDeploy(address(router), address(pair));
     }
 
     function printBalance(string memory tips) public {

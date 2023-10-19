@@ -70,13 +70,13 @@ contract NOVOTest is Test, BlockLoader {
         attackContract = new AttackContract();
         attackContractAddr = address(attackContract);
         attacker = address(attackContract);
-        novo.afterDeploy(address(pair));
         // Initialize balances and mock flashloan.
         novo.transfer(address(novo), balanceOfnovonovo);
         wbnb.transfer(address(pair), balanceOfwbnbpair);
         novo.transfer(address(pair), balanceOfnovopair);
         wbnb.approve(attacker, UINT256_MAX);
         novo.approve(attacker, UINT256_MAX);
+        novo.afterDeploy(address(pair));
     }
 
     function printBalance(string memory tips) public {

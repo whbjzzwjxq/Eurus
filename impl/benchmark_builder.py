@@ -48,6 +48,7 @@ class BenchmarkBuilder:
         self.attack_goal = self.config.attack_goal
         self.extra_actions = self.config.extra_actions
         self.extra_deployments = self.config.extra_deployments
+        self.extra_deployments_before = self.config.extra_deployments_before
         self.extra_statements = self.config.extra_statements
 
         # Uniswap pairs.
@@ -199,7 +200,7 @@ class BenchmarkBuilder:
             all.append(f"{ctrt_name}Addr = address({ctrt_name});")
 
         all.append(f"attacker = address({AttackCtrtName});")
-        all.extend(self.extra_deployments)
+        all.extend(self.extra_deployments_before)
 
         all.append("// Initialize balances and mock flashloan.")
 
@@ -219,6 +220,8 @@ class BenchmarkBuilder:
                 # Use approve-transfer to mock flashloan
                 if u == AttackCtrtName:
                     all.append(f"{t}.approve(attacker, UINT256_MAX);")
+
+        all.extend(self.extra_deployments)
 
         all.append("}")
         return all

@@ -31,7 +31,10 @@ extra_actions:
     pair.swap(0, (values[1] * 90) / 100, attacker, '');
     }"
 
-extra_deployments: [bgld.mint(100e18);]
+extra_deployments_before:
+  - "bgld.mint(100e18);"
+
+extra_deployments: []
 
 extra_statements: []
 

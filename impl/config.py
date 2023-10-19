@@ -40,6 +40,9 @@ class Config:
     # Manually encoded implementations for actions
     extra_actions: List[str] = field(default_factory=list)
 
+    # Manually encoded deployments for contracts, before the transferring of tokens
+    extra_deployments_before: List[str] = field(default_factory=list)
+
     # Manually encoded deployments for contracts
     extra_deployments: List[str] = field(default_factory=list)
 

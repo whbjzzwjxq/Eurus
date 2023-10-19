@@ -70,13 +70,13 @@ contract ShadowFiTest is Test, BlockLoader {
         attackContract = new AttackContract();
         attackContractAddr = address(attackContract);
         attacker = address(attackContract);
-        sdf.afterDeploy(address(router), address(pair));
         // Initialize balances and mock flashloan.
         wbnb.transfer(address(pair), balanceOfwbnbpair);
         sdf.transfer(address(pair), balanceOfsdfpair);
         wbnb.transfer(address(attackContract), balanceOfwbnbattacker);
         wbnb.approve(attacker, UINT256_MAX);
         sdf.approve(attacker, UINT256_MAX);
+        sdf.afterDeploy(address(router), address(pair));
     }
 
     function printBalance(string memory tips) public {

@@ -98,9 +98,6 @@ contract ZoomproTest is Test, BlockLoader {
         attackContract = new AttackContract();
         attackContractAddr = address(attackContract);
         attacker = address(attackContract);
-        zoom.transfer(address(trader), 500000000000e18);
-        fusdt.transfer(address(trader), 1000000e18);
-        usdt.transfer(address(trader), 2000000e18);
         // Initialize balances and mock flashloan.
         zoom.transfer(address(pair), balanceOfzoompair);
         fusdt.transfer(address(pair), balanceOffusdtpair);
@@ -114,6 +111,9 @@ contract ZoomproTest is Test, BlockLoader {
         zoom.approve(attacker, UINT256_MAX);
         fusdt.transfer(address(attackContract), balanceOffusdtattacker);
         fusdt.approve(attacker, UINT256_MAX);
+        zoom.transfer(address(trader), 500000000000e18);
+        fusdt.transfer(address(trader), 1000000e18);
+        usdt.transfer(address(trader), 2000000e18);
     }
 
     function printBalance(string memory tips) public {

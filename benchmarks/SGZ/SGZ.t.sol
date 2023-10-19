@@ -70,7 +70,6 @@ contract SGZTest is Test, BlockLoader {
         attackContract = new AttackContract();
         attackContractAddr = address(attackContract);
         attacker = address(attackContract);
-        sgz.afterDeploy(address(router), address(pair));
         // Initialize balances and mock flashloan.
         usdt.transfer(address(sgz), balanceOfusdtsgz);
         sgz.transfer(address(sgz), balanceOfsgzsgz);
@@ -78,6 +77,7 @@ contract SGZTest is Test, BlockLoader {
         sgz.transfer(address(pair), balanceOfsgzpair);
         usdt.approve(attacker, UINT256_MAX);
         sgz.approve(attacker, UINT256_MAX);
+        sgz.afterDeploy(address(router), address(pair));
     }
 
     function printBalance(string memory tips) public {
