@@ -15,11 +15,13 @@ class DefiRoles:
     is_swappair: bool = False
     is_oracle: bool = False
 
+    oracle: str = ""
+
     support_swaps: Dict[str, List[str]] = field(default_factory=dict)
     uniswap_order: List[str] = field(default_factory=list)
 
     hacked_assets: List[str] = field(default_factory=list)
-    hacked_pairs: List[str] = field(default_factory=list)
+    hacked_oracles: List[str] = field(default_factory=list)
 
     @property
     def is_uniswap(self) -> bool:

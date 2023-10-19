@@ -55,5 +55,6 @@ roles:
       "usdt": ["usdt", "radt"]
       "radt": ["usdt", "radt"]
     is_oracle: true
+    oracle: "pair"
 
 pattern: "Token Burn"

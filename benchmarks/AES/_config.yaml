@@ -63,5 +63,6 @@ roles:
       "usdt": ["aes", "usdt"]
       "aes": ["aes", "usdt"]
     is_oracle: true
+    oracle: "pair"
 
 pattern: "Token Burn"

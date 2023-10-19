@@ -50,6 +50,6 @@ roles:
     support_swaps:
       "wbnb": ["fdp", "wbnb"]
       "fdp": ["fdp", "wbnb"]
-    is_oracle: true
+    oracle: "pair"
 
 pattern: "Token Burn"

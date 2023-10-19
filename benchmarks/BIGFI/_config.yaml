@@ -55,5 +55,6 @@ roles:
       "usdt": ["usdt", "bigfi"]
       "bigfi": ["usdt", "bigfi"]
     is_oracle: true
+    oracle: "pair"
 
 pattern: "Token Burn"

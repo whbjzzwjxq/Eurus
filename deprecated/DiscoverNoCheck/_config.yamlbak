@@ -56,7 +56,7 @@ roles:
     support_swaps:
       "usdt": ["disc", "usdt"]
       "disc": ["disc", "usdt"]
-    is_oracle: true
+    oracle: "pair"
   "ethpledge":
     is_swappair: true
     support_swaps:

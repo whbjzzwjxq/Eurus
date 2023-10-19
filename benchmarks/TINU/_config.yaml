@@ -52,5 +52,6 @@ roles:
       "weth": ["tinu", "weth"]
       "tinu": ["tinu", "weth"]
     is_oracle: true
+    oracle: "pair"
 
 pattern: "Token Burn"

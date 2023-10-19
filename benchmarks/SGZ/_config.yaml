@@ -44,7 +44,7 @@ roles:
     is_erc20: true
     is_stablecoin: false
     is_defientry: true
-    hacked_pairs: ["pair"]
+    hacked_oracles: ["pair"]
   "pair":
     is_swappair: true
     uniswap_order: ["sgz", "usdt"]
@@ -52,5 +52,6 @@ roles:
       "usdt": ["sgz", "usdt"]
       "sgz": ["sgz", "usdt"]
     is_oracle: true
+    oracle: "pair"
 
 pattern: "Liquidity Ratio Break"

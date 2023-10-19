@@ -64,5 +64,6 @@ roles:
       "mu": ["mu", "usdce"]
       "usdce": ["mu", "usdce"]
     is_oracle: true
+    oracle: "pair"
 
 pattern: "Price Discrepancy"

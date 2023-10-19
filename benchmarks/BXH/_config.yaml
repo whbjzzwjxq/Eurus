@@ -58,6 +58,7 @@ roles:
       "usdt": ["bxh", "usdt"]
       "bxh": ["bxh", "usdt"]
     is_oracle: true
+    oracle: "pair"
   "bxhstaking":
     is_defientry: true
     hacked_assets: ["bxh"]

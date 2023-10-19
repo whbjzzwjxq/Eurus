@@ -52,5 +52,6 @@ roles:
       "wbnb": ["novo", "wbnb"]
       "novo": ["novo", "wbnb"]
     is_oracle: true
+    oracle: "pair"
 
 pattern: "Token Burn"

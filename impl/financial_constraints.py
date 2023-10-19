@@ -200,7 +200,10 @@ def gen_summary_ratioswap(
     ]
     return merge_summary(s_in, s_out, ([], invariant))
 
-def gen_uniswap_inv(pair: str, asset0: str, asset1: str, swap_for_1: bool, suffix: str = ""):
+
+def gen_uniswap_inv(
+    pair: str, asset0: str, asset1: str, swap_for_1: bool, suffix: str = ""
+):
     # uint256 balance0Adjusted = balance0 * 1000 - amount0In * 3;
     # uint256 balance1Adjusted = balance1 * 1000 - amount1In * 3;
     # require(
@@ -229,9 +232,12 @@ def gen_uniswap_inv(pair: str, asset0: str, asset1: str, swap_for_1: bool, suffi
         ]
     constraints.extend(
         [
-            lambda s: s.get(balance0Adjusted) == s.get(new_balance0) * 1000 - s.get(amount0In) * 3,
-            lambda s: s.get(balance1Adjusted) == s.get(new_balance1) * 1000 - s.get(amount1In) * 3,
-            lambda s: s.get(balance0Adjusted) * s.get(balance1Adjusted) >= s.get(old_balance0) * s.get(old_balance1) * 1e6
+            lambda s: s.get(balance0Adjusted)
+            == s.get(new_balance0) * 1000 - s.get(amount0In) * 3,
+            lambda s: s.get(balance1Adjusted)
+            == s.get(new_balance1) * 1000 - s.get(amount1In) * 3,
+            lambda s: s.get(balance0Adjusted) * s.get(balance1Adjusted)
+            >= s.get(old_balance0) * s.get(old_balance1) * 1e6,
         ]
     )
     return constraints
@@ -304,9 +310,7 @@ def gen_BXH_transaction_bxhstaking_bxh():
     transfer_summary0 = gen_summary_transfer(
         "bxhstaking", "attacker", "usdt", amount_out
     )
-    transfer_summary1 = gen_summary_transfer(
-        "attacker", "bxhstaking", "bxh", amount_in
-    )
+    transfer_summary1 = gen_summary_transfer("attacker", "bxhstaking", "bxh", amount_in)
     return merge_summary(reward_summary, transfer_summary0, transfer_summary1)
 
 
@@ -349,7 +353,9 @@ def gen_MUMUG_swap_mubank_usdce_mu():
         # uint256 amountIN = router.getAmountIn(amount, reserve1, reserve0);
         *gen_summary_getAmountsIn(amountIN, amount, reserve1, reserve0p),
         # uint256 amountOUT = router.getAmountOut(amount, reserve0, reserve1);
-        *gen_summary_getAmountsOut(amount, amountOUT, reserve0p, reserve1, suffix="out"),
+        *gen_summary_getAmountsOut(
+            amount, amountOUT, reserve0p, reserve1, suffix="out"
+        ),
         # uint256 mu_coin_bond_amount = (((((amountIN + amountOUT) * 10)) / 2) / 10);
         # (uint256 mu_coin_swap_amount, uint256 mu_coin_amount) = _mu_bond_quote(amount);
         lambda s: s.get(mu_coin_amount) == (s.get(amountIN) + s.get(amountOUT)) / 2,
@@ -360,13 +366,17 @@ def gen_MUMUG_swap_mubank_usdce_mu():
 def gen_AES_transfer(_from: str, _to: str, token: str, amt: str):
     write_vars = ["aes.swapFeeTotal"]
     c = [
-        lambda s: s.get("new_aes.swapFeeTotal") == s.get("old_aes.swapFeeTotal") + s.get(amt) * 0.01
+        lambda s: s.get("new_aes.swapFeeTotal")
+        == s.get("old_aes.swapFeeTotal") + s.get(amt) * 0.01
     ]
     if _from == "pair":
-        r = gen_summary_transfer(_from, _to, token, amt, percent_in=0.9, percent_out=0.93)
+        r = gen_summary_transfer(
+            _from, _to, token, amt, percent_in=0.9, percent_out=0.93
+        )
     else:
         r = gen_summary_transfer(_from, _to, token, amt, percent_in=0.97, percent_out=1)
     return merge_summary(r, (write_vars, c))
+
 
 def gen_AES_swap_pair_usdt_aes():
     user = "attacker"
@@ -384,6 +394,7 @@ def gen_AES_swap_pair_usdt_aes():
         # *gen_uniswap_inv("pair", "usdt", "aes", True, "_inv")
     ]
     return merge_summary(s_in, s_out, ([], extra_constraints))
+
 
 def gen_AES_swap_pair_aes_usdt():
     user = "attacker"
@@ -406,25 +417,33 @@ def gen_AES_burn_pair_aes():
     arg_0 = "arg_0"
     burn_amount = "burn_amount"
     burn_summary = gen_summary_transfer("pair", "dead", "aes", burn_amount)
-    burn_summary2 = gen_summary_transfer("attacker", "dead", "aes", arg_0, percent_out=0.5)
+    burn_summary2 = gen_summary_transfer(
+        "attacker", "dead", "aes", arg_0, percent_out=0.5
+    )
     bal_victim = f"new_aes.balanceOf(pair)"
     bal_attacker = f"old_aes.balanceOf(attacker)"
-    extra_writevars = [
-        "aes.swapFeeTotal"
-    ]
+    extra_writevars = ["aes.swapFeeTotal"]
     extra_constraints = [
         lambda s: s.get(bal_victim) > 2 / SCALE,
         lambda s: s.get(arg_0) <= s.get(bal_attacker),
-        lambda s: s.get(burn_amount) == s.get(arg_0) * 0.7 + s.get("old_aes.swapFeeTotal") * 6,
+        lambda s: s.get(burn_amount)
+        == s.get(arg_0) * 0.7 + s.get("old_aes.swapFeeTotal") * 6,
         lambda s: s.get("new_aes.swapFeeTotal") == 0,
     ]
-    return merge_summary(burn_summary, burn_summary2, (extra_writevars, extra_constraints))
+    return merge_summary(
+        burn_summary, burn_summary2, (extra_writevars, extra_constraints)
+    )
 
 
 def gen_SGZ_breaklr_pair_sgz():
-    transfer_summary0 = gen_summary_transfer("sgz", "pair", "sgz", "old_sgz.balanceOf(sgz)")
-    transfer_summary1 = gen_summary_transfer("sgz", "pair", "usdt", "old_usdt.balanceOf(sgz)")
+    transfer_summary0 = gen_summary_transfer(
+        "sgz", "pair", "sgz", "old_sgz.balanceOf(sgz)"
+    )
+    transfer_summary1 = gen_summary_transfer(
+        "sgz", "pair", "usdt", "old_usdt.balanceOf(sgz)"
+    )
     return merge_summary(transfer_summary0, transfer_summary1)
+
 
 def gen_RADTDAO_burn_pair_radt():
     # uint256 backAmount = amount / 100;
@@ -439,25 +458,55 @@ def gen_RADTDAO_burn_pair_radt():
     constraints = [
         lambda s: s.get(backAmount) == s.get(amt) / 100,
         lambda s: s.get(keepAmount) == s.get(amt) / 2000,
-        lambda s: s.get(burnAmount) == s.get("old_radt.balanceOf(pair)") - s.get(backAmount) - s.get(keepAmount),
+        lambda s: s.get(burnAmount)
+        == s.get("old_radt.balanceOf(pair)") - s.get(backAmount) - s.get(keepAmount),
     ]
     transfer_summary0 = gen_summary_transfer("pair", "owner", "radt", backAmount)
     transfer_summary1 = gen_summary_transfer("pair", "dead", "radt", burnAmount)
     return merge_summary(transfer_summary0, transfer_summary1, ([], constraints))
+
+
+def gen_Zoompro_breaklr_pair_controller():
+    return gen_summary_transfer("controller", "pair", "fusdt", "old_fusdt.balanceOf(controller)")
+
+
+def gen_Zoompro_swap_trader_usdt_zoom():
+    zoomOut = "amountOut"
+    return merge_summary(
+        gen_summary_transfer("attacker", "trader", "usdt", "arg_0"),
+        gen_summary_uniswap("pair", "trader", "fusdt", "zoom", "arg_0"),
+        gen_summary_transfer("trader", "attacker", "zoom", zoomOut),
+        ([], gen_summary_getAmountsOut("arg_0", zoomOut, "old_fusdt.balanceOf(pair)", "old_zoom.balanceOf(pair)"))
+    )
+
+
+def gen_Zoompro_swap_trader_zoom_usdt():
+    usdtOut = "amountOut"
+    return merge_summary(
+        gen_summary_transfer("attacker", "trader", "zoom", "arg_0"),
+        gen_summary_uniswap("pair", "trader", "zoom", "fusdt", "arg_0"),
+        gen_summary_transfer("trader", "attacker", "usdt", usdtOut),
+        ([], gen_summary_getAmountsOut("arg_0", usdtOut, "old_zoom.balanceOf(pair)", "old_fusdt.balanceOf(pair)"))
+    )
+
 
 def gen_ShadowFi_refinement():
     trans_limit = 1e14 / SCALE
     return [
         {
             "burn_pair_sdf": [
-                lambda s: s.get("old_sdf.balanceOf(pair)") - s.get("new_sdf.balanceOf(pair)") <= trans_limit,
+                lambda s: s.get("old_sdf.balanceOf(pair)")
+                - s.get("new_sdf.balanceOf(pair)")
+                <= trans_limit,
             ]
         },
         {
             "swap_pair_sdf_wbnb": [
-                lambda s: s.get("old_sdf.balanceOf(attacker)") - s.get("new_sdf.balanceOf(attacker)") <= trans_limit,
+                lambda s: s.get("old_sdf.balanceOf(attacker)")
+                - s.get("new_sdf.balanceOf(attacker)")
+                <= trans_limit,
             ]
-        }
+        },
     ]
 
 
@@ -474,6 +523,7 @@ def gen_BXH_refinement():
             ]
         }
     ]
+
 
 hack_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
     "NMB": {
@@ -504,7 +554,12 @@ hack_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
     },
     "RADTDAO": {
         "burn_pair_radt": gen_RADTDAO_burn_pair_radt(),
-    }
+    },
+    "Zoompro": {
+        "breaklr_pair_controller": gen_Zoompro_breaklr_pair_controller(),
+        "swap_trader_usdt_zoom": gen_Zoompro_swap_trader_usdt_zoom(),
+        "swap_trader_zoom_usdt": gen_Zoompro_swap_trader_zoom_usdt(),
+    },
 }
 
 refine_constraints: Dict[str, List[Dict[str, List[LAMBDA_CONSTR]]]] = {

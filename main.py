@@ -190,7 +190,7 @@ def prepare(bmk_dir: str):
     cmds = [
         "forge",
         "test",
-        "-vvv",
+        "-vvvv",
         "--cache-path",
         cache_path,
         "--match-path",

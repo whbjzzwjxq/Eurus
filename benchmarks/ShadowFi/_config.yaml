@@ -54,5 +54,6 @@ roles:
       "wbnb": ["sdf", "wbnb"]
       "sdf": ["sdf", "wbnb"]
     is_oracle: true
+    oracle: "pair"
 
 pattern: "Token Burn"

@@ -56,10 +56,6 @@ class DSLAction:
     def swap_pairs(self):
         if self.action_name in ("swap",):
             return self.args_in_name[:-2]
-        elif self.action_name in ("breaklr",):
-            return self.args_in_name[:-1]
-        elif self.action_name in ("burn",):
-            return self.args_in_name[0:]
         else:
             raise ValueError(
                 f"This action: {self.action_name} doesn't have a role as swap_pair"
@@ -69,7 +65,7 @@ class DSLAction:
     def asset0(self):
         if self.action_name in ("borrow", "payback"):
             return self.args_in_name[0]
-        elif self.action_name in ("burn", "oracle", "transaction"):
+        elif self.action_name in ("burn", "transaction"):
             return self.args_in_name[1]
         elif self.action_name in ("swap",):
             return self.args_in_name[-2]
@@ -92,10 +88,19 @@ class DSLAction:
         if self.action_name in ("transaction",):
             return self.args_in_name[0]
         elif self.action_name in ("breaklr",):
-            return self.args_in_name[-1]
+            return self.args_in_name[1]
         else:
             raise ValueError(
                 f"This action: {self.action_name} doesn't have a role as defi_entry"
+            )
+        
+    @property
+    def oracle(self):
+        if self.action_name in ("sync", "burn", "breaklr", ):
+            return self.args_in_name[0]
+        else:
+            raise ValueError(
+                f"This action: {self.action_name} doesn't have a role as oracle"
             )
 
     @property
@@ -104,7 +109,7 @@ class DSLAction:
             return self.args[0]
         else:
             raise ValueError(
-                f"This action: {self.action_name} doesn't have a role as amount"
+                f"This action: {self.action_name} doesn't have a role as parameter"
             )
 
     def check_implemented(self, roles: Dict[str, DefiRoles]) -> bool:
@@ -122,7 +127,7 @@ class DSLAction:
         elif self.action_name == "transaction":
             return self.asset0 in roles[self.defi_entry].hacked_assets
         elif self.action_name == "breaklr":
-            return self.swap_pairs[0] in roles[self.defi_entry].hacked_pairs
+            return self.oracle in roles[self.defi_entry].hacked_oracles
         return True
 
     def gen_constraints(self, config: Config) -> ACTION_SUMMARY:
@@ -211,27 +216,22 @@ class Payback(DSLAction):
 class Burn(DSLAction):
     def __init__(
         self,
-        pair: str,
+        oracle: str,
         asset: str,
         amount: str,
         concrete: bool = False,
     ) -> None:
-        super().__init__("burn", [pair, asset], [amount], concrete)
+        super().__init__("burn", [oracle, asset], [amount], concrete)
 
 
 class BreakLR(DSLAction):
     def __init__(
         self,
-        *args,
+        oracle: str,
+        defi_entry: str,
         concrete: bool = False,
     ) -> None:
-        if len(args) < 2:
-            raise ValueError(
-                f"Length of arguments of a Swap must be larger than 2, current is: {args}"
-            )
-        swap_pairs: str = args[:-1]
-        defi_entry: str = args[-1]
-        super().__init__("breaklr", [*swap_pairs, defi_entry], [], concrete)
+        super().__init__("breaklr", [oracle, defi_entry], [], concrete)
 
 
 class Sync(DSLAction):
