@@ -134,11 +134,12 @@ def gen_summary_getAmountsIn(
 
 def gen_summary_uniswap(
     pair: str,
-    user: str,
-    asset0: str,
-    asset1: str,
+    sender: str,
+    assetIn: str,
+    assetOut: str,
     amtIn: str,
     suffix: str = "",
+    receiver: str = None,
     transfer0: TransferSignature = None,
     transfer1: TransferSignature = None,
     percent_in0: float = 1,
@@ -150,15 +151,17 @@ def gen_summary_uniswap(
         transfer0 = gen_summary_transfer
     if transfer1 is None:
         transfer1 = gen_summary_transfer
+    if receiver is None:
+        receiver = sender
     amtOutSuf = f"amtOut{suffix}"
     s_in = transfer0(
-        user, pair, asset0, amtIn, percent_in=percent_in0, percent_out=percent_out0
+        sender, pair, assetIn, amtIn, percent_in=percent_in0, percent_out=percent_out0
     )
     s_out = transfer1(
-        pair, user, asset1, amtOutSuf, percent_in=percent_in1, percent_out=percent_out1
+        pair, receiver, assetOut, amtOutSuf, percent_in=percent_in1, percent_out=percent_out1
     )
-    bal_pair_asset0 = f"old_{asset0}.balanceOf({pair})"
-    bal_pair_asset1 = f"old_{asset1}.balanceOf({pair})"
+    bal_pair_asset0 = f"old_{assetIn}.balanceOf({pair})"
+    bal_pair_asset1 = f"old_{assetOut}.balanceOf({pair})"
     extra_constraints = gen_summary_getAmountsOut(
         amtIn, amtOutSuf, bal_pair_asset0, bal_pair_asset1
     )
@@ -471,22 +474,18 @@ def gen_Zoompro_breaklr_pair_controller():
 
 
 def gen_Zoompro_swap_trader_usdt_zoom():
-    zoomOut = "amountOut"
     return merge_summary(
         gen_summary_transfer("attacker", "trader", "usdt", "arg_0"),
-        gen_summary_uniswap("pair", "trader", "fusdt", "zoom", "arg_0"),
-        gen_summary_transfer("trader", "attacker", "zoom", zoomOut),
-        ([], gen_summary_getAmountsOut("arg_0", zoomOut, "old_fusdt.balanceOf(pair)", "old_zoom.balanceOf(pair)"))
+        gen_summary_uniswap("pair", "trader", "fusdt", "zoom", "arg_0", receiver="attacker"),
     )
 
 
 def gen_Zoompro_swap_trader_zoom_usdt():
     usdtOut = "amountOut"
     return merge_summary(
-        gen_summary_transfer("attacker", "trader", "zoom", "arg_0"),
-        gen_summary_uniswap("pair", "trader", "zoom", "fusdt", "arg_0"),
+        gen_summary_uniswap("pair", "attacker", "zoom", "fusdt", "arg_0", receiver="trader"),
         gen_summary_transfer("trader", "attacker", "usdt", usdtOut),
-        ([], gen_summary_getAmountsOut("arg_0", usdtOut, "old_zoom.balanceOf(pair)", "old_fusdt.balanceOf(pair)"))
+        ([], gen_summary_getAmountsOut("arg_0", usdtOut, "old_zoom.balanceOf(pair)", "old_fusdt.balanceOf(pair)")),
     )
 
 

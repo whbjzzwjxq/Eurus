@@ -1,0 +1,25 @@
+{
+    "test_results": {
+        "./benchmarks/Zoompro": [
+            {
+                "name": "check_gt",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x1158e460913d00000",
+                        "p_amt1_uint256": "0x107ad8f556c6c0000",
+                        "p_amt2_uint256": "0x2b14a594b046d40000000",
+                        "p_amt3_uint256": "0x116636fb7b2560000"
+                    }
+                ],
+                "time": [
+                    0.012506583996582776,
+                    0,
+                    0.012506583996582776
+                ],
+                "feasible": true,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

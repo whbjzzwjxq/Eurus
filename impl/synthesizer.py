@@ -408,7 +408,7 @@ class Synthesizer:
             template: List[DSLAction] = [
                 Borrow(asset0, "amt0"),
                 Swap(swap_pair0, asset0, asset1, "amt1"),
-                BreakLR(swap_pair0, defi_entry),
+                BreakLR(oracle, defi_entry),
                 Sync(oracle),
                 Swap(swap_pair0, asset1, asset0, "amt3"),
                 Swap(swap_pair1, asset0, stable_coin, "amt4"),

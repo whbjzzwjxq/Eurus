@@ -30,7 +30,7 @@ global Z3_OR_GB
 Z3_OR_GB = True
 TRACK_UNSAT = True
 LB = 0
-UB = 2**64 - 1
+UB = 2**128 - 1
 VTYPE = gp.GRB.CONTINUOUS
 
 
@@ -383,6 +383,7 @@ def eurus_solve(
                 n = m.groups()[0]
                 if n in names:
                     print(c)
+        feasible = False
     return feasible
 
 

@@ -369,7 +369,7 @@ contract ZoomproTest is Test, BlockLoader {
         vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_trader_usdt_zoom(amt1);
-        breaklr_trader_controller();
+        breaklr_pair_controller();
         swap_trader_zoom_usdt(amt2);
         payback_usdt(amt3);
         assert(!attackGoal());
@@ -403,7 +403,7 @@ contract ZoomproTest is Test, BlockLoader {
         vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_zoom(amt0);
         swap_trader_zoom_usdt(amt1);
-        breaklr_trader_controller();
+        breaklr_pair_controller();
         swap_trader_usdt_zoom(amt2);
         payback_zoom(amt3);
         assert(!attackGoal());
@@ -437,7 +437,7 @@ contract ZoomproTest is Test, BlockLoader {
         vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_trader_usdt_zoom(amt1);
-        breaklr_trader_controller();
+        breaklr_pair_controller();
         sync_pair();
         swap_trader_zoom_usdt(amt2);
         payback_usdt(amt3);
@@ -456,7 +456,7 @@ contract ZoomproTest is Test, BlockLoader {
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_trader_usdt_zoom(amt1);
-        breaklr_trader_controller();
+        breaklr_pair_controller();
         swap_trader_zoom_usdt(amt2);
         swap_trader_zoom_usdt(amt3);
         payback_usdt(amt4);
@@ -511,7 +511,7 @@ contract ZoomproTest is Test, BlockLoader {
         vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_zoom(amt0);
         swap_trader_zoom_usdt(amt1);
-        breaklr_trader_controller();
+        breaklr_pair_controller();
         sync_pair();
         swap_trader_usdt_zoom(amt2);
         payback_zoom(amt3);
@@ -530,7 +530,7 @@ contract ZoomproTest is Test, BlockLoader {
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_zoom(amt0);
         swap_trader_zoom_usdt(amt1);
-        breaklr_trader_controller();
+        breaklr_pair_controller();
         swap_trader_usdt_zoom(amt2);
         swap_trader_zoom_usdt(amt3);
         payback_zoom(amt4);
@@ -586,7 +586,7 @@ contract ZoomproTest is Test, BlockLoader {
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_usdt(amt0);
         swap_trader_usdt_zoom(amt1);
-        breaklr_trader_controller();
+        breaklr_pair_controller();
         sync_pair();
         swap_trader_zoom_usdt(amt2);
         swap_trader_zoom_usdt(amt3);
@@ -626,7 +626,7 @@ contract ZoomproTest is Test, BlockLoader {
         vm.assume(amt4 == (amt0 * 1003) / 1000);
         borrow_zoom(amt0);
         swap_trader_zoom_usdt(amt1);
-        breaklr_trader_controller();
+        breaklr_pair_controller();
         sync_pair();
         swap_trader_usdt_zoom(amt2);
         swap_trader_zoom_usdt(amt3);
