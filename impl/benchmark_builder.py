@@ -70,6 +70,9 @@ class BenchmarkBuilder:
         # Will print token_users' initial balances.
         self.token_users = [c for c in self.ctrt_names if c in self.roles]
 
+        # Lender Pool
+        self.lend_pools = ["owner"] + [name for name, role in self.roles.items() if role.is_lendpool]
+
         actions = [init_action_from_list(a, True) for a in self.config.groundtruth]
         self.gt_sketch = Sketch(actions)
 
@@ -217,9 +220,12 @@ class BenchmarkBuilder:
                     stmt = f"{t}.transfer({addr}, {sv_name});"
                     all.append(stmt)
 
-                # Use approve-transfer to mock flashloan
-                if u == AttackCtrtName:
-                    all.append(f"{t}.approve(attacker, UINT256_MAX);")
+        # # Use approve-transferFrom to mock flashloan
+        # for t in self.erc20_tokens:
+        #     for l in self.lend_pools:
+        #         if l != "owner" and t not in self.roles[l].support_swaps:
+        #             continue
+        #         all.append(f"{t}.approve(attacker, UINT256_MAX);")
 
         all.extend(self.extra_deployments)
 
@@ -271,19 +277,24 @@ class BenchmarkBuilder:
                 actions.extend(func_body)
 
         # flashloan borrow-payback
-        for t in self.erc20_tokens:
-            borrow = [
-                f"function borrow_{t}(uint256 amount) internal " + "{",
-                f"{t}.transferFrom(owner, attacker, amount);",
-                "}",
-            ]
-            payback = [
-                f"function payback_{t}(uint256 amount) internal " + "{",
-                f"{t}.transfer(owner, amount);",
-                "}",
-            ]
-            add_func_to_actions(borrow)
-            add_func_to_actions(payback)
+        for l in self.lend_pools:
+            addr = l if l == "owner" else f"address({l})"
+            for t in self.erc20_tokens:
+                borrow = [
+                    f"function borrow_{l}_{t}(uint256 amount) internal " + "{",
+                    f"vm.stopPrank();",
+                    f"vm.prank({addr});",
+                    f"{t}.transfer(attacker, amount);",
+                    f"vm.startPrank(attacker);",
+                    "}",
+                ]
+                payback = [
+                    f"function payback_{l}_{t}(uint256 amount) internal " + "{",
+                    f"{t}.transfer({addr}, amount);",
+                    "}",
+                ]
+                add_func_to_actions(borrow)
+                add_func_to_actions(payback)
 
         # swap by uniswap
         router_name = "router"

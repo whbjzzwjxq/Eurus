@@ -137,7 +137,7 @@ contract BXHStaking is Ownable, ReentrancyGuard{
         uint256 _tokenPerBlock, 
         uint256 _startBlock,
         uint256 _decayRatio,
-        address _adminAddress 
+        address _adminAddress
     )  {
         iToken = IERC20(_iToken);
         tokenPerBlock = _tokenPerBlock;
@@ -580,30 +580,28 @@ contract BXHStaking is Ownable, ReentrancyGuard{
     }
 
     // Deposit LP tokens to Pool for IToken allocation.
-    function deposit(address _pair, uint256 _amountInToken) public notPause {
+    function deposit(uint256 _pid, uint256 _amount, address _pair) public notPause {
         // PoolInfo storage pool = poolInfo[_pid];
 
         // require( _amount == 0 || (_amount >= pool.depositMin && _amount <= pool.depositMax) , "deposit amount need in range");
 
         // depositIToken(_pid, _amount, msg.sender);
-        // Hardcode
-        // The mock of the deposit limitation of one time
-        uint256 bonusMin = 0;
-        uint256 bonusMax = 10 ether;
-        require(_amountInToken >= bonusMin && _amountInToken <= bonusMax, "deposit amount need in range");
-        uint256 _fee = 3;
+
+        // Hardcode of the call of depositIToken
+        require( _amount == 0, "deposit amount need in range");
+        uint256 pendingAmount = 15.24 ether;
         uint256 amountTokenOut = 0;
+        uint256 _fee = 0;
         (uint112 _reserve0, uint112 _reserve1, ) = IUniswapV2Pair(_pair).getReserves();
         address rewardToken;
         if(IUniswapV2Pair(_pair).token0() == address(iToken)){
-            amountTokenOut = getAmountOut( _amountInToken , _reserve0, _reserve1, _fee);
+            amountTokenOut = getAmountOut(pendingAmount , _reserve0, _reserve1, _fee);
             rewardToken = IUniswapV2Pair(_pair).token1();
         } else {
-            amountTokenOut = getAmountOut( _amountInToken , _reserve1, _reserve0, _fee);
+            amountTokenOut = getAmountOut(pendingAmount , _reserve1, _reserve0, _fee);
             rewardToken = IUniswapV2Pair(_pair).token0();
         }
         IERC20(rewardToken).transfer(msg.sender, amountTokenOut);
-        IERC20(iToken).transferFrom(msg.sender, address(this), _amountInToken);
     }
 
 

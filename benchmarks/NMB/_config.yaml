@@ -43,13 +43,13 @@ extra_statements:
 attack_goal_str: "nbu"
 
 groundtruth:
-  - ["borrow", "nimb", "100000000e18"]
+  - ["borrow", "owner", "nimb", "100000000e18"]
   - ["swap", "pairnbunimb", "nimb", "nbu", "nimb.balanceOf(attacker)"]
   - ["transaction", "gnimbstaking", "gnimb", "0"]
   - ["swap", "pairnbunimb", "nbu", "nimb", "nbu.balanceOf(attacker)"]
   - ["swap", "pairnbugnimb", "gnimb", "nbu", "gnimb.balanceOf(attacker)"]
   - ["swap", "pairnbunimb", "nbu", "nimb", "3e18"]
-  - ["payback", "nimb", "100000000e18 * 1003 / 1000"]
+  - ["payback", "owner", "nimb", "100000000e18 * 1003 / 1000"]
 
 # Information for search space building.
 roles:
@@ -73,6 +73,8 @@ roles:
       "nimb": ["nimb", "nbu"]
     is_oracle: true
     oracle: "pairnbunimb"
+    is_lendpool: true
+    
   "pairnbugnimb":
     is_swappair: true
     uniswap_order: ["gnimb", "nbu"]
@@ -81,6 +83,8 @@ roles:
       "gnimb": ["gnimb", "nbu"]
     is_oracle: true
     oracle: "pairnbugnimb"
+    is_lendpool: true
+
   "gnimbstaking":
     is_defientry: true
     hacked_assets: ["gnimb"]

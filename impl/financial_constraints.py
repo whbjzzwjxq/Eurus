@@ -300,7 +300,7 @@ def gen_BXH_transaction_bxhstaking_bxh():
     amount_in = "amtIn"
     amount_out = "amtOut"
 
-    reward_base_amount = [lambda s: s.get("arg_0") == s.get(amount_in)]
+    reward_base_amount = [lambda s: 15.24e18 / SCALE == s.get(amount_in)]
 
     #
     reward_amount = gen_summary_getAmountsOut(
@@ -510,15 +510,10 @@ def gen_ShadowFi_refinement():
 
 
 def gen_BXH_refinement():
-    stake_min = 0
-    stake_max = 10e18 / SCALE
     return [
         {
             "transaction_bxhstaking_bxh": [
-                # BonusMin
-                lambda s: s.get("amtIn") >= stake_min,
-                # BonusMax
-                lambda s: s.get("amtIn") <= stake_max,
+                lambda s: s.get("amtIn") == 0,
             ]
         }
     ]

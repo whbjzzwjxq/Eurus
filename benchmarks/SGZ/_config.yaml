@@ -27,11 +27,11 @@ extra_statements: []
 attack_goal_str: "usdt"
 
 groundtruth:
-  - ["borrow", "usdt", "100e18"]
+  - ["borrow", "owner", "usdt", "100e18"]
   - ["swap", "pair", "usdt", "sgz", "usdt.balanceOf(attacker)"]
   - ["breaklr", "pair", "sgz"]
   - ["swap", "pair", "sgz", "usdt", "sgz.balanceOf(attacker)"]
-  - ["payback", "usdt", "100e18 * 1003 / 1000"]
+  - ["payback", "owner", "usdt", "100e18 * 1003 / 1000"]
 
 # Information for search space building.
 roles:
@@ -53,5 +53,6 @@ roles:
       "sgz": ["sgz", "usdt"]
     is_oracle: true
     oracle: "pair"
+    is_lendpool: true
 
 pattern: "Liquidity Ratio Break"

@@ -63,9 +63,9 @@ class DSLAction:
 
     @property
     def asset0(self):
-        if self.action_name in ("borrow", "payback"):
+        if self.action_name in ():
             return self.args_in_name[0]
-        elif self.action_name in ("burn", "transaction"):
+        elif self.action_name in ("burn", "transaction", "borrow", "payback"):
             return self.args_in_name[1]
         elif self.action_name in ("swap",):
             return self.args_in_name[-2]
@@ -101,6 +101,15 @@ class DSLAction:
         else:
             raise ValueError(
                 f"This action: {self.action_name} doesn't have a role as oracle"
+            )
+        
+    @property
+    def lend_pool(self):
+        if self.action_name in ("borrow", "payback"):
+            return self.args_in_name[0]
+        else:
+            raise ValueError(
+                f"This action: {self.action_name} doesn't have a role as pool"
             )
 
     @property
@@ -196,21 +205,23 @@ class Swap(DSLAction):
 class Borrow(DSLAction):
     def __init__(
         self,
+        pool: str,
         asset: str,
         amount: str,
         concrete: bool = False,
     ) -> None:
-        super().__init__("borrow", [asset], [amount], concrete)
+        super().__init__("borrow", [pool, asset], [amount], concrete)
 
 
 class Payback(DSLAction):
     def __init__(
         self,
+        pool: str,
         asset: str,
         amount: str,
         concrete: bool = False,
     ) -> None:
-        super().__init__("payback", [asset], [amount], concrete)
+        super().__init__("payback", [pool, asset], [amount], concrete)
 
 
 class Burn(DSLAction):
@@ -277,12 +288,7 @@ class Sketch:
     def __init__(self, actions: List[DSLAction]) -> None:
         self._actions = actions
 
-    @property
-    def len(self):
-        return self._actions.__len__()
-
-    @property
-    def pure_len(self):
+    def __len__(self):
         return self.pure_actions.__len__()
 
     @property
@@ -312,12 +318,15 @@ class Sketch:
         return Sketch(actions)
 
     def __eq__(self, __value: "Sketch") -> bool:
-        if self.pure_len != __value.pure_len:
+        if len(self) != len(__value):
             return False
         pa0 = self.pure_actions
         pa1 = __value.pure_actions
         sames = [a == b for a, b in zip(pa0, pa1)]
         return all(sames)
+    
+    def __str__(self) -> str:
+        return "\n".join([str(a) for a in self.pure_actions])
 
     def symbolic_copy(self) -> "Sketch":
         """
@@ -332,7 +341,27 @@ class Sketch:
         return Sketch(new_actions)
 
     def check_implemented(self, roles: Dict[str, DefiRoles]) -> bool:
-        return all(a.check_implemented(roles) for a in self.pure_actions)
+        all_implemented = all(a.check_implemented(roles) for a in self.pure_actions)
+        if not all_implemented:
+            return False
+        for idx, a in enumerate(self.pure_actions):
+            if a.action_name in ("borrow", "payback"):
+                if self.match_borrow_payback(idx) == -1:
+                    return False
+        return True
+    
+    def match_borrow_payback(self, idx: int) -> int:
+        a = self.pure_actions[idx]
+        if a.action_name == "borrow":
+            pair_name = "payback"
+        elif a.action_name == "payback":
+            pair_name = "borrow"
+        else:
+            raise ValueError(f"Index: {idx} is not a borrow/payback action. Sketch is: {str(self)}")
+        for i, a1 in enumerate(self.pure_actions):
+            if a1.action_name == pair_name and a1.lend_pool == a.lend_pool:
+                return i
+        return -1
 
     def output(
         self,
@@ -341,11 +370,15 @@ class Sketch:
     ) -> List[str]:
         if pre_statements is None:
             pre_statements = []
+        else:
+            pre_statements = [*pre_statements]
         # Here, all of benchmarks have flashloan.
-        pre_statements = [
-            f"vm.assume({self._actions[-1].amount} == {self._actions[0].amount} * 1003 / 1000);",
-            *pre_statements,
-        ]
+        for idx, a in enumerate(self.pure_actions):
+            if a.action_name == "borrow":
+                a1_idx = self.match_borrow_payback(idx)
+                a1 = self.pure_actions[a1_idx]
+                f = f"vm.assume({a1.amount} == {a.amount} * 1003 / 1000);"
+                pre_statements.append(f)
 
         params = [f"uint256 amt{i}" for i in range(self.param_num)]
         param_str = ",".join(params)

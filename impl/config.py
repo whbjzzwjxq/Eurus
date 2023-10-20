@@ -14,6 +14,7 @@ class DefiRoles:
     is_defientry: bool = False
     is_swappair: bool = False
     is_oracle: bool = False
+    is_lendpool: bool = False
 
     oracle: str = ""
 

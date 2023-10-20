@@ -65,5 +65,6 @@ roles:
       "usdce": ["mu", "usdce"]
     is_oracle: true
     oracle: "pair"
+    is_lendpool: true
 
 pattern: "Price Discrepancy"

