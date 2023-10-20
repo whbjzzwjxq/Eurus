@@ -12,7 +12,7 @@ contract ContractTest is Test, BlockLoader {
     IERC20 usdc = IERC20(0x04068DA6C83AFCFA0e13ba15A6696662335D5B75);
     IUniswapV2Pair pair = IUniswapV2Pair(0xbcab7d083Cf6a01e0DdA9ed7F8a02b47d125e682);
 
-    address attacker = address(0x12efed3512ea7b76f79bcde4a387216c7bce905e);
+    address attacker = address(0x12EfeD3512EA7b76F79BcdE4a387216C7bcE905e);
 
     function setUp() public {
         vm.createSelectFork("fantom", 34_041_499);
@@ -25,7 +25,7 @@ contract ContractTest is Test, BlockLoader {
         address[] memory users = new address[](3);
         users[0] = address(pair);
         users[1] = attacker;
-        users[2] = vault;
+        users[2] = address(vault);
         string[] memory user_names = new string[](3);
         user_names[0] = "pair";
         user_names[1] = "attacker";
