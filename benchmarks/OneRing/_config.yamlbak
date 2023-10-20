@@ -1,0 +1,60 @@
+# Information for benchmarks building.
+project_name: "OneRing"
+
+ctrt_name2cls:
+  - ["usdc", "USDT"]
+  - ["vault", "Vault"]
+  - ["pair", "UniswapV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+
+ctrt_name2deploy:
+  - ["usdc", ""]
+  - ["vault", "new Vault()"]
+  - ["pair", ""]
+  - ["factory", ""]
+  - ["router", ""]
+
+extra_actions:
+  - "function transaction_vaultstaking_vault(uint256 amount) internal {
+    vaultstaking.deposit(0, amount, address(pair));
+    }"
+
+extra_deployments:
+  - "vault.transfer(address(vaultstaking), 200000 ether);"
+extra_statements: []
+
+attack_goal_str: "usdc"
+
+groundtruth:
+  - ["borrow", "owner", "usdc", "3110000e18"]
+  - ["swap", "pair", "usdc", "vault", "usdc.balanceOf(attacker)"]
+  - ["transaction", "vaultstaking", "vault", "0"]
+  - ["swap", "pair", "vault", "usdc", "vault.balanceOf(attacker)"]
+  - ["payback", "owner", "usdc", "3110000e18 * 1003 / 1000"]
+
+# Information for search space building.
+roles:
+  "usdc":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "vault":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: false
+  "pair":
+    is_swappair: true
+    uniswap_order: ["usdc", "vault"]
+    support_swaps:
+      "usdc": ["vault", "usdc"]
+      "vault": ["vault", "usdc"]
+    is_oracle: true
+    oracle: "pair"
+    is_lendpool: true
+
+  "vaultstaking":
+    is_defientry: true
+    hacked_assets: ["vault"]
+
+pattern: "BuySell Manipulation"
