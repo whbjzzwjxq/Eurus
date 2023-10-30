@@ -80,6 +80,33 @@ abstract contract BlockLoader is Test {
         emit log_string(concatString("----queryUniswapV2Pair ends----", name));
     }
 
+    function queryBaseV1Pair(address pair_, string memory name) public {
+        emit log_string(
+            concatString("----queryUniswapV2Pair starts----", name)
+        );
+        IUniswapV2Pair pair = IUniswapV2Pair(pair_);
+
+        (uint256 reserve0, uint256 reserve1, uint256 blockTimestampLast) = pair
+            .getReserves();
+
+        emit log_named_uint(concatString("uint112 reserve0", name), reserve0);
+        emit log_named_uint(concatString("uint112 reserve1", name), reserve1);
+        emit log_named_uint(
+            concatString("uint32 blockTimestampLast", name),
+            blockTimestampLast
+        );
+        emit log_named_uint(concatString("uint256 kLast", name), 0);
+        emit log_named_uint(
+            concatString("uint256 price0CumulativeLast", name),
+            0
+        );
+        emit log_named_uint(
+            concatString("uint256 price1CumulativeLast", name),
+            0
+        );
+        emit log_string(concatString("----queryUniswapV2Pair ends----", name));
+    }
+
     function queryBlockTimestamp() public {
         emit log_string("----queryBlockTimestamp starts----");
         emit log_named_uint("uint256 blockTimestamp", block.timestamp);

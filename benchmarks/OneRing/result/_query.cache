@@ -1,0 +1,43 @@
+No files changed, compilation skipped
+
+Running 1 test for benchmarks/OneRing/OneRing_query.t.sol:ContractTest
+[32m[PASS][0m test_query() (gas: 182145)
+Logs:
+  ----query starts----
+  ----queryBlockTimestamp starts----
+  uint256 blockTimestamp: 1647888248
+  ----queryBlockTimestamp ends----
+  ----queryUniswapV2Pair starts----pair
+  uint112 reserve0pair: 84252468168797
+  uint112 reserve1pair: 105160077240219005280149210
+  uint32 blockTimestampLastpair: 1647888198
+  uint256 kLastpair: 0
+  uint256 price0CumulativeLastpair: 0
+  uint256 price1CumulativeLastpair: 0
+  ----queryUniswapV2Pair ends----pair
+  ----queryERC20 starts----vault
+  uint256 totalSupplyvault: 4185979962653993796224466
+  uint256 balanceOfvaultpair: 0
+  uint256 balanceOfvaultattacker: 0
+  uint256 balanceOfvaultstrategy: 0
+  uint256 balanceOfvaultvault: 0
+  ----queryERC20 ends----vault
+  ----queryERC20 starts----mim
+  uint256 totalSupplymim: 378090762546918984877248087
+  uint256 balanceOfmimpair: 105160077240219005280149210
+  uint256 balanceOfmimattacker: 0
+  uint256 balanceOfmimstrategy: 0
+  uint256 balanceOfmimvault: 0
+  ----queryERC20 ends----mim
+  ----queryERC20 starts----usdce
+  uint256 totalSupplyusdce: 1176800031172955
+  uint256 balanceOfusdcepair: 84252468168797
+  uint256 balanceOfusdceattacker: 0
+  uint256 balanceOfusdcestrategy: 0
+  uint256 balanceOfusdcevault: 0
+  ----queryERC20 ends----usdce
+  ----query ends----
+
+Test result: [32mok[0m. [32m1[0m passed; [31m0[0m failed; [33m0[0m skipped; finished in 373.80ms
+ 
+Ran 1 test suites: [32m1[0m tests passed, [31m0[0m failed, [33m0[0m skipped (1 total tests)

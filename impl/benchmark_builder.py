@@ -79,7 +79,8 @@ class BenchmarkBuilder:
     def get_initial_state(self) -> List[str]:
         # Handle the initial states print by foundry.
         # Look at: QueryBlockchain.sol and query_output_example.txt for more information.
-        cache_file = path.join(self.bmk_dir, "result", "_query.cache")
+        cache_path, result_path = prepare_subfolder(self.bmk_dir)
+        cache_file = path.join(result_path, "_query.cache")
         if path.exists(cache_file):
             with open(cache_file, "r") as f:
                 outputs = f.readlines()
@@ -89,8 +90,15 @@ class BenchmarkBuilder:
                 "forge",
                 "test",
                 "-vv",
+                "--cache-path",
+                cache_path,
                 "--match-path",
                 f"{self.bmk_dir}/{self.name}_query.t.sol",
+                "--extra-output",
+                "storageLayout",
+                "metadata",
+                "--root",
+                os.getcwd(),
             ]
             print(" ".join(cmd))
             try:
@@ -366,7 +374,7 @@ class BenchmarkBuilder:
             *self.gen_helper_funcs(),
             *self.gen_actions(),
             *self.gen_gt_for_forge_and_halmos(),
-            *self.gen_candidates(),
+            # *self.gen_candidates(),
             "}",
         ]
         with open(output_path, "w") as f:
