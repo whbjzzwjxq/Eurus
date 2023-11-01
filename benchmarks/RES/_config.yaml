@@ -35,7 +35,7 @@ groundtruth:
   - ["swap", "pair", "resA", "usdt", "resA.balanceOf(attacker)"]
   - ["breaklr", "pair", "resA"]
   - ["sync", "pair"]
-  - ["swap", "pair", "usdt", "resA", "20000e18"]
+  - ["swap", "pair", "usdt", "resA", "90000e18"]
   - ["payback", "owner", "resA", "1000000e8 * 1003 / 1000"]
 
 # Information for search space building.
