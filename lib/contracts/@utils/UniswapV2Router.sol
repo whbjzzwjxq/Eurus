@@ -17,8 +17,6 @@ contract UniswapV2Router is IUniswapV2Router {
     address public immutable override factory;
     address public immutable override WETH;
 
-    event PrintCompare(uint valueA, uint valueB, string operator);
-
     modifier ensure(uint256 deadline) {
         // Remove this modifier.
         // require(deadline >= block.timestamp, "UniswapV2Router: EXPIRED");
@@ -576,15 +574,14 @@ contract UniswapV2Router is IUniswapV2Router {
                     reserveInput,
                     reserveOutput
                 );
-                // amountOutput = reserveOutput * amountInput / reserveInput;
             }
             (uint256 amount0Out, uint256 amount1Out) = input == token0
                 ? (uint256(0), amountOutput)
                 : (amountOutput, uint256(0));
-            address to = i < path.length - 2
-                ? UniswapV2Library.pairFor(factory, output, path[i + 2])
-                : _to;
-            pair.swap(amount0Out, amount1Out, to, new bytes(0));
+            // address to = i < path.length - 2
+            //     ? UniswapV2Library.pairFor(factory, output, path[i + 2])
+            //     : _to;
+            pair.swap(amount0Out, amount1Out, _to, new bytes(0));
         }
     }
 
@@ -595,15 +592,15 @@ contract UniswapV2Router is IUniswapV2Router {
         address to,
         uint256 deadline
     ) external virtual override ensure(deadline) {
-        TransferHelper.safeTransferFrom(
-            path[0],
-            msg.sender,
-            UniswapV2Library.pairFor(factory, path[0], path[1]),
-            amountIn
-        );
+        // TransferHelper.safeTransferFrom(
+        //     path[0],
+        //     msg.sender,
+        //     UniswapV2Library.pairFor(factory, path[0], path[1]),
+        //     amountIn
+        // );
+        IERC20(path[0]).transferFrom(msg.sender, UniswapV2Library.pairFor(factory, path[0], path[1]), amountIn);
         uint256 balanceBefore = IERC20(path[path.length - 1]).balanceOf(to);
         _swapSupportingFeeOnTransferTokens(path, to);
-        emit PrintCompare(IERC20(path[path.length - 1]).balanceOf(to) - balanceBefore, amountOutMin, ">=");
         require(
             IERC20(path[path.length - 1]).balanceOf(to) - balanceBefore >=
                 amountOutMin,

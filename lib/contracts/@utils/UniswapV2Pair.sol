@@ -191,8 +191,10 @@ contract UniswapV2Pair is UniswapV2ERC20, IUniswapV2Pair {
             "UniswapV2: INSUFFICIENT_LIQUIDITY_BURNED"
         );
         _burn(address(this), liquidity);
-        _safeTransfer(_token0, to, amount0);
-        _safeTransfer(_token1, to, amount1);
+        // _safeTransfer(_token0, to, amount0);
+        // _safeTransfer(_token1, to, amount1);
+        IERC20(_token0).transfer(to, amount0);
+        IERC20(_token1).transfer(to, amount1);
         balance0 = IERC20(_token0).balanceOf(address(this));
         balance1 = IERC20(_token1).balanceOf(address(this));
 
@@ -225,8 +227,10 @@ contract UniswapV2Pair is UniswapV2ERC20, IUniswapV2Pair {
             address _token0 = token0;
             address _token1 = token1;
             require(to != _token0 && to != _token1, "UniswapV2: INVALID_TO");
-            if (amount0Out > 0) _safeTransfer(_token0, to, amount0Out); // optimistically transfer tokens
-            if (amount1Out > 0) _safeTransfer(_token1, to, amount1Out); // optimistically transfer tokens
+            // if (amount0Out > 0) _safeTransfer(_token0, to, amount0Out); // optimistically transfer tokens
+            // if (amount1Out > 0) _safeTransfer(_token1, to, amount1Out); // optimistically transfer tokens
+            if (amount0Out > 0) IERC20(_token0).transfer(to, amount0Out); // optimistically transfer tokens
+            if (amount1Out > 0) IERC20(_token1).transfer(to, amount1Out); // optimistically transfer tokens
             if (data.length > 0)
                 IUniswapV2Callee(to).uniswapV2Call(
                     msg.sender,
@@ -243,10 +247,6 @@ contract UniswapV2Pair is UniswapV2ERC20, IUniswapV2Pair {
         uint256 amount1In = balance1 > _reserve1 - amount1Out
             ? balance1 - (_reserve1 - amount1Out)
             : 0;
-        // emit Transfer(address(0xdead), address(0xdead), amount0In);
-        // emit Transfer(address(0xdead), address(0xdead), amount0Out);
-        // emit Transfer(address(0xdead), address(0xdead), amount1In);
-        // emit Transfer(address(0xdead), address(0xdead), amount1Out);
         require(
             amount0In > 0 || amount1In > 0,
             "UniswapV2: INSUFFICIENT_INPUT_AMOUNT"
@@ -268,18 +268,22 @@ contract UniswapV2Pair is UniswapV2ERC20, IUniswapV2Pair {
 
     // force balances to match reserves
     function skim(address to) external override lock {
-        address _token0 = token0; // gas savings
-        address _token1 = token1; // gas savings
-        _safeTransfer(
-            _token0,
-            to,
-            IERC20(_token0).balanceOf(address(this)) - reserve0
-        );
-        _safeTransfer(
-            _token1,
-            to,
-            IERC20(_token1).balanceOf(address(this)) - reserve1
-        );
+        // address _token0 = token0; // gas savings
+        // address _token1 = token1; // gas savings
+        // _safeTransfer(
+        //     _token0,
+        //     to,
+        //     IERC20(_token0).balanceOf(address(this)) - reserve0
+        // );
+        // _safeTransfer(
+        //     _token1,
+        //     to,
+        //     IERC20(_token1).balanceOf(address(this)) - reserve1
+        // );
+        IERC20 _token0 = IERC20(token0); // gas savings
+        IERC20 _token1 = IERC20(token1); // gas savings
+        _token0.transfer(to, _token0.balanceOf(address(this)) - reserve0);
+        _token1.transfer(to, _token1.balanceOf(address(this)) - reserve1);
     }
 
     // force reserves to match balances

@@ -9,7 +9,7 @@ from subprocess import CalledProcessError, TimeoutExpired, run
 from impl.eurus import eurus_test
 
 from impl.benchmark_builder import BenchmarkBuilder, get_sketch_by_func_name
-from impl.synthesizer import Synthesizer
+from impl.synthesizer import SynthesizerByPattern
 from impl.utils import (
     gen_result_paths,
     get_bmk_dirs,
@@ -237,7 +237,7 @@ def clean_result(
     bmk_dir: str, only_gt: bool, smtdiv: str, start: int, end: int, suffix_spec: str
 ):
     builder = BenchmarkBuilder(bmk_dir)
-    synthesizer = Synthesizer(builder.config)
+    synthesizer = SynthesizerByPattern(builder.config)
     _, result_path = prepare_subfolder(bmk_dir)
     result_paths = gen_result_paths(
         result_path, only_gt, smtdiv, len(synthesizer.candidates), suffix_spec
@@ -268,7 +268,7 @@ def verify_result(
     bmk_dir: str, only_gt: bool, smtdiv: str, verify_result_path: str, suffix_spec: str
 ):
     builder = BenchmarkBuilder(bmk_dir)
-    synthesizer = Synthesizer(builder.config)
+    synthesizer = SynthesizerByPattern(builder.config)
     _, result_path = prepare_subfolder(bmk_dir)
     project_name = resolve_project_name(bmk_dir)
 
@@ -346,7 +346,7 @@ def halmos_test(
     print_only: bool = args.printsmt
     suffix_spec: str = args.suffix
     builder = BenchmarkBuilder(bmk_dir)
-    synthesizer = Synthesizer(builder.config)
+    synthesizer = SynthesizerByPattern(builder.config)
     project_name = resolve_project_name(bmk_dir)
     _, result_path = prepare_subfolder(bmk_dir)
 

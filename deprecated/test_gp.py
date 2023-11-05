@@ -11,7 +11,7 @@ import gurobipy as gp
 
 from impl.halmos import exec_halmos
 from impl.benchmark_builder import BenchmarkBuilder, get_sketch_by_func_name
-from impl.synthesizer import Synthesizer
+from impl.synthesizer import SynthesizerByPattern
 from impl.utils import (
     gen_result_paths,
     get_bmk_dirs,
@@ -154,7 +154,7 @@ def _main(use_mock_uniswap: bool, use_mock_ethpswap: bool, use_transfer_limit: b
             param_ints.append(int(a.x * scale))
         bmk_dir = "./benchmarks/Discover"
         builder = BenchmarkBuilder(bmk_dir)
-        synthesizer = Synthesizer(builder.config)
+        synthesizer = SynthesizerByPattern(builder.config)
         func_name = "check_gt"
         sketch = get_sketch_by_func_name(builder, synthesizer, func_name)
         model = [param_ints]

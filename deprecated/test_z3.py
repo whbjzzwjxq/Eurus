@@ -3,7 +3,7 @@ import time
 from z3 import *
 
 from impl.benchmark_builder import BenchmarkBuilder, get_sketch_by_func_name
-from impl.synthesizer import Synthesizer
+from impl.synthesizer import SynthesizerByPattern
 from impl.verifier import verify_model
 
 token0 = "usdt"
@@ -122,7 +122,7 @@ def _main():
             param_ints.append(v)
         bmk_dir = "./benchmarks/Discover"
         builder = BenchmarkBuilder(bmk_dir)
-        synthesizer = Synthesizer(builder.config)
+        synthesizer = SynthesizerByPattern(builder.config)
         func_name = "check_gt"
         sketch = get_sketch_by_func_name(builder, synthesizer, func_name)
         model = [param_ints]

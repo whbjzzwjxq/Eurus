@@ -1,6 +1,8 @@
 from typing import Dict, List
 
-from .config import Config, DefiRoles
+from impl.utils import List
+
+from .config import Config, DefiRole
 from .financial_constraints import (
     ACTION_SUMMARY,
     gen_summary_burn,
@@ -93,16 +95,20 @@ class DSLAction:
             raise ValueError(
                 f"This action: {self.action_name} doesn't have a role as defi_entry"
             )
-        
+
     @property
     def oracle(self):
-        if self.action_name in ("sync", "burn", "breaklr", ):
+        if self.action_name in (
+            "sync",
+            "burn",
+            "breaklr",
+        ):
             return self.args_in_name[0]
         else:
             raise ValueError(
                 f"This action: {self.action_name} doesn't have a role as oracle"
             )
-        
+
     @property
     def lend_pool(self):
         if self.action_name in ("borrow", "payback"):
@@ -121,7 +127,7 @@ class DSLAction:
                 f"This action: {self.action_name} doesn't have a role as parameter"
             )
 
-    def check_implemented(self, roles: Dict[str, DefiRoles]) -> bool:
+    def check_implemented(self, roles: Dict[str, DefiRole]) -> bool:
         if self.action_name == "swap":
             src_assets = set([self.asset0])
             for s in self.swap_pairs:
@@ -140,7 +146,7 @@ class DSLAction:
         return True
 
     def gen_constraints(self, config: Config) -> ACTION_SUMMARY:
-        roles: Dict[str, DefiRoles] = config.roles
+        roles: Dict[str, DefiRole] = config.roles
         if self.action_name == "nop":
             return ([], [])
         elif self.action_name == "swap":
@@ -180,6 +186,38 @@ class NOP(DSLAction):
         concrete: bool = False,
     ) -> None:
         super().__init__("nop", [], [], concrete)
+
+
+# Basic action based on ERC20
+
+
+class Transfer(DSLAction):
+    def __init__(
+        self, to: str, asset: str, amount: str, concrete: bool = False
+    ) -> None:
+        super().__init__("transfer", [to, asset], [amount], concrete)
+
+
+class Burn(DSLAction):
+    def __init__(
+        self,
+        to: str,
+        asset: str,
+        amount: str,
+        concrete: bool = False,
+    ) -> None:
+        super().__init__("burn", [to, asset], [amount], concrete)
+
+
+class Mint(DSLAction):
+    def __init__(
+        self,
+        to: str,
+        asset: str,
+        amount: str,
+        concrete: bool = False,
+    ) -> None:
+        super().__init__("mint", [to, asset], [amount], concrete)
 
 
 class Swap(DSLAction):
@@ -222,17 +260,6 @@ class Payback(DSLAction):
         concrete: bool = False,
     ) -> None:
         super().__init__("payback", [pool, asset], [amount], concrete)
-
-
-class Burn(DSLAction):
-    def __init__(
-        self,
-        oracle: str,
-        asset: str,
-        amount: str,
-        concrete: bool = False,
-    ) -> None:
-        super().__init__("burn", [oracle, asset], [amount], concrete)
 
 
 class BreakLR(DSLAction):
@@ -324,7 +351,7 @@ class Sketch:
         pa1 = __value.pure_actions
         sames = [a == b for a, b in zip(pa0, pa1)]
         return all(sames)
-    
+
     def __str__(self) -> str:
         return "\n".join([str(a) for a in self.pure_actions])
 
@@ -340,7 +367,7 @@ class Sketch:
             arg_start_index += new_a.param_num
         return Sketch(new_actions)
 
-    def check_implemented(self, roles: Dict[str, DefiRoles]) -> bool:
+    def check_implemented(self, roles: Dict[str, DefiRole]) -> bool:
         all_implemented = all(a.check_implemented(roles) for a in self.pure_actions)
         if not all_implemented:
             return False
@@ -349,7 +376,7 @@ class Sketch:
                 if self.match_borrow_payback(idx) == -1:
                     return False
         return True
-    
+
     def match_borrow_payback(self, idx: int) -> int:
         a = self.pure_actions[idx]
         if a.action_name == "borrow":
@@ -357,7 +384,9 @@ class Sketch:
         elif a.action_name == "payback":
             pair_name = "borrow"
         else:
-            raise ValueError(f"Index: {idx} is not a borrow/payback action. Sketch is: {str(self)}")
+            raise ValueError(
+                f"Index: {idx} is not a borrow/payback action. Sketch is: {str(self)}"
+            )
         for i, a1 in enumerate(self.pure_actions):
             if a1.action_name == pair_name and a1.lend_pool == a.lend_pool:
                 return i

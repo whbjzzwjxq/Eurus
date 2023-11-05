@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple
 
 from .config import Config, init_config, AttackCtrtName
 from .dsl import *
-from .synthesizer import Synthesizer
+from .synthesizer import SynthesizerByPattern
 from .utils import CornerCase
 
 
@@ -76,7 +76,9 @@ class BenchmarkBuilder:
         actions = [init_action_from_list(a, True) for a in self.config.groundtruth]
         self.gt_sketch = Sketch(actions)
 
-    def get_initial_state(self) -> List[str]:
+        self._init_state()
+
+    def _init_state(self):
         # Handle the initial states print by foundry.
         # Look at: QueryBlockchain.sol and query_output_example.txt for more information.
         cache_path, result_path = prepare_subfolder(self.bmk_dir)
@@ -117,7 +119,6 @@ class BenchmarkBuilder:
             with open(cache_file, "w") as f:
                 f.write(outputs)
             outputs = outputs.split("\n")
-        states = []
         for output in outputs:
             if output.startswith("  ----"):
                 continue
@@ -132,9 +133,6 @@ class BenchmarkBuilder:
             type_str = type_str.removeprefix(" ")
             sv_name = sv_name.removesuffix(":")
             self.init_state[sv_name] = (type_str, sv_val)
-            output_str = f"{type_str} {sv_name} = {sv_val};"
-            states.append(output_str)
-        return states
 
     def gen_imports(self) -> List[str]:
         license = "// SPDX-License-Identifier: MIT"
@@ -162,7 +160,11 @@ class BenchmarkBuilder:
             f"address attacker;",
             *[f"address {c}Addr;" for c in self.ctrt_names],
         ]
-        states = self.get_initial_state()
+        states = []
+        for sv_name, v in self.init_state.items():
+            type_str, sv_val = v
+            output_str = f"{type_str} {sv_name} = {sv_val};"
+            states.append(output_str)
         all = [*contract_interfaces, *users, *states]
         return all
 
@@ -355,7 +357,7 @@ class BenchmarkBuilder:
         return all
 
     def gen_candidates(self) -> List[str]:
-        synthesizer = Synthesizer(self.config)
+        synthesizer = SynthesizerByPattern(self.config)
         func_bodys: List[str] = []
         for idx, c in enumerate(synthesizer.candidates):
             func_bodys.extend(
@@ -408,7 +410,7 @@ class BenchmarkBuilder:
                 f.write("\n")
 
 
-def get_sketch_by_func_name(b: BenchmarkBuilder, s: Synthesizer, func_name: str):
+def get_sketch_by_func_name(b: BenchmarkBuilder, s: SynthesizerByPattern, func_name: str):
     if func_name == "check_gt":
         sketch = b.gt_sketch.symbolic_copy()
     else:

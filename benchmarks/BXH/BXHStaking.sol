@@ -568,7 +568,8 @@ contract BXHStaking is Ownable, ReentrancyGuard{
             }
         }
         if (_amount > 0) {
-            pool.lpToken.safeTransferFrom(_user, address(this), _amount);
+            // pool.lpToken.safeTransferFrom(_user, address(this), _amount);
+            IERC20(pool.lpToken).transferFrom(_user, address(this), _amount);
             user.amount = user.amount.add(_amount);
             pool.totalAmount = pool.totalAmount.add(_amount);
         }
@@ -626,7 +627,8 @@ contract BXHStaking is Ownable, ReentrancyGuard{
             }
         }
         if (_amount > 0) {
-            pool.lpToken.safeTransferFrom(_user, address(this), _amount);
+            // pool.lpToken.safeTransferFrom(_user, address(this), _amount);
+            IERC20(pool.lpToken).transferFrom(_user, address(this), _amount);
             user.amount = user.amount.add(_amount);
             pool.totalAmount = pool.totalAmount.add(_amount);
         }

@@ -2,13 +2,13 @@ import time
 from typing import Any, Dict, List, Tuple
 import json
 import gurobipy as gp
+import re
 from z3 import *
 
 from impl.dsl import Sketch
 from .foundry_toolset import LazyStorage, deploy_contract, init_anvil, set_nomining
-import re
 from .benchmark_builder import BenchmarkBuilder, get_sketch_by_func_name
-from .synthesizer import Synthesizer
+from .synthesizer import Synthesizer, SynthesizerByPattern
 from .utils import (
     gen_result_paths,
     prepare_subfolder,
@@ -303,7 +303,7 @@ def autogen_financial_formula(
 ) -> Tuple[LAMBDA_CONSTR, Dict[str, ACTION_SUMMARY]]:
     builder = BenchmarkBuilder(bmk_dir)
     config = builder.config
-    synthesizer = Synthesizer(config)
+    synthesizer = SynthesizerByPattern(config)
     project_name = config.project_name
 
     token, amount = config.attack_goal
@@ -399,8 +399,7 @@ def eurus_test(bmk_dir: str, args):
     VAR.names = set()
 
     builder = BenchmarkBuilder(bmk_dir)
-    builder.get_initial_state()
-    synthesizer = Synthesizer(builder.config)
+    synthesizer = Synthesizer(bmk_dir)
     project_name = resolve_project_name(bmk_dir)
     _, result_path = prepare_subfolder(bmk_dir)
 

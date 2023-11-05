@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple
 
 
 @dataclass
-class DefiRoles:
+class DefiRole:
     is_asset: bool = False
     is_erc20: bool = False
     is_stablecoin: bool = False
@@ -54,15 +54,15 @@ class Config:
     groundtruth: List[List[str]] = field(default_factory=list)
 
     # Used for synthesizer
-    roles: Dict[str, DefiRoles] = field(default_factory=dict)
+    roles: Dict[str, DefiRole] = field(default_factory=dict)
     pattern: str = "None"
 
     def __post_init__(self):
         keys = list(self.roles.keys())
         for k in keys:
-            r = DefiRoles(**self.roles[k])
+            r = DefiRole(**self.roles[k])
             self.roles[k] = r
-        self.roles[AttackCtrtName] = DefiRoles()
+        self.roles[AttackCtrtName] = DefiRole()
         keys = [k for k, _ in self.ctrt_name2cls]
         if AttackCtrtName not in keys:
             self.ctrt_name2cls.append((AttackCtrtName, "AttackContract"))
