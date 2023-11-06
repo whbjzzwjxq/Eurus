@@ -513,16 +513,14 @@ contract MuBank is Context, Ownable, ReentrancyGuard {
             is_approved_stable_coin(stable),
             "Only accepting approved stable coins for bonding"
         );
-        IERC20 _stable = IERC20(stable);
-        Token token = Token(stable);
-        uint8 _decimals = token.decimals();
+        uint8 _decimals = Token(stable).decimals();
         uint256 _adjusted_amount;
         if (18 - _decimals == 0) _adjusted_amount = amount;
         else {
             _adjusted_amount = (amount / (10 ** (18 - _decimals)));
         }
         require(
-            _stable.balanceOf(msg.sender) >= _adjusted_amount,
+            IERC20(stable).balanceOf(msg.sender) >= _adjusted_amount,
             "You don't have enough of that token to bond that amount"
         );
         (uint256 mu_coin_swap_amount, uint256 mu_coin_amount) = _mu_bond_quote(
@@ -532,7 +530,7 @@ contract MuBank is Context, Ownable, ReentrancyGuard {
             IERC20(_MuCoin).balanceOf(address(this)) >= mu_coin_amount,
             "This contract does not have enough Mu Coin"
         );
-        _stable.transferFrom(msg.sender, address(this), _adjusted_amount);
+        IERC20(stable).transferFrom(msg.sender, address(this), _adjusted_amount);
         IERC20(_MuCoin).transfer(msg.sender, mu_coin_amount);
     }
 

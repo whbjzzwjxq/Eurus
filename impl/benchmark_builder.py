@@ -67,6 +67,9 @@ class BenchmarkBuilder:
         # Map state_variable name to its type and initial value.
         self.init_state: Dict[str, Tuple[str, str]] = {}
 
+        # Collect all public action names.
+        self.ava_action_names = []
+
         # Will print token_users' initial balances.
         self.token_users = [c for c in self.ctrt_names if c in self.roles]
 
@@ -77,6 +80,7 @@ class BenchmarkBuilder:
         self.gt_sketch = Sketch(actions)
 
         self._init_state()
+        self._init_ava_action_names()
 
     def _init_state(self):
         # Handle the initial states print by foundry.
@@ -133,6 +137,15 @@ class BenchmarkBuilder:
             type_str = type_str.removeprefix(" ")
             sv_name = sv_name.removesuffix(":")
             self.init_state[sv_name] = (type_str, sv_val)
+
+    def _init_ava_action_names(self):
+        actions = self.gen_actions()
+        func_name_regex = re.compile(r"function (.*?)\(")
+        for l in actions:
+            m = func_name_regex.match(l)
+            if m:
+                func_name = m.group(1)
+                self.ava_action_names.append(func_name)
 
     def gen_imports(self) -> List[str]:
         license = "// SPDX-License-Identifier: MIT"

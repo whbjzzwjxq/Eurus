@@ -399,7 +399,7 @@ def eurus_test(bmk_dir: str, args):
     VAR.names = set()
 
     builder = BenchmarkBuilder(bmk_dir)
-    synthesizer = Synthesizer(bmk_dir)
+    synthesizer = Synthesizer(bmk_dir, builder.ava_action_names)
     project_name = resolve_project_name(bmk_dir)
     _, result_path = prepare_subfolder(bmk_dir)
 
