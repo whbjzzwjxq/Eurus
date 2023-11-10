@@ -8,8 +8,8 @@ from subprocess import CalledProcessError, TimeoutExpired, run
 
 from impl.eurus import eurus_test
 
-from impl.benchmark_builder import BenchmarkBuilder, get_sketch_by_func_name
-from impl.synthesizer import SynthesizerByPattern
+from impl.benchmark_builder import BenchmarkBuilder
+from impl.synthesizer import Synthesizer
 from impl.utils import (
     gen_result_paths,
     get_bmk_dirs,
@@ -237,7 +237,7 @@ def clean_result(
     bmk_dir: str, only_gt: bool, smtdiv: str, start: int, end: int, suffix_spec: str
 ):
     builder = BenchmarkBuilder(bmk_dir)
-    synthesizer = SynthesizerByPattern(builder.config)
+    synthesizer = builder.synthesizer
     _, result_path = prepare_subfolder(bmk_dir)
     result_paths = gen_result_paths(
         result_path, only_gt, smtdiv, len(synthesizer.candidates), suffix_spec
@@ -268,7 +268,7 @@ def verify_result(
     bmk_dir: str, only_gt: bool, smtdiv: str, verify_result_path: str, suffix_spec: str
 ):
     builder = BenchmarkBuilder(bmk_dir)
-    synthesizer = SynthesizerByPattern(builder.config)
+    synthesizer = builder.synthesizer
     _, result_path = prepare_subfolder(bmk_dir)
     project_name = resolve_project_name(bmk_dir)
 
@@ -280,7 +280,7 @@ def verify_result(
 
     for func_name, output_path, _, _ in result_paths:
         output_path = verify_result_path if verify_result_path != "" else output_path
-        sketch = get_sketch_by_func_name(builder, synthesizer, func_name)
+        sketch = builder.get_sketch_by_func_name(func_name)
         model = load_smt_model(output_path)
         if len(model) == 0:
             continue
@@ -346,7 +346,7 @@ def halmos_test(
     print_only: bool = args.printsmt
     suffix_spec: str = args.suffix
     builder = BenchmarkBuilder(bmk_dir)
-    synthesizer = SynthesizerByPattern(builder.config)
+    synthesizer = builder.synthesizer
     project_name = resolve_project_name(bmk_dir)
     _, result_path = prepare_subfolder(bmk_dir)
 

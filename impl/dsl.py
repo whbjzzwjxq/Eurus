@@ -1,34 +1,53 @@
-from typing import Dict, List
+from typing import List, Union, Dict
 
-from impl.utils import List
-
-from .config import Config, DefiRole
-from .financial_constraints import (
-    ACTION_SUMMARY,
-    gen_summary_burn,
-    gen_summary_payback,
-    gen_summary_ratioswap,
-    gen_summary_uniswap,
-    gen_summary_transfer,
-)
-
+from .financial_constraints import *
 from .utils import *
+from .utils_slither import *
 
 
-class DSLAction:
+class Tokenflow:
     def __init__(
         self,
-        action_name: str,
-        args_in_name: List[str],
-        args: List[str],
-        concrete: bool = False,
+        token: Union[SliExpression, SliVariable, str],
+        sender: Union[SliExpression, SliVariable, str],
+        receiver: Union[SliExpression, SliVariable, str],
+        amount: Union[SliExpression, SliVariable, str],
+        transfer_from: bool = False,
     ) -> None:
+        self.token = token
+        self.sender = sender
+        self.receiver = receiver
+        self.amount = amount
+        self.transfer_from = transfer_from
+
+    @property
+    def is_concrete(self) -> bool:
+        return isinstance(self.token, str) and isinstance(self.sender, str) and isinstance(self.receiver, str)
+
+    def __copy__(self):
+        return Tokenflow(
+            self.token,
+            self.sender,
+            self.receiver,
+            self.amount,
+            self.transfer_from,
+        )
+
+    def copy(self):
+        return self.__copy__()
+
+
+class AFLAction:
+    def __init__(self, action_name: str, args_in_name: List[str], args: List[str], concrete: bool = False) -> None:
         self.action_name = action_name
         self.args_in_name = args_in_name
         self.args = args
         self.concrete = concrete
 
-    def __eq__(self, __value: "DSLAction") -> bool:
+        self.token_flows: List[Tokenflow] = []
+        self.constraints: List[ACTION_CONSTR] = []
+
+    def __eq__(self, __value: "AFLAction") -> bool:
         if self.action_name == "nop" and __value.action_name == "nop":
             return True
         return (
@@ -46,265 +65,172 @@ class DSLAction:
         arg_names = ", ".join(self.args)
         return f"{func_names}({arg_names})"
 
-    def symbolic_copy(self, arg_start_index: int) -> "DSLAction":
+    def symbolic_copy(self, arg_start_index: int) -> "AFLAction":
         args = [f"amt{i + arg_start_index}" for i in range(self.param_num)]
-        return DSLAction(self.action_name, self.args_in_name, args, concrete=False)
+        return AFLAction(self.action_name, self.args_in_name, args, concrete=False)
 
     @property
     def param_num(self):
         return len(self.args)
 
     @property
-    def swap_pairs(self):
-        if self.action_name in ("swap",):
-            return self.args_in_name[:-2]
+    def swap_pair(self) -> str:
+        # Assume deposit and withdraw are swap
+        if self.action_name in ("swap", "deposit", "withdraw"):
+            return self.args_in_name[0]
         else:
-            raise ValueError(
-                f"This action: {self.action_name} doesn't have a role as swap_pair"
-            )
+            raise NotImplementedError
 
     @property
-    def asset0(self):
-        if self.action_name in ():
+    def token0(self):
+        if self.action_name in ("burn", "mint", "borrow", "payback"):
             return self.args_in_name[0]
-        elif self.action_name in ("burn", "transaction", "borrow", "payback"):
+        elif self.action_name in ("deposit",):
             return self.args_in_name[1]
-        elif self.action_name in ("swap",):
-            return self.args_in_name[-2]
+        elif self.action_name in ("withdraw",):
+            return self.args_in_name[0] + "LP"
+        elif self.action_name in ("swap", "addliquidity"):
+            return self.args_in_name[2]
         else:
-            raise ValueError(
-                f"This action: {self.action_name} doesn't have a role as asset0"
-            )
+            raise NotImplementedError
 
     @property
-    def asset1(self):
-        if self.action_name in ("swap",):
-            return self.args_in_name[-1]
-        else:
-            raise ValueError(
-                f"This action: {self.action_name} doesn't have a role as asset1"
-            )
-
-    @property
-    def defi_entry(self):
-        if self.action_name in ("transaction",):
-            return self.args_in_name[0]
-        elif self.action_name in ("breaklr",):
-            return self.args_in_name[1]
-        else:
-            raise ValueError(
-                f"This action: {self.action_name} doesn't have a role as defi_entry"
-            )
-
-    @property
-    def oracle(self):
-        if self.action_name in (
-            "sync",
-            "burn",
-            "breaklr",
-        ):
+    def token1(self):
+        if self.action_name in ("swap", "addliquidity"):
+            return self.args_in_name[3]
+        elif self.action_name in ("deposit",):
+            return self.args_in_name[0] + "LP"
+        elif self.action_name in ("withdraw",):
             return self.args_in_name[0]
         else:
-            raise ValueError(
-                f"This action: {self.action_name} doesn't have a role as oracle"
-            )
+            raise NotImplementedError
 
     @property
-    def lend_pool(self):
+    def defi(self):
+        if self.action_name in ("addliquidity", "deposit", "withdraw", "transaction"):
+            return self.args_in_name[0]
+        else:
+            raise NotImplementedError
+
+    @property
+    def lender(self):
         if self.action_name in ("borrow", "payback"):
-            return self.args_in_name[0]
+            return self.args_in_name[1]
         else:
-            raise ValueError(
-                f"This action: {self.action_name} doesn't have a role as pool"
-            )
+            raise NotImplementedError
 
     @property
-    def amount(self):
-        if self.action_name in ("swap", "borrow", "payback", "burn", "transaction"):
+    def account(self):
+        if self.action_name in ("burn", "mint", "addliquidity", "swap"):
+            return self.args_in_name[1]
+        elif self.action_name in ("deposit", "withdraw", "borrow", "payback"):
+            return ATTACKER
+        else:
+            raise NotImplementedError
+
+    @property
+    def amount0(self):
+        if self.action_name in ("burn", "mint", "swap", "borrow", "payback", "deposit", "withdraw"):
             return self.args[0]
         else:
-            raise ValueError(
-                f"This action: {self.action_name} doesn't have a role as parameter"
-            )
+            raise NotImplementedError
 
-    def check_implemented(self, roles: Dict[str, DefiRole]) -> bool:
-        if self.action_name == "swap":
-            src_assets = set([self.asset0])
-            for s in self.swap_pairs:
-                new_src_assets = set()
-                support_swaps = roles[s].support_swaps
-                for sa in src_assets:
-                    new_src_assets.update(support_swaps.get(sa, []))
-                src_assets = new_src_assets
-            return self.asset1 in src_assets
-        elif self.action_name == "burn":
-            return roles[self.asset0].is_burnable
-        elif self.action_name == "transaction":
-            return self.asset0 in roles[self.defi_entry].hacked_assets
-        elif self.action_name == "breaklr":
-            return self.oracle in roles[self.defi_entry].hacked_oracles
-        return True
+    @property
+    def amount1(self):
+        if self.action_name in ("swap",):
+            return self.args[1]
+        else:
+            raise NotImplementedError
 
-    def gen_constraints(self, config: Config) -> ACTION_SUMMARY:
-        roles: Dict[str, DefiRole] = config.roles
-        if self.action_name == "nop":
-            return ([], [])
-        elif self.action_name == "swap":
-            is_uniswap = roles[self.swap_pairs[0]].is_uniswap
-            if is_uniswap:
-                return gen_summary_uniswap(
-                    self.swap_pairs[0], "attacker", self.asset0, self.asset1, "arg_0"
-                )
-            else:
-                return gen_summary_ratioswap(
-                    self.swap_pairs[0],
-                    "pair",
-                    "attacker",
-                    self.asset0,
-                    self.asset1,
-                    "arg_0",
-                )
-        elif self.action_name == "borrow":
-            return gen_summary_transfer("owner", "attacker", self.asset0, "arg_0")
-        elif self.action_name == "payback":
-            return gen_summary_payback(
-                "attacker", "owner", self.asset0, "arg_x0", "arg_0"
-            )
-        elif self.action_name == "burn":
-            return gen_summary_burn(self.swap_pairs[0], self.asset0, "arg_0")
-        elif self.action_name == "sync":
-            return ([], [])
-        elif self.action_name == "breaklr":
-            return ([], [])
-        elif self.action_name == "transaction":
-            return ([], [])
+    def update(self, token_flows=None, constraints=None):
+        if token_flows is None:
+            token_flows = []
+        if constraints is None:
+            constraints = []
+        self.token_flows = token_flows
+        self.constraints = constraints
 
 
-class NOP(DSLAction):
-    def __init__(
-        self,
-        concrete: bool = False,
-    ) -> None:
+class NOP(AFLAction):
+    def __init__(self, concrete: bool = False) -> None:
         super().__init__("nop", [], [], concrete)
 
 
-# Basic action based on ERC20
+class Burn(AFLAction):
+    def __init__(self, token: str, account: str, amount: str, concrete: bool = False) -> None:
+        super().__init__("burn", [token, account], [amount], concrete)
 
 
-class Transfer(DSLAction):
-    def __init__(
-        self, to: str, asset: str, amount: str, concrete: bool = False
-    ) -> None:
-        super().__init__("transfer", [to, asset], [amount], concrete)
+class Mint(AFLAction):
+    def __init__(self, token: str, account: str, amount: str, concrete: bool = False) -> None:
+        super().__init__("mint", [token, account], [amount], concrete)
 
 
-class Burn(DSLAction):
-    def __init__(
-        self,
-        to: str,
-        asset: str,
-        amount: str,
-        concrete: bool = False,
-    ) -> None:
-        super().__init__("burn", [to, asset], [amount], concrete)
-
-
-class Mint(DSLAction):
+class Swap(AFLAction):
     def __init__(
         self,
-        to: str,
-        asset: str,
-        amount: str,
+        pair: str,
+        account: str,
+        token0: str,
+        token1: str,
+        amountIn: str,
+        amountOutMin: str,
         concrete: bool = False,
     ) -> None:
-        super().__init__("mint", [to, asset], [amount], concrete)
-
-
-class Swap(DSLAction):
-    def __init__(
-        self,
-        *args,
-        concrete: bool = False,
-    ) -> None:
-        if len(args) < 4:
-            raise ValueError(
-                f"Length of arguments of a Swap must be larger than 4, current is: {args}"
-            )
-        swap_pairs: str = args[:-3]
-        asset0: str = args[-3]
-        asset1: str = args[-2]
-        amount: str = args[-1]
-        if asset0 == asset1:
+        if token0 == token1:
             super().__init__("nop", [], [], True)
             return
-        super().__init__("swap", [*swap_pairs, asset0, asset1], [amount], concrete)
+        super().__init__("swap", [pair, account, token0, token1], [amountIn, amountOutMin], concrete)
 
 
-class Borrow(DSLAction):
-    def __init__(
-        self,
-        pool: str,
-        asset: str,
-        amount: str,
-        concrete: bool = False,
-    ) -> None:
-        super().__init__("borrow", [pool, asset], [amount], concrete)
+class Borrow(AFLAction):
+    def __init__(self, token: str, lender: str, amount: str, concrete: bool = False) -> None:
+        super().__init__("borrow", [token, lender], [amount], concrete)
 
 
-class Payback(DSLAction):
-    def __init__(
-        self,
-        pool: str,
-        asset: str,
-        amount: str,
-        concrete: bool = False,
-    ) -> None:
-        super().__init__("payback", [pool, asset], [amount], concrete)
+class Payback(AFLAction):
+    def __init__(self, token: str, lender: str, amount: str, concrete: bool = False) -> None:
+        super().__init__("payback", [token, lender], [amount], concrete)
 
 
-class BreakLR(DSLAction):
-    def __init__(
-        self,
-        oracle: str,
-        defi_entry: str,
-        concrete: bool = False,
-    ) -> None:
-        super().__init__("breaklr", [oracle, defi_entry], [], concrete)
+# Beyond Swap
+class AddLiquidity(AFLAction):
+    def __init__(self, defi: str, swap_pair: str, token0: str, token1: str, concrete: bool = False) -> None:
+        super().__init__("addliquidity", [defi, swap_pair, token0, token1], [], concrete)
 
 
-class Sync(DSLAction):
-    def __init__(
-        self,
-        oracle: str,
-        concrete: bool = False,
-    ) -> None:
-        super().__init__("sync", [oracle], [], concrete)
+class Deposit(AFLAction):
+    def __init__(self, defi: str, token: str, amount: str, concrete: bool = False) -> None:
+        super().__init__("deposit", [defi, token], [amount], concrete)
 
 
-class Transaction(DSLAction):
-    def __init__(
-        self,
-        defi_entry: str,
-        asset: str,
-        amount: str,
-        concrete: bool = False,
-    ) -> None:
-        super().__init__("transaction", [defi_entry, asset], [amount], concrete)
+class Withdraw(AFLAction):
+    def __init__(self, defi: str, token: str, amount: str, concrete: bool = False) -> None:
+        super().__init__("withdraw", [defi, token], [amount], concrete)
+
+
+# General Transaction
+# I think it is never used.
+class Transaction(AFLAction):
+    def __init__(self, defi: str, concrete: bool = False) -> None:
+        super().__init__("transaction", [defi], [], concrete)
 
 
 action_name2cls = {
     "nop": NOP,
+    "burn": Burn,
+    "mint": Mint,
     "swap": Swap,
     "borrow": Borrow,
     "payback": Payback,
-    "burn": Burn,
-    "sync": Sync,
+    "addliquidity": AddLiquidity,
+    "deposit": Deposit,
+    "withdraw": Withdraw,
     "transaction": Transaction,
-    "breaklr": BreakLR,
 }
 
 
-def init_action_from_list(strs: List[str], concrete: bool) -> DSLAction:
+def init_action_from_list(strs: List[str], concrete: bool) -> AFLAction:
     action_name = strs[0]
     args = strs[1:]
     cls = action_name2cls[action_name]
@@ -312,7 +238,7 @@ def init_action_from_list(strs: List[str], concrete: bool) -> DSLAction:
 
 
 class Sketch:
-    def __init__(self, actions: List[DSLAction]) -> None:
+    def __init__(self, actions: List[AFLAction]) -> None:
         self._actions = actions
 
     def __len__(self):
@@ -339,7 +265,7 @@ class Sketch:
         n = 0
         for a in self._actions:
             act_args = args[n : n + a.param_num]
-            act = DSLAction(a.action_name, a.args_in_name, act_args, True)
+            act = AFLAction(a.action_name, a.args_in_name, act_args, True)
             actions.append(act)
             n += a.param_num
         return Sketch(actions)
@@ -367,16 +293,6 @@ class Sketch:
             arg_start_index += new_a.param_num
         return Sketch(new_actions)
 
-    def check_implemented(self, roles: Dict[str, DefiRole]) -> bool:
-        all_implemented = all(a.check_implemented(roles) for a in self.pure_actions)
-        if not all_implemented:
-            return False
-        for idx, a in enumerate(self.pure_actions):
-            if a.action_name in ("borrow", "payback"):
-                if self.match_borrow_payback(idx) == -1:
-                    return False
-        return True
-
     def match_borrow_payback(self, idx: int) -> int:
         a = self.pure_actions[idx]
         if a.action_name == "borrow":
@@ -384,19 +300,13 @@ class Sketch:
         elif a.action_name == "payback":
             pair_name = "borrow"
         else:
-            raise ValueError(
-                f"Index: {idx} is not a borrow/payback action. Sketch is: {str(self)}"
-            )
+            raise ValueError(f"Index: {idx} is not a borrow/payback action. Sketch is: {str(self)}")
         for i, a1 in enumerate(self.pure_actions):
-            if a1.action_name == pair_name and a1.lend_pool == a.lend_pool:
+            if a1.action_name == pair_name and a1.lender == a.lender:
                 return i
         return -1
 
-    def output(
-        self,
-        func_name: str,
-        pre_statements: List[str] = None,
-    ) -> List[str]:
+    def output(self, func_name: str, pre_statements: List[str] = None) -> List[str]:
         if pre_statements is None:
             pre_statements = []
         else:
@@ -406,7 +316,7 @@ class Sketch:
             if a.action_name == "borrow":
                 a1_idx = self.match_borrow_payback(idx)
                 a1 = self.pure_actions[a1_idx]
-                f = f"vm.assume({a1.amount} == {a.amount} * 1003 / 1000);"
+                f = f"vm.assume({a1.amount0} == {a.amount0} * 1003 / 1000);"
                 pre_statements.append(f)
 
         params = [f"uint256 amt{i}" for i in range(self.param_num)]
@@ -427,12 +337,7 @@ class Sketch:
         ]
         return checker
 
-    def output_verify(
-        self,
-        func_name: str,
-        pre_statements: List[str] = None,
-        print_balance: bool = False,
-    ) -> List[str]:
+    def output_verify(self, func_name: str, pre_statements: List[str] = None, print_balance: bool = False) -> List[str]:
         func_body = []
         # action must be concrete
         for idx, a in enumerate(self.pure_actions):
@@ -457,3 +362,6 @@ class Sketch:
             if a.func_sig == func_sig:
                 return idx
         return -1
+
+
+hack_token_flows: Dict[str, Dict[str, List[Tokenflow]]] = {}

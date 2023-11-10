@@ -6,27 +6,22 @@ from typing import Dict, List, Tuple
 
 @dataclass
 class DefiRole:
-    is_asset: bool = False
     is_erc20: bool = False
+    is_lendpool: bool = False
+    is_swappair: bool = False
+    is_uniswap: bool = False
+    token_pair: List[str] = field(default_factory=list)
+
+    # Useless
+    is_asset: bool = False
     is_stablecoin: bool = False
     is_burnable: bool = False
-
     is_defientry: bool = False
-    is_swappair: bool = False
     is_oracle: bool = False
-    is_lendpool: bool = False
-
     oracle: str = ""
-
     support_swaps: Dict[str, List[str]] = field(default_factory=dict)
-    uniswap_order: List[str] = field(default_factory=list)
-
     hacked_assets: List[str] = field(default_factory=list)
     hacked_oracles: List[str] = field(default_factory=list)
-
-    @property
-    def is_uniswap(self) -> bool:
-        return len(self.uniswap_order) != 0
 
 
 AttackCtrtName = "attackContract"
@@ -74,6 +69,22 @@ class Config:
             self.attack_goal = tuple(self.attack_goal_str.split(";"))
         else:
             self.attack_goal = (self.attack_goal_str, "1e18")
+
+    @property
+    def erc20_tokens(self):
+        return [name for name, role in self.roles.items() if role.is_erc20]
+
+    @property
+    def uniswap_pairs(self):
+        return [name for name, role in self.roles.items() if role.is_uniswap]
+
+    @property
+    def swappair2tokens(self) -> Dict[str, Tuple[str, str]]:
+        return {n: tuple(r.token_pair) for n, r in self.roles.items() if r.is_swappair}
+
+    @property
+    def lend_pools(self):
+        return ["owner"] + [name for name, role in self.roles.items() if role.is_lendpool]
 
 
 def init_config(bmk_dir: str) -> Config:

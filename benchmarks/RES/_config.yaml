@@ -18,7 +18,7 @@ ctrt_name2deploy:
   - ["router", ""]
 
 extra_actions:
-  - "function breaklr_pair_resA() internal {
+  - "function addliquidity_pair_resA() internal {
       resA.thisAToB();
     }"
 
@@ -33,7 +33,7 @@ attack_goal_str: "usdt"
 groundtruth:
   - ["borrow", "owner", "resA", "1000000e8"]
   - ["swap", "pair", "resA", "usdt", "resA.balanceOf(attacker)"]
-  - ["breaklr", "pair", "resA"]
+  - ["addliquidity", "pair", "resA"]
   - ["sync", "pair"]
   - ["swap", "pair", "usdt", "resA", "90000e18"]
   - ["payback", "owner", "resA", "1000000e8 * 1003 / 1000"]

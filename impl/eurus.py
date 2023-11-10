@@ -7,8 +7,8 @@ from z3 import *
 
 from impl.dsl import Sketch
 from .foundry_toolset import LazyStorage, deploy_contract, init_anvil, set_nomining
-from .benchmark_builder import BenchmarkBuilder, get_sketch_by_func_name
-from .synthesizer import Synthesizer, SynthesizerByPattern
+from .benchmark_builder import BenchmarkBuilder
+from .synthesizer import Synthesizer
 from .utils import (
     gen_result_paths,
     prepare_subfolder,
@@ -16,8 +16,9 @@ from .utils import (
 )
 from .verifier import verify_model
 from .financial_constraints import (
-    ACTION_SUMMARY,
+    ACTION_CONSTR,
     LAMBDA_CONSTR,
+    extract_rw_vars,
     gen_attack_goal,
     hack_constraints,
     refine_constraints,
@@ -83,22 +84,6 @@ class VAR:
 
     def __str__(self) -> str:
         return hex(self.as_int)
-
-
-class VarCreator:
-    def __init__(self) -> None:
-        self.var_names = set()
-
-    def get(self, __name: str) -> int:
-        if __name.startswith("old_"):
-            key = __name.removeprefix("old_")
-        elif __name.startswith("new_"):
-            key = __name.removeprefix("new_")
-        else:
-            key = ""
-        if key != "":
-            self.var_names.add(key)
-        return 1
 
 
 class VarGetter:
@@ -221,6 +206,8 @@ class FinancialExecution:
         return None
 
     def execute(self):
+        # All read variables
+        all_read_vars = set()
         # Init params
         for idx, action in enumerate(self.sketch):
             # Assume there are two actions written as:
@@ -242,19 +229,11 @@ class FinancialExecution:
             for idx, p in enumerate(self.all_params):
                 params[f"x{idx}"] = p
             self.params.append(params)
-
-        # Init storage variables
-        creator = VarCreator()
-        for idx, action in enumerate(self.sketch):
-            for func in action.constraints:
-                try:
-                    _ = func(creator)
-                except Exception:
-                    pass
-        var_names = sorted(list(creator.var_names))
+            read_vars, _ = extract_rw_vars(action.constraints)
+            all_read_vars.union(read_vars)
 
         s = {}
-        for v in var_names:
+        for v in all_read_vars:
             value = int(self.init_state.get(v))
             var = VAR(v + str(0), self.solver, value)
             s[v] = var
@@ -266,7 +245,7 @@ class FinancialExecution:
             # Post state
             i = idx + 1
             s = {}
-            for v in var_names:
+            for v in all_read_vars:
                 if v in write_vars:
                     v_name = v + str(i)
                     s[v] = self._default_var(v_name)
@@ -300,17 +279,17 @@ def setup_solver(timeout: bool):
 
 def autogen_financial_formula(
     bmk_dir: str,
-) -> Tuple[LAMBDA_CONSTR, Dict[str, ACTION_SUMMARY]]:
+) -> Tuple[LAMBDA_CONSTR, Dict[str, ACTION_CONSTR]]:
     builder = BenchmarkBuilder(bmk_dir)
     config = builder.config
-    synthesizer = SynthesizerByPattern(config)
+    synthesizer = builder.synthesizer
     project_name = config.project_name
 
     token, amount = config.attack_goal
 
     attack_goal = gen_attack_goal(token, amount, SCALE)
 
-    action2constraints: Dict[str, ACTION_SUMMARY] = {}
+    action2constraints: Dict[str, ACTION_CONSTR] = {}
     for sketch in synthesizer.candidates:
         for action in sketch.pure_actions:
             if action.func_sig in action2constraints:
@@ -399,7 +378,7 @@ def eurus_test(bmk_dir: str, args):
     VAR.names = set()
 
     builder = BenchmarkBuilder(bmk_dir)
-    synthesizer = Synthesizer(bmk_dir, builder.ava_action_names)
+    synthesizer = builder.synthesizer
     project_name = resolve_project_name(bmk_dir)
     _, result_path = prepare_subfolder(bmk_dir)
 
@@ -421,7 +400,7 @@ def eurus_test(bmk_dir: str, args):
 
         for func_name, output_path, _, _ in result_paths:
             solver = setup_solver(timeout)
-            origin_sketch = get_sketch_by_func_name(builder, synthesizer, func_name)
+            origin_sketch = builder.get_sketch_by_func_name(func_name)
             action_names = [a.func_sig for a in origin_sketch.pure_actions]
             param_nums = [a.param_num for a in origin_sketch.pure_actions]
             actions = []

@@ -3,12 +3,13 @@
 pragma solidity ^0.8.0;
 
 import "@uniswapv2/contracts/interfaces/IUniswapV2Pair.sol";
-import "@utils/UniswapV2ERC20.sol";
 import "@uniswapv2/contracts/libraries/Math.sol";
 import "@uniswapv2/contracts/libraries/UQ112x112.sol";
 import "@uniswapv2/contracts/interfaces/IERC20.sol";
-// import "./interfaces/IUniswapV2Factory.sol";
 import "@uniswapv2/contracts/interfaces/IUniswapV2Callee.sol";
+
+import "./UniswapV2ERC20.sol";
+import "./UniswapV2Library.sol";
 
 //solhint-disable func-name-mixedcase
 //solhint-disable avoid-low-level-calls
@@ -294,5 +295,19 @@ contract UniswapV2Pair is UniswapV2ERC20, IUniswapV2Pair {
             reserve0,
             reserve1
         );
+    }
+
+    function getAmountOut(uint256 amountIn, address input) public view returns (uint256 amountOut) {
+        (uint256 reserveInput, uint256 reserveOutput) = input == token0
+            ? (reserve0, reserve1)
+            : (reserve1, reserve0);
+        return UniswapV2Library.getAmountOut(amountIn, reserveInput, reserveOutput);
+    }
+
+    function getAmountIn(uint256 amountOut, address input) public view returns (uint256 amountIn) {
+        (uint256 reserveInput, uint256 reserveOutput) = input == token0
+            ? (reserve0, reserve1)
+            : (reserve1, reserve0);
+        return UniswapV2Library.getAmountIn(amountOut, reserveInput, reserveOutput);
     }
 }

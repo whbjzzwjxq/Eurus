@@ -1,66 +1,17 @@
-import itertools
 from typing import List, Set, Optional, Union, Dict, Iterable, Callable, Any
-from .utils_slither import *
+
+from impl.utils import List
 
 from .config import Config, init_config
 from .dsl import *
+from .financial_constraints import *
+from .token_flow_graph import TFG, TFGNode
 from .utils import *
-
-
-class Tokenflow:
-    SENDER = "msg.sender"
-    ZERO = "address(0x0)"
-    DEAD = "address(0xdead)"
-
-    def __init__(
-        self,
-        token: Union[SliExpression, SliVariable, str],
-        sender: Union[SliExpression, SliVariable, str],
-        receiver: Union[SliExpression, SliVariable, str],
-        amount: Union[SliExpression, SliVariable, str],
-        transfer_from: bool = False,
-    ) -> None:
-        self.token = token
-        self.sender = sender
-        self.receiver = receiver
-        self.amount = amount
-        self.transfer_from = transfer_from
-
-    @property
-    def is_concrete(self) -> bool:
-        return (
-            isinstance(self.token, str)
-            and isinstance(self.sender, str)
-            and isinstance(self.receiver, str)
-        )
-
-    def __copy__(self):
-        return Tokenflow(
-            self.token,
-            self.sender,
-            self.receiver,
-            self.amount,
-            self.transfer_from,
-        )
-
-    def copy(self):
-        return self.__copy__()
+from .utils_slither import *
 
 
 TRACE = List[Tuple[SliFunction, SliCallExpression]]
-
 TRANS_SUMMARY = List[Tuple[TRACE, Tokenflow]]
-
-
-# Mapping to action.
-class FunctionSummary:
-    def __init__(
-        self,
-        token_flows: List[Tokenflow],
-        action_name: str,
-    ) -> None:
-        self.token_flows = token_flows
-        self.action_name = action_name
 
 
 def init_default_token_transfer(ctrt: SliContract, func: SliFunction) -> Tokenflow:
@@ -102,9 +53,7 @@ def destruct_expr(expr: SliExpression) -> Set[SliVariable]:
 
     # path[0]
     if isinstance(expr, SliIndexAccess):
-        return destruct_expr(expr.expression_left).union(
-            destruct_expr(expr.expression_right)
-        )
+        return destruct_expr(expr.expression_left).union(destruct_expr(expr.expression_right))
 
     # '0'
     if isinstance(expr, SliLiteral):
@@ -129,17 +78,16 @@ class ERC20Summary:
 
 
 class Synthesizer:
-    # Hardcode
-    hack_storage_var_mapping = {
-        "MUMUG": {"mubank._MuCoin": "mu"}
-    }
-
-    def __init__(self, bmk_dir: str, action_names: List[str]) -> None:
+    def __init__(self, bmk_dir: str) -> None:
         self.config: Config = init_config(bmk_dir)
         self.sli = gen_slither(bmk_dir)
-        self.action_names = action_names
         test_ctrt_name = f"{self.config.project_name}Test"
         self.test_ctrt = self.sli.get_contract_from_name(test_ctrt_name)[0]
+
+        self.candidates: List[Sketch] = []
+        self.candidates_signs: Set[str] = set()
+        actions = [init_action_from_list(a, True) for a in self.config.groundtruth]
+        self.gt_sketch = Sketch(actions).symbolic_copy()
 
         self.role2ctrt_names = self._init_role2names()
         self.role2ctrt = self._init_role2ctrts()
@@ -148,18 +96,20 @@ class Synthesizer:
         self._infer()
 
     def _init_storage_var_mapping(self):
-        basic = self.hack_storage_var_mapping[self.config.project_name]
+        # Hardcode
+        hack_storage_var_mapping = {"MUMUG": {"mubank._MuCoin": "mu"}}
+        storage = hack_storage_var_mapping[self.config.project_name]
 
         for name, role in self.config.roles.items():
             if role.is_uniswap:
                 storage = {
-                    f"{name}._token0": role.uniswap_order[0],
-                    f"{name}._token1": role.uniswap_order[1],
-                    f"{name}.token0": role.uniswap_order[0],
-                    f"{name}.token1": role.uniswap_order[1],
+                    f"{name}._token0": role.token_pair[0],
+                    f"{name}._token1": role.token_pair[1],
+                    f"{name}.token0": role.token_pair[0],
+                    f"{name}.token1": role.token_pair[1],
                 }
-                basic.update(storage)
-        return basic
+                storage.update(storage)
+        return storage
 
     def _init_role2names(self) -> Dict[str, str]:
         role2names = {}
@@ -182,283 +132,356 @@ class Synthesizer:
         return self.role2ctrt.values()
 
     def _infer(self):
-        # Infer erc20 contracts
-        self.func_trans_summary: Dict[str, TRANS_SUMMARY] = {}
+        # # Infer the behaviors of functions in ERC20.
+        # self.func_trans_summary: Dict[str, TRANS_SUMMARY] = {}
+        # self.erc20_summarys: Dict[str, ERC20Summary] = {}
+        # for role_name, ctrt in self.role2ctrt.items():
+        #     if not self.is_erc20(ctrt):
+        #         continue
+        #     ava_funcs = self.get_public_funcs(ctrt.functions_entry_points)
+        #     transfer_summary, transfer_from_summary = [], []
+        #     for func in ava_funcs:
+        #         token_flows = self.infer_transfer_formulas(func)
+        #         if func.name == "transfer":
+        #             transfer_summary = token_flows
+        #         if func.name == "transferFrom":
+        #             transfer_from_summary = token_flows
+        #     summary = ERC20Summary(ctrt, transfer_summary, transfer_from_summary)
+        #     self.erc20_summarys[role_name] = summary
 
-        # TODO Infer swap as flashloan
-        self.func_features: Dict[str, bool] = {}
-        self.func_summarys: Dict[str, List[FunctionSummary]] = {}
-        self.erc20_summarys: Dict[str, ERC20Summary] = {}
-        for role_name, ctrt in self.role2ctrt.items():
-            if not self.is_erc20(ctrt):
+        self.func_summarys: Dict[str, AFLAction] = {}
+
+        # Infer public actions in the attack contract.
+        for func in self.test_ctrt.functions:
+            if not "internal" in func.modifiers:
                 continue
+            func_summary = self.infer_func_summary(func)
+            self.func_summarys[func.canonical_name] = func_summary
 
-            # Infer the behaviors of functions in ERC20
-            ava_funcs = self.get_ava_funcs(ctrt.functions_entry_points)
-            transfer_summary, transfer_from_summary = [], []
-            for func in ava_funcs:
-                token_flows = self.infer_transfer_formulas(func)
-                if func.name == "transfer":
-                    transfer_summary = token_flows
-                if func.name == "transferFrom":
-                    transfer_from_summary = token_flows
-            summary = ERC20Summary(ctrt, transfer_summary, transfer_from_summary)
-            self.erc20_summarys[role_name] = summary
+        # Generate sketch
+        tokens = [TFGNode.VOID] + self.config.erc20_tokens
+        accounts = list(self.role2ctrt.keys())
+        func_summarys = list(self.func_summarys.values())
+        tfg = TFG(tokens, accounts, func_summarys)
 
-        # Infer contracts
-        for role_name, ctrt in self.role2ctrt.items():
-            ava_funcs = self.get_ava_funcs(ctrt.functions_entry_points)
-            # Infer actions
-            for func in ava_funcs:
-                func_summarys = self.infer_func_summs(role_name, func)
-                self.func_summarys[func.canonical_name] = func_summarys
-
-        print(1)
-
-    def infer_transfer_formulas(self, func: SliFunction) -> List[Tokenflow]:
-        source_ctrt = func.contract
-
-        transfer_names = [
-            f"{a}.transfer(address,uint256)" for a in ["ERC20", source_ctrt.name]
-        ]
-        transferFrom_names = [
-            f"{a}.transferFrom(address,uint256)" for a in ["ERC20", source_ctrt.name]
-        ]
-        _burn_names = [
-            f"{a}._burn(address,uint256)" for a in ["ERC20", source_ctrt.name]
-        ]
-        _mint_names = [
-            f"{a}._mint(address,uint256)" for a in ["ERC20", source_ctrt.name]
-        ]
-        token_flows = []
-
-        if func.canonical_name in transfer_names:
-            token_flows = [init_default_token_transfer(source_ctrt, func)]
-
-        if func.canonical_name in transferFrom_names:
-            token_flows = [init_default_token_transferFrom(source_ctrt, func)]
-
-        if func.canonical_name in _burn_names:
-            token_flows = [init_default_token_transferFrom(source_ctrt, func)]
-
-        if func.canonical_name in _mint_names:
-            token_flows = [init_default_token_mint(source_ctrt, func)]
-
-        # Todo
-        return token_flows
-
-    def infer_func_trans_summary(
-        self, trace: TRACE, func: SliFunction
-    ) -> TRANS_SUMMARY:
-        key = func.canonical_name
-        _ctrt: SliContract = func.contract
-        if key in self.func_trans_summary:
-            res = []
-            for o_trace, trans in self.func_trans_summary[key]:
-                n_trace = trace + o_trace[1:]
-                res.append((n_trace, trans))
-            return res
-
-        trans_summary = []
-
-        external_calls_as_expressions = func.external_calls_as_expressions
-        for call_expr in func.calls_as_expressions:
-            if call_expr in external_calls_as_expressions:
+        candidates = tfg.gen_candidates()
+        # Remove all candidates after the groundtruth
+        gt_idx = -1
+        for idx, c in enumerate(candidates):
+            if len(c) != len(self.gt_sketch):
                 continue
-            i_call_expr = call_expr
-            called = i_call_expr.called
+            if c == self.gt_sketch:
+                gt_idx = idx
+        if gt_idx == -1:
+            raise ValueError("Ground truth is not covered by the candidates!")
+        self.candidates = candidates[: gt_idx + 1]
 
-            # 'UQ112x112.encode(_reserve1)'
-            if isinstance(called, SliMemberAccess):
-                continue
-            # Call new Uint();
-            if isinstance(called, SliNewElementaryType):
-                continue
-            # Call new Array();
-            if isinstance(called, SliNewArray):
-                continue
-            # Call new Contract();
-            if isinstance(called, SliNewContract):
-                continue
-            c_val = i_call_expr.called.value
+    # def infer_transfer_formulas(self, func: SliFunction) -> List[Tokenflow]:
+    #     source_ctrt = func.contract
 
-            # block.number
-            if isinstance(c_val, SolidityFunction):
-                continue
+    #     transfer_names = [f"{a}.transfer(address,uint256)" for a in ["ERC20", source_ctrt.name]]
+    #     transferFrom_names = [f"{a}.transferFrom(address,uint256)" for a in ["ERC20", source_ctrt.name]]
+    #     _burn_names = [f"{a}._burn(address,uint256)" for a in ["ERC20", source_ctrt.name]]
+    #     _mint_names = [f"{a}._mint(address,uint256)" for a in ["ERC20", source_ctrt.name]]
+    #     token_flows = []
 
-            # onlyOwner()
-            if isinstance(c_val, SliModifier):
-                continue
+    #     if func.canonical_name in transfer_names:
+    #         token_flows = [init_default_token_transfer(source_ctrt, func)]
 
-            # emit Event
-            if isinstance(c_val, SliEvent):
-                continue
+    #     if func.canonical_name in transferFrom_names:
+    #         token_flows = [init_default_token_transferFrom(source_ctrt, func)]
 
-            if isinstance(c_val, SliFunction) or isinstance(c_val, SliFunctionContract):
-                # TODO
-                if self.is_erc20(_ctrt) and func.name in (
-                    "_burn",
-                    "_mint",
-                ):
-                    if func.name == "_burn":
-                        inst = self.init_burn(_ctrt, e_call_expr)
-                        trans_summary.append((trace, inst))
-                        continue
-                    continue
-                new_trace: TRACE = [*trace, (c_val, i_call_expr)]
-                trans_summary.extend(self.infer_func_trans_summary(new_trace, c_val))
-                continue
+    #     if func.canonical_name in _burn_names:
+    #         token_flows = [init_default_token_transferFrom(source_ctrt, func)]
 
-            raise CornerCase("TODO")
+    #     if func.canonical_name in _mint_names:
+    #         token_flows = [init_default_token_mint(source_ctrt, func)]
 
-        for e_call_expr in func.external_calls_as_expressions:
-            if isinstance(e_call_expr.called, SliMemberAccess):
-                func_name = e_call_expr.called.member_name
-                if func_name == "transfer":
-                    inst = self.init_transfer(_ctrt, e_call_expr)
-                    trans_summary.append((trace, inst))
-                    continue
-                if func_name == "transferFrom":
-                    inst = self.init_transferFrom(e_call_expr)
-                    trans_summary.append((trace, inst))
-                    continue
-                # TODO
-            ext_call_funcs = self.get_external_call_funcs_from_expr(e_call_expr)
-            for e_func in ext_call_funcs:
-                new_trace: TRACE = [*trace, (e_func, e_call_expr)]
-                trans_summary.extend(self.infer_func_trans_summary(new_trace, e_func))
-        self.func_trans_summary[key] = trans_summary
-        return trans_summary
+    #     return token_flows
 
-    def infer_func_summs(
-        self, role_name: str, func: SliFunction
-    ) -> List[FunctionSummary]:
-        key = func.canonical_name
-        source_ctrt = func.contract
-        if self.is_erc20(source_ctrt) and source_ctrt == func.contract:
+    # def infer_token_flows(self, trace: TRACE, func: SliFunction) -> TRANS_SUMMARY:
+    #     key = func.canonical_name
+    #     _ctrt: SliContract = func.contract
+    #     if key in self.func_trans_summary:
+    #         res = []
+    #         for o_trace, trans in self.func_trans_summary[key]:
+    #             n_trace = trace + o_trace[1:]
+    #             res.append((n_trace, trans))
+    #         return res
+
+    #     trans_summary = []
+
+    #     external_calls_as_expressions = func.external_calls_as_expressions
+    #     for call_expr in func.calls_as_expressions:
+    #         if call_expr in external_calls_as_expressions:
+    #             e_call_expr = call_expr
+    #             if isinstance(e_call_expr.called, SliMemberAccess):
+    #                 func_name = e_call_expr.called.member_name
+    #                 if func_name == "transfer":
+    #                     inst = self.init_transfer(_ctrt, e_call_expr)
+    #                     trans_summary.append((trace, inst))
+    #                     continue
+    #                 if func_name == "transferFrom":
+    #                     inst = self.init_transferFrom(e_call_expr)
+    #                     trans_summary.append((trace, inst))
+    #                     continue
+    #                 # TODO
+    #             ext_call_funcs = self.get_external_call_funcs_from_expr(e_call_expr)
+    #             for e_func in ext_call_funcs:
+    #                 new_trace: TRACE = [*trace, (e_func, e_call_expr)]
+    #                 trans_summary.extend(self.infer_token_flows(new_trace, e_func))
+    #         i_call_expr = call_expr
+    #         called = i_call_expr.called
+
+    #         # 'UQ112x112.encode(_reserve1)'
+    #         if isinstance(called, SliMemberAccess):
+    #             continue
+    #         # Call new Uint();
+    #         if isinstance(called, SliNewElementaryType):
+    #             continue
+    #         # Call new Array();
+    #         if isinstance(called, SliNewArray):
+    #             continue
+    #         # Call new Contract();
+    #         if isinstance(called, SliNewContract):
+    #             continue
+    #         c_val = i_call_expr.called.value
+
+    #         # block.number
+    #         if isinstance(c_val, SolidityFunction):
+    #             continue
+
+    #         # onlyOwner()
+    #         if isinstance(c_val, SliModifier):
+    #             continue
+
+    #         # emit Event
+    #         if isinstance(c_val, SliEvent):
+    #             continue
+
+    #         if isinstance(c_val, SliFunction) or isinstance(c_val, SliFunctionContract):
+    #             # TODO
+    #             if self.is_erc20(_ctrt) and func.name in (
+    #                 "_burn",
+    #                 "_mint",
+    #             ):
+    #                 if func.name == "_burn":
+    #                     inst = self.init_burn(_ctrt, e_call_expr)
+    #                     trans_summary.append((trace, inst))
+    #                     continue
+    #                 continue
+    #             new_trace: TRACE = [*trace, (c_val, i_call_expr)]
+    #             trans_summary.extend(self.infer_token_flows(new_trace, c_val))
+    #             continue
+
+    #         raise CornerCase("TODO")
+
+    #     self.func_trans_summary[key] = trans_summary
+    #     return trans_summary
+
+    # def infer_func_summary(self, func: SliFunction) -> List[FuncSummary]:
+    # key = func.canonical_name
+    # source_ctrt = func.contract
+    # if self.is_erc20(source_ctrt) and source_ctrt == func.contract:
+    #     return []
+
+    # # Infer swap, deposit, reward, etc...
+    # func_summarys = []
+
+    # # Collect all transfer.
+    # trans_summary = self.infer_func_trans_summary([(func, None)], func)
+
+    # if len(trans_summary) == 0:
+    #     return []
+
+    # # Concretize all possible values in transfer.
+    # for trace, trans in trans_summary:
+    #     if not isinstance(trans.token, str):
+    #         r = self.get_fixed_expr_in_trace(trace, trans.token)
+    #         if r:
+    #             trans.token = r
+    #     if not isinstance(trans.sender, str):
+    #         r = self.get_fixed_expr_in_trace(trace, trans.sender)
+    #         if r:
+    #             trans.sender = r
+
+    #     if not isinstance(trans.receiver, str):
+    #         r = self.get_fixed_expr_in_trace(trace, trans.receiver)
+    #         if r:
+    #             trans.receiver = r
+
+    # # Collect all parameters whose type related to address.
+    # roles = list(self.role2ctrt.keys())
+    # addr_num = self.count_type_amt_in_func(func, "address")
+
+    # # Generate the binding plan.
+    # for plan in itertools.product(roles, repeat=addr_num):
+    #     binding = {}
+    #     plan_idx = 0
+    #     for param in func.parameters:
+    #         p_type = param.type
+    #         if isinstance(p_type, SliElementaryType):
+    #             if p_type.name == "address":
+    #                 cur_role = plan[plan_idx]
+    #                 binding[param] = cur_role
+    #                 plan_idx += 1
+    #             elif p_type.name == "uint256":
+    #                 # TODO financial parameters recognization.
+    #                 pass
+    #             elif p_type.name == "bytes":
+    #                 # TODO
+    #                 pass
+    #             elif p_type.name == "string":
+    #                 # TODO
+    #                 pass
+    #             else:
+    #                 raise CornerCase("TODO")
+    #         elif isinstance(p_type, SliArrayType):
+    #             sub_type = p_type.type
+    #             length = p_type.length if p_type.is_fixed_array else 2
+    #             if isinstance(sub_type, SliElementaryType):
+    #                 if sub_type.name == "address":
+    #                     cur_roles = plan[plan_idx : plan_idx + length]
+    #                     binding[param] = cur_roles
+    #                     plan_idx += length
+    #                 else:
+    #                     raise CornerCase("TODO")
+    #             else:
+    #                 raise CornerCase("TODO")
+    #         else:
+    #             raise CornerCase("TODO")
+    #     # Concretize all values in transfer.
+    #     # If this plan isn't valid, it can't be concretized.
+    #     token_flows: List[Tokenflow] = []
+    #     invalid = False
+    #     for trace, trans in trans_summary:
+    #         n_trans = trans.copy()
+    #         if not isinstance(n_trans.token, str):
+    #             r = self.partial_eval_in_trace(trace, binding, n_trans.token)
+    #             if not self.is_erc20(self.role2ctrt[r]):
+    #                 invalid = True
+    #                 break
+    #             n_trans.token = r
+
+    #         if not isinstance(n_trans.sender, str):
+    #             r = self.partial_eval_in_trace(trace, binding, n_trans.sender)
+    #             n_trans.sender = r
+
+    #         if not isinstance(n_trans.receiver, str):
+    #             r = self.partial_eval_in_trace(trace, binding, n_trans.receiver)
+    #             n_trans.receiver = r
+
+    #         if not n_trans.is_concrete:
+    #             invalid = True
+    #             break
+    #         token_flows.append(n_trans)
+    #     if invalid:
+    #         continue
+
+    #     # Hardcode
+    #     # Map the actions to current handy function.
+    #     action_name = ""
+    #     me = "attackContract"
+
+    #     # Infer swap
+    #     transfer_to_me = False
+    #     token_a = ""
+    #     transfer_from_me = False
+    #     token_b = ""
+    #     for tf in token_flows:
+    #         if tf.sender == me and tf.transfer_from:
+    #             transfer_from_me = True
+    #             token_a = tf.token
+    #             for tf in token_flows:
+    #                 if tf.receiver == me and tf.token != token_a:
+    #                     transfer_to_me = True
+    #                     token_b = tf.token
+    #             if transfer_from_me and transfer_to_me:
+    #                 # Hardcode
+    #                 _role_name = "pair" if role_name == "router" else role_name
+    #                 action_name = f"swap_{_role_name}_{token_a}_{token_b}"
+    #     if action_name in self.action_names:
+    #         func_summary = FunctionSummary(token_flows, action_name)
+    #         func_summarys.append(func_summary)
+    # return func_summarys
+
+    def infer_func_summary(self, func: SliFunction) -> AFLAction:
+        action = self.map_func_to_action(func)
+        token_flows = self.infer_token_flows(action)
+        constraints = self.infer_constraints(action)
+        action.update(token_flows, constraints)
+        return action
+
+    # Hardcode
+    def infer_token_flows(self, action: AFLAction) -> List[Tokenflow]:
+        cur_hack_token_flows = hack_token_flows.get(self.config.project_name, {})
+        if action.func_sig in cur_hack_token_flows:
+            return cur_hack_token_flows[action.func_sig]
+        if action.action_name == "nop":
+            return []
+        elif action.action_name == "burn":
+            return [Tokenflow(action.token0, action.account, DEAD, "")]
+        elif action.action_name == "mint":
+            return [Tokenflow(action.token0, DEAD, action.account, "")]
+        elif action.action_name == "swap":
+            return [
+                Tokenflow(action.token0, action.swap_pair, action.account, ""),
+                Tokenflow(action.token1, action.account, action.swap_pair, ""),
+            ]
+        elif action.action_name == "borrow":
+            return [Tokenflow(action.token0, action.lender, action.account, "")]
+        elif action.action_name == "payback":
+            return [Tokenflow(action.token0, action.lender, action.account, "")]
+        elif action.action_name == "addliquidity":
+            return [
+                Tokenflow(action.token0, action.defi, action.swap_pair, ""),
+                Tokenflow(action.token1, action.defi, action.swap_pair, ""),
+            ]
+        elif action.action_name == "deposit":
+            return [
+                Tokenflow(action.token1, action.defi, action.account, ""),
+                Tokenflow(action.token0, action.account, action.defi, ""),
+            ]
+        elif action.action_name == "withdraw":
+            return [
+                Tokenflow(action.token1, action.account, action.defi, ""),
+                Tokenflow(action.token0, action.defi, action.account, ""),
+            ]
+        elif action.action_name == "transaction":
             return []
 
-        # Infer swap, deposit, reward, etc...
-        func_summarys = []
-
-        # Collect all transfer.
-        trans_summary = self.infer_func_trans_summary([(func, None)], func)
-
-        if len(trans_summary) == 0:
+    # Hardcode
+    def infer_constraints(self, action: AFLAction) -> ACTION_CONSTR:
+        cur_hack_constraints = hack_constraints.get(self.config.project_name, {})
+        if action.func_sig in cur_hack_constraints:
+            return cur_hack_constraints[action.func_sig]
+        if action.action_name == "nop":
             return []
-
-        # Concretize all possible values in transfer.
-        for trace, trans in trans_summary:
-            if not isinstance(trans.token, str):
-                r = self.get_fixed_expr_in_trace(trace, trans.token)
-                if r:
-                    trans.token = r
-            if not isinstance(trans.sender, str):
-                r = self.get_fixed_expr_in_trace(trace, trans.sender)
-                if r:
-                    trans.sender = r
-
-            if not isinstance(trans.receiver, str):
-                r = self.get_fixed_expr_in_trace(trace, trans.receiver)
-                if r:
-                    trans.receiver = r
-
-        # Collect all parameters whose type related to address.
-        roles = list(self.role2ctrt.keys())
-        addr_num = self.count_type_amt_in_func(func, "address")
-
-        # Generate the binding plan.
-        for plan in itertools.product(roles, repeat=addr_num):
-            binding = {}
-            plan_idx = 0
-            for param in func.parameters:
-                p_type = param.type
-                if isinstance(p_type, SliElementaryType):
-                    if p_type.name == "address":
-                        cur_role = plan[plan_idx]
-                        binding[param] = cur_role
-                        plan_idx += 1
-                    elif p_type.name == "uint256":
-                        # TODO financial parameters recognization.
-                        pass
-                    elif p_type.name == "bytes":
-                        # TODO
-                        pass
-                    elif p_type.name == "string":
-                        # TODO
-                        pass
-                    else:
-                        raise CornerCase("TODO")
-                elif isinstance(p_type, SliArrayType):
-                    sub_type = p_type.type
-                    length = p_type.length if p_type.is_fixed_array else 2
-                    if isinstance(sub_type, SliElementaryType):
-                        if sub_type.name == "address":
-                            cur_roles = plan[plan_idx : plan_idx + length]
-                            binding[param] = cur_roles
-                            plan_idx += length
-                        else:
-                            raise CornerCase("TODO")
-                    else:
-                        raise CornerCase("TODO")
-                else:
-                    raise CornerCase("TODO")
-            # Concretize all values in transfer.
-            # If this plan isn't valid, it can't be concretized.
-            token_flows: List[Tokenflow] = []
-            invalid = False
-            for trace, trans in trans_summary:
-                n_trans = trans.copy()
-                if not isinstance(n_trans.token, str):
-                    r = self.partial_eval_in_trace(trace, binding, n_trans.token)
-                    if not self.is_erc20(self.role2ctrt[r]):
-                        invalid = True
-                        break
-                    n_trans.token = r
-
-                if not isinstance(n_trans.sender, str):
-                    r = self.partial_eval_in_trace(trace, binding, n_trans.sender)
-                    n_trans.sender = r
-
-                if not isinstance(n_trans.receiver, str):
-                    r = self.partial_eval_in_trace(trace, binding, n_trans.receiver)
-                    n_trans.receiver = r
-
-                if not n_trans.is_concrete:
-                    invalid = True
-                    break
-                token_flows.append(n_trans)
-            if invalid:
-                continue
-
-            # Hardcode
-            # Map the actions to current handy function.
-            action_name = ""
-            me = "attackContract"
-
-            # Infer swap
-            transfer_to_me = False
-            token_a = ""
-            transfer_from_me = False
-            token_b = ""
-            for tf in token_flows:
-                if tf.sender == me and tf.transfer_from:
-                    transfer_from_me = True
-                    token_a = tf.token
-                    for tf in token_flows:
-                        if tf.receiver == me and tf.token != token_a:
-                            transfer_to_me = True
-                            token_b = tf.token
-                    if transfer_from_me and transfer_to_me:
-                        # Hack here
-                        _role_name = "pair" if role_name == "router" else role_name
-                        action_name = f"swap_{_role_name}_{token_a}_{token_b}"
-            if action_name in self.action_names:
-                func_summary = FunctionSummary(token_flows, action_name)
-                func_summarys.append(func_summary)
-        return func_summarys
+        elif action.action_name == "burn":
+            return gen_summary_transfer(action.account, "dead", action.token0, action.amount0)
+        elif action.action_name == "mint":
+            return gen_summary_transfer("dead", action.account, action.token0, action.amount0)
+        elif action.action_name == "swap":
+            return gen_summary_uniswap(action.swap_pair, "attacker", action.token0, action.token1, "arg_0")
+        elif action.action_name == "borrow":
+            return gen_summary_transfer(action.lender, "attacker", action.token0, "arg_0")
+        elif action.action_name == "payback":
+            return gen_summary_payback("attacker", action.lender, action.token0, "arg_x0", "arg_0")
+        elif action.action_name == "addliquidity":
+            return []
+        elif action.action_name == "deposit":
+            return []
+        elif action.action_name == "withdraw":
+            return []
+        elif action.action_name == "transaction":
+            return []
 
     # Utils
+    def map_func_to_action(self, func: SliFunction) -> AFLAction:
+        args_in_name = func.name.split("_")
+        args = [str(a) for a in func.parameters]
+        return init_action_from_list([*args_in_name, *args], False)
+
     def count_type_amt_in_func(self, func: SliFunction, type_str: str) -> int:
         _count = 0
         for param in func.parameters:
@@ -478,9 +501,7 @@ class Synthesizer:
             raise CornerCase("TODO")
         return _count
 
-    def init_transfer(
-        self, ctrt: SliContract, called_expr: SliCallExpression
-    ) -> Tokenflow:
+    def init_transfer(self, ctrt: SliContract, called_expr: SliCallExpression) -> Tokenflow:
         called: SliMemberAccess = called_expr.called
         return Tokenflow(
             called.expression,
@@ -563,9 +584,7 @@ class Synthesizer:
         key = f"{self.get_role_name_by_ctrt(func.contract)}.{str(var)}"
         return self.init_storage[key]
 
-    def partial_eval(
-        self, func: SliFunction, binding: Dict[SliVariable, Any], expr: SliExpression
-    ):
+    def partial_eval(self, func: SliFunction, binding: Dict[SliVariable, Any], expr: SliExpression):
         if isinstance(expr, SliTypeConversion):
             return self.partial_eval(func, binding, expr.expression)
         if isinstance(expr, SliIdentifier):
@@ -574,20 +593,17 @@ class Synthesizer:
             if isinstance(expr.called, SliNewElementaryType):
                 return None
             if isinstance(expr.called, SliMemberAccess):
-                if (
-                    expr.called.member_name == "pairFor"
-                    and expr.called.expression.value.name == "UniswapV2Library"
-                ):
+                if expr.called.member_name == "pairFor" and expr.called.expression.value.name == "UniswapV2Library":
                     token0 = self.partial_eval(func, binding, expr.arguments[1])
                     token1 = self.partial_eval(func, binding, expr.arguments[2])
                     if token0 == token1:
                         return None
                     # Hardcode
                     for role_name, role in self.config.roles.items():
-                        if role.uniswap_order == [
+                        if role.token_pair == [
                             token0,
                             token1,
-                        ] or role.uniswap_order == [token1, token0]:
+                        ] or role.token_pair == [token1, token0]:
                             return role_name
                 return None
             return None
@@ -602,9 +618,7 @@ class Synthesizer:
             return binding[expr]
         return None
 
-    def partial_eval_in_trace(
-        self, trace: TRACE, binding: Dict[SliVariable, Any], expr: SliExpression
-    ):
+    def partial_eval_in_trace(self, trace: TRACE, binding: Dict[SliVariable, Any], expr: SliExpression):
         func, _ = trace[0]
         for f, exprs in trace[1:]:
             new_binding = {}
@@ -623,9 +637,7 @@ class Synthesizer:
                 return True
         return False
 
-    def get_external_call_funcs_from_expr(
-        self, e_call_expr: SliExpression
-    ) -> List[SliFunction]:
+    def get_external_call_funcs_from_expr(self, e_call_expr: SliExpression) -> List[SliFunction]:
         # Call new Uint();
         if isinstance(e_call_expr.called, SliNewElementaryType):
             return []
@@ -658,9 +670,7 @@ class Synthesizer:
                     raise CornerCase("TODO")
             # Call a contract initialized by variable: token.transferFrom(a, b, amt);
             # token is a state variable or local variable
-            elif isinstance(c_val, SliStateVariable) or isinstance(
-                c_val, SliLocalVariable
-            ):
+            elif isinstance(c_val, SliStateVariable) or isinstance(c_val, SliLocalVariable):
                 # Solidity intrinsic call
                 # address(abc).transfer()
                 if not isinstance(c_val.type, SliUserDefinedType):
@@ -711,9 +721,7 @@ class Synthesizer:
                 return ctrt
         return None
 
-    def _get_function_by_name(
-        self, ctrt: SliContract, name: str
-    ) -> Optional[SliFunction]:
+    def _get_function_by_name(self, ctrt: SliContract, name: str) -> Optional[SliFunction]:
         return next(
             (
                 f
@@ -743,17 +751,7 @@ class Synthesizer:
                 return sv
         return None
 
-    def get_func_by_canonical_name(self, canonical_name: str, method_name: str):
-        # Precise finding.
-        tgt_ctrt_name = self.config.contract_names_mapping.get(canonical_name, None)
-        tgt_ctrt = self.get_ctrt_by_name(tgt_ctrt_name)
-        if tgt_ctrt is None:
-            return None
-        return self._get_function_by_name(tgt_ctrt, method_name)
-
-    def get_func_by_interface(
-        self, interface: Union[SliContract, str], method_name: str
-    ):
+    def get_func_by_interface(self, interface: Union[SliContract, str], method_name: str):
         if isinstance(interface, SliContract):
             name = interface.name
         else:
@@ -793,7 +791,7 @@ class Synthesizer:
                 return [func]
         return []
 
-    def get_ava_funcs(self, funcs: List[SliFunction]) -> List[SliFunction]:
+    def get_public_funcs(self, funcs: List[SliFunction]) -> List[SliFunction]:
         access_modifiers = ["onlyOwner", "onlyMinter"]
         ava_funcs = []
         for f in funcs:
@@ -805,249 +803,5 @@ class Synthesizer:
             has_access_modifier = any(m.name in access_modifiers for m in f.modifiers)
             if has_access_modifier:
                 continue
-            if f.name in (
-                "addLiquidity",
-                "addLiquidityETH",
-                "removeLiquidity",
-                "removeLiquidityETH",
-                "removeLiquidityWithPermit",
-                "removeLiquidityETHWithPermit",
-                "removeLiquidityETHSupportingFeeOnTransferTokens",
-                "removeLiquidityETHWithPermitSupportingFeeOnTransferTokens",
-                "swapExactTokensForTokens",
-                "swapTokensForExactTokens",
-                "swapExactETHForTokens",
-                "swapTokensForExactETH",
-                "swapExactTokensForETH",
-                "swapETHForExactTokens",
-                "swapExactETHForTokensSupportingFeeOnTransferTokens",
-                "swapExactTokensForETHSupportingFeeOnTransferTokens",
-            ):
-                continue
             ava_funcs.append(f)
         return ava_funcs
-
-    def is_groundtruth(self, candidate: List[SliFunction]) -> bool:
-        # if len(candidate) != len(self.config.groundtruth):
-        #     return False
-        # else:
-        #     for f1, f2 in zip(candidate, self.config.groundtruth):
-        #         f1_ctrt_name = f1.contract.name
-        #         f1_func_name = f1.name
-        #         f2_ctrt_name, f2_func_name = f2.split(".")
-        #         if f1_ctrt_name != f2_ctrt_name or f1_func_name != f2_func_name:
-        #             return False
-        #     return True
-        return False
-
-
-class SynthesizerByPattern:
-    def __init__(self, config: Config):
-        self.config = config
-        self.roles = self.config.roles
-        self.candidates: List[Sketch] = []
-        self.candidates_signs: Set[str] = set()
-        actions = [init_action_from_list(a, True) for a in self.config.groundtruth]
-        self.gt_sketch = Sketch(actions).symbolic_copy()
-
-        if self.config.pattern == "BuySell Manipulation":
-            self.gen_candidates_buysell()
-        elif self.config.pattern == "Price Discrepancy":
-            self.gen_candidates_pricediscrepancy()
-        elif self.config.pattern == "Token Burn":
-            self.gen_candidates_tokenburn()
-        elif self.config.pattern == "Liquidity Ratio Break":
-            self.gen_candidates_lrbreak()
-        else:
-            raise CornerCase(f"Unknown pattern: {self.config.pattern}!")
-
-        self.candidates: List[Sketch] = sorted(self.candidates, key=len)
-
-        # Remove all candidates after the ground-truth
-        gt_idx = -1
-        for idx, c in enumerate(self.candidates):
-            if len(c) != len(self.gt_sketch):
-                continue
-            if c == self.gt_sketch:
-                gt_idx = idx
-        if gt_idx == -1:
-            raise ValueError("Ground truth is not covered by the candidates!")
-        self.candidates = self.candidates[: gt_idx + 1]
-
-    def check_duplicated(self, sketch: Sketch) -> bool:
-        return str(sketch) in self.candidates_signs
-
-    def extend_candidates_from_template(
-        self,
-        template: List[DSLAction],
-        template_times: List[int],
-    ):
-        sketches: List[Sketch] = []
-        for times in itertools.product(*template_times):
-            actions = []
-            for i in range(len(template)):
-                t = times[i]
-                actions.extend([template[i]] * t)
-            # Rename parameters
-            sketch = Sketch(actions).symbolic_copy()
-            # Prune too long candidates
-            if len(sketch) > len(self.gt_sketch):
-                continue
-            sketches.append(sketch)
-
-        for s in sketches:
-            if not s.check_implemented(self.roles):
-                continue
-            if self.check_duplicated(s):
-                continue
-            self.candidates.append(s)
-            self.candidates_signs.add(str(s))
-
-    def gen_candidates_buysell(self):
-        lend_pools = ["owner"] + [k for k, v in self.roles.items() if v.is_lendpool]
-        assets = [k for k, v in self.roles.items() if v.is_asset]
-        stable_coins = [k for k, v in self.roles.items() if v.is_stablecoin]
-        swap_pairs = [k for k, v in self.roles.items() if v.is_swappair]
-        defi_entrys = [k for k, v in self.roles.items() if v.is_defientry]
-        # timer = time.perf_counter()
-        # i = 0
-        # fmt: off
-        for (
-            lend_pool0, lend_pool1, asset0, asset1, swap_pair0, asset2, asset3, defi_entry, asset_hacked, swap_pair1, swap_pair2, stable_coin
-        ) in itertools.product(
-            lend_pools, lend_pools, assets, assets, swap_pairs, assets, assets, defi_entrys, assets, swap_pairs, swap_pairs, stable_coins
-        ):
-            template: List[DSLAction] = [
-                Borrow(lend_pool0, asset0, "amt0"),
-                    Borrow(lend_pool1, asset1, "amt1"),
-                        Swap(swap_pair0, asset2, asset3, "amt2"),
-                        Transaction(defi_entry, asset_hacked, "amt3"),
-                        Swap(swap_pair0, asset3, asset2, "amt4"),
-                    Payback(lend_pool1, asset1, "amt5"),
-                    Swap(swap_pair1, asset_hacked, stable_coin, "amt6"),
-                    Swap(swap_pair2, stable_coin, asset0, "amt7"),
-                Payback(lend_pool0, asset0, "amt8"),
-            ]
-        # fmt: on
-            template_times = [
-                (0, 1),
-                (0, 1),
-                (0, 1),
-                (1,),
-                (0, 1),
-                (0, 1),
-                (0, 1),
-                (0, 1),
-                (0, 1),
-            ]
-
-            self.extend_candidates_from_template(template, template_times)
-
-            # print(f"Epoch {i} timecost: {time.perf_counter() - timer}")
-            # timer = time.perf_counter()
-            # i += 1
-
-    def gen_candidates_pricediscrepancy(self):
-        lend_pools = ["owner"] + [k for k, v in self.roles.items() if v.is_lendpool]
-        assets = [k for k, v in self.roles.items() if v.is_asset]
-        stable_coins = [k for k, v in self.roles.items() if v.is_stablecoin]
-        swap_pairs = [k for k, v in self.roles.items() if v.is_swappair]
-        oracles = [k for k, v in self.roles.items() if v.is_oracle]
-        # fmt: off
-        for (
-            lend_pool0, asset0, swap_pair0, asset1, oracle, swap_pair1, swap_pair2, stable_coin, swap_pair3
-        ) in itertools.product(
-            lend_pools, assets, swap_pairs, assets, oracles, swap_pairs, swap_pairs, stable_coins, swap_pairs
-        ):
-            template: List[DSLAction] = [
-                Borrow(lend_pool0, asset0, "amt0"),
-                    Swap(swap_pair0, asset0, asset1, "amt1"),
-                    Sync(oracle),
-                    Swap(swap_pair1, asset1, asset0, "amt2"),
-                    Swap(swap_pair2, asset0, stable_coin, "amt3"),
-                    Swap(swap_pair3, asset1, stable_coin, "amt4"),
-                Payback(lend_pool0, asset0, "amt5"),
-            ]
-        # fmt: on
-
-            template_times = [
-                (1,),
-                (1,),
-                (0, 1),
-                (1,),
-                (0, 1),
-                (0, 1),
-                (1,),
-            ]
-            self.extend_candidates_from_template(template, template_times)
-
-    def gen_candidates_tokenburn(self):
-        lend_pools = ["owner"] + [k for k, v in self.roles.items() if v.is_lendpool]
-        assets = [k for k, v in self.roles.items() if v.is_asset]
-        stable_coins = [k for k, v in self.roles.items() if v.is_stablecoin]
-        swap_pairs = [k for k, v in self.roles.items() if v.is_swappair]
-        oracles = [k for k, v in self.roles.items() if v.is_oracle]
-        # fmt: off
-        for (
-            lend_pool0, asset0, swap_pair0, asset1, oracle, swap_pair1, swap_pair2, stable_coin,
-        ) in itertools.product(
-            lend_pools, assets, swap_pairs, assets, oracles, swap_pairs, swap_pairs, stable_coins
-        ):
-            template: List[DSLAction] = [
-                Borrow(lend_pool0, asset0, "amt0"),
-                    Swap(swap_pair0, asset0, asset1, "amt1"),
-                    Burn(oracle, asset1, "amt2"),
-                    Sync(oracle),
-                    Swap(swap_pair0, asset1, asset0, "amt3"),
-                    Swap(swap_pair1, asset0, stable_coin, "amt4"),
-                    Swap(swap_pair2, asset1, stable_coin, "amt5"),
-                Payback(lend_pool0, asset0, "amt6"),
-            ]
-        # fmt: on
-            template_times = [
-                (1,),
-                (1,),
-                (1,),
-                (0, 1),
-                (1,),
-                (0, 1),
-                (0, 1),
-                (1,),
-            ]
-            self.extend_candidates_from_template(template, template_times)
-
-    def gen_candidates_lrbreak(self):
-        lend_pools = ["owner"] + [k for k, v in self.roles.items() if v.is_lendpool]
-        assets = [k for k, v in self.roles.items() if v.is_asset]
-        stable_coins = [k for k, v in self.roles.items() if v.is_stablecoin]
-        swap_pairs = [k for k, v in self.roles.items() if v.is_swappair]
-        oracles = [k for k, v in self.roles.items() if v.is_oracle]
-        defi_entrys = [k for k, v in self.roles.items() if v.is_defientry]
-        # fmt: off
-        for (
-            lend_pool0, asset0, swap_pair0, asset1, defi_entry, oracle, swap_pair1, swap_pair2, stable_coin,
-        ) in itertools.product(
-            lend_pools, assets, swap_pairs, assets, defi_entrys, oracles, swap_pairs, swap_pairs, stable_coins,
-        ):
-            template: List[DSLAction] = [
-                Borrow(lend_pool0, asset0, "amt0"),
-                    Swap(swap_pair0, asset0, asset1, "amt1"),
-                    BreakLR(oracle, defi_entry),
-                    Sync(oracle),
-                    Swap(swap_pair0, asset1, asset0, "amt3"),
-                    Swap(swap_pair1, asset0, stable_coin, "amt4"),
-                    Swap(swap_pair2, asset1, stable_coin, "amt5"),
-                Payback(lend_pool0, asset0, "amt6"),
-            ]
-        # fmt: on
-            template_times = [
-                (1,),
-                (1,),
-                (1,),
-                (0, 1),
-                (1,),
-                (0, 1),
-                (0, 1),
-                (1,),
-            ]
-            self.extend_candidates_from_template(template, template_times)

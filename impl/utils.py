@@ -17,6 +17,11 @@ ether = 10**18
 gwei = 10**10
 max_uint256 = 2**256 - 1
 
+SENDER = "msg.sender"
+ATTACKER = "attacker"
+DEAD = "dead"
+OWENR = "owner"
+
 ctrt_name_regex = re.compile(r"\ncontract (\w+)\s+{")
 
 

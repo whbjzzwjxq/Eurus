@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple
 
 from .config import Config, init_config, AttackCtrtName
 from .dsl import *
-from .synthesizer import SynthesizerByPattern
+from .synthesizer import Synthesizer
 from .utils import CornerCase
 
 
@@ -52,17 +52,13 @@ class BenchmarkBuilder:
         self.extra_statements = self.config.extra_statements
 
         # Uniswap pairs.
-        self.uniswap_pairs: List[str] = [
-            name for name, role in self.roles.items() if role.is_uniswap
-        ]
+        self.uniswap_pairs: List[str] = self.config.uniswap_pairs
 
         # Uniswap pairs to token_names
-        self.uniswap_pair2tokens: Dict[str, Tuple[str, str]] = {
-            u: tuple(self.roles[u].uniswap_order) for u in self.uniswap_pairs
-        }
+        self.swap_pair2tokens = self.config.swappair2tokens
 
         # ERC20 tokens.
-        self.erc20_tokens = [name for name, role in self.roles.items() if role.is_erc20]
+        self.erc20_tokens = self.config.erc20_tokens
 
         # Map state_variable name to its type and initial value.
         self.init_state: Dict[str, Tuple[str, str]] = {}
@@ -71,10 +67,10 @@ class BenchmarkBuilder:
         self.ava_action_names = []
 
         # Will print token_users' initial balances.
-        self.token_users = [c for c in self.ctrt_names if c in self.roles]
+        self.token_users = list(self.roles.keys())
 
         # Lender Pool
-        self.lend_pools = ["owner"] + [name for name, role in self.roles.items() if role.is_lendpool]
+        self.lend_pools = self.config.lend_pools
 
         actions = [init_action_from_list(a, True) for a in self.config.groundtruth]
         self.gt_sketch = Sketch(actions)
@@ -196,7 +192,7 @@ class BenchmarkBuilder:
                     d_stmt = f"{ctrt_name} = new {ctrt_label}();"
 
                 elif ctrt_label == self.uniswap_pair_ctrt:
-                    token0, token1 = self.uniswap_pair2tokens[ctrt_name]
+                    token0, token1 = self.swap_pair2tokens[ctrt_name]
                     d_stmt = f"{ctrt_name} = new {self.uniswap_pair_ctrt}(\
                         address({token0}), address({token1}), \
                         reserve0{ctrt_name}, reserve1{ctrt_name}, \
@@ -207,10 +203,7 @@ class BenchmarkBuilder:
                     pairs = self.uniswap_pairs
                     if len(pairs) > 3:
                         raise ValueError("More than 3 pairs are not supported.")
-                    addrs = [
-                        f"address({pairs[i]})" if i < len(pairs) else "address(0x0)"
-                        for i in range(3)
-                    ]
+                    addrs = [f"address({pairs[i]})" if i < len(pairs) else "address(0x0)" for i in range(3)]
                     params = ["address(0xdead)", *addrs]
                     d_stmt = f'{ctrt_name} = new {self.uniswap_factory_ctrt}({",".join(params)});'
 
@@ -243,13 +236,6 @@ class BenchmarkBuilder:
                     stmt = f"{t}.transfer({addr}, {sv_name});"
                     all.append(stmt)
 
-        # # Use approve-transferFrom to mock flashloan
-        # for t in self.erc20_tokens:
-        #     for l in self.lend_pools:
-        #         if l != "owner" and t not in self.roles[l].support_swaps:
-        #             continue
-        #         all.append(f"{t}.approve(attacker, UINT256_MAX);")
-
         all.extend(self.extra_deployments)
 
         all.append("}")
@@ -265,9 +251,7 @@ class BenchmarkBuilder:
             addr = f"address({u})"
             printer.append(f'emit log_string("{u.capitalize()} Balances: ");')
             for t in self.erc20_tokens:
-                printer.append(
-                    f"queryERC20BalanceDecimals(address({t}), {addr}, {t}.decimals());"
-                )
+                printer.append(f"queryERC20BalanceDecimals(address({t}), {addr}, {t}.decimals());")
             printer.append('emit log_string("");')
         printer.append('emit log_string("");')
         printer.append('emit log_string("");')
@@ -281,18 +265,15 @@ class BenchmarkBuilder:
             "}",
         ]
 
-        nop = ["function nop(uint256 amount) internal pure {", "return;", "}"]
-
-        return [*printer, *attack_goal_func, *nop]
+        return [*printer, *attack_goal_func]
 
     def gen_actions(self) -> List[str]:
+        # To distinguish with testing, all actions are modified by internal.
         # Actions
         actions = []
         extra_actions = self.config.extra_actions
         func_name_regex = re.compile(r"function (.*?)\(")
-        extra_action_names = set(
-            [func_name_regex.match(a).group(1) for a in extra_actions]
-        )
+        extra_action_names = set([func_name_regex.match(a).group(1) for a in extra_actions])
 
         def add_func_to_actions(func_body: str):
             func_name = func_name_regex.match(func_body[0]).group(1)
@@ -320,64 +301,38 @@ class BenchmarkBuilder:
                 add_func_to_actions(payback)
 
         # swap by uniswap
-        router_name = "router"
-        for u, t in self.uniswap_pair2tokens.items():
+        for u, t in self.swap_pair2tokens.items():
             token0, token1 = t
             swap0 = [
-                f"function swap_{u}_{token0}_{token1}(uint256 amount) internal" + "{",
-                f"{token0}.approve(address({router_name}), type(uint).max);",
-                f"address[] memory path = new address[](2);",
-                f"path[0] = address({token0});",
-                f"path[1] = address({token1});",
-                f"router.swapExactTokensForTokensSupportingFeeOnTransferTokens( \
-                    amount, 1, path, attacker, block.timestamp);",
+                f"function swap_{u}_attacker_{token0}_{token1}(uint256 amount, uint256 amountOut) internal" + "{",
+                f"{token0}.transfer(address({u}), amount);",
+                f"{u}.swap(0, amountOut, attacker, new bytes(0));",
                 "}",
             ]
             add_func_to_actions(swap0)
-            token1, token0 = t
             swap1 = [
-                f"function swap_{u}_{token0}_{token1}(uint256 amount) internal" + "{",
-                f"{token0}.approve(address({router_name}), type(uint).max);",
-                f"address[] memory path = new address[](2);",
-                f"path[0] = address({token0});",
-                f"path[1] = address({token1});",
-                f"router.swapExactTokensForTokensSupportingFeeOnTransferTokens( \
-                    amount, 1, path, attacker, block.timestamp);",
+                f"function swap_{u}_attacker_{token1}_{token0}(uint256 amount, uint256 amountOut) internal" + "{",
+                f"{token1}.transfer(address({u}), amount);",
+                f"{u}.swap(amountOut, 0, attacker, new bytes(0));",
                 "}",
             ]
             add_func_to_actions(swap1)
-
-        # sync uniswap
-        for uniswap in self.uniswap_pairs:
-            sync = [
-                f"function sync_{uniswap}() internal" + "{",
-                f"{uniswap}.sync();",
-                "}",
-            ]
-            add_func_to_actions(sync)
 
         return [*actions, *self.extra_actions]
 
     def gen_gt_for_forge_and_halmos(self) -> List[str]:
         # Build groundtruth test for forge
-        test_gt = self.gt_sketch.output_verify(
-            "test_gt", self.extra_statements, print_balance=True
-        )
-        check_gt = self.gt_sketch.symbolic_copy().output(
-            "check_gt", self.extra_statements
-        )
+        test_gt = self.gt_sketch.output_verify("test_gt", self.extra_statements, print_balance=True)
+        check_gt = self.gt_sketch.symbolic_copy().output("check_gt", self.extra_statements)
         all = [*test_gt, *check_gt]
         return all
 
     def gen_candidates(self) -> List[str]:
-        synthesizer = SynthesizerByPattern(self.config)
+        # Lazy
+        self.synthesizer = Synthesizer(self.config)
         func_bodys: List[str] = []
-        for idx, c in enumerate(synthesizer.candidates):
-            func_bodys.extend(
-                c.output(
-                    f"check_cand{str(idx).zfill(ZFILL_SIZE)}", self.extra_statements
-                )
-            )
+        for idx, c in enumerate(self.synthesizer.candidates):
+            func_bodys.extend(c.output(f"check_cand{str(idx).zfill(ZFILL_SIZE)}", self.extra_statements))
         return func_bodys
 
     def output(self, output_path: str):
@@ -389,7 +344,7 @@ class BenchmarkBuilder:
             *self.gen_helper_funcs(),
             *self.gen_actions(),
             *self.gen_gt_for_forge_and_halmos(),
-            # *self.gen_candidates(),
+            *self.gen_candidates(),
             "}",
         ]
         with open(output_path, "w") as f:
@@ -397,9 +352,7 @@ class BenchmarkBuilder:
                 f.write(l)
                 f.write("\n")
 
-    def output_verify(
-        self, verifiers: List[Tuple[str, Sketch, List[List[str]]]], output_path: str
-    ):
+    def output_verify(self, verifiers: List[Tuple[str, Sketch, List[List[str]]]], output_path: str):
         results = [
             "// SPDX-License-Identifier: MIT",
             "pragma solidity ^0.8.10;",
@@ -413,19 +366,16 @@ class BenchmarkBuilder:
                 jdx = str(j).zfill(3)
                 actual_name = f"test_verify_{func_name}_{jdx}"
                 concre_sketch = candidate.concretize(args)
-                results.extend(
-                    concre_sketch.output_verify(actual_name, self.extra_statements)
-                )
+                results.extend(concre_sketch.output_verify(actual_name, self.extra_statements))
         results.extend(["}"])
         with open(output_path, "w") as f:
             for l in results:
                 f.write(l)
                 f.write("\n")
 
-
-def get_sketch_by_func_name(b: BenchmarkBuilder, s: SynthesizerByPattern, func_name: str):
-    if func_name == "check_gt":
-        sketch = b.gt_sketch.symbolic_copy()
-    else:
-        sketch = s.candidates[int(func_name.removeprefix("check_cand"))]
-    return sketch
+    def get_sketch_by_func_name(self, func_name: str):
+        if func_name == "check_gt":
+            sketch = self.gt_sketch.symbolic_copy()
+        else:
+            sketch = self.synthesizer.candidates[int(func_name.removeprefix("check_cand"))]
+        return sketch

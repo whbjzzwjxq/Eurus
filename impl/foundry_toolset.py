@@ -11,12 +11,12 @@ import re
 import requests
 import json
 
-from impl.storage.read import StorageDescriber, StorageLayout, TypeDescriber, get_var
-from impl.storage.utils import bytes2address, int2address
+from .storage.read import StorageDescriber, StorageLayout, TypeDescriber, get_var
+from .storage.utils import int2address
 
 from .config import init_config
 
-from .utils import prepare_subfolder, resolve_project_name
+from .utils import *
 
 DEFAULT_ACCOUNT = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 DEFAULT_PK = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"

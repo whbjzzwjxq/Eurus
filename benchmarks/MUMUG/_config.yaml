@@ -19,9 +19,9 @@ ctrt_name2deploy:
   - ["mubank", "new MuBank(address(router), address(pair), address(mu))"]
 
 extra_actions:
-  - "function swap_mubank_usdce_mu(uint256 sendAmount) internal {
+  - "function swap_mubank_usdce_mu(uint256 amount, uint256 amountOut) internal {
     usdce.approve(address(mubank), type(uint).max);
-    mubank.mu_bond(address(usdce), sendAmount);
+    mubank.mu_bond(address(usdce), amount);
     }"
 
 extra_deployments: []
@@ -32,8 +32,8 @@ attack_goal_str: "usdce;1e6"
 
 groundtruth:
   - ["borrow", "owner", "mu", "99000e18"]
-  - ["swap", "pair", "mu", "usdce", "99000e18"]
-  - ["swap", "mubank", "usdce", "mu", "22960e18"]
+  - ["swap", "pair", "mu", "usdce", "99000e18", "40215e6"]
+  - ["swap", "mubank", "usdce", "mu", "22960e18", "1"]
   - ["payback", "owner", "mu", "99297e18"]
 
 roles:

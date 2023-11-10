@@ -1,73 +1,72 @@
-from typing import Callable, Dict, Any, Tuple, List
+from typing import Callable, Dict, Any, Tuple, List, Set
 
 # lambda VarGetter => constraint
 LAMBDA_CONSTR = Callable[[Any], Any]
-ACTION_SUMMARY = Tuple[List[str], List[LAMBDA_CONSTR]]
+ACTION_CONSTR = List[LAMBDA_CONSTR]
+TRANSFER_SIGNATURE = Callable[[str, str, str, str, float, float], ACTION_CONSTR]
+DEAD = "dead"
 
-DECIMAL = 18
-# DECIMAL = 0
-SCALE = 10**DECIMAL
+class ConstraintsExtracter:
+    def __init__(self) -> None:
+        self.read_vars = set()
+        self.write_vars = set()
+
+    def get(self, __name: str):
+        if __name.startswith("old_"):
+            key = __name.removeprefix("old_")
+            self.read_vars.add(key)
+        elif __name.startswith("new_"):
+            key = __name.removeprefix("new_")
+            self.write_vars.add(key)
 
 
-def merge_summary(*summs: ACTION_SUMMARY) -> ACTION_SUMMARY:
-    write_vars = []
-    constraints = []
-    for s in summs:
-        w, c = s
-        write_vars.extend(w)
-        constraints.extend(c)
-    return write_vars, constraints
-
-
-TransferSignature = Callable[[str, str, str, str, float], ACTION_SUMMARY]
+def extract_rw_vars(constraints: List[LAMBDA_CONSTR]) -> Tuple[Set[str], Set[str]]:
+    # Init storage variables
+    creator = ConstraintsExtracter()
+    for lambd in constraints:
+        try:
+            _ = lambd(creator)
+        except Exception:
+            pass
+    return creator.read_vars, creator.write_vars
 
 
 def gen_summary_transfer(
-    _from: str,
-    _to: str,
+    sender: str,
+    receiver: str,
     token: str,
     amt: str,
     percent_in: float = 1,
     percent_out: float = 1,
-) -> ACTION_SUMMARY:
-    bal_from = f"{token}.balanceOf({_from})"
-    bal_to = f"{token}.balanceOf({_to})"
-    write_vars = [
-        bal_from,
-        bal_to,
-    ]
-    # Return nothing
+) -> ACTION_CONSTR:
+    bal_from = f"{token}.balanceOf({sender})"
+    bal_to = f"{token}.balanceOf({receiver})"
     # fmt: off
     constraints = [
         # Transfer token
-        lambda s: s.get(f"new_{bal_from}") == s.get(f"old_{bal_from}") - s.get(f"{amt}") * percent_out,
-        lambda s: s.get(f"new_{bal_to}") == s.get(f"old_{bal_to}") + s.get(f"{amt}") * percent_in,
+        lambda s: s.get(f"new_{bal_from}") == s.get(f"old_{bal_from}") - s.get(amt) * percent_out,
+        lambda s: s.get(f"new_{bal_to}") == s.get(f"old_{bal_to}") + s.get(amt) * percent_in,
     ]
     # fmt: on
-    return write_vars, constraints
+    return constraints
 
 
 def gen_summary_payback(
-    _from: str,
-    _to: str,
-    asset: str,
-    borrow_amt: str,
-    payback_amt: str,
+    sender: str,
+    receiver: str,
+    token: str,
+    amt_borrow: str,
+    amt_payback: str,
+    percent_in: float = 1,
+    percent_out: float = 1,
     scale: int = 1000,
     fee: int = 3,
-):
+) -> ACTION_CONSTR:
     # fmt: off
-    interest_rate = lambda s: s.get(payback_amt) == s.get(borrow_amt) * (scale + fee) / (scale)
-    write_vars, constraints = gen_summary_transfer(_from, _to, asset, payback_amt)
+    interest_rate = lambda s: s.get(amt_payback) == s.get(amt_borrow) * (scale + fee) / (scale)
+    constraints = gen_summary_transfer(sender, receiver, token, amt_payback, percent_in, percent_out)
     # fmt: on
-    return write_vars, [*constraints, interest_rate]
-
-
-def gen_summary_burn(victim: str, asset: str, amt: str, min: int = 2):
-    burn_summary = gen_summary_transfer(victim, "dead", asset, amt)
-    bal_victim = f"new_{asset}.balanceOf({victim})"
-    extra_constraints = [lambda s: s.get(bal_victim) > min / SCALE]
-    return merge_summary(burn_summary, ([], extra_constraints))
+    return [*constraints, interest_rate]
 
 
 def gen_summary_getAmountsOut(
@@ -78,7 +77,7 @@ def gen_summary_getAmountsOut(
     scale: int = 1000,
     fee: int = 3,
     suffix: str = "",
-):
+) -> ACTION_CONSTR:
     # Return amountOut
     # Source code
     # require(amountIn > 0, "UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT");
@@ -111,7 +110,7 @@ def gen_summary_getAmountsIn(
     scale: int = 1000,
     fee: int = 3,
     suffix: str = "",
-):
+) -> ACTION_CONSTR:
     # Return amountIn
     # require(amountOut > 0, "UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT");
     # require(
@@ -135,115 +134,60 @@ def gen_summary_getAmountsIn(
 def gen_summary_uniswap(
     pair: str,
     sender: str,
-    assetIn: str,
-    assetOut: str,
+    receiver: str,
+    token0: str,
+    token1: str,
     amtIn: str,
-    suffix: str = "",
-    receiver: str = None,
-    transfer0: TransferSignature = None,
-    transfer1: TransferSignature = None,
-    percent_in0: float = 1,
-    percent_out0: float = 1,
-    percent_in1: float = 997 / 1000,
-    percent_out1: float = 1,
-) -> ACTION_SUMMARY:
-    if transfer0 is None:
-        transfer0 = gen_summary_transfer
-    if transfer1 is None:
-        transfer1 = gen_summary_transfer
-    if receiver is None:
-        receiver = sender
-    amtOutSuf = f"amtOut{suffix}"
-    s_in = transfer0(
-        sender, pair, assetIn, amtIn, percent_in=percent_in0, percent_out=percent_out0
-    )
-    s_out = transfer1(
-        pair, receiver, assetOut, amtOutSuf, percent_in=percent_in1, percent_out=percent_out1
-    )
-    bal_pair_asset0 = f"old_{assetIn}.balanceOf({pair})"
-    bal_pair_asset1 = f"old_{assetOut}.balanceOf({pair})"
-    extra_constraints = gen_summary_getAmountsOut(
-        amtIn, amtOutSuf, bal_pair_asset0, bal_pair_asset1
-    )
-    return merge_summary(s_in, s_out, ([], extra_constraints))
-
-
-def gen_summary_ratioswap(
-    pair: str,
-    oracle: str,
-    user: str,
-    asset0: str,
-    asset1: str,
-    amtIn: str,
-    suffix: str = "",
-    transfer0: TransferSignature = None,
-    transfer1: TransferSignature = None,
+    amtOut: str,
     percent_in0: float = 1,
     percent_out0: float = 1,
     percent_in1: float = 1,
     percent_out1: float = 1,
-) -> ACTION_SUMMARY:
-    if transfer0 is None:
-        transfer0 = gen_summary_transfer
-    if transfer1 is None:
-        transfer1 = gen_summary_transfer
-    s_in = gen_summary_transfer(
-        user, pair, asset0, amtIn, percent_in=percent_in0, percent_out=percent_out0
-    )
-    amtOutSuf = f"amtOut{suffix}"
-    s_out = gen_summary_transfer(
-        pair, user, asset1, amtOutSuf, percent_in=percent_in1, percent_out=percent_out1
-    )
-    bal_pair_asset0 = f"{asset0}.balanceOf({oracle})"
-    bal_pair_asset1 = f"{asset1}.balanceOf({oracle})"
-    invariant = [
+    scale: int = 1000,
+    fee: int = 3,
+    suffix: str = "",
+) -> ACTION_CONSTR:
+    s_in = gen_summary_transfer(sender, pair, token0, amtIn, percent_in0, percent_out0)
+    s_out = gen_summary_transfer(pair, receiver, token1, amtOut, percent_in=percent_in1, percent_out=percent_out1)
+
+    # Generate Invariants
+    new_bal0_pair = f"new_{token0}.balanceOf({pair})"
+    new_bal1_pair = f"new_{token1}.balanceOf({pair})"
+    old_bal0_pair = f"old_{token0}.balanceOf({pair})"
+    old_bal1_pair = f"old_{token1}.balanceOf({pair})"
+    invariants = [
+        lambda s: s.get(new_bal0_pair) * s.get(new_bal1_pair) * (scale - fee) / scale
+        >= s.get(old_bal0_pair) * s.get(old_bal1_pair),
+    ]
+    return [*s_in, *s_out, *invariants]
+
+
+def gen_summary_ratioswap(
+    pair: str,
+    sender: str,
+    receiver: str,
+    token0: str,
+    token1: str,
+    amtIn: str,
+    amtOut: str,
+    oracle: str,
+    percent_in0: float = 1,
+    percent_out0: float = 1,
+    percent_in1: float = 1,
+    percent_out1: float = 1,
+    suffix: str = "",
+) -> ACTION_CONSTR:
+    s_in = gen_summary_transfer(sender, pair, token0, amtIn, percent_in=percent_in0, percent_out=percent_out0)
+    s_out = gen_summary_transfer(pair, receiver, token1, amtOut, percent_in=percent_in1, percent_out=percent_out1)
+
+    old_bal0_oracle = f"old_{token0}.balanceOf({oracle})"
+    old_bal1_oracle = f"old_{token1}.balanceOf({oracle})"
+    invariants = [
         # fmt: off
-        lambda s: s.get(amtOutSuf) * s.get(f"old_{bal_pair_asset0}") == s.get(amtIn) * s.get(f"old_{bal_pair_asset1}"),
+        lambda s: s.get(amtOut) * s.get(old_bal0_oracle) == s.get(amtIn) * s.get(old_bal1_oracle),
         # fmt: on
     ]
-    return merge_summary(s_in, s_out, ([], invariant))
-
-
-def gen_uniswap_inv(
-    pair: str, asset0: str, asset1: str, swap_for_1: bool, suffix: str = ""
-):
-    # uint256 balance0Adjusted = balance0 * 1000 - amount0In * 3;
-    # uint256 balance1Adjusted = balance1 * 1000 - amount1In * 3;
-    # require(
-    #     balance0Adjusted * balance1Adjusted >=
-    #         uint256(_reserve0) * _reserve1 * 1e6,
-    #     "UniswapV2: K"
-    # );
-    new_balance0 = f"new_{asset0}.balanceOf({pair})"
-    new_balance1 = f"new_{asset1}.balanceOf({pair})"
-    old_balance0 = f"old_{asset0}.balanceOf({pair})"
-    old_balance1 = f"old_{asset1}.balanceOf({pair})"
-    amount0In = f"amount0In{suffix}"
-    amount1In = f"amount1In{suffix}"
-    balance0Adjusted = f"balance0Adjusted{suffix}"
-    balance1Adjusted = f"balance1Adjusted{suffix}"
-
-    if swap_for_1:
-        constraints = [
-            lambda s: s.get(amount0In) == s.get(new_balance0) - s.get(old_balance0),
-            lambda s: s.get(amount1In) == 0,
-        ]
-    else:
-        constraints = [
-            lambda s: s.get(amount1In) == s.get(new_balance1) - s.get(old_balance1),
-            lambda s: s.get(amount0In) == 0,
-        ]
-    constraints.extend(
-        [
-            lambda s: s.get(balance0Adjusted)
-            == s.get(new_balance0) * 1000 - s.get(amount0In) * 3,
-            lambda s: s.get(balance1Adjusted)
-            == s.get(new_balance1) * 1000 - s.get(amount1In) * 3,
-            lambda s: s.get(balance0Adjusted) * s.get(balance1Adjusted)
-            >= s.get(old_balance0) * s.get(old_balance1) * 1e6,
-        ]
-    )
-    return constraints
+    return [*s_in, *s_out, *invariants]
 
 
 def gen_attack_goal(token: str, amount: str, scale: int) -> LAMBDA_CONSTR:
@@ -254,20 +198,23 @@ def gen_attack_goal(token: str, amount: str, scale: int) -> LAMBDA_CONSTR:
     return attack_goal
 
 
+# TODO
+
+
 def gen_NMB_transaction_gnimbstaking_gnimb():
-    balances_nbu_pair = f"old_nbu.balanceOf(pairnbunimb)"
-    balances_nimb_pair = f"old_nimb.balanceOf(pairnbunimb)"
+    pair_bal_nbu = f"old_nbu.balanceOf(pairnbunimb)"
+    pair_bal_nimb = f"old_nimb.balanceOf(pairnbunimb)"
     amount_base = "amtIn"
     amount_out = "amtOut"
 
-    uint256_zero = "uint256(0)"
+    stake_info = f"gnimbstaking.stakeNonceInfos[attacker][uint256(0)]"
     # Compute reward base amount
     reward_base_amount = [
         # fmt: off
-        lambda s: s.get(f"new_gnimbstaking.stakeNonceInfos[attacker][{uint256_zero}].stakeTime") == s.get("old_block.timestamp"),
-        lambda s: s.get(amount_base) == s.get(f"old_gnimbstaking.stakeNonceInfos[attacker][{uint256_zero}].rewardsTokenAmount")
-        * (s.get("old_block.timestamp") - s.get(f"old_gnimbstaking.stakeNonceInfos[attacker][{uint256_zero}].stakeTime"))
-        * s.get(f"old_gnimbstaking.stakeNonceInfos[attacker][{uint256_zero}].rewardRate")
+        lambda s: s.get(f"new_{stake_info}.stakeTime") == s.get("old_block.timestamp"),
+        lambda s: s.get(amount_base) == s.get(f"old_{stake_info}.rewardsTokenAmount")
+        * (s.get("old_block.timestamp") - s.get(f"old_{stake_info}.stakeTime"))
+        * s.get(f"old_{stake_info}.rewardRate")
         # rewardDuration = 365 * 24 * 60 * 60
         / (100 * 365 * 24 * 60 * 60),
     ]
@@ -276,22 +223,15 @@ def gen_NMB_transaction_gnimbstaking_gnimb():
     reward_amount = gen_summary_getAmountsOut(
         amount_base,
         amount_out,
-        balances_nbu_pair,
-        balances_nimb_pair,
+        pair_bal_nbu,
+        pair_bal_nimb,
     )
 
-    extra_constraints = [*reward_base_amount, *reward_amount]
-
-    extra_write_vars = [
-        f"gnimbstaking.stakeNonceInfos[attacker][{uint256_zero}].stakeTime"
-    ]
+    reward_summary = [*reward_base_amount, *reward_amount]
 
     # The reward constraint system
-    reward_summary = (extra_write_vars, extra_constraints)
-    transfer_summary = gen_summary_transfer(
-        "gnimbstaking", "attacker", "gnimb", amount_out
-    )
-    return merge_summary(reward_summary, transfer_summary)
+    transfer_summary = gen_summary_transfer("gnimbstaking", "attacker", "gnimb", amount_out)
+    return [*reward_summary, *transfer_summary]
 
 
 def gen_BXH_transaction_bxhstaking_bxh():
@@ -300,35 +240,25 @@ def gen_BXH_transaction_bxhstaking_bxh():
     amount_in = "amtIn"
     amount_out = "amtOut"
 
-    reward_base_amount = [lambda s: 15.24e18 / SCALE == s.get(amount_in)]
+    reward_base_amount = [lambda s: 15.24 == s.get(amount_in)]
 
     #
-    reward_amount = gen_summary_getAmountsOut(
-        amount_in, amount_out, balances_bxh_pair, balances_usdt_pair
-    )
+    reward_amount = gen_summary_getAmountsOut(amount_in, amount_out, balances_bxh_pair, balances_usdt_pair)
 
-    extra_constraints = [*reward_base_amount, *reward_amount]
+    reward_summary = [*reward_base_amount, *reward_amount]
 
-    reward_summary = ([], extra_constraints)
-    transfer_summary0 = gen_summary_transfer(
-        "bxhstaking", "attacker", "usdt", amount_out
-    )
+    transfer_summary0 = gen_summary_transfer("bxhstaking", "attacker", "usdt", amount_out)
     transfer_summary1 = gen_summary_transfer("attacker", "bxhstaking", "bxh", amount_in)
-    return merge_summary(reward_summary, transfer_summary0, transfer_summary1)
+    return [*reward_summary, *transfer_summary0, *transfer_summary1]
 
 
 def gen_BGLD_burn_pair_bgld():
-    burn_summary = gen_summary_transfer("pair", "dead", "bgld", "arg_0", percent_out=1)
-    burn_summary2 = gen_summary_transfer(
-        "attacker", "dead", "bgld", "arg_0", percent_out=1.1
-    )
+    burn_summary = gen_summary_transfer("pair", DEAD, "bgld", "arg_0", percent_out=1)
+    burn_summary2 = gen_summary_transfer("attacker", DEAD, "bgld", "arg_0", percent_out=1.1)
     bal_victim = f"new_bgld.balanceOf(pair)"
     bal_attacker = f"old_bgld.balanceOf(attacker)"
-    extra_constraints = [
-        lambda s: s.get(bal_victim) > 2 / SCALE,
-        lambda s: s.get("arg_0") * 11 <= s.get(bal_attacker),
-    ]
-    return merge_summary(burn_summary, burn_summary2, ([], extra_constraints))
+    extra_constraints = [lambda s: s.get("arg_0") * 11 <= s.get(bal_attacker)]
+    return [*burn_summary, *burn_summary2, *extra_constraints]
 
 
 def gen_MUMUG_swap_mubank_usdce_mu():
@@ -356,29 +286,21 @@ def gen_MUMUG_swap_mubank_usdce_mu():
         # uint256 amountIN = router.getAmountIn(amount, reserve1, reserve0);
         *gen_summary_getAmountsIn(amountIN, amount, reserve1, reserve0p),
         # uint256 amountOUT = router.getAmountOut(amount, reserve0, reserve1);
-        *gen_summary_getAmountsOut(
-            amount, amountOUT, reserve0p, reserve1, suffix="out"
-        ),
+        *gen_summary_getAmountsOut(amount, amountOUT, reserve0p, reserve1, suffix="out"),
         # uint256 mu_coin_bond_amount = (((((amountIN + amountOUT) * 10)) / 2) / 10);
         # (uint256 mu_coin_swap_amount, uint256 mu_coin_amount) = _mu_bond_quote(amount);
         lambda s: s.get(mu_coin_amount) == (s.get(amountIN) + s.get(amountOUT)) / 2,
     ]
-    return merge_summary(s_in, s_out, ([], extra_constraints))
+    return [*s_in, *s_out, *extra_constraints]
 
 
 def gen_AES_transfer(_from: str, _to: str, token: str, amt: str):
-    write_vars = ["aes.swapFeeTotal"]
-    c = [
-        lambda s: s.get("new_aes.swapFeeTotal")
-        == s.get("old_aes.swapFeeTotal") + s.get(amt) * 0.01
-    ]
+    c = [lambda s: s.get("new_aes.swapFeeTotal") == s.get("old_aes.swapFeeTotal") + s.get(amt) * 0.01]
     if _from == "pair":
-        r = gen_summary_transfer(
-            _from, _to, token, amt, percent_in=0.9, percent_out=0.93
-        )
+        r = gen_summary_transfer(_from, _to, token, amt, percent_in=0.9, percent_out=0.93)
     else:
         r = gen_summary_transfer(_from, _to, token, amt, percent_in=0.97, percent_out=1)
-    return merge_summary(r, (write_vars, c))
+    return [*r, *c]
 
 
 def gen_AES_swap_pair_usdt_aes():
@@ -396,7 +318,7 @@ def gen_AES_swap_pair_usdt_aes():
         *gen_summary_getAmountsOut(amtIn, amtOutSuf, bal_pair_asset0, bal_pair_asset1),
         # *gen_uniswap_inv("pair", "usdt", "aes", True, "_inv")
     ]
-    return merge_summary(s_in, s_out, ([], extra_constraints))
+    return [*s_in, *s_out, *extra_constraints]
 
 
 def gen_AES_swap_pair_aes_usdt():
@@ -410,42 +332,29 @@ def gen_AES_swap_pair_aes_usdt():
     s_out = gen_summary_transfer(pair, user, asset1, amtOutSuf)
     bal_pair_asset0 = f"old_{asset0}.balanceOf({pair})"
     bal_pair_asset1 = f"old_{asset1}.balanceOf({pair})"
-    extra_constraints = gen_summary_getAmountsOut(
-        amtIn, amtOutSuf, bal_pair_asset0, bal_pair_asset1
-    )
-    return merge_summary(s_in, s_out, ([], extra_constraints))
+    extra_constraints = gen_summary_getAmountsOut(amtIn, amtOutSuf, bal_pair_asset0, bal_pair_asset1)
+    return [*s_in, *s_out, *extra_constraints]
 
 
 def gen_AES_burn_pair_aes():
     arg_0 = "arg_0"
     burn_amount = "burn_amount"
-    burn_summary = gen_summary_transfer("pair", "dead", "aes", burn_amount)
-    burn_summary2 = gen_summary_transfer(
-        "attacker", "dead", "aes", arg_0, percent_out=0.5
-    )
+    burn_summary = gen_summary_transfer("pair", DEAD, "aes", burn_amount)
+    burn_summary2 = gen_summary_transfer("attacker", DEAD, "aes", arg_0, percent_out=0.5)
     bal_victim = f"new_aes.balanceOf(pair)"
     bal_attacker = f"old_aes.balanceOf(attacker)"
-    extra_writevars = ["aes.swapFeeTotal"]
     extra_constraints = [
-        lambda s: s.get(bal_victim) > 2 / SCALE,
         lambda s: s.get(arg_0) <= s.get(bal_attacker),
-        lambda s: s.get(burn_amount)
-        == s.get(arg_0) * 0.7 + s.get("old_aes.swapFeeTotal") * 6,
+        lambda s: s.get(burn_amount) == s.get(arg_0) * 0.7 + s.get("old_aes.swapFeeTotal") * 6,
         lambda s: s.get("new_aes.swapFeeTotal") == 0,
     ]
-    return merge_summary(
-        burn_summary, burn_summary2, (extra_writevars, extra_constraints)
-    )
+    return [*burn_summary, *burn_summary2, *extra_constraints]
 
 
-def gen_SGZ_breaklr_pair_sgz():
-    transfer_summary0 = gen_summary_transfer(
-        "sgz", "pair", "sgz", "old_sgz.balanceOf(sgz)"
-    )
-    transfer_summary1 = gen_summary_transfer(
-        "sgz", "pair", "usdt", "old_usdt.balanceOf(sgz)"
-    )
-    return merge_summary(transfer_summary0, transfer_summary1)
+def gen_SGZ_addliquidity_pair_sgz():
+    transfer_summary0 = gen_summary_transfer("sgz", "pair", "sgz", "old_sgz.balanceOf(sgz)")
+    transfer_summary1 = gen_summary_transfer("sgz", "pair", "usdt", "old_usdt.balanceOf(sgz)")
+    return [*transfer_summary0, *transfer_summary1]
 
 
 def gen_RADTDAO_burn_pair_radt():
@@ -458,52 +367,47 @@ def gen_RADTDAO_burn_pair_radt():
     backAmount = "backAmount"
     keepAmount = "keepAmount"
     burnAmount = "burnAmount"
-    constraints = [
+    extra_constraints = [
         lambda s: s.get(backAmount) == s.get(amt) / 100,
         lambda s: s.get(keepAmount) == s.get(amt) / 2000,
-        lambda s: s.get(burnAmount)
-        == s.get("old_radt.balanceOf(pair)") - s.get(backAmount) - s.get(keepAmount),
+        lambda s: s.get(burnAmount) == s.get("old_radt.balanceOf(pair)") - s.get(backAmount) - s.get(keepAmount),
     ]
     transfer_summary0 = gen_summary_transfer("pair", "owner", "radt", backAmount)
-    transfer_summary1 = gen_summary_transfer("pair", "dead", "radt", burnAmount)
-    return merge_summary(transfer_summary0, transfer_summary1, ([], constraints))
+    transfer_summary1 = gen_summary_transfer("pair", DEAD, "radt", burnAmount)
+    return [*transfer_summary0, *transfer_summary1, *extra_constraints]
 
 
-def gen_Zoompro_breaklr_pair_controller():
+def gen_Zoompro_addliquidity_pair_controller():
     return gen_summary_transfer("controller", "pair", "fusdt", "old_fusdt.balanceOf(controller)")
 
 
 def gen_Zoompro_swap_trader_usdt_zoom():
-    return merge_summary(
-        gen_summary_transfer("attacker", "trader", "usdt", "arg_0"),
-        gen_summary_uniswap("pair", "trader", "fusdt", "zoom", "arg_0", receiver="attacker"),
-    )
+    return [
+        *gen_summary_transfer("attacker", "trader", "usdt", "arg_0"),
+        *gen_summary_uniswap("pair", "trader", "fusdt", "zoom", "arg_0", receiver="attacker"),
+    ]
 
 
 def gen_Zoompro_swap_trader_zoom_usdt():
     usdtOut = "amountOut"
-    return merge_summary(
-        gen_summary_uniswap("pair", "attacker", "zoom", "fusdt", "arg_0", receiver="trader"),
-        gen_summary_transfer("trader", "attacker", "usdt", usdtOut),
-        ([], gen_summary_getAmountsOut("arg_0", usdtOut, "old_zoom.balanceOf(pair)", "old_fusdt.balanceOf(pair)")),
-    )
+    return [
+        *gen_summary_uniswap("pair", "attacker", "zoom", "fusdt", "arg_0", receiver="trader"),
+        *gen_summary_transfer("trader", "attacker", "usdt", usdtOut),
+        *gen_summary_getAmountsOut("arg_0", usdtOut, "old_zoom.balanceOf(pair)", "old_fusdt.balanceOf(pair)"),
+    ]
 
 
 def gen_ShadowFi_refinement():
-    trans_limit = 1e14 / SCALE
+    trans_limit = 1e-4
     return [
         {
             "burn_pair_sdf": [
-                lambda s: s.get("old_sdf.balanceOf(pair)")
-                - s.get("new_sdf.balanceOf(pair)")
-                <= trans_limit,
+                lambda s: s.get("old_sdf.balanceOf(pair)") - s.get("new_sdf.balanceOf(pair)") <= trans_limit,
             ]
         },
         {
             "swap_pair_sdf_wbnb": [
-                lambda s: s.get("old_sdf.balanceOf(attacker)")
-                - s.get("new_sdf.balanceOf(attacker)")
-                <= trans_limit,
+                lambda s: s.get("old_sdf.balanceOf(attacker)") - s.get("new_sdf.balanceOf(attacker)") <= trans_limit,
             ]
         },
     ]
@@ -519,7 +423,7 @@ def gen_BXH_refinement():
     ]
 
 
-hack_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
+hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "NMB": {
         "transaction_gnimbstaking_gnimb": gen_NMB_transaction_gnimbstaking_gnimb(),
     },
@@ -527,12 +431,8 @@ hack_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
         "transaction_bxhstaking_bxh": gen_BXH_transaction_bxhstaking_bxh(),
     },
     "BGLD": {
-        "swap_pair_wbnb_bgld": gen_summary_uniswap(
-            "pair", "attacker", "wbnb", "bgld", "arg_0", percent_in1=0.9
-        ),
-        "swap_pair_bgld_wbnb": gen_summary_uniswap(
-            "pair", "attacker", "bgld", "wbnb", "arg_0", percent_out0=1.1
-        ),
+        "swap_pair_wbnb_bgld": gen_summary_uniswap("pair", "attacker", "wbnb", "bgld", "arg_0", percent_in1=0.9),
+        "swap_pair_bgld_wbnb": gen_summary_uniswap("pair", "attacker", "bgld", "wbnb", "arg_0", percent_out0=1.1),
         "burn_pair_bgld": gen_BGLD_burn_pair_bgld(),
     },
     "MUMUG": {
@@ -544,13 +444,13 @@ hack_constraints: Dict[str, Dict[str, ACTION_SUMMARY]] = {
         "burn_pair_aes": gen_AES_burn_pair_aes(),
     },
     "SGZ": {
-        "breaklr_pair_sgz": gen_SGZ_breaklr_pair_sgz(),
+        "addliquidity_pair_sgz": gen_SGZ_addliquidity_pair_sgz(),
     },
     "RADTDAO": {
         "burn_pair_radt": gen_RADTDAO_burn_pair_radt(),
     },
     "Zoompro": {
-        "breaklr_pair_controller": gen_Zoompro_breaklr_pair_controller(),
+        "addliquidity_pair_controller": gen_Zoompro_addliquidity_pair_controller(),
         "swap_trader_usdt_zoom": gen_Zoompro_swap_trader_usdt_zoom(),
         "swap_trader_zoom_usdt": gen_Zoompro_swap_trader_zoom_usdt(),
     },

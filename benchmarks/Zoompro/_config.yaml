@@ -25,7 +25,7 @@ ctrt_name2deploy:
     ]
 
 extra_actions:
-  - "function breaklr_pair_controller() internal {
+  - "function addliquidity_pair_controller() internal {
     address[] memory n1 = new address[](1);
     n1[0] = address(pair);
     uint256[] memory n2 = new uint256[](1);
@@ -54,7 +54,7 @@ attack_goal_str: "usdt"
 groundtruth:
   - ["borrow", "owner", "usdt", "3000000e18"]
   - ["swap", "trader", "usdt", "zoom", "usdt.balanceOf(attacker)"]
-  - ["breaklr", "pair", "controller"]
+  - ["addliquidity", "pair", "controller"]
   - ["sync", "pair"]
   - ["swap", "trader", "zoom", "usdt", "zoom.balanceOf(attacker)"]
   - ["payback", "owner", "usdt", "3000000e18 * 1003 / 1000"]

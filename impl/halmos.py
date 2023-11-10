@@ -17,7 +17,7 @@ from halmos.sevm import *
 from halmos.utils import NamedTimer, color_good, color_warn, hexify
 from halmos.warnings import *
 
-from .benchmark_builder import BenchmarkBuilder, SynthesizerByPattern, get_sketch_by_func_name
+from .benchmark_builder import BenchmarkBuilder
 from .verifier import verify_model
 
 StrModel = Dict[str, str]
@@ -365,7 +365,7 @@ def run(
 
     bmk_dir = args.bmk_dir
     builder = BenchmarkBuilder(bmk_dir)
-    synthesizer = SynthesizerByPattern(builder.config)
+    synthesizer = builder.synthesizer
 
     #
     # calldata
@@ -496,7 +496,7 @@ def run(
                     model.get(f"p_amt{j}_uint256", "") for j in range(len(model))
                 ]
                 func_name = args.function
-                sketch = get_sketch_by_func_name(builder, synthesizer, func_name)
+                sketch = builder.get_sketch_by_func_name(func_name)
                 verifier = [(func_name, sketch, [arg_candidates])]
                 feasiable = verify_model(bmk_dir, verifier)
                 timer.resume()
