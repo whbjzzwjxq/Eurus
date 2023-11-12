@@ -207,6 +207,132 @@ contract MUMUGTest is Test, BlockLoader {
         mubank.mu_bond(address(usdce), amount);
     }
 
+    function check_cand000(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        borrow_usdce_owner(amt0);
+        swap_pair_attacker_usdce_mu(amt1, amt2);
+        swap_pair_attacker_mu_usdce(amt3, amt4);
+        payback_usdce_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand001(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        borrow_usdce_owner(amt0);
+        swap_pair_attacker_usdce_mu(amt1, amt2);
+        swap_pair_attacker_mu_usdce(amt3, amt4);
+        payback_usdce_pair(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand002(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        borrow_usdce_owner(amt0);
+        swap_mubank_attacker_usdce_mu(amt1, amt2);
+        swap_pair_attacker_mu_usdce(amt3, amt4);
+        payback_usdce_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand003(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        borrow_usdce_owner(amt0);
+        swap_mubank_attacker_usdce_mu(amt1, amt2);
+        swap_pair_attacker_mu_usdce(amt3, amt4);
+        payback_usdce_pair(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand004(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        borrow_mu_owner(amt0);
+        swap_pair_attacker_mu_usdce(amt1, amt2);
+        swap_pair_attacker_usdce_mu(amt3, amt4);
+        payback_mu_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand005(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        borrow_mu_owner(amt0);
+        swap_pair_attacker_mu_usdce(amt1, amt2);
+        swap_pair_attacker_usdce_mu(amt3, amt4);
+        payback_mu_pair(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand006(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        borrow_mu_owner(amt0);
+        swap_pair_attacker_mu_usdce(amt1, amt2);
+        swap_mubank_attacker_usdce_mu(amt3, amt4);
+        payback_mu_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
     function test_gt() public {
         vm.startPrank(attacker);
         borrow_mu_owner(99000e18);

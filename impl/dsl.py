@@ -67,7 +67,10 @@ class AFLAction:
 
     def symbolic_copy(self, arg_start_index: int) -> "AFLAction":
         args = [f"amt{i + arg_start_index}" for i in range(self.param_num)]
-        return AFLAction(self.action_name, self.args_in_name, args, concrete=False)
+        action = AFLAction(self.action_name, self.args_in_name, args, concrete=False)
+        action.token_flows = [*self.token_flows]
+        action.constraints = [*self.constraints]
+        return action
 
     @property
     def param_num(self):
@@ -258,6 +261,10 @@ class Sketch:
         for a in self.pure_actions:
             r.extend(a.args)
         return r
+    
+    @property
+    def func_sigs(self):
+        return [a.func_sig for a in self.pure_actions]
 
     def concretize(self, args: List[str]) -> "Sketch":
         assert len(args) == self.param_num
@@ -275,7 +282,7 @@ class Sketch:
             return False
         pa0 = self.pure_actions
         pa1 = __value.pure_actions
-        sames = [a == b for a, b in zip(pa0, pa1)]
+        sames = [a.func_sig == b.func_sig for a, b in zip(pa0, pa1)]
         return all(sames)
 
     def __str__(self) -> str:
@@ -316,7 +323,7 @@ class Sketch:
             if a.action_name == "borrow":
                 a1_idx = self.match_borrow_payback(idx)
                 a1 = self.pure_actions[a1_idx]
-                f = f"vm.assume({a1.amount0} == {a.amount0} * 1003 / 1000);"
+                f = f"vm.assume({a1.amount0} >= {a.amount0} * 1003 / 1000);"
                 pre_statements.append(f)
 
         params = [f"uint256 amt{i}" for i in range(self.param_num)]

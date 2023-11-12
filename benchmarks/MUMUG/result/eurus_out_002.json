@@ -1,0 +1,27 @@
+{
+    "test_results": {
+        "./benchmarks/MUMUG": [
+            {
+                "name": "check_cand002",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x6f05b59d3b2",
+                        "p_amt1_uint256": "0x1bc16d674",
+                        "p_amt2_uint256": "0x12bf0eebd7da1e000000",
+                        "p_amt3_uint256": "0x12bf07fb7c804a000000",
+                        "p_amt4_uint256": "0x8ac81cd16",
+                        "p_amt5_uint256": "0x6f74bb52d85"
+                    }
+                ],
+                "time": [
+                    0.004145499999140156,
+                    0,
+                    0.004145499999140156
+                ],
+                "feasible": true,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

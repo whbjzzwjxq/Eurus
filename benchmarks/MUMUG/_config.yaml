@@ -19,7 +19,7 @@ ctrt_name2deploy:
   - ["mubank", "new MuBank(address(router), address(pair), address(mu))"]
 
 extra_actions:
-  - "function swap_mubank_usdce_mu(uint256 amount, uint256 amountOut) internal {
+  - "function swap_mubank_attacker_usdce_mu(uint256 amount, uint256 amountOut) internal eurus {
     usdce.approve(address(mubank), type(uint).max);
     mubank.mu_bond(address(usdce), amount);
     }"
@@ -31,10 +31,10 @@ extra_statements: []
 attack_goal_str: "usdce;1e6"
 
 groundtruth:
-  - ["borrow", "owner", "mu", "99000e18"]
-  - ["swap", "pair", "mu", "usdce", "99000e18", "40215e6"]
-  - ["swap", "mubank", "usdce", "mu", "22960e18", "1"]
-  - ["payback", "owner", "mu", "99297e18"]
+  - ["borrow", "mu", "owner", "99000e18"]
+  - ["swap", "pair", "attacker", "mu", "usdce", "99000e18", "40215e6"]
+  - ["swap", "mubank", "attacker", "usdce", "mu", "22960e18", "1"]
+  - ["payback", "mu", "owner", "99297e18"]
 
 roles:
   "usdce":
@@ -47,11 +47,13 @@ roles:
     is_stablecoin: false
   "mubank":
     is_swappair: true
+    token_pair: ["usdce", "mu"]
     support_swaps:
       "usdce": ["mu", "usdce"]
   "pair":
     is_swappair: true
-    uniswap_order: ["usdce", "mu"]
+    is_uniswap: true
+    token_pair: ["usdce", "mu"]
     support_swaps:
       "mu": ["mu", "usdce"]
       "usdce": ["mu", "usdce"]

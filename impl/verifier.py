@@ -3,7 +3,7 @@ import os
 
 from os import path
 from subprocess import run
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 from .dsl import Sketch
 from .benchmark_builder import BenchmarkBuilder
@@ -58,7 +58,3 @@ def verify_model(bmk_dir: str, verifiers: List[Tuple[str, Sketch, List[List[str]
     verified_sketches = sorted(verified_sketches)
     os.remove(verify_sol_path)
     return len(verified_sketches) != 0
-
-
-def verify_model_on_anvil(address: str, ):
-    pass

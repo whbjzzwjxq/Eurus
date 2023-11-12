@@ -19,6 +19,7 @@ max_uint256 = 2**256 - 1
 
 SENDER = "msg.sender"
 ATTACKER = "attacker"
+ATTACK_CONTRACT_CLS = "AttackContract"
 DEAD = "dead"
 OWENR = "owner"
 
@@ -63,45 +64,51 @@ class FrozenObject(RuntimeError):
     pass
 
 
-def gen_result_paths(result_path: str, only_gt: bool, smtdiv: str, sketch_num: int, suffix_spec: str):
+def gen_result_paths(result_path: str, only_gt: bool, tool_name: str, sketch_num: int, suffix: str):
     """
     returns list of func_name, output_path, err_path, smt_folder
     """
     result_paths: List[Tuple[str, str, str, str]] = []
 
-    if smtdiv == "All":
-        suffix = ""
-        suffix_smt = ""
-    else:
-        suffix = f"_smtdiv_{smtdiv.lower()}"
-        suffix_smt = f"_smtdiv_{smtdiv.lower()}"
-    
-    suffix += suffix_spec
-    suffix_smt += suffix_spec
-
     if only_gt:
         idx = "gt"
-        output = path.join(result_path, f"halmos_out{idx}{suffix}.json")
-        err_output = path.join(result_path, f"halmos_err{idx}{suffix}.json")
-        smt_output = path.join(result_path, f"smt_{idx}{suffix_smt}")
-        if not path.exists(smt_output):
-            os.mkdir(smt_output)
+        output = path.join(result_path, f"{tool_name}_out_{idx}{suffix}.json")
+        err_output = path.join(result_path, f"{tool_name}_err_{idx}{suffix}.json")
+        smt_output = path.join(result_path, f"{tool_name}_smt_{idx}{suffix}")
         result_paths = [("check_gt", output, err_output, smt_output)]
     else:
         for i in range(sketch_num):
             idx = str(i).zfill(ZFILL_SIZE)
-            output = path.join(result_path, f"halmos_out{idx}{suffix}.json")
-            err_output = path.join(result_path, f"halmos_err{idx}{suffix}.json")
-            smt_output = path.join(result_path, f"smt_{idx}{suffix_smt}")
-            if not path.exists(smt_output):
-                os.mkdir(smt_output)
+            output = path.join(result_path, f"{tool_name}_out_{idx}{suffix}.json")
+            err_output = path.join(result_path, f"{tool_name}_err_{idx}{suffix}.json")
+            smt_output = path.join(result_path, f"{tool_name}_smt_{idx}{suffix}")
             result_paths.append((f"check_cand{idx}", output, err_output, smt_output))
     return result_paths
 
 
-def query_z3(
-    smtquery: str, timeout: int = 21600, mem_max: int = 31457280, parallel: bool = False
-):
+def update_record(result_path: str, update: dict):
+    record_path = path.join(result_path, "record.json")
+    current = load_record(result_path)
+    current.update(update)
+
+    with open(record_path, "w") as f:
+        json.dump(current, f)
+
+
+def load_record(result_path: str) -> dict:
+    record_path = path.join(result_path, "record.json")
+    if not path.exists(record_path):
+        current = {}
+    else:
+        try:
+            with open(record_path, "r") as f:
+                current = json.load(f)
+        except Exception as err:
+            current = {}
+    return current
+
+
+def query_z3(smtquery: str, timeout: int = 21600, mem_max: int = 31457280, parallel: bool = False):
     timer = time.perf_counter()
     cmds = [
         "z3",
@@ -183,9 +190,7 @@ def get_bmk_dirs(i_bmk_dirs: str) -> List[str]:
     else:
         for bmk_dir in i_bmk_dirs:
             if not path.isdir(bmk_dir):
-                raise ValueError(
-                    f"Benchmark path should be a directory, current is: {bmk_dir}"
-                )
+                raise ValueError(f"Benchmark path should be a directory, current is: {bmk_dir}")
             config_file = path.join(bmk_dir, "_config.yaml")
             if not path.exists(config_file):
                 continue
@@ -213,9 +218,7 @@ def load_smt_model(file_path: str) -> List[List[str]]:
                 smtout = model.removeprefix("see ")
                 arg_candidates.extend(load_smt_model(smtout))
             else:
-                arg_candidates.append(
-                    [model[f"p_amt{j}_uint256"] for j in range(len(model))]
-                )
+                arg_candidates.append([model[f"p_amt{j}_uint256"] for j in range(len(model))])
         return arg_candidates
     elif file_path.endswith(".smt2.out"):
         with open(file_path, "r") as f:

@@ -1,26 +1,24 @@
 import time
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 import json
 import gurobipy as gp
 import re
 from z3 import *
 
 from impl.dsl import Sketch
-from .foundry_toolset import LazyStorage, deploy_contract, init_anvil, set_nomining
+from .foundry_toolset import LazyStorage, deploy_contract, init_anvil, verify_model_on_anvil
 from .benchmark_builder import BenchmarkBuilder
-from .synthesizer import Synthesizer
 from .utils import (
     gen_result_paths,
     prepare_subfolder,
     resolve_project_name,
+    update_record,
 )
-from .verifier import verify_model
 from .financial_constraints import (
     ACTION_CONSTR,
     LAMBDA_CONSTR,
     extract_rw_vars,
     gen_attack_goal,
-    hack_constraints,
     refine_constraints,
     SCALE,
     DECIMAL,
@@ -70,10 +68,7 @@ class VAR:
             if model[self.var_obj] is None:
                 r = 0
             else:
-                r = (
-                    float(model[self.var_obj].as_decimal(DECIMAL).removesuffix("?"))
-                    * SCALE
-                )
+                r = float(model[self.var_obj].as_decimal(DECIMAL).removesuffix("?")) * SCALE
             return r
         else:
             return self.var_obj.x * SCALE
@@ -84,6 +79,10 @@ class VAR:
 
     def __str__(self) -> str:
         return hex(self.as_int)
+
+    @classmethod
+    def clear_cache(cls):
+        cls.names = set()
 
 
 class VarGetter:
@@ -131,27 +130,15 @@ class VarGetter:
             return r
 
 
-class FinancialAction:
-    def __init__(
-        self,
-        param_num: int,
-        write_vars: List[str],
-        constraints: List[LAMBDA_CONSTR],
-    ) -> None:
-        self.param_num = param_num
-        self.write_vars = write_vars
-        self.constraints = constraints
-
-
 class FinancialExecution:
     def __init__(
         self,
-        sketch: List[FinancialAction],
+        sketch: Sketch,
         solver: SolverType,
         init_state: LazyStorage,
         attack_goal: LAMBDA_CONSTR,
     ) -> None:
-        self.sketch = sketch
+        self.sketch = sketch.pure_actions
         self.solver = solver
         self.states: List[Dict[str, VAR]] = []
         self.params: List[Dict[str, VAR]] = []
@@ -216,8 +203,8 @@ class FinancialExecution:
             # p_x0 in act1 is the actual p0.
             params = {}
             param_num = action.param_num
+            param_offset = len(self.all_params)
             for i in range(param_num):
-                param_offset = len(self.all_params)
                 k = f"amt{i + param_offset}"
                 hack_param = self.get_hack_param(i + param_offset)
                 if hack_param is None:
@@ -230,7 +217,7 @@ class FinancialExecution:
                 params[f"x{idx}"] = p
             self.params.append(params)
             read_vars, _ = extract_rw_vars(action.constraints)
-            all_read_vars.union(read_vars)
+            all_read_vars = all_read_vars.union(read_vars)
 
         s = {}
         for v in all_read_vars:
@@ -241,7 +228,7 @@ class FinancialExecution:
 
         # Write to storage variables
         for idx, action in enumerate(self.sketch):
-            write_vars = action.write_vars
+            _, write_vars = extract_rw_vars(action.constraints)
             # Post state
             i = idx + 1
             s = {}
@@ -277,35 +264,11 @@ def setup_solver(timeout: bool):
     return solver
 
 
-def autogen_financial_formula(
-    bmk_dir: str,
-) -> Tuple[LAMBDA_CONSTR, Dict[str, ACTION_CONSTR]]:
-    builder = BenchmarkBuilder(bmk_dir)
-    config = builder.config
-    synthesizer = builder.synthesizer
-    project_name = config.project_name
-
-    token, amount = config.attack_goal
-
-    attack_goal = gen_attack_goal(token, amount, SCALE)
-
-    action2constraints: Dict[str, ACTION_CONSTR] = {}
-    for sketch in synthesizer.candidates:
-        for action in sketch.pure_actions:
-            if action.func_sig in action2constraints:
-                continue
-            action2constraints[action.func_sig] = action.gen_constraints(config)
-
-    action2constraints.update(hack_constraints.get(project_name, {}))
-
-    return attack_goal, action2constraints
-
-
 def eurus_solve(
     solver: SolverType,
     bmk_dir: str,
     func_name: str,
-    origin_sketch: Sketch,
+    owner_address: str,
     output_path: str,
     exec: FinancialExecution,
     refine_loop: int,
@@ -320,26 +283,23 @@ def eurus_solve(
     print(f"Timecost is: {timecost}.")
     if res == sat:
         print(f"Solution is found in loop: {refine_loop}.")
-        param_ints = []
+        param_strs = []
         for p in exec.all_params:
             v = str(p)
             print(f"{p.name}: {v}")
-            param_ints.append(v)
-        model = [param_ints]
-        feasible = verify_model(bmk_dir, [(func_name, origin_sketch, model)])
+            param_strs.append(v)
+        feasible = verify_model_on_anvil(owner_address, func_name, param_strs)
         if feasible:
-            print("Result is feasible in realworld!")
+            print(f"Result: {func_name} is feasible in realworld!")
         else:
-            print("Result is NOT feasible in realworld!")
+            print(f"Result: {func_name} is NOT feasible in realworld!")
         result = {
             "test_results": {
                 bmk_dir: [
                     {
                         "name": func_name,
                         "num_models": 1,
-                        "models": [
-                            {f"p_{p.name}_uint256": str(p) for p in exec.all_params}
-                        ],
+                        "models": [{f"p_{p.name}_uint256": str(p) for p in exec.all_params}],
                         "time": [timecost, 0, timecost],
                         "feasible": feasible,
                         "refine_loop": refine_loop,
@@ -372,44 +332,39 @@ def eurus_test(bmk_dir: str, args):
     start: int = args.start
     end: int = args.end
     suffix_spec: str = args.suffix
-    smtdiv = f"Eurus_{args.solver}"
     global Z3_OR_GB
     Z3_OR_GB = args.solver == "z3"
     VAR.names = set()
 
-    builder = BenchmarkBuilder(bmk_dir)
-    synthesizer = builder.synthesizer
     project_name = resolve_project_name(bmk_dir)
     _, result_path = prepare_subfolder(bmk_dir)
+
+    builder = BenchmarkBuilder(bmk_dir)
+    synthesizer = builder.synthesizer
 
     timestamp = builder.init_state["blockTimestamp"][1]
 
     anvil_proc = init_anvil(timestamp=int(timestamp) - 1)
+
+    token, amount = builder.config.attack_goal
+
+    attack_goal = gen_attack_goal(token, amount, SCALE)
 
     try:
         snapshot_id, ctrt_name2addr = deploy_contract(bmk_dir)
 
         init_state = LazyStorage(bmk_dir, ctrt_name2addr, timestamp)
 
-        result_paths = gen_result_paths(
-            result_path, only_gt, smtdiv, len(synthesizer.candidates), suffix_spec
-        )
+        result_paths = gen_result_paths(result_path, only_gt, "eurus", len(synthesizer.candidates), suffix_spec)
         result_paths = result_paths[start:end]
 
-        attack_goal, action_constraints = autogen_financial_formula(bmk_dir)
+        timer = time.perf_counter()
 
         for func_name, output_path, _, _ in result_paths:
+            VAR.clear_cache()
             solver = setup_solver(timeout)
-            origin_sketch = builder.get_sketch_by_func_name(func_name)
-            action_names = [a.func_sig for a in origin_sketch.pure_actions]
-            param_nums = [a.param_num for a in origin_sketch.pure_actions]
-            actions = []
-            for name, p_num in zip(action_names, param_nums):
-                write_vars, constraints = action_constraints[name]
-                action = FinancialAction(p_num, write_vars, constraints)
-                actions.append(action)
-
-            exec = FinancialExecution(actions, solver, init_state, attack_goal)
+            origin_sketch = builder.get_sketch_by_func_name(func_name, synthesizer.candidates)
+            exec = FinancialExecution(origin_sketch, solver, init_state, attack_goal)
 
             exec.execute()
 
@@ -418,9 +373,10 @@ def eurus_test(bmk_dir: str, args):
             while not feasible:
                 if Z3_OR_GB:
                     print(solver.sexpr())
-                feasible = eurus_solve(
-                    solver, bmk_dir, func_name, origin_sketch, output_path, exec, idx
-                )
+                owner_address = ctrt_name2addr["owner"]
+                feasible = eurus_solve(solver, bmk_dir, func_name, owner_address, output_path, exec, idx)
+                if feasible:
+                    break
                 refinements = refine_constraints.get(project_name, [])
                 if len(refinements) <= idx:
                     break
@@ -428,19 +384,15 @@ def eurus_test(bmk_dir: str, args):
                 for s_sig, v in refinement.items():
                     s_idx = origin_sketch.get_action_idx_by_sig(s_sig)
                     if s_idx == -1:
-                        raise ValueError(
-                            f"Unknown function signature: {s_sig} in project: {project_name}"
-                        )
+                        raise ValueError(f"Unknown function signature: {s_sig} in project: {project_name}")
                     for f_idx, func in enumerate(v):
-                        exec.gen_constraint(
-                            s_idx, func, f"Ref{idx}_Step{s_idx}_{f_idx}"
-                        )
-                # if Z3_OR_GB:
-                #     solver.reset()
-                # else:
-                #     # Gurobi doesn't require it.
-                #     pass
+                        exec.gen_constraint(s_idx, func, f"Ref{idx}_Step{s_idx}_{f_idx}")
                 idx += 1
+            if feasible:
+                break
+        timecost = time.perf_counter() - timer
+        new_record = {"eurus_solve_timecost": timecost, "eurus_all_timecost": timecost + builder.synthesizer.timecost}
+        update_record(result_path, new_record)
         anvil_proc.kill()
     except Exception as err:
         anvil_proc.kill()

@@ -1,5 +1,8 @@
 from typing import Callable, Dict, Any, Tuple, List, Set
 
+DECIMAL = 18
+SCALE = 10 ** DECIMAL
+
 # lambda VarGetter => constraint
 LAMBDA_CONSTR = Callable[[Any], Any]
 ACTION_CONSTR = List[LAMBDA_CONSTR]
@@ -63,7 +66,7 @@ def gen_summary_payback(
     fee: int = 3,
 ) -> ACTION_CONSTR:
     # fmt: off
-    interest_rate = lambda s: s.get(amt_payback) == s.get(amt_borrow) * (scale + fee) / (scale)
+    interest_rate = lambda s: s.get(amt_payback) >= s.get(amt_borrow) * (scale + fee) / (scale)
     constraints = gen_summary_transfer(sender, receiver, token, amt_payback, percent_in, percent_out)
     # fmt: on
     return [*constraints, interest_rate]
@@ -384,14 +387,14 @@ def gen_Zoompro_addliquidity_pair_controller():
 def gen_Zoompro_swap_trader_usdt_zoom():
     return [
         *gen_summary_transfer("attacker", "trader", "usdt", "arg_0"),
-        *gen_summary_uniswap("pair", "trader", "fusdt", "zoom", "arg_0", receiver="attacker"),
+        *gen_summary_uniswap("pair", "trader", "attacker", "fusdt", "zoom", "arg_0", "arg_1"),
     ]
 
 
 def gen_Zoompro_swap_trader_zoom_usdt():
     usdtOut = "amountOut"
     return [
-        *gen_summary_uniswap("pair", "attacker", "zoom", "fusdt", "arg_0", receiver="trader"),
+        *gen_summary_uniswap("pair", "attacker", "trader", "zoom", "fusdt", "arg_0", "arg_1"),
         *gen_summary_transfer("trader", "attacker", "usdt", usdtOut),
         *gen_summary_getAmountsOut("arg_0", usdtOut, "old_zoom.balanceOf(pair)", "old_fusdt.balanceOf(pair)"),
     ]
@@ -431,8 +434,8 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "transaction_bxhstaking_bxh": gen_BXH_transaction_bxhstaking_bxh(),
     },
     "BGLD": {
-        "swap_pair_wbnb_bgld": gen_summary_uniswap("pair", "attacker", "wbnb", "bgld", "arg_0", percent_in1=0.9),
-        "swap_pair_bgld_wbnb": gen_summary_uniswap("pair", "attacker", "bgld", "wbnb", "arg_0", percent_out0=1.1),
+        "swap_pair_wbnb_bgld": gen_summary_uniswap("pair", "attacker", "attacker", "wbnb", "bgld", "arg_0", "arg_1", percent_in1=0.9),
+        "swap_pair_bgld_wbnb": gen_summary_uniswap("pair", "attacker", "attacker", "bgld", "wbnb", "arg_0", "arg_1", percent_out0=1.1),
         "burn_pair_bgld": gen_BGLD_burn_pair_bgld(),
     },
     "MUMUG": {

@@ -3,10 +3,10 @@ import subprocess
 from os import path
 from typing import Dict, List, Tuple
 
-from .config import Config, init_config, AttackCtrtName
+from .config import Config, init_config
 from .dsl import *
+from .utils import CornerCase, ATTACK_CONTRACT_CLS
 from .synthesizer import Synthesizer
-from .utils import CornerCase
 
 
 class BenchmarkBuilder:
@@ -17,7 +17,7 @@ class BenchmarkBuilder:
     uniswap_pair_ctrt = "UniswapV2Pair"
     uniswap_factory_ctrt = "UniswapV2Factory"
     uniswap_router_ctrt = "UniswapV2Router"
-    attack_ctrt = "AttackContract"
+    attack_ctrt_sv = "attackContract"
     default_erc20_tokens = [
         "USDCE",
         "USDT",
@@ -31,8 +31,13 @@ class BenchmarkBuilder:
         uniswap_router_ctrt,
     ]
 
-    def __init__(self, bmk_dir: str) -> None:
+    check_cand_prefix = "check_cand"
+    check_gt_prefix = "check_gt"
+    test_gt_prefix = "test_gt"
+
+    def __init__(self, bmk_dir: str, sketch_generation: bool = False) -> None:
         self.bmk_dir = bmk_dir
+        _, result_path = prepare_subfolder(bmk_dir)
         self.config: Config = init_config(bmk_dir)
         self.name = self.config.project_name
         self.roles = self.config.roles
@@ -57,6 +62,8 @@ class BenchmarkBuilder:
         # Uniswap pairs to token_names
         self.swap_pair2tokens = self.config.swappair2tokens
 
+        self.uniswap_2tokens = {k: v for k, v in self.swap_pair2tokens.items() if self.roles[k].is_uniswap}
+
         # ERC20 tokens.
         self.erc20_tokens = self.config.erc20_tokens
 
@@ -77,6 +84,12 @@ class BenchmarkBuilder:
 
         self._init_state()
         self._init_ava_action_names()
+
+        if sketch_generation:
+            self.synthesizer = None
+        else:
+            self.synthesizer = Synthesizer(self.bmk_dir, record=load_record(result_path))
+
 
     def _init_state(self):
         # Handle the initial states print by foundry.
@@ -163,7 +176,12 @@ class BenchmarkBuilder:
         return [f"contract {self.name}Test is Test, BlockLoader " + "{"]
 
     def gen_state_varibles(self) -> List[str]:
-        contract_interfaces = [f"{v} {k};" for k, v in self.ctrt_name2cls.items()]
+        contract_interfaces = []
+        for k, v in self.ctrt_name2cls.items():
+            if v == ATTACK_CONTRACT_CLS:
+                contract_interfaces.append(f"{ATTACK_CONTRACT_CLS} {self.attack_ctrt_sv};")
+            else:
+                contract_interfaces.append(f"{v} {k};")
         users = [
             f"address owner;",
             f"address attacker;",
@@ -192,7 +210,7 @@ class BenchmarkBuilder:
                     d_stmt = f"{ctrt_name} = new {ctrt_label}();"
 
                 elif ctrt_label == self.uniswap_pair_ctrt:
-                    token0, token1 = self.swap_pair2tokens[ctrt_name]
+                    token0, token1 = self.uniswap_2tokens[ctrt_name]
                     d_stmt = f"{ctrt_name} = new {self.uniswap_pair_ctrt}(\
                         address({token0}), address({token1}), \
                         reserve0{ctrt_name}, reserve1{ctrt_name}, \
@@ -209,8 +227,8 @@ class BenchmarkBuilder:
 
                 elif ctrt_label == self.uniswap_router_ctrt:
                     d_stmt = f"{ctrt_name} = new {self.uniswap_router_ctrt}(address(factory), address(0xdead));"
-                elif ctrt_label == self.attack_ctrt:
-                    d_stmt = f"{ctrt_name} = new {self.attack_ctrt}();"
+                elif ctrt_label == ATTACK_CONTRACT_CLS:
+                    d_stmt = f"{self.attack_ctrt_sv} = new {ATTACK_CONTRACT_CLS}();"
                 else:
                     raise CornerCase(f"Unsupported default deployment: {ctrt_label}")
             else:
@@ -218,7 +236,7 @@ class BenchmarkBuilder:
             all.append(d_stmt)
             all.append(f"{ctrt_name}Addr = address({ctrt_name});")
 
-        all.append(f"attacker = address({AttackCtrtName});")
+        all.append(f"attacker = address({self.attack_ctrt_sv});")
         all.extend(self.extra_deployments_before)
 
         all.append("// Initialize balances and mock flashloan.")
@@ -227,10 +245,7 @@ class BenchmarkBuilder:
         for u in self.token_users:
             addr = f"address({u})"
             for t in self.erc20_tokens:
-                if u == AttackCtrtName:
-                    sv_name = f"balanceOf{t}attacker"
-                else:
-                    sv_name = f"balanceOf{t}{u}"
+                sv_name = f"balanceOf{t}{u}"
                 _, val = self.init_state.get(sv_name, ("uint256", "0"))
                 if val != "0":
                     stmt = f"{t}.transfer({addr}, {sv_name});"
@@ -242,6 +257,9 @@ class BenchmarkBuilder:
         return all
 
     def gen_helper_funcs(self) -> List[str]:
+        # Action modifier
+        action_mod = ["modifier eurus() {", "_;", "}"]
+
         # Print balance.
         printer = [
             "function printBalance(string memory tips) public {",
@@ -265,7 +283,7 @@ class BenchmarkBuilder:
             "}",
         ]
 
-        return [*printer, *attack_goal_func]
+        return [*action_mod, *printer, *attack_goal_func]
 
     def gen_actions(self) -> List[str]:
         # To distinguish with testing, all actions are modified by internal.
@@ -285,7 +303,7 @@ class BenchmarkBuilder:
             addr = l if l == "owner" else f"address({l})"
             for t in self.erc20_tokens:
                 borrow = [
-                    f"function borrow_{l}_{t}(uint256 amount) internal " + "{",
+                    f"function borrow_{t}_{l}(uint256 amount) internal eurus" + "{",
                     f"vm.stopPrank();",
                     f"vm.prank({addr});",
                     f"{t}.transfer(attacker, amount);",
@@ -293,7 +311,7 @@ class BenchmarkBuilder:
                     "}",
                 ]
                 payback = [
-                    f"function payback_{l}_{t}(uint256 amount) internal " + "{",
+                    f"function payback_{t}_{l}(uint256 amount) internal eurus" + "{",
                     f"{t}.transfer({addr}, amount);",
                     "}",
                 ]
@@ -301,17 +319,17 @@ class BenchmarkBuilder:
                 add_func_to_actions(payback)
 
         # swap by uniswap
-        for u, t in self.swap_pair2tokens.items():
+        for u, t in self.uniswap_2tokens.items():
             token0, token1 = t
             swap0 = [
-                f"function swap_{u}_attacker_{token0}_{token1}(uint256 amount, uint256 amountOut) internal" + "{",
+                f"function swap_{u}_attacker_{token0}_{token1}(uint256 amount, uint256 amountOut) internal eurus" + "{",
                 f"{token0}.transfer(address({u}), amount);",
                 f"{u}.swap(0, amountOut, attacker, new bytes(0));",
                 "}",
             ]
             add_func_to_actions(swap0)
             swap1 = [
-                f"function swap_{u}_attacker_{token1}_{token0}(uint256 amount, uint256 amountOut) internal" + "{",
+                f"function swap_{u}_attacker_{token1}_{token0}(uint256 amount, uint256 amountOut) internal eurus" + "{",
                 f"{token1}.transfer(address({u}), amount);",
                 f"{u}.swap(amountOut, 0, attacker, new bytes(0));",
                 "}",
@@ -320,20 +338,12 @@ class BenchmarkBuilder:
 
         return [*actions, *self.extra_actions]
 
-    def gen_gt_for_forge_and_halmos(self) -> List[str]:
+    def gen_gt(self) -> List[str]:
         # Build groundtruth test for forge
         test_gt = self.gt_sketch.output_verify("test_gt", self.extra_statements, print_balance=True)
         check_gt = self.gt_sketch.symbolic_copy().output("check_gt", self.extra_statements)
         all = [*test_gt, *check_gt]
         return all
-
-    def gen_candidates(self) -> List[str]:
-        # Lazy
-        self.synthesizer = Synthesizer(self.config)
-        func_bodys: List[str] = []
-        for idx, c in enumerate(self.synthesizer.candidates):
-            func_bodys.extend(c.output(f"check_cand{str(idx).zfill(ZFILL_SIZE)}", self.extra_statements))
-        return func_bodys
 
     def output(self, output_path: str):
         results = [
@@ -343,14 +353,37 @@ class BenchmarkBuilder:
             *self.gen_setup(),
             *self.gen_helper_funcs(),
             *self.gen_actions(),
-            *self.gen_gt_for_forge_and_halmos(),
-            *self.gen_candidates(),
+            *self.gen_gt(),
             "}",
         ]
         with open(output_path, "w") as f:
             for l in results:
                 f.write(l)
                 f.write("\n")
+
+    def output_with_candidates(self, output_path: str):
+        self.synthesizer = Synthesizer(self.bmk_dir, record=None)
+        func_bodys: List[str] = []
+        for idx, c in enumerate(self.synthesizer.candidates):
+            suffix = str(idx).zfill(ZFILL_SIZE)
+            func_name = self.check_cand_prefix + suffix
+            func_bodys.extend(c.output(func_name, self.extra_statements))
+        results = [
+            *self.gen_imports(),
+            *self.gen_contract_header(),
+            *self.gen_state_varibles(),
+            *self.gen_setup(),
+            *self.gen_helper_funcs(),
+            *self.gen_actions(),
+            *func_bodys,
+            *self.gen_gt(),
+            "}",
+        ]
+        with open(output_path, "w") as f:
+            for l in results:
+                f.write(l)
+                f.write("\n")
+        return self.synthesizer.candidates, self.synthesizer.timecost
 
     def output_verify(self, verifiers: List[Tuple[str, Sketch, List[List[str]]]], output_path: str):
         results = [
@@ -373,9 +406,10 @@ class BenchmarkBuilder:
                 f.write(l)
                 f.write("\n")
 
-    def get_sketch_by_func_name(self, func_name: str):
-        if func_name == "check_gt":
+    def get_sketch_by_func_name(self, func_name: str, candidates: List[Sketch]):
+        if func_name == self.check_gt_prefix:
             sketch = self.gt_sketch.symbolic_copy()
         else:
-            sketch = self.synthesizer.candidates[int(func_name.removeprefix("check_cand"))]
+            idx = int(func_name.removeprefix("check_cand"))
+            sketch = candidates[idx]
         return sketch

@@ -3,6 +3,8 @@ from dataclasses import dataclass, field
 from os import path
 from typing import Dict, List, Tuple
 
+from .utils import ATTACKER, ATTACK_CONTRACT_CLS
+
 
 @dataclass
 class DefiRole:
@@ -22,9 +24,6 @@ class DefiRole:
     support_swaps: Dict[str, List[str]] = field(default_factory=dict)
     hacked_assets: List[str] = field(default_factory=list)
     hacked_oracles: List[str] = field(default_factory=list)
-
-
-AttackCtrtName = "attackContract"
 
 
 @dataclass
@@ -57,18 +56,18 @@ class Config:
         for k in keys:
             r = DefiRole(**self.roles[k])
             self.roles[k] = r
-        self.roles[AttackCtrtName] = DefiRole()
+        self.roles[ATTACKER] = DefiRole()
         keys = [k for k, _ in self.ctrt_name2cls]
-        if AttackCtrtName not in keys:
-            self.ctrt_name2cls.append((AttackCtrtName, "AttackContract"))
+        if ATTACKER not in keys:
+            self.ctrt_name2cls.append((ATTACKER, ATTACK_CONTRACT_CLS))
 
         keys = [k for k, _ in self.ctrt_name2deploy]
-        if AttackCtrtName not in keys:
-            self.ctrt_name2deploy.append((AttackCtrtName, ""))
+        if ATTACKER not in keys:
+            self.ctrt_name2deploy.append((ATTACKER, ""))
         if ";" in self.attack_goal_str:
-            self.attack_goal = tuple(self.attack_goal_str.split(";"))
+            self.attack_goal: Tuple[str, str] = tuple(self.attack_goal_str.split(";"))
         else:
-            self.attack_goal = (self.attack_goal_str, "1e18")
+            self.attack_goal: Tuple[str, str] = (self.attack_goal_str, "1e18")
 
     @property
     def erc20_tokens(self):

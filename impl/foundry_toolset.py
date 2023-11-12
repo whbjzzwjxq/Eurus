@@ -57,9 +57,7 @@ def create_snapshot() -> str:
         # snapshot id.
         return response.json()["result"]
     else:
-        raise RuntimeError(
-            f"Create snapshot failed! Error: {response.status_code} - {response.text}"
-        )
+        raise RuntimeError(f"Create snapshot failed! Error: {response.status_code} - {response.text}")
 
 
 def recover_snapshot(idx: str):
@@ -76,10 +74,9 @@ def recover_snapshot(idx: str):
         if response.json()["result"]:
             return
     else:
-        raise RuntimeError(
-            f"Revert to snapshot: {idx} failed! Error: {response.status_code} - {response.text}"
-        )
-    
+        raise RuntimeError(f"Revert to snapshot: {idx} failed! Error: {response.status_code} - {response.text}")
+
+
 def set_nomining():
     # Run setup
     cmd = [
@@ -127,6 +124,8 @@ def deploy_contract(bmk_dir: str):
     cache_path, _ = prepare_subfolder(bmk_dir)
     config = init_config(bmk_dir)
 
+    ctrt_path = path.join(bmk_dir, f"{project_name}_candidates.t.sol")
+
     # Deploy
     cmd = [
         "forge",
@@ -142,7 +141,7 @@ def deploy_contract(bmk_dir: str):
         "metadata",
         "--root",
         os.getcwd(),
-        path.join(bmk_dir, f"{project_name}.t.sol:{project_name}Test"),
+        f"{ctrt_path}:{project_name}Test",
     ]
     try:
         out = run(cmd, text=True, capture_output=True)
@@ -201,7 +200,7 @@ def deploy_contract(bmk_dir: str):
     for role in config.roles:
         addr_var = init_storage[f"{role}Addr"]
         ctrt_name2addr[role] = int2address(int(addr_var.value))
-    ctrt_name2addr["attacker"] = ctrt_name2addr["attackContract"]
+    ctrt_name2addr["attacker"] = int2address(int(init_storage["attacker"].value))
     ctrt_name2addr["owner"] = address
     ctrt_name2addr["dead"] = "0x000000000000000000000000000000000000dEaD"
     return snapshot_id, ctrt_name2addr
@@ -211,7 +210,6 @@ class LazyStorage:
     uniswap_pair_ctrt = "UniswapV2Pair"
     uniswap_factory_ctrt = "UniswapV2Factory"
     uniswap_router_ctrt = "UniswapV2Router"
-    attack_ctrt = "AttackContract"
     default_erc20_tokens = [
         "USDCE",
         "USDT",
@@ -219,9 +217,7 @@ class LazyStorage:
         "WBNB",
     ]
 
-    def __init__(
-        self, bmk_dir: str, ctrt_name2addr: Dict[str, str], timestamp: str
-    ) -> None:
+    def __init__(self, bmk_dir: str, ctrt_name2addr: Dict[str, str], timestamp: str) -> None:
         self.bmk_dir = bmk_dir
         self.config = init_config(bmk_dir)
         self.project_name = self.config.project_name
@@ -245,9 +241,7 @@ class LazyStorage:
                 key = f"lib/contracts/@utils/{ctrt_filename}.sol"
             else:
                 key = f"benchmarks/{self.project_name}/{ctrt_filename}.sol"
-            compiled_file = list(
-                sol_file_cache[key]["artifacts"][ctrt_filename].values()
-            )[0]
+            compiled_file = list(sol_file_cache[key]["artifacts"][ctrt_filename].values())[0]
             source_output = path.join(
                 ".cache",
                 compiled_file,
@@ -259,10 +253,7 @@ class LazyStorage:
         self._cache: Dict[str, str] = {}
 
     def add_layout(self, ctrt_name: str, contract_layout: Dict[str, dict]):
-        label_defs = [
-            StorageDescriber(storage_describer)
-            for storage_describer in contract_layout["storage"]
-        ]
+        label_defs = [StorageDescriber(storage_describer) for storage_describer in contract_layout["storage"]]
         type_def_mapping: Dict[str, TypeDescriber] = {}
         types_layout = contract_layout["types"]
         for type_name, _ in types_layout.items():
@@ -345,3 +336,27 @@ class LazyStorage:
             value = get_var(ctrt_addr, var_name, keys, layout)
         self._cache[key] = value
         return value
+
+
+def verify_model_on_anvil(owner_address: str, func_name: str, params: List[str]) -> bool:
+    param_types = ",".join(["uint256"] * len(params))
+    func_name = f"{func_name}({param_types})"
+    cmd = [
+        "cast",
+        "call",
+        "--trace",
+        "--rpc-url",
+        f"{DEFAULT_HOST}:{DEFAULT_PORT}",
+        "--private-key",
+        DEFAULT_PK,
+        "--gas-limit",
+        str(10**8),
+        owner_address,
+        func_name,
+        *params,
+    ]
+    try:
+        out = run(cmd, text=True, capture_output=True, check=True)
+    except Exception as err:
+        return False
+    return True
