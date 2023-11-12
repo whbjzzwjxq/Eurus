@@ -408,8 +408,8 @@ class BenchmarkBuilder:
 
     def get_sketch_by_func_name(self, func_name: str, candidates: List[Sketch]):
         if func_name == self.check_gt_prefix:
-            sketch = self.gt_sketch.symbolic_copy()
+            idx = -1
         else:
             idx = int(func_name.removeprefix("check_cand"))
-            sketch = candidates[idx]
+        sketch = candidates[idx]
         return sketch

@@ -1,6 +1,6 @@
 import os
 from os import path
-from subprocess import Popen, run
+from subprocess import Popen, run, DEVNULL
 
 from typing import List, Dict, Tuple
 
@@ -40,7 +40,7 @@ def init_anvil(timestamp: int):
         "--gas-limit",
         str(10**8),
     ]
-    return Popen(cmd)
+    return Popen(cmd, stdout=DEVNULL)
 
 
 def create_snapshot() -> str:
@@ -338,13 +338,20 @@ class LazyStorage:
         return value
 
 
-def verify_model_on_anvil(owner_address: str, func_name: str, params: List[str]) -> bool:
+def verify_model_on_anvil(ctrt_name2addr: Dict[str, str], func_name: str, params: List[str]) -> bool:
+    owner_address = ctrt_name2addr["owner"]
+    labels = []
+    for k, v in ctrt_name2addr.items():
+        labels.append("--labels")
+        labels.append(f"{v}:{k}")
     param_types = ",".join(["uint256"] * len(params))
     func_name = f"{func_name}({param_types})"
     cmd = [
         "cast",
         "call",
         "--trace",
+        "--verbose",
+        *labels,
         "--rpc-url",
         f"{DEFAULT_HOST}:{DEFAULT_PORT}",
         "--private-key",
@@ -358,5 +365,7 @@ def verify_model_on_anvil(owner_address: str, func_name: str, params: List[str])
     try:
         out = run(cmd, text=True, capture_output=True, check=True)
     except Exception as err:
+        print(err)
         return False
-    return True
+    output = out.stdout.splitlines()[-5]
+    return output.endswith("0x4e487b710000000000000000000000000000000000000000000000000000000000000001")

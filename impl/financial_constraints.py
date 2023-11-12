@@ -1,13 +1,14 @@
 from typing import Callable, Dict, Any, Tuple, List, Set
 
 DECIMAL = 18
-SCALE = 10 ** DECIMAL
+SCALE = 10**DECIMAL
 
 # lambda VarGetter => constraint
 LAMBDA_CONSTR = Callable[[Any], Any]
 ACTION_CONSTR = List[LAMBDA_CONSTR]
 TRANSFER_SIGNATURE = Callable[[str, str, str, str, float, float], ACTION_CONSTR]
 DEAD = "dead"
+
 
 class ConstraintsExtracter:
     def __init__(self) -> None:
@@ -138,10 +139,11 @@ def gen_summary_uniswap(
     pair: str,
     sender: str,
     receiver: str,
-    token0: str,
-    token1: str,
+    tokenIn: str,
+    tokenOut: str,
     amtIn: str,
     amtOut: str,
+    amtOutRatio: float = 1,
     percent_in0: float = 1,
     percent_out0: float = 1,
     percent_in1: float = 1,
@@ -150,18 +152,18 @@ def gen_summary_uniswap(
     fee: int = 3,
     suffix: str = "",
 ) -> ACTION_CONSTR:
-    s_in = gen_summary_transfer(sender, pair, token0, amtIn, percent_in0, percent_out0)
-    s_out = gen_summary_transfer(pair, receiver, token1, amtOut, percent_in=percent_in1, percent_out=percent_out1)
+    actual_out = "amtOutActual"
+    s_in = gen_summary_transfer(sender, pair, tokenIn, amtIn, percent_in=percent_in0, percent_out=percent_out0)
+    s_out = gen_summary_transfer(pair, receiver, tokenOut, actual_out, percent_in=percent_in1, percent_out=percent_out1)
 
     # Generate Invariants
-    new_bal0_pair = f"new_{token0}.balanceOf({pair})"
-    new_bal1_pair = f"new_{token1}.balanceOf({pair})"
-    old_bal0_pair = f"old_{token0}.balanceOf({pair})"
-    old_bal1_pair = f"old_{token1}.balanceOf({pair})"
+    old_balIn_pair = f"old_{tokenIn}.balanceOf({pair})"
+    old_balOut_pair = f"old_{tokenOut}.balanceOf({pair})"
     invariants = [
-        lambda s: s.get(new_bal0_pair) * s.get(new_bal1_pair) * (scale - fee) / scale
-        >= s.get(old_bal0_pair) * s.get(old_bal1_pair),
+        lambda s: s.get(amtOut) * amtOutRatio == s.get(actual_out),
+        *gen_summary_getAmountsOut(amtIn, amtOut, old_balIn_pair, old_balOut_pair, scale, fee, suffix),
     ]
+
     return [*s_in, *s_out, *invariants]
 
 
@@ -256,34 +258,35 @@ def gen_BXH_transaction_bxhstaking_bxh():
 
 
 def gen_BGLD_burn_pair_bgld():
-    burn_summary = gen_summary_transfer("pair", DEAD, "bgld", "arg_0", percent_out=1)
-    burn_summary2 = gen_summary_transfer("attacker", DEAD, "bgld", "arg_0", percent_out=1.1)
-    bal_victim = f"new_bgld.balanceOf(pair)"
-    bal_attacker = f"old_bgld.balanceOf(attacker)"
-    extra_constraints = [lambda s: s.get("arg_0") * 11 <= s.get(bal_attacker)]
+    burn_amount = "burnAmount"
+    burn_summary = gen_summary_transfer("pair", DEAD, "bgld", burn_amount, percent_out=1)
+    burn_summary2 = gen_summary_transfer("attacker", DEAD, "bgld", burn_amount, percent_out=1.1)
+    extra_constraints = [lambda s: s.get("arg_0") == s.get(burn_amount) * 10]
     return [*burn_summary, *burn_summary2, *extra_constraints]
 
 
-def gen_MUMUG_swap_mubank_usdce_mu():
+def gen_MUMUG_swap_mubank_attacker_usdce_mu():
     _adjusted_amount = "_adjusted_amount"
     mu_coin_amount = "mu_coin_amount"
 
-    reserve0 = "old_usdce.balanceOf(pair)"
-    reserve0p = "reserve0"
-    reserve1 = "old_mu.balanceOf(pair)"
+    reserve0 = "reserve0"
+    reserve0p = "reserve0p"
+    reserve1 = "reserve1"
 
     amount = "amount"
     amountIN = "amountIN"
     amountOUT = "amountOUT"
 
-    s_in = gen_summary_transfer("attacker", "pair", "usdce", _adjusted_amount)
-    s_out = gen_summary_transfer("pair", "attacker", "mu", mu_coin_amount)
+    s_in = gen_summary_transfer("attacker", "mubank", "usdce", _adjusted_amount)
+    s_out = gen_summary_transfer("mubank", "attacker", "mu", mu_coin_amount)
 
     extra_constraints = [
+        lambda s: s.get(amount) == s.get("arg_0"),
         # _adjusted_amount = (amount / (10 ** (18 - _decimals)));
         lambda s: s.get(_adjusted_amount) == s.get("arg_0") / (10**12),
-        lambda s: s.get(amount) == s.get("arg_0"),
         # (uint112 reserve0, uint112 reserve1) = Pair(pair_).getReserves(); //MU/USDC.e TJ LP
+        lambda s: s.get(reserve0) == s.get("old_usdce.balanceOf(pair)"),
+        lambda s: s.get(reserve1) == s.get("old_mu.balanceOf(pair)"),
         # reserve0 = reserve0 * (10 ** 12);
         lambda s: s.get(reserve0p) == s.get(reserve0) * (10**12),
         # uint256 amountIN = router.getAmountIn(amount, reserve1, reserve0);
@@ -298,14 +301,22 @@ def gen_MUMUG_swap_mubank_usdce_mu():
 
 
 def gen_AES_swap_pair_usdt_aes():
-    uniswap_constraints = gen_summary_uniswap("pair", "attacker", "attacker", "usdt", "aes", "arg_0", "arg_1", percent_in1=0.97, percent_out1=1)
-    extra_constraints = [lambda s: s.get("new_aes.swapFeeTotal") == s.get("old_aes.swapFeeTotal") + s.get("arg_1") * 0.01]
+    uniswap_constraints = gen_summary_uniswap(
+        "pair", "attacker", "attacker", "usdt", "aes", "arg_0", "arg_1", percent_in1=0.97, percent_out1=1
+    )
+    extra_constraints = [
+        lambda s: s.get("new_aes.swapFeeTotal") == s.get("old_aes.swapFeeTotal") + s.get("arg_1") * 0.01
+    ]
     return [*uniswap_constraints, *extra_constraints]
 
 
 def gen_AES_swap_pair_aes_usdt():
-    uniswap_constraints = gen_summary_uniswap("pair", "attacker", "attacker", "aes", "usdt", "arg_0", "arg_1", percent_in1=0.9, percent_out1=0.93)
-    extra_constraints = [lambda s: s.get("new_aes.swapFeeTotal") == s.get("old_aes.swapFeeTotal") + s.get("arg_0") * 0.01]
+    uniswap_constraints = gen_summary_uniswap(
+        "pair", "attacker", "attacker", "aes", "usdt", "arg_0", "arg_1", percent_in1=0.9, percent_out1=0.93
+    )
+    extra_constraints = [
+        lambda s: s.get("new_aes.swapFeeTotal") == s.get("old_aes.swapFeeTotal") + s.get("arg_0") * 0.01
+    ]
     return [*uniswap_constraints, *extra_constraints]
 
 
@@ -399,12 +410,16 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "transaction_bxhstaking_bxh": gen_BXH_transaction_bxhstaking_bxh(),
     },
     "BGLD": {
-        "swap_pair_wbnb_bgld": gen_summary_uniswap("pair", "attacker", "attacker", "wbnb", "bgld", "arg_0", "arg_1", percent_in1=0.9),
-        "swap_pair_bgld_wbnb": gen_summary_uniswap("pair", "attacker", "attacker", "bgld", "wbnb", "arg_0", "arg_1", percent_out0=1.1),
+        "swap_pair_wbnb_bgld": gen_summary_uniswap(
+            "pair", "attacker", "attacker", "wbnb", "bgld", "arg_0", "arg_1", percent_in1=0.9
+        ),
+        "swap_pair_bgld_wbnb": gen_summary_uniswap(
+            "pair", "attacker", "attacker", "bgld", "wbnb", "arg_0", "arg_1", percent_out0=1.1
+        ),
         "burn_pair_bgld": gen_BGLD_burn_pair_bgld(),
     },
     "MUMUG": {
-        "swap_mubank_usdce_mu": gen_MUMUG_swap_mubank_usdce_mu(),
+        "swap_mubank_attacker_usdce_mu": gen_MUMUG_swap_mubank_attacker_usdce_mu(),
     },
     "AES": {
         "swap_pair_attacker_usdt_aes": gen_AES_swap_pair_usdt_aes(),

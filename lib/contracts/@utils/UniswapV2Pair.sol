@@ -297,14 +297,14 @@ contract UniswapV2Pair is UniswapV2ERC20, IUniswapV2Pair {
         );
     }
 
-    function getAmountOut(uint256 amountIn, address input) public view returns (uint256 amountOut) {
+    function getAmountOut(uint256 amountIn, address input) public view returns (uint256) {
         (uint256 reserveInput, uint256 reserveOutput) = input == token0
             ? (reserve0, reserve1)
             : (reserve1, reserve0);
         return UniswapV2Library.getAmountOut(amountIn, reserveInput, reserveOutput);
     }
 
-    function getAmountIn(uint256 amountOut, address input) public view returns (uint256 amountIn) {
+    function getAmountIn(uint256 amountOut, address input) public view returns (uint256) {
         (uint256 reserveInput, uint256 reserveOutput) = input == token0
             ? (reserve0, reserve1)
             : (reserve1, reserve0);

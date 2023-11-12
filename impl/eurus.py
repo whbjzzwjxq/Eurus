@@ -190,6 +190,15 @@ class FinancialExecution:
         self.add_constraint(c, constraint_name)
 
     def get_hack_param(self, idx: int):
+        # hack_params = [
+        #     99000e18,
+        #     99000e18,
+        #     40215e6,
+        #     22960e18,
+        #     1,
+        #     99297e18,
+        # ]
+        # return hack_params[idx]
         return None
 
     def execute(self):
@@ -268,7 +277,7 @@ def eurus_solve(
     solver: SolverType,
     bmk_dir: str,
     func_name: str,
-    owner_address: str,
+    ctrt_name2addr: Dict[str, str],
     output_path: str,
     exec: FinancialExecution,
     refine_loop: int,
@@ -282,13 +291,13 @@ def eurus_solve(
     timecost = time.perf_counter() - start_time
     print(f"Timecost is: {timecost}.")
     if res == sat:
-        print(f"Solution is found in loop: {refine_loop}.")
+        print(f"Solution is found in candidate: {func_name}, loop: {refine_loop}.")
         param_strs = []
         for p in exec.all_params:
             v = str(p)
             print(f"{p.name}: {v}")
             param_strs.append(v)
-        feasible = verify_model_on_anvil(owner_address, func_name, param_strs)
+        feasible = verify_model_on_anvil(ctrt_name2addr, func_name, param_strs)
         if feasible:
             print(f"Result: {func_name} is feasible in realworld!")
         else:
@@ -334,7 +343,7 @@ def eurus_test(bmk_dir: str, args):
     suffix_spec: str = args.suffix
     global Z3_OR_GB
     Z3_OR_GB = args.solver == "z3"
-    VAR.names = set()
+    VAR.clear_cache()
 
     project_name = resolve_project_name(bmk_dir)
     _, result_path = prepare_subfolder(bmk_dir)
@@ -373,8 +382,7 @@ def eurus_test(bmk_dir: str, args):
             while not feasible:
                 if Z3_OR_GB:
                     print(solver.sexpr())
-                owner_address = ctrt_name2addr["owner"]
-                feasible = eurus_solve(solver, bmk_dir, func_name, owner_address, output_path, exec, idx)
+                feasible = eurus_solve(solver, bmk_dir, func_name, ctrt_name2addr, output_path, exec, idx)
                 if feasible:
                     break
                 refinements = refine_constraints.get(project_name, [])
