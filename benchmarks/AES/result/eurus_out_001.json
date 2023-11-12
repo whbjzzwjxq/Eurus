@@ -1,0 +1,28 @@
+{
+    "test_results": {
+        "./benchmarks/AES": [
+            {
+                "name": "check_cand001",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0xa844a7424d9c80000",
+                        "p_amt1_uint256": "0xa775c46112bd38000",
+                        "p_amt2_uint256": "0x152e335da91e7f000",
+                        "p_amt3_uint256": "0xde0b6b3a7640000",
+                        "p_amt4_uint256": "0xde0b6b3a7640000",
+                        "p_amt5_uint256": "0xbc37ade48e3c40000",
+                        "p_amt6_uint256": "0xa922b2ad8812c0000"
+                    }
+                ],
+                "time": [
+                    0.33461691699631047,
+                    0,
+                    0.33461691699631047
+                ],
+                "feasible": true,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

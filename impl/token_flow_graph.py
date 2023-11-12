@@ -1,5 +1,7 @@
 from typing import List, Set, Dict
 
+from .financial_constraints import extract_rw_vars
+
 from .synthesizer import AFLAction, Sketch
 from .utils import *
 from .utils_slither import *
@@ -132,15 +134,34 @@ class TFGManager:
         if not has_attack_goal_token:
             return True
 
-    def mutation(self, trace: TRACE):
+    def mutation(self, sketch: Sketch):
         # Heuristics
-        pass
+        new_sketches = []
+        actions = sketch.pure_actions
+        for i, cur_a in enumerate(actions):
+            if i == 0:
+                continue
+            last_a = actions[i-1]
+            if cur_a.action_name == "swap":
+                if last_a.action_name == "swap" and last_a.swap_pair == cur_a.swap_pair:
+                    read_vars, _ = extract_rw_vars(cur_a.constraints)
+                    read_vars = set(v for v in read_vars if cur_a.swap_pair in v)
+                    for f in self.func_summarys:
+                        if f == cur_a or f == last_a or f.action_name == "borrow" or f.action_name == "payback":
+                            continue
+                        # Perhaps manipulate the price
+                        _, write_vars = extract_rw_vars(f.constraints)
+                        if write_vars.intersection(read_vars) != set():
+                            new_sketch = [*actions]
+                            new_sketch.insert(i, f)
+                            new_sketches.append(Sketch(new_sketch).symbolic_copy())
+        return new_sketches
 
     def gen_candidates(self):
         i = 0
         candidates: List[Sketch] = []
         while i <= self.MAX_STEP:
-            potential_candidates: List[TRACE] = []
+            potential_candidates: List[Sketch] = []
             if i == 0:
                 old_traces = []
                 new_traces: List[TRACE] = [[e] for e in self.start_node.outcome_edges]
@@ -154,13 +175,21 @@ class TFGManager:
             for t in new_traces:
                 if self.prune(t):
                     continue
-                potential_candidates.append(t)
-            # TODO
-            # Mutation
-            for t in potential_candidates:
                 actions = [a.label for a in t]
                 sketch = Sketch(actions).symbolic_copy()
-                candidates.append(sketch)
+                potential_candidates.append(sketch)
+            k = 0
+            while k <= len(potential_candidates) - 1:
+                cur_sketch = potential_candidates[k]
+                if len(cur_sketch) == self.MAX_STEP:
+                    # No longer need to mutate.
+                    break
+                new_candidates = self.mutation(cur_sketch)
+                for nc in new_candidates:
+                    potential_candidates.insert(k+1, nc)
+                    k += 1
+                k += 1
+            candidates.extend(potential_candidates)
 
             i += 1
         return candidates

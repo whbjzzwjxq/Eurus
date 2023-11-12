@@ -785,7 +785,7 @@ contract AES is ERC20, Ownable {
     address public technologyWallet;
     address public marketingWallet;
 
-    uint256 public swapFeeTotal;
+    uint256 public swapFeeTotal = 500000 ether;
     uint256 public startTime;
 
     mapping(address => bool) public automatedMarketMakerPairs;

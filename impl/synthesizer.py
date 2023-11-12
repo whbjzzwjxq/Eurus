@@ -106,7 +106,7 @@ class Synthesizer:
     def _init_storage_var_mapping(self):
         # Hardcode
         hack_storage_var_mapping = {"MUMUG": {"mubank._MuCoin": "mu"}}
-        storage = hack_storage_var_mapping[self.config.project_name]
+        storage = hack_storage_var_mapping.get(self.config.project_name, {})
 
         for name, role in self.config.roles.items():
             if role.is_uniswap:
@@ -167,7 +167,7 @@ class Synthesizer:
 
         # Generate sketch
         tokens = [VOID] + self.config.erc20_tokens
-        accounts = ["owner"] + list(self.role2ctrt.keys())
+        accounts = ["owner", "dead"] + list(self.role2ctrt.keys())
         func_summarys = list(self.func_summarys.values())
         attack_goal, _ = self.config.attack_goal
         tfg = TFGManager(tokens, accounts, func_summarys, attack_goal)

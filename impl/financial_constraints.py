@@ -297,61 +297,26 @@ def gen_MUMUG_swap_mubank_usdce_mu():
     return [*s_in, *s_out, *extra_constraints]
 
 
-def gen_AES_transfer(_from: str, _to: str, token: str, amt: str):
-    c = [lambda s: s.get("new_aes.swapFeeTotal") == s.get("old_aes.swapFeeTotal") + s.get(amt) * 0.01]
-    if _from == "pair":
-        r = gen_summary_transfer(_from, _to, token, amt, percent_in=0.9, percent_out=0.93)
-    else:
-        r = gen_summary_transfer(_from, _to, token, amt, percent_in=0.97, percent_out=1)
-    return [*r, *c]
-
-
 def gen_AES_swap_pair_usdt_aes():
-    user = "attacker"
-    pair = "pair"
-    asset0 = "usdt"
-    asset1 = "aes"
-    amtIn = "arg_0"
-    amtOutSuf = f"amtOut"
-    s_in = gen_summary_transfer(user, pair, asset0, amtIn)
-    s_out = gen_AES_transfer(pair, user, asset1, amtOutSuf)
-    bal_pair_asset0 = f"old_{asset0}.balanceOf({pair})"
-    bal_pair_asset1 = f"old_{asset1}.balanceOf({pair})"
-    extra_constraints = [
-        *gen_summary_getAmountsOut(amtIn, amtOutSuf, bal_pair_asset0, bal_pair_asset1),
-        # *gen_uniswap_inv("pair", "usdt", "aes", True, "_inv")
-    ]
-    return [*s_in, *s_out, *extra_constraints]
+    uniswap_constraints = gen_summary_uniswap("pair", "attacker", "attacker", "usdt", "aes", "arg_0", "arg_1", percent_in1=0.97, percent_out1=1)
+    extra_constraints = [lambda s: s.get("new_aes.swapFeeTotal") == s.get("old_aes.swapFeeTotal") + s.get("arg_1") * 0.01]
+    return [*uniswap_constraints, *extra_constraints]
 
 
 def gen_AES_swap_pair_aes_usdt():
-    user = "attacker"
-    pair = "pair"
-    asset0 = "aes"
-    asset1 = "usdt"
-    amtIn = "arg_0"
-    amtOutSuf = f"amtOut"
-    s_in = gen_AES_transfer(user, pair, asset0, amtIn)
-    s_out = gen_summary_transfer(pair, user, asset1, amtOutSuf)
-    bal_pair_asset0 = f"old_{asset0}.balanceOf({pair})"
-    bal_pair_asset1 = f"old_{asset1}.balanceOf({pair})"
-    extra_constraints = gen_summary_getAmountsOut(amtIn, amtOutSuf, bal_pair_asset0, bal_pair_asset1)
-    return [*s_in, *s_out, *extra_constraints]
+    uniswap_constraints = gen_summary_uniswap("pair", "attacker", "attacker", "aes", "usdt", "arg_0", "arg_1", percent_in1=0.9, percent_out1=0.93)
+    extra_constraints = [lambda s: s.get("new_aes.swapFeeTotal") == s.get("old_aes.swapFeeTotal") + s.get("arg_0") * 0.01]
+    return [*uniswap_constraints, *extra_constraints]
 
 
 def gen_AES_burn_pair_aes():
-    arg_0 = "arg_0"
     burn_amount = "burn_amount"
     burn_summary = gen_summary_transfer("pair", DEAD, "aes", burn_amount)
-    burn_summary2 = gen_summary_transfer("attacker", DEAD, "aes", arg_0, percent_out=0.5)
-    bal_victim = f"new_aes.balanceOf(pair)"
-    bal_attacker = f"old_aes.balanceOf(attacker)"
     extra_constraints = [
-        lambda s: s.get(arg_0) <= s.get(bal_attacker),
-        lambda s: s.get(burn_amount) == s.get(arg_0) * 0.7 + s.get("old_aes.swapFeeTotal") * 6,
+        lambda s: s.get(burn_amount) == s.get("old_aes.swapFeeTotal") * 6,
         lambda s: s.get("new_aes.swapFeeTotal") == 0,
     ]
-    return [*burn_summary, *burn_summary2, *extra_constraints]
+    return [*burn_summary, *extra_constraints]
 
 
 def gen_SGZ_addliquidity_pair_sgz():
@@ -442,8 +407,8 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "swap_mubank_usdce_mu": gen_MUMUG_swap_mubank_usdce_mu(),
     },
     "AES": {
-        "swap_pair_usdt_aes": gen_AES_swap_pair_usdt_aes(),
-        "swap_pair_aes_usdt": gen_AES_swap_pair_aes_usdt(),
+        "swap_pair_attacker_usdt_aes": gen_AES_swap_pair_usdt_aes(),
+        "swap_pair_attacker_aes_usdt": gen_AES_swap_pair_aes_usdt(),
         "burn_pair_aes": gen_AES_burn_pair_aes(),
     },
     "SGZ": {

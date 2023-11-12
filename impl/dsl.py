@@ -53,7 +53,6 @@ class AFLAction:
         return (
             (self.action_name == __value.action_name)
             and (self.args_in_name == __value.args_in_name)
-            and (self.args == __value.args)
         )
 
     @property
