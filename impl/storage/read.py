@@ -18,7 +18,7 @@ def read_from_storage(addr: str, slot: str) -> bytes:
         "storage",
         "--silent",
         addr,
-        "0x" + slot.strip("0x").zfill(SLOT_SIZE * 2),
+        slot,
     ]
     result = run(cmd, capture_output=True, text=True)
     return decode_hex(result.stdout.strip())
@@ -87,17 +87,17 @@ class ValueType:
 
     def next_slot_key(self, last_slot_key: str, step: int) -> str:
         if step == 0:
-            new_slot_idx = last_slot_key.strip("0x")
+            new_slot_idx = last_slot_key
         else:
             idx = int(last_slot_key, 16)
             idx += step
-            new_slot_idx = hex(idx).strip("0x")
-        return "0x" + new_slot_idx.zfill(SLOT_SIZE * 2)
+            new_slot_idx = hex(idx)
+        return new_slot_idx
 
-    def read_bytes(self, ctrt_addr: str, slot_idx: str, offset: int) -> bytes:
+    def read_bytes(self, ctrt_addr: str, slot_idx: int, offset: int) -> bytes:
         result = bytes()
         len = self.bytes_count
-        last_slot_key = slot_idx
+        last_slot_key = hex(slot_idx)
         while len > 0:
             last_slot_key = self.next_slot_key(last_slot_key, 0)
             value = read_from_storage(ctrt_addr, last_slot_key)
@@ -106,7 +106,7 @@ class ValueType:
             len -= SLOT_SIZE
         return result
 
-    def decode(self, ctrt_addr: str, slot_idx: str, offset: int) -> str:
+    def decode(self, ctrt_addr: str, slot_idx: int, offset: int) -> str:
         bytes_data = self.read_bytes(ctrt_addr, slot_idx, offset)
         return self.decode_value(bytes_data)
 
@@ -204,7 +204,7 @@ class ContainerType(ValueType):
     def decode_value(self, data: bytes) -> str:
         return ""
 
-    def decode(self, ctrt_addr: str, slot_idx: str, offset: int) -> str:
+    def decode(self, ctrt_addr: str, slot_idx: int, offset: int) -> str:
         return ""
 
 
@@ -401,5 +401,5 @@ def get_var(
         getter: Getter = _type.gen_getter(ctrt_addr, stor_info.slot)
         result = getter.get(keys, 0, slot_num2bytes(stor_info.slot))
     else:
-        result = _type.decode(ctrt_addr, stor_info.slot, stor_info.offset)
+        result = _type.decode(ctrt_addr, int(stor_info.slot), stor_info.offset)
     return result

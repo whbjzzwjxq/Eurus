@@ -368,4 +368,7 @@ def verify_model_on_anvil(ctrt_name2addr: Dict[str, str], func_name: str, params
         print(err)
         return False
     output = out.stdout.splitlines()[-5]
-    return output.endswith("0x4e487b710000000000000000000000000000000000000000000000000000000000000001")
+    feasible = output.endswith("0x4e487b710000000000000000000000000000000000000000000000000000000000000001")
+    if not feasible:
+        print(out.stdout)
+    return feasible

@@ -161,6 +161,8 @@ cache
 _rw_eval.csv
 _defi_racket.json
 
+temp*
+
 node_modules
 benchmarks/**/.cache
 package-lock.json

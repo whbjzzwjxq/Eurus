@@ -1,5 +1,10 @@
 from typing import Callable, Dict, Any, Tuple, List, Set
 
+from z3 import If
+
+def z3abs(x):
+    return If(x >= 0,x,-x)
+
 DECIMAL = 18
 SCALE = 10**DECIMAL
 
@@ -102,6 +107,7 @@ def gen_summary_getAmountsOut(
         lambda s: s.get(numeratorSuf) == s.get(amountInWithFeeSuf) * s.get(reserveOut),
         lambda s: s.get(denominatorSuf) == s.get(reserveIn) * scale + s.get(amountInWithFeeSuf),
         lambda s: s.get(amountOut) * s.get(denominatorSuf) == s.get(numeratorSuf),
+        # lambda s: z3abs(s.get(amountOut) * s.get(denominatorSuf) - s.get(numeratorSuf)) <= 1e-3,
         # fmt: on
     ]
 
@@ -144,24 +150,24 @@ def gen_summary_uniswap(
     amtIn: str,
     amtOut: str,
     amtOutRatio: float = 1,
-    percent_in0: float = 1,
-    percent_out0: float = 1,
-    percent_in1: float = 1,
-    percent_out1: float = 1,
+    percent_in_in: float = 1,
+    percent_out_in: float = 1,
+    percent_in_out: float = 1,
+    percent_out_out: float = 1,
     scale: int = 1000,
     fee: int = 3,
     suffix: str = "",
 ) -> ACTION_CONSTR:
-    actual_out = "amtOutActual"
-    s_in = gen_summary_transfer(sender, pair, tokenIn, amtIn, percent_in=percent_in0, percent_out=percent_out0)
-    s_out = gen_summary_transfer(pair, receiver, tokenOut, actual_out, percent_in=percent_in1, percent_out=percent_out1)
+    amtOutMax = "amtOutMax"
+    s_in = gen_summary_transfer(sender, pair, tokenIn, amtIn, percent_in=percent_in_in, percent_out=percent_out_in)
+    s_out = gen_summary_transfer(pair, receiver, tokenOut, amtOut, percent_in=percent_in_out, percent_out=percent_out_out)
 
     # Generate Invariants
     old_balIn_pair = f"old_{tokenIn}.balanceOf({pair})"
     old_balOut_pair = f"old_{tokenOut}.balanceOf({pair})"
     invariants = [
-        lambda s: s.get(amtOut) * amtOutRatio == s.get(actual_out),
-        *gen_summary_getAmountsOut(amtIn, amtOut, old_balIn_pair, old_balOut_pair, scale, fee, suffix),
+        lambda s: s.get(amtOut) == s.get(amtOutMax) * amtOutRatio,
+        *gen_summary_getAmountsOut(amtIn, amtOutMax, old_balIn_pair, old_balOut_pair, scale, fee, suffix),
     ]
 
     return [*s_in, *s_out, *invariants]
@@ -300,9 +306,9 @@ def gen_MUMUG_swap_mubank_attacker_usdce_mu():
     return [*s_in, *s_out, *extra_constraints]
 
 
-def gen_AES_swap_pair_usdt_aes():
+def gen_AES_swap_pair_attacker_usdt_aes():
     uniswap_constraints = gen_summary_uniswap(
-        "pair", "attacker", "attacker", "usdt", "aes", "arg_0", "arg_1", percent_in1=0.97, percent_out1=1
+        "pair", "attacker", "attacker", "usdt", "aes", "arg_0", "arg_1", percent_in_out=0.9, percent_out_out=0.93
     )
     extra_constraints = [
         lambda s: s.get("new_aes.swapFeeTotal") == s.get("old_aes.swapFeeTotal") + s.get("arg_1") * 0.01
@@ -310,9 +316,9 @@ def gen_AES_swap_pair_usdt_aes():
     return [*uniswap_constraints, *extra_constraints]
 
 
-def gen_AES_swap_pair_aes_usdt():
+def gen_AES_swap_pair_attacker_aes_usdt():
     uniswap_constraints = gen_summary_uniswap(
-        "pair", "attacker", "attacker", "aes", "usdt", "arg_0", "arg_1", percent_in1=0.9, percent_out1=0.93
+        "pair", "attacker", "attacker", "aes", "usdt", "arg_0", "arg_1", amtOutRatio=0.9, percent_in_in=0.97, percent_out_in=1
     )
     extra_constraints = [
         lambda s: s.get("new_aes.swapFeeTotal") == s.get("old_aes.swapFeeTotal") + s.get("arg_0") * 0.01
@@ -320,12 +326,13 @@ def gen_AES_swap_pair_aes_usdt():
     return [*uniswap_constraints, *extra_constraints]
 
 
-def gen_AES_burn_pair_aes():
+def gen_AES_burn_aes_pair():
     burn_amount = "burn_amount"
     burn_summary = gen_summary_transfer("pair", DEAD, "aes", burn_amount)
     extra_constraints = [
         lambda s: s.get(burn_amount) == s.get("old_aes.swapFeeTotal") * 6,
         lambda s: s.get("new_aes.swapFeeTotal") == 0,
+        lambda s: s.get("new_aes.balanceOf(pair)") >= 1 / SCALE,
     ]
     return [*burn_summary, *extra_constraints]
 
@@ -411,10 +418,10 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     },
     "BGLD": {
         "swap_pair_wbnb_bgld": gen_summary_uniswap(
-            "pair", "attacker", "attacker", "wbnb", "bgld", "arg_0", "arg_1", percent_in1=0.9
+            "pair", "attacker", "attacker", "wbnb", "bgld", "arg_0", "arg_1", percent_in_out=0.9
         ),
         "swap_pair_bgld_wbnb": gen_summary_uniswap(
-            "pair", "attacker", "attacker", "bgld", "wbnb", "arg_0", "arg_1", percent_out0=1.1
+            "pair", "attacker", "attacker", "bgld", "wbnb", "arg_0", "arg_1", percent_out_in=1.1
         ),
         "burn_pair_bgld": gen_BGLD_burn_pair_bgld(),
     },
@@ -422,9 +429,9 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "swap_mubank_attacker_usdce_mu": gen_MUMUG_swap_mubank_attacker_usdce_mu(),
     },
     "AES": {
-        "swap_pair_attacker_usdt_aes": gen_AES_swap_pair_usdt_aes(),
-        "swap_pair_attacker_aes_usdt": gen_AES_swap_pair_aes_usdt(),
-        "burn_pair_aes": gen_AES_burn_pair_aes(),
+        "swap_pair_attacker_usdt_aes": gen_AES_swap_pair_attacker_usdt_aes(),
+        "swap_pair_attacker_aes_usdt": gen_AES_swap_pair_attacker_aes_usdt(),
+        "burn_aes_pair": gen_AES_burn_aes_pair(),
     },
     "SGZ": {
         "addliquidity_pair_sgz": gen_SGZ_addliquidity_pair_sgz(),

@@ -785,7 +785,7 @@ contract AES is ERC20, Ownable {
     address public technologyWallet;
     address public marketingWallet;
 
-    uint256 public swapFeeTotal = 500000 ether;
+    uint256 public swapFeeTotal;
     uint256 public startTime;
 
     mapping(address => bool) public automatedMarketMakerPairs;
@@ -822,6 +822,7 @@ contract AES is ERC20, Ownable {
         uniswapV2Router = IUniswapV2Router(router_);
         uniswapV2Pair = pair_;
         _setAutomatedMarketMakerPair(pair_, true);
+        swapFeeTotal = 200000 ether;
     }
 
     receive() external payable {}
@@ -931,9 +932,6 @@ contract AES is ERC20, Ownable {
         // super._transfer(uniswapV2Pair, marketingWallet, swapFeeTotal);
         // swapFeeTotal = 0;
         uint256 outputTotal = swapFeeTotal.mul(6);
-        if (outputTotal >= balanceOf(uniswapV2Pair)) {
-            outputTotal = balanceOf(uniswapV2Pair) - 1;
-        }
         super._transfer(uniswapV2Pair, monkeyWallet, outputTotal);
         swapFeeTotal = 0;
     }

