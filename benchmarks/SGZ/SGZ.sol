@@ -87,6 +87,7 @@ contract SGZ is ERC20, Ownable {
         usdt.approve(router_, total.mul(1000));
         uniswapV2Pair = pair_;
         _setAutomatedMarketMakerPair(pair_, true);
+        _isExcludedFromFees[pair_] = true;
     }
 
     receive() external payable {}

@@ -297,6 +297,16 @@ def gen_BGLD_burn_bgld_pair():
     return [*burn_summary, *burn_summary2, *extra_constraints]
 
 
+def gen_BGLD_swap_pair_attacker_bgld_wbnb():
+    return gen_summary_uniswap("pair", "attacker", "attacker", "bgld", "wbnb", "arg_0", "arg_1", percent_out_in=1.1)
+
+
+def gen_BGLD_swap_pair_attacker_wbnb_bgld():
+    return gen_summary_uniswap(
+        "pair", "attacker", "attacker", "wbnb", "bgld", "arg_0", "arg_1", amtOutRatio=0.9, percent_out_out=1.1
+    )
+
+
 def gen_MUMUG_swap_mubank_attacker_usdce_mu():
     _adjusted_amount = "_adjusted_amount"
     mu_coin_amount = "mu_coin_amount"
@@ -372,7 +382,7 @@ def gen_AES_burn_aes_pair():
     return [*burn_summary, *extra_constraints]
 
 
-def gen_SGZ_addliquidity_pair_sgz():
+def gen_SGZ_addliquidity_sgz_pair_sgz_usdt():
     transfer_summary0 = gen_summary_transfer("sgz", "pair", "sgz", "old_sgz.balanceOf(sgz)")
     transfer_summary1 = gen_summary_transfer("sgz", "pair", "usdt", "old_usdt.balanceOf(sgz)")
     return [*transfer_summary0, *transfer_summary1]
@@ -495,12 +505,8 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "transaction_bxhstaking_bxh": gen_BXH_transaction_bxhstaking_bxh(),
     },
     "BGLD": {
-        "swap_pair_attacker_wbnb_bgld": gen_summary_uniswap(
-            "pair", "attacker", "attacker", "wbnb", "bgld", "arg_0", "arg_1", amtOutRatio=0.9, percent_out_out=1.1
-        ),
-        "swap_pair_attacker_bgld_wbnb": gen_summary_uniswap(
-            "pair", "attacker", "attacker", "bgld", "wbnb", "arg_0", "arg_1", percent_out_in=1.1
-        ),
+        "swap_pair_attacker_wbnb_bgld": gen_BGLD_swap_pair_attacker_wbnb_bgld(),
+        "swap_pair_attacker_bgld_wbnb": gen_BGLD_swap_pair_attacker_bgld_wbnb(),
         "burn_bgld_pair": gen_BGLD_burn_bgld_pair(),
     },
     "MUMUG": {
@@ -512,7 +518,7 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "burn_aes_pair": gen_AES_burn_aes_pair(),
     },
     "SGZ": {
-        "addliquidity_pair_sgz": gen_SGZ_addliquidity_pair_sgz(),
+        "addliquidity_sgz_pair_sgz_usdt": gen_SGZ_addliquidity_sgz_pair_sgz_usdt(),
     },
     "RADTDAO": {
         "burn_radt_pair": gen_RADTDAO_burn_radt_pair(),

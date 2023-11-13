@@ -1,0 +1,27 @@
+{
+    "test_results": {
+        "./benchmarks/SGZ": [
+            {
+                "name": "check_cand001",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x3782db3da3459e00",
+                        "p_amt1_uint256": "0x3782dace9d900000",
+                        "p_amt2_uint256": "0xacf47ff1cd1348000000000",
+                        "p_amt3_uint256": "0xa36bcb5f694450000000000",
+                        "p_amt4_uint256": "0x458e337257bde400",
+                        "p_amt5_uint256": "0x37ad7d2db2975600"
+                    }
+                ],
+                "time": [
+                    0.01464854100777302,
+                    0,
+                    0.01464854100777302
+                ],
+                "feasible": true,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

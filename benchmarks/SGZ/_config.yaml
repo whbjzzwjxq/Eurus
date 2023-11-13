@@ -16,8 +16,9 @@ ctrt_name2deploy:
   - ["router", ""]
 
 extra_actions:
-  - "function addliquidity_pair_sgz() internal {
+  - "function addliquidity_sgz_pair_sgz_usdt() internal eurus {
         sgz.swapAndLiquifyStepv1();
+        pair.sync();
     }"
 
 extra_deployments:
@@ -27,11 +28,11 @@ extra_statements: []
 attack_goal_str: "usdt"
 
 groundtruth:
-  - ["borrow", "owner", "usdt", "100e18"]
-  - ["swap", "pair", "usdt", "sgz", "usdt.balanceOf(attacker)"]
-  - ["addliquidity", "pair", "sgz"]
-  - ["swap", "pair", "sgz", "usdt", "sgz.balanceOf(attacker)"]
-  - ["payback", "owner", "usdt", "100e18 * 1003 / 1000"]
+  - ["borrow", "usdt", "owner", "100e18"]
+  - ["swap", "pair", "attacker", "usdt", "sgz", "usdt.balanceOf(attacker)", "pair.getAmountOut(usdt.balanceOf(attacker), address(usdt))"]
+  - ["addliquidity", "sgz", "pair", "sgz", "usdt"]
+  - ["swap", "pair", "attacker", "sgz", "usdt", "sgz.balanceOf(attacker)", "pair.getAmountOut(sgz.balanceOf(attacker), address(sgz))"]
+  - ["payback", "usdt", "owner", "100e18 * 1003 / 1000"]
 
 # Information for search space building.
 roles:
@@ -47,7 +48,8 @@ roles:
     hacked_oracles: ["pair"]
   "pair":
     is_swappair: true
-    uniswap_order: ["sgz", "usdt"]
+    is_uniswap: true
+    token_pair: ["sgz", "usdt"]
     support_swaps:
       "usdt": ["sgz", "usdt"]
       "sgz": ["sgz", "usdt"]
