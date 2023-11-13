@@ -418,6 +418,49 @@ def gen_Zoompro_swap_trader_zoom_usdt():
     ]
 
 
+def gen_RES_addliquidity_resA_pair_resA_usdt():
+    # if (_balances[address(this)] > _minAToB) {
+    #     uint256 burnNumber = _balances[address(this)];
+    #     _approve(address(this), router, _balances[address(this)]);
+    #     UniswapV2Router(payable(router))
+    #         .swapExactTokensForTokensSupportingFeeOnTransferTokens(
+    #             _balances[address(this)],
+    #             0,
+    #             _pathAToB,
+    #             owner(),
+    #             block.timestamp
+    #         );
+    #     _burn(pair, burnNumber);
+    #     UniswapV2Pair(pair).sync();
+    # }
+    pair = "pair"
+    sender = "resA"
+    receiver = "resA"
+    tokenIn = "resA"
+    tokenOut = "usdt"
+    amtIn = "burnNumber"
+    amtOut = "amtOut"
+
+    old_bal_resA_resA = "old_resA.balanceOf(resA)"
+    old_bal_pair_resA = "old_resA.balanceOf(pair)"
+    old_bal_pair_usdt = "old_usdt.balanceOf(pair)"
+    amtOutMax = "amtOutMax"
+
+    s_out = gen_summary_transfer(pair, receiver, tokenOut, amtOut)
+
+    invariants = [
+        lambda s: s.get(amtIn) == s.get(old_bal_resA_resA),
+        lambda s: s.get(amtOut) == s.get(amtOutMax),
+        *gen_summary_getAmountsOut(amtIn, amtOutMax, old_bal_pair_resA, old_bal_pair_usdt),
+    ]
+
+    constraints = [
+        *s_out,
+        *invariants,
+    ]
+    return constraints
+
+
 def gen_ShadowFi_refinement():
     trans_limit = 1e-4
     return [
@@ -478,6 +521,9 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "addliquidity_pair_controller": gen_Zoompro_addliquidity_pair_controller(),
         "swap_trader_usdt_zoom": gen_Zoompro_swap_trader_usdt_zoom(),
         "swap_trader_zoom_usdt": gen_Zoompro_swap_trader_zoom_usdt(),
+    },
+    "RES": {
+        "addliquidity_resA_pair_resA_usdt": gen_RES_addliquidity_resA_pair_resA_usdt(),
     },
 }
 

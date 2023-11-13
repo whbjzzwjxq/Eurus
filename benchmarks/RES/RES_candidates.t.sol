@@ -244,6 +244,80 @@ contract RESTest is Test, BlockLoader {
         pair.sync();
     }
 
+    function check_cand000(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        borrow_usdt_owner(amt0);
+        swap_pair_attacker_usdt_resA(amt1, amt2);
+        swap_pair_attacker_resA_usdt(amt3, amt4);
+        payback_usdt_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand001(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        borrow_usdt_owner(amt0);
+        swap_pair_attacker_usdt_resA(amt1, amt2);
+        addliquidity_resA_pair_resA_usdt();
+        swap_pair_attacker_resA_usdt(amt3, amt4);
+        payback_usdt_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand002(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        borrow_resA_owner(amt0);
+        swap_pair_attacker_resA_usdt(amt1, amt2);
+        swap_pair_attacker_usdt_resA(amt3, amt4);
+        payback_resA_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand003(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        borrow_resA_owner(amt0);
+        swap_pair_attacker_resA_usdt(amt1, amt2);
+        addliquidity_resA_pair_resA_usdt();
+        swap_pair_attacker_usdt_resA(amt3, amt4);
+        payback_resA_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
     function test_gt() public {
         vm.startPrank(attacker);
         borrow_resA_owner(1000000e8);

