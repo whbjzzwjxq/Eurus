@@ -6,19 +6,19 @@
                 "num_models": 1,
                 "models": [
                     {
-                        "p_amt0_uint256": "0xde0b6b3a7640000",
-                        "p_amt1_uint256": "0x2d56bcba23a6660",
-                        "p_amt2_uint256": "0x29a2b70bf0e",
-                        "p_amt3_uint256": "0xde0b6b3a7640000",
-                        "p_amt4_uint256": "0x1bc16d674ec",
-                        "p_amt5_uint256": "0x29a2241af62c0000",
-                        "p_amt6_uint256": "0x1bc16d674ec80000"
+                        "p_amt0_uint256": "0x1158e460913d00000",
+                        "p_amt1_uint256": "0x107ad8f556c6c0000",
+                        "p_amt2_uint256": "0x80870181e53c",
+                        "p_amt3_uint256": "0x22b1c8c1227a0",
+                        "p_amt4_uint256": "0x3782dace9d90",
+                        "p_amt5_uint256": "0x1236efcbcbb340000",
+                        "p_amt6_uint256": "0x11c7ea162e7820000"
                     }
                 ],
                 "time": [
-                    0.0038076670025475323,
+                    0.009295999989262782,
                     0,
-                    0.0038076670025475323
+                    0.009295999989262782
                 ],
                 "feasible": true,
                 "refine_loop": 0

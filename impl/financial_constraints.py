@@ -167,8 +167,7 @@ def gen_summary_uniswap(
     tokenOut: str,
     amtIn: str,
     amtOut: str,
-    # Avoid precision loss.
-    amtOutRatio: float = 0.99,
+    amtOutRatio: float = 1,
     percent_in_in: float = 1,
     percent_out_in: float = 1,
     percent_in_out: float = 1,
@@ -187,7 +186,7 @@ def gen_summary_uniswap(
     old_balIn_pair = f"old_{tokenIn}.balanceOf({pair})"
     old_balOut_pair = f"old_{tokenOut}.balanceOf({pair})"
     invariants = [
-        lambda s: s.get(amtOut) == s.get(amtOutMax) * amtOutRatio,
+        lambda s: s.get(amtOut) < s.get(amtOutMax) * amtOutRatio,
         *gen_summary_getAmountsOut(amtIn, amtOutMax, old_balIn_pair, old_balOut_pair, scale, fee, suffix),
     ]
 
@@ -284,11 +283,17 @@ def gen_BXH_transaction_bxhstaking_bxh():
     return [*reward_summary, *transfer_summary0, *transfer_summary1]
 
 
-def gen_BGLD_burn_pair_bgld():
+def gen_BGLD_burn_bgld_pair():
     burn_amount = "burnAmount"
     burn_summary = gen_summary_transfer("pair", DEAD, "bgld", burn_amount, percent_out=1)
     burn_summary2 = gen_summary_transfer("attacker", DEAD, "bgld", burn_amount, percent_out=1.1)
-    extra_constraints = [lambda s: s.get("arg_0") == s.get(burn_amount) * 10]
+    old_bal_pair = f"old_bgld.balanceOf(pair)"
+    new_bal_pair = f"new_bgld.balanceOf(pair)"
+    extra_constraints = [
+        lambda s: s.get("arg_0") == s.get(burn_amount) * 10,
+        lambda s: s.get("arg_0") * 0.1 < s.get(old_bal_pair),
+        lambda s: s.get(new_bal_pair) >= 1 / SCALE,
+    ]
     return [*burn_summary, *burn_summary2, *extra_constraints]
 
 
@@ -447,13 +452,13 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "transaction_bxhstaking_bxh": gen_BXH_transaction_bxhstaking_bxh(),
     },
     "BGLD": {
-        "swap_pair_wbnb_bgld": gen_summary_uniswap(
-            "pair", "attacker", "attacker", "wbnb", "bgld", "arg_0", "arg_1", percent_in_out=0.9
+        "swap_pair_attacker_wbnb_bgld": gen_summary_uniswap(
+            "pair", "attacker", "attacker", "wbnb", "bgld", "arg_0", "arg_1", amtOutRatio=0.9, percent_out_out=1.1
         ),
-        "swap_pair_bgld_wbnb": gen_summary_uniswap(
+        "swap_pair_attacker_bgld_wbnb": gen_summary_uniswap(
             "pair", "attacker", "attacker", "bgld", "wbnb", "arg_0", "arg_1", percent_out_in=1.1
         ),
-        "burn_pair_bgld": gen_BGLD_burn_pair_bgld(),
+        "burn_bgld_pair": gen_BGLD_burn_bgld_pair(),
     },
     "MUMUG": {
         "swap_mubank_attacker_usdce_mu": gen_MUMUG_swap_mubank_attacker_usdce_mu(),
