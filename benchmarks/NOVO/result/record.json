@@ -1,0 +1,1 @@
+{"sketchgen_timecost": 0.008713625007658266, "candidates": [["borrow_wbnb_owner", "swap_pair_attacker_wbnb_novo", "swap_pair_attacker_novo_wbnb", "payback_wbnb_owner"], ["borrow_wbnb_owner", "swap_pair_attacker_wbnb_novo", "burn_novo_pair", "swap_pair_attacker_novo_wbnb", "payback_wbnb_owner"]], "eurus_solve_timecost": 2.295924040998216, "eurus_all_timecost": 2.304637666005874}

