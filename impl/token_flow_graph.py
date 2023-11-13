@@ -145,7 +145,7 @@ class TFGManager:
             if cur_a.action_name == "swap":
                 if last_a.action_name == "swap" and last_a.swap_pair == cur_a.swap_pair:
                     read_vars, _ = extract_rw_vars(cur_a.constraints)
-                    read_vars = set(v for v in read_vars if cur_a.swap_pair in v)
+                    read_vars = set(v for v in read_vars if not cur_a.account in v)
                     for f in self.func_summarys:
                         if f == cur_a or f == last_a or f.action_name == "borrow" or f.action_name == "payback":
                             continue

@@ -408,18 +408,18 @@ def gen_RADTDAO_burn_radt_pair():
     return [*transfer_summary0, *transfer_summary1, *extra_constraints]
 
 
-def gen_Zoompro_addliquidity_pair_controller():
+def gen_Zoompro_addliquidity_controller_pair_fusdt_fusdt():
     return gen_summary_transfer("controller", "pair", "fusdt", "old_fusdt.balanceOf(controller)")
 
 
-def gen_Zoompro_swap_trader_usdt_zoom():
+def gen_Zoompro_swap_trader_attacker_usdt_zoom():
     return [
         *gen_summary_transfer("attacker", "trader", "usdt", "arg_0"),
         *gen_summary_uniswap("pair", "trader", "attacker", "fusdt", "zoom", "arg_0", "arg_1"),
     ]
 
 
-def gen_Zoompro_swap_trader_zoom_usdt():
+def gen_Zoompro_swap_trader_attacker_zoom_usdt():
     usdtOut = "amountOut"
     return [
         *gen_summary_uniswap("pair", "attacker", "trader", "zoom", "fusdt", "arg_0", "arg_1"),
@@ -524,9 +524,9 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "burn_radt_pair": gen_RADTDAO_burn_radt_pair(),
     },
     "Zoompro": {
-        "addliquidity_pair_controller": gen_Zoompro_addliquidity_pair_controller(),
-        "swap_trader_usdt_zoom": gen_Zoompro_swap_trader_usdt_zoom(),
-        "swap_trader_zoom_usdt": gen_Zoompro_swap_trader_zoom_usdt(),
+        "addliquidity_controller_pair_fusdt_fusdt": gen_Zoompro_addliquidity_controller_pair_fusdt_fusdt(),
+        "swap_trader_attacker_usdt_zoom": gen_Zoompro_swap_trader_attacker_usdt_zoom(),
+        "swap_trader_attacker_zoom_usdt": gen_Zoompro_swap_trader_attacker_zoom_usdt(),
     },
     "RES": {
         "addliquidity_resA_pair_resA_usdt": gen_RES_addliquidity_resA_pair_resA_usdt(),

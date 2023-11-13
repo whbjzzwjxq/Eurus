@@ -227,10 +227,15 @@ class Synthesizer:
         elif action.action_name == "payback":
             return [Tokenflow(action.token0, action.account, action.lender, "")]
         elif action.action_name == "addliquidity":
-            return [
-                Tokenflow(action.token0, action.defi, action.swap_pair, ""),
-                Tokenflow(action.token1, action.defi, action.swap_pair, ""),
-            ]
+            if action.token0 != action.token1:
+                return [
+                    Tokenflow(action.token0, action.defi, action.swap_pair, ""),
+                    Tokenflow(action.token1, action.defi, action.swap_pair, ""),
+                ]
+            else:
+                return [
+                    Tokenflow(action.token0, action.defi, action.swap_pair, "")
+                ]
         elif action.action_name == "deposit":
             return [
                 Tokenflow(action.token1, action.defi, action.account, ""),

