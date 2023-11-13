@@ -24,7 +24,7 @@ ctrt_name2deploy:
     ]
 
 extra_actions:
-  - "function swap_ethpledge_usdt_disc(uint256 amount) internal {
+  - "function swap_ethpledge_attacker_usdt_disc(uint256 amount, uint256 amountOut) internal eurus {
     usdt.approve(address(ethpledge), UINT256_MAX);
     ethpledge.pledgein(amount);
     }"
@@ -35,10 +35,10 @@ extra_statements: []
 attack_goal_str: "usdt"
 
 groundtruth:
-  - ["borrow", "owner", "disc", "24000e18"]
-  - ["swap", "pair", "disc", "usdt", "disc.balanceOf(attacker)"]
-  - ["swap", "ethpledge", "usdt", "disc", "5000e18"]
-  - ["payback", "owner", "disc", "24000e18 * 1003 / 1000"]
+  - ["borrow", "disc", "owner", "24000e18"]
+  - ["swap", "pair", "attacker", "disc", "usdt", "disc.balanceOf(attacker)", "pair.getAmountOut(disc.balanceOf(attacker), address(disc))"]
+  - ["swap", "ethpledge", "attacker", "usdt", "disc", "5000e18", "1"]
+  - ["payback", "disc", "owner", "24000e18 * 1003 / 1000"]
 
 # Information for search space building.
 roles:
@@ -52,7 +52,8 @@ roles:
     is_stablecoin: false
   "pair":
     is_swappair: true
-    uniswap_order: ["usdt", "disc"]
+    is_uniswap: true
+    token_pair: ["usdt", "disc"]
     support_swaps:
       "usdt": ["disc", "usdt"]
       "disc": ["disc", "usdt"]
@@ -61,6 +62,7 @@ roles:
     is_lendpool: true
   "ethpledge":
     is_swappair: true
+    token_pair: ["usdt", "disc"]
     support_swaps:
       "usdt": ["disc", "usdt"]
       "disc": ["disc"]

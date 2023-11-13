@@ -342,6 +342,17 @@ def gen_MUMUG_swap_mubank_attacker_usdce_mu():
     return [*s_in, *s_out, *extra_constraints]
 
 
+def gen_Discover_swap_ethpledge_attacker_usdt_disc():
+    # require(usdt.balanceOf(msg.sender)>=amount,"USDT balance is low");
+    # usdt.transferFrom(msg.sender, address(this), amount);
+    # uint256 __swapprice = getprice();
+    # uint256 curTAmount22 = (amount * 10 ** 18) / __swapprice;
+    # bool y2 = other.balanceOf(address(this)) >= curTAmount22;
+    # require(y2, "Token balance is low.");
+    # other.transfer(msg.sender, curTAmount22);
+    return gen_summary_ratioswap("ethpledge", "attacker", "attacker", "usdt", "disc", "arg_0", "arg_1", "ethpledge")
+
+
 def gen_AES_swap_pair_attacker_usdt_aes():
     uniswap_constraints = gen_summary_uniswap(
         "pair", "attacker", "attacker", "usdt", "aes", "arg_0", "arg_1", percent_in_out=0.9, percent_out_out=0.93
@@ -511,6 +522,9 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     },
     "MUMUG": {
         "swap_mubank_attacker_usdce_mu": gen_MUMUG_swap_mubank_attacker_usdce_mu(),
+    },
+    "Discover": {
+        "swap_ethpledge_attacker_usdt_disc": gen_Discover_swap_ethpledge_attacker_usdt_disc(),
     },
     "AES": {
         "swap_pair_attacker_usdt_aes": gen_AES_swap_pair_attacker_usdt_aes(),
