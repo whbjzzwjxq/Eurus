@@ -319,7 +319,7 @@ def eurus_solve(
         }
         with open(output_path, "w") as f:
             json.dump(result, f, indent=4)
-
+        return feasible
     else:
         print(f"Solution is NOT found in candidate: {func_name}, loop: {refine_loop}.")
         if Z3_OR_GB and TRACK_UNSAT:
@@ -332,8 +332,7 @@ def eurus_solve(
                 n = m.groups()[0]
                 if n in names:
                     print(c)
-        feasible = False
-    return feasible
+        return "UNSAT"
 
 
 def eurus_test(bmk_dir: str, args):
@@ -384,6 +383,9 @@ def eurus_test(bmk_dir: str, args):
                 if Z3_OR_GB:
                     print(solver.sexpr())
                 feasible = eurus_solve(solver, bmk_dir, func_name, ctrt_name2addr, output_path, exec, idx)
+                if feasible == "UNSAT":
+                    feasible = False
+                    break
                 if feasible:
                     break
                 refinements = refine_constraints.get(project_name, [])
@@ -393,7 +395,7 @@ def eurus_test(bmk_dir: str, args):
                 for s_sig, v in refinement.items():
                     s_idx = origin_sketch.get_action_idx_by_sig(s_sig)
                     if s_idx == -1:
-                        raise ValueError(f"Unknown function signature: {s_sig} in project: {project_name}")
+                        raise ValueError(f"Unknown function signature: {s_sig} in sketch.")
                     for f_idx, func in enumerate(v):
                         exec.gen_constraint(s_idx, func, f"Ref{idx}_Step{s_idx}_{f_idx}")
                 idx += 1
@@ -401,7 +403,10 @@ def eurus_test(bmk_dir: str, args):
                 break
         if not only_gt:
             timecost = time.perf_counter() - timer
-            new_record = {"eurus_solve_timecost": timecost, "eurus_all_timecost": timecost + builder.synthesizer.timecost}
+            new_record = {
+                "eurus_solve_timecost": timecost,
+                "eurus_all_timecost": timecost + builder.synthesizer.timecost,
+            }
             update_record(result_path, new_record)
         anvil_proc.kill()
     except Exception as err:

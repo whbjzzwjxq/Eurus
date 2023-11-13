@@ -422,12 +422,12 @@ def gen_ShadowFi_refinement():
     trans_limit = 1e-4
     return [
         {
-            "burn_pair_sdf": [
+            "burn_sdf_pair": [
                 lambda s: s.get("old_sdf.balanceOf(pair)") - s.get("new_sdf.balanceOf(pair)") <= trans_limit,
             ]
         },
         {
-            "swap_pair_sdf_wbnb": [
+            "swap_pair_attacker_sdf_wbnb": [
                 lambda s: s.get("old_sdf.balanceOf(attacker)") - s.get("new_sdf.balanceOf(attacker)") <= trans_limit,
             ]
         },
