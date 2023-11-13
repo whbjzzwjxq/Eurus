@@ -1,0 +1,28 @@
+{
+    "test_results": {
+        "./benchmarks/RADTDAO": [
+            {
+                "name": "check_cand001",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x13ce613fce39bc000000",
+                        "p_amt1_uint256": "0x13ce535f178615000000",
+                        "p_amt2_uint256": "0xdbdb8fb0f510280000",
+                        "p_amt3_uint256": "0x2a6f2d489c40cc000000",
+                        "p_amt4_uint256": "0x7200fcddd4167c0000",
+                        "p_amt5_uint256": "0x13dd9ce8596c79000000",
+                        "p_amt6_uint256": "0x13dd99702bbf8f000000"
+                    }
+                ],
+                "time": [
+                    0.007363791999523528,
+                    0,
+                    0.007363791999523528
+                ],
+                "feasible": true,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

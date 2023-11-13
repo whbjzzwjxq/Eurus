@@ -1,0 +1,1 @@
+{"sketchgen_timecost": 0.008699917001649737, "candidates": [["borrow_usdt_owner", "swap_pair_attacker_usdt_radt", "swap_pair_attacker_radt_usdt", "payback_usdt_owner"], ["borrow_usdt_owner", "swap_pair_attacker_usdt_radt", "burn_radt_pair", "swap_pair_attacker_radt_usdt", "payback_usdt_owner"]], "eurus_solve_timecost": 2.487633791999542, "eurus_all_timecost": 2.496333709001192}

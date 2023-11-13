@@ -208,6 +208,44 @@ contract RADTDAOTest is Test, BlockLoader {
         pair.sync();
     }
 
+    function check_cand000(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        borrow_usdt_owner(amt0);
+        swap_pair_attacker_usdt_radt(amt1, amt2);
+        swap_pair_attacker_radt_usdt(amt3, amt4);
+        payback_usdt_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand001(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt6 >= (amt0 * 1003) / 1000);
+        borrow_usdt_owner(amt0);
+        swap_pair_attacker_usdt_radt(amt1, amt2);
+        burn_radt_pair(amt3);
+        swap_pair_attacker_radt_usdt(amt4, amt5);
+        payback_usdt_owner(amt6);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
     function test_gt() public {
         vm.startPrank(attacker);
         borrow_usdt_owner(1000e18);

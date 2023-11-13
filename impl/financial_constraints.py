@@ -378,7 +378,7 @@ def gen_SGZ_addliquidity_pair_sgz():
     return [*transfer_summary0, *transfer_summary1]
 
 
-def gen_RADTDAO_burn_pair_radt():
+def gen_RADTDAO_burn_radt_pair():
     # uint256 backAmount = amount / 100;
     # uint256 keepAmount = amount / 2000;
     # uint256 burnAmount = token.balanceOf(to) - backAmount - keepAmount;
@@ -472,7 +472,7 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "addliquidity_pair_sgz": gen_SGZ_addliquidity_pair_sgz(),
     },
     "RADTDAO": {
-        "burn_pair_radt": gen_RADTDAO_burn_pair_radt(),
+        "burn_radt_pair": gen_RADTDAO_burn_radt_pair(),
     },
     "Zoompro": {
         "addliquidity_pair_controller": gen_Zoompro_addliquidity_pair_controller(),
