@@ -189,6 +189,13 @@ contract SGZTest is Test, BlockLoader {
         pair.sync();
     }
 
+    function swap_pair_sgz_sgz_usdt(
+        uint256 amount,
+        uint256 amountOut
+    ) internal eurus {
+        sgz.swapAndLiquify();
+    }
+
     function check_cand000(
         uint256 amt0,
         uint256 amt1,

@@ -215,7 +215,7 @@ contract SGZ is ERC20, Ownable {
         }
     }
 
-    function swapTokensForOther(uint256 tokenAmount) public {
+    function swapTokensForOther(uint256 tokenAmount) private {
         address[] memory path = new address[](2);
         path[0] = address(this);
         path[1] = address(_baseToken);

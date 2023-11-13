@@ -256,9 +256,11 @@ contract UniswapV2Pair is UniswapV2ERC20, IUniswapV2Pair {
             // scope for reserve{0,1}Adjusted, avoids stack too deep errors
             uint256 balance0Adjusted = balance0 * 1000 - amount0In * 3;
             uint256 balance1Adjusted = balance1 * 1000 - amount1In * 3;
+            // avoid precision loss
+            uint256 const = 1e6 - 1;
             require(
                 balance0Adjusted * balance1Adjusted >=
-                    uint256(_reserve0) * _reserve1 * 1e6,
+                    uint256(_reserve0) * _reserve1 * const,
                 "UniswapV2: K"
             );
         }

@@ -399,6 +399,31 @@ def gen_SGZ_addliquidity_sgz_pair_sgz_usdt():
     return [*transfer_summary0, *transfer_summary1]
 
 
+def gen_SGZ_swap_pair_sgz_sgz_usdt():
+    # uint256 allAmount = balanceOf(address(this));
+    # uint256 canswap = allAmount.div(6).mul(5);
+    # uint256 otherAmount = allAmount.sub(canswap);
+    # swapTokensForOther(canswap);
+    # uint256 ethBalance = usdt.balanceOf(address(this));
+    # Never trigged.
+    # if (ethBalance.mul(otherAmount) > 10 ** 34) {
+    #     addLiquidityUsdt(ethBalance, otherAmount);
+    # }
+    old_balIn_pair = "old_sgz.balanceOf(pair)"
+    old_balOut_pair = "old_usdt.balanceOf(pair)"
+    old_bal_sgz = "old_sgz.balanceOf(sgz)"
+    allAmount = "allAmount"
+    canswap = "canswap"
+    amtOut = "amtOut"
+    constraints = [
+        lambda s: s.get(allAmount) == s.get(old_bal_sgz),
+        lambda s: s.get(canswap) == s.get(old_bal_sgz) / 6 * 5,
+        *gen_summary_uniswap("pair", "sgz", "sgz", "sgz", "usdt", canswap, amtOut),
+        gen_summary_getAmountsOut(canswap, amtOut, old_balIn_pair, old_balOut_pair),
+    ]
+    return constraints
+
+
 def gen_RADTDAO_burn_radt_pair():
     # uint256 backAmount = amount / 100;
     # uint256 keepAmount = amount / 2000;
@@ -533,6 +558,7 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     },
     "SGZ": {
         "addliquidity_sgz_pair_sgz_usdt": gen_SGZ_addliquidity_sgz_pair_sgz_usdt(),
+        "swap_pair_sgz_sgz_usdt": gen_SGZ_swap_pair_sgz_sgz_usdt(),
     },
     "RADTDAO": {
         "burn_radt_pair": gen_RADTDAO_burn_radt_pair(),

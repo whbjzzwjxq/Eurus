@@ -21,6 +21,10 @@ extra_actions:
         pair.sync();
     }"
 
+  - "function swap_pair_sgz_sgz_usdt(uint256 amount, uint256 amountOut) internal eurus {
+        sgz.swapAndLiquify();
+    }"
+
 extra_deployments:
   - "sgz.afterDeploy(address(router), address(pair));"
 extra_statements: []
