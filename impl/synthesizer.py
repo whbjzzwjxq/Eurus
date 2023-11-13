@@ -252,9 +252,9 @@ class Synthesizer:
         if action.action_name == "nop":
             return []
         elif action.action_name == "burn":
-            return gen_summary_transfer(action.account, "dead", action.token0, action.amount0)
+            return gen_summary_burn(action.account, action.token0, "arg_0")
         elif action.action_name == "mint":
-            return gen_summary_transfer("dead", action.account, action.token0, action.amount0)
+            return gen_summary_transfer("dead", action.account, action.token0, "arg_0")
         elif action.action_name == "swap":
             return gen_summary_uniswap(
                 action.swap_pair, "attacker", "attacker", action.token0, action.token1, "arg_0", "arg_1"

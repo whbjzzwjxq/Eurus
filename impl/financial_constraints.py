@@ -2,8 +2,10 @@ from typing import Callable, Dict, Any, Tuple, List, Set
 
 from z3 import If
 
+
 def z3abs(x):
-    return If(x >= 0,x,-x)
+    return If(x >= 0, x, -x)
+
 
 DECIMAL = 18
 SCALE = 10**DECIMAL
@@ -78,6 +80,22 @@ def gen_summary_payback(
     return [*constraints, interest_rate]
 
 
+def gen_summary_burn(
+    sender: str,
+    token: str,
+    amt: str,
+    percent_in: float = 1,
+    percent_out: float = 1,
+) -> ACTION_CONSTR:
+    # fmt: off
+    constraints = gen_summary_transfer(sender, DEAD, token, amt, percent_in=percent_in, percent_out=percent_out)
+    underflow = [
+        lambda s: s.get(f"new_{token}.balanceOf({sender})") >= 1 / SCALE,
+    ]
+    # fmt: on
+    return [*constraints, *underflow]
+
+
 def gen_summary_getAmountsOut(
     amountIn: str,
     amountOut: str,
@@ -149,7 +167,8 @@ def gen_summary_uniswap(
     tokenOut: str,
     amtIn: str,
     amtOut: str,
-    amtOutRatio: float = 1,
+    # Avoid precision loss.
+    amtOutRatio: float = 0.99,
     percent_in_in: float = 1,
     percent_out_in: float = 1,
     percent_in_out: float = 1,
@@ -160,7 +179,9 @@ def gen_summary_uniswap(
 ) -> ACTION_CONSTR:
     amtOutMax = "amtOutMax"
     s_in = gen_summary_transfer(sender, pair, tokenIn, amtIn, percent_in=percent_in_in, percent_out=percent_out_in)
-    s_out = gen_summary_transfer(pair, receiver, tokenOut, amtOut, percent_in=percent_in_out, percent_out=percent_out_out)
+    s_out = gen_summary_transfer(
+        pair, receiver, tokenOut, amtOut, percent_in=percent_in_out, percent_out=percent_out_out
+    )
 
     # Generate Invariants
     old_balIn_pair = f"old_{tokenIn}.balanceOf({pair})"
@@ -318,7 +339,16 @@ def gen_AES_swap_pair_attacker_usdt_aes():
 
 def gen_AES_swap_pair_attacker_aes_usdt():
     uniswap_constraints = gen_summary_uniswap(
-        "pair", "attacker", "attacker", "aes", "usdt", "arg_0", "arg_1", amtOutRatio=0.9, percent_in_in=0.97, percent_out_in=1
+        "pair",
+        "attacker",
+        "attacker",
+        "aes",
+        "usdt",
+        "arg_0",
+        "arg_1",
+        amtOutRatio=0.9,
+        percent_in_in=0.97,
+        percent_out_in=1,
     )
     extra_constraints = [
         lambda s: s.get("new_aes.swapFeeTotal") == s.get("old_aes.swapFeeTotal") + s.get("arg_0") * 0.01

