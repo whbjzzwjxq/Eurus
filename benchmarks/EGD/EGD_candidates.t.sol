@@ -327,82 +327,6 @@ contract EGDTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt5 >= amt0);
-        borrow_usdt_pair(amt0);
-        swap_pair_attacker_usdt_egd(amt1, amt2);
-        swap_pair_attacker_egd_usdt(amt3, amt4);
-        payback_usdt_pair(amt5);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand005(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt6 >= amt0);
-        borrow_usdt_pair(amt0);
-        swap_pair_attacker_usdt_egd(amt1, amt2);
-        deposit_egdstaking_usdt_egdslp(amt3);
-        swap_pair_attacker_egd_usdt(amt4, amt5);
-        payback_usdt_pair(amt6);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand006(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt5 >= amt0);
-        borrow_egd_pair(amt0);
-        swap_pair_attacker_egd_usdt(amt1, amt2);
-        swap_pair_attacker_usdt_egd(amt3, amt4);
-        payback_egd_pair(amt5);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand007(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt6 >= amt0);
-        borrow_egd_pair(amt0);
-        swap_pair_attacker_egd_usdt(amt1, amt2);
-        deposit_egdstaking_usdt_egdslp(amt3);
-        swap_pair_attacker_usdt_egd(amt4, amt5);
-        payback_egd_pair(amt6);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand008(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt5 >= amt0);
         borrow_usdt_owner(amt0);
         deposit_egdstaking_usdt_egdslp(amt1);
         withdraw_egdstaking_egdslp_egd(amt2);
@@ -412,7 +336,7 @@ contract EGDTest is Test, BlockLoader {
         vm.stopPrank();
     }
 
-    function check_cand009(
+    function check_cand005(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,

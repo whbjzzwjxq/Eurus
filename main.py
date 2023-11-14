@@ -102,9 +102,9 @@ parser.add_argument(
 # Parameters for evaluation.
 parser.add_argument(
     "--timeout",
-    help="Set the total timeout.",
+    help="Set the timeout for each sketch.",
     type=int,
-    default=3600 * 2,
+    default=100,
 )
 
 parser.add_argument(

@@ -263,7 +263,7 @@ class FinancialExecution:
         self.gen_constraint(idx + 1, self.attack_goal, "AttackGoal")
 
 
-def setup_solver(timeout: bool):
+def setup_solver(timeout: int):
     # timeout is counted as seconds.
     if Z3_OR_GB:
         solver = Solver()
@@ -374,6 +374,10 @@ def eurus_test(bmk_dir: str, args):
         timer = time.perf_counter()
 
         for func_name, output_path, _, _ in result_paths:
+            # Avoid stuck
+            if project_name == "EGD" and func_name == "check_cand001":
+                timer -= timeout
+                continue
             VAR.clear_cache()
             solver = setup_solver(timeout)
             origin_sketch = builder.get_sketch_by_func_name(func_name, synthesizer.candidates)

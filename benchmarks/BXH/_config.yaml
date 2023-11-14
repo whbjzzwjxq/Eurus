@@ -29,7 +29,7 @@ ctrt_name2deploy:
     ]
 
 extra_actions:
-  - "function transaction_bxhstaking_bxh(uint256 amount) internal {
+  - "function withdraw_bxhstaking_bxh(uint256 amount) internal {
     bxhstaking.deposit(0, amount);
     }"
 

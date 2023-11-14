@@ -133,6 +133,13 @@ class TFGManager:
                     return True
                 if action.action_name == "payback" and last_action.action_name == "borrow":
                     return True
+            # Avoid do swap inside flashloan
+            if action.action_name == "swap":
+                for jdx, e1 in enumerate(trace[:idx]):
+                    e1_action = e1.label
+                    if e1_action.action_name == "borrow":
+                        if e1_action.lender == action.swap_pair:
+                            return True
         if not has_attack_goal_token:
             return True
 
