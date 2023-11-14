@@ -29,16 +29,14 @@ class ConstraintsExtracter:
         elif __name.startswith("new_"):
             key = __name.removeprefix("new_")
             self.write_vars.add(key)
+        return 1
 
 
 def extract_rw_vars(constraints: List[LAMBDA_CONSTR]) -> Tuple[Set[str], Set[str]]:
     # Init storage variables
     creator = ConstraintsExtracter()
     for lambd in constraints:
-        try:
-            _ = lambd(creator)
-        except Exception:
-            pass
+        lambd(creator)
     return creator.read_vars, creator.write_vars
 
 
@@ -531,7 +529,9 @@ def gen_OneRing_getSharePrice(price: str):
     totalSupply = "vault._totalSupply"
     balanceWithInvested = "strategy._investedBalanceInUSD"
     underlyingUnit = 1e18
-    return [lambda s: s.get(price) == underlyingUnit * s.get(f"old_{balanceWithInvested}") / s.get(f"old_{totalSupply}")]
+    return [
+        lambda s: s.get(price) == underlyingUnit * s.get(f"old_{balanceWithInvested}") / s.get(f"old_{totalSupply}")
+    ]
 
 
 def gen_OneRing_deposit_vault_usdce_vault():
@@ -553,7 +553,8 @@ def gen_OneRing_deposit_vault_usdce_vault():
     constraints = [
         *gen_summary_transfer(attacker, strategy, tokenIn, amtIn),
         lambda s: s.get(assetInUSD) == s.get(assetDelta) * 0.557 * 1e12,
-        lambda s: s.get(f"new_{balanceWithInvested}") == s.get(f"old_{balanceWithInvested}") + s.get(assetInUSD) * 1.076,
+        lambda s: s.get(f"new_{balanceWithInvested}")
+        == s.get(f"old_{balanceWithInvested}") + s.get(assetInUSD) * 1.076,
         lambda s: s.get(amtOut) == s.get(assetInUSD) * 1e18 / s.get(sharePrice),
         *gen_OneRing_getSharePrice(sharePrice),
         *gen_summary_mint(attacker, tokenOut, amtOut),
@@ -585,18 +586,96 @@ def gen_OneRing_withdraw_vault_vault_usdce():
         lambda s: s.get(_amountInUsd) == s.get(amtIn) * s.get(sharePrice) / 1e18,
         # 1e12 = 1e18 / usdce.decimals()
         lambda s: s.get(_minAmountInUsd) == s.get(_amountInUsd) * 98 / 100 / 1e12,
-
         # _withdraw body
         *gen_summary_burn(attacker, tokenIn, amtIn),
-        lambda s: s.get(_toWithdraw) == s.get(f"old_{balanceWithInvested}") * s.get(amtIn) / s.get(f"old_{totalSupply}"),
-
+        lambda s: s.get(_toWithdraw)
+        == s.get(f"old_{balanceWithInvested}") * s.get(amtIn) / s.get(f"old_{totalSupply}"),
         # withdrawToVault
         lambda s: s.get(assetInUSD) == s.get(_toWithdraw) / 0.557 / 1e12,
-        lambda s: s.get(f"new_{balanceWithInvested}") == s.get(f"old_{balanceWithInvested}") - s.get(assetInUSD) * 1.076,
-
+        lambda s: s.get(f"new_{balanceWithInvested}")
+        == s.get(f"old_{balanceWithInvested}") - s.get(assetInUSD) * 1.076,
         lambda s: s.get(amtOut) == s.get(assetInUSD),
         lambda s: s.get(amtOut) >= s.get(_minAmountInUsd),
         *gen_summary_transfer(strategy, attacker, tokenOut, amtOut),
+    ]
+
+    return constraints
+
+
+def gen_EGD_deposit_egdstaking_usdt_egdslp():
+    pair = "pair"
+
+    old_balIn_pair = "old_usdt.balanceOf(pair)"
+    old_balOut_pair = "old_egd.balanceOf(pair)"
+
+    attacker = "attacker"
+    egdstaking = "egdstaking"
+    usdt = "usdt"
+    egd = "egd"
+
+    amount = "arg_0"
+
+    amountSub0 = "amountSub0"
+    amountOut0 = "amountOut0"
+
+    tempRate = "tempRate"
+    old_rates = "old_egdstaking.user_rates"
+    new_rates = "new_egdstaking.user_rates"
+
+    old_claimTime = "old_egdstaking.user_claimTime"
+    new_claimTime = "new_egdstaking.user_claimTime"
+
+    constraints = [
+
+        # Transfer
+        *gen_summary_getAmountsOut(amountSub0, amountOut0, old_balIn_pair, old_balOut_pair),
+        lambda s: s.get(amountSub0) == s.get(amount) * 70 / 100,
+
+        # Give all amount USDT out.
+        *gen_summary_burn(attacker, usdt, amount),
+
+        # For pair
+        *gen_summary_mint(pair, usdt, amountSub0),
+        *gen_summary_burn(pair, egd, amountOut0),
+
+        # For egdstaking
+        *gen_summary_mint(egdstaking, egd, amountOut0),
+
+        # Reward
+        lambda s: s.get(tempRate) == 383,
+        lambda s: s.get(new_rates) == s.get(amount) * s.get(tempRate) / 100000 / 86400,
+        lambda s: s.get(new_claimTime) == s.get("old_block.timestamp"),
+        lambda s: s.get("new_block.timestamp") == s.get("old_block.timestamp") + 54,
+
+        # Utils, unmeaningful
+        lambda s: s.get(old_claimTime) == 0,
+        lambda s: s.get(old_rates) == 0,
+    ]
+
+    return constraints
+
+
+def gen_EGD_withdraw_egdstaking_egdslp_egd():
+    old_balIn_pair = "old_usdt.balanceOf(pair)"
+    old_balOut_pair = "old_egd.balanceOf(pair)"
+
+    attacker = "attacker"
+    egdstaking = "egdstaking"
+    usdt = "usdt"
+    egd = "egd"
+
+    quota = "quota"
+    rew = "rew"
+    getEGDPrice = "getEGDPrice"
+
+    rates = "old_egdstaking.user_rates"
+    claimTime = "old_egdstaking.user_claimTime"
+
+    constraints = [
+        lambda s: s.get(quota) == (s.get("old_block.timestamp") - s.get(claimTime)) * s.get(rates),
+        lambda s: s.get(rew) == s.get(quota) * 1e18 / s.get(getEGDPrice),
+        lambda s: s.get(getEGDPrice) == s.get(old_balIn_pair) * 1e18 / s.get(old_balOut_pair),
+        *gen_summary_transfer(egdstaking, attacker, egd, rew),
     ]
 
     return constraints
@@ -644,11 +723,15 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "deposit_vault_usdce_vault": gen_OneRing_deposit_vault_usdce_vault(),
         "withdraw_vault_vault_usdce": gen_OneRing_withdraw_vault_vault_usdce(),
     },
+    "EGD": {
+        "deposit_egdstaking_usdt_egdslp": gen_EGD_deposit_egdstaking_usdt_egdslp(),
+        "withdraw_egdstaking_egdslp_egd": gen_EGD_withdraw_egdstaking_egdslp_egd(),
+    },
 }
 
 
 def gen_ShadowFi_refinement():
-    trans_limit = 1e-4
+    trans_limit = 1e8 * 1e9 / 1000 / SCALE
     return [
         {
             "burn_sdf_pair": [
@@ -672,8 +755,23 @@ def gen_BXH_refinement():
         }
     ]
 
+def gen_EGD_refinement():
+    return [
+        {
+            "deposit_egdstaking_usdt_egdslp": [
+                lambda s: s.get("arg_0") >= 100e18 / SCALE,
+            ]
+        },
+        {
+            "swap_pair_attacker_egd_usdt": [
+                lambda s: s.get("arg_1") >= 1 / SCALE,
+            ]
+        }
+    ]
+
 
 refine_constraints: Dict[str, List[Dict[str, List[LAMBDA_CONSTR]]]] = {
     "ShadowFi": gen_ShadowFi_refinement(),
     "BXH": gen_BXH_refinement(),
+    "EGD": gen_EGD_refinement(),
 }

@@ -74,7 +74,7 @@ class BenchmarkBuilder:
         self.ava_action_names = []
 
         # Will print token_users' initial balances.
-        self.token_users = list(self.roles.keys())
+        self.token_users = list(self.ctrt_name2cls.keys())
 
         # Lender Pool
         self.lend_pools = self.config.lend_pools

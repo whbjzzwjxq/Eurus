@@ -187,11 +187,10 @@ contract EGDStaking is OwnableUpgradeable {
 
     function bond(address invitor) external {
         require(userInfo[msg.sender].invitor == address(0), "have invitor");
-        // Too hard to mock
-        // require(
-        //     userInfo[invitor].invitor != address(0) || invitor == fund,
-        //     "wrong invitor"
-        // );
+        require(
+            userInfo[invitor].invitor != address(0) || invitor == fund,
+            "wrong invitor"
+        );
         userInfo[msg.sender].invitor = invitor;
         userInfo[invitor].refer++;
     }
@@ -202,7 +201,7 @@ contract EGDStaking is OwnableUpgradeable {
             dailyStake[getCurrentDay()] + amount < dailyStakeLimit,
             "out of daily stake limit"
         );
-        require(userInfo[msg.sender].invitor != address(0), "not have invitor");
+        // require(userInfo[msg.sender].invitor != address(0), "not have invitor");
         U.transferFrom(msg.sender, address(this), amount);
         _processReBuy((amount * 70) / 100);
         U.transfer(wallet, amount / 10);

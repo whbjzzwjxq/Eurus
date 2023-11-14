@@ -233,9 +233,7 @@ class Synthesizer:
                     Tokenflow(action.token1, action.defi, action.swap_pair, ""),
                 ]
             else:
-                return [
-                    Tokenflow(action.token0, action.defi, action.swap_pair, "")
-                ]
+                return [Tokenflow(action.token0, action.defi, action.swap_pair, "")]
         elif action.action_name == "deposit":
             return [
                 Tokenflow(action.token0, action.defi, action.account, ""),
@@ -401,10 +399,7 @@ class Synthesizer:
                         return None
                     # Hardcode
                     for role_name, role in self.config.roles.items():
-                        if role.token_pair == [
-                            token0,
-                            token1,
-                        ] or role.token_pair == [token1, token0]:
+                        if role.token_pair == [token0, token1] or role.token_pair == [token1, token0]:
                             return role_name
                 return None
             return None

@@ -393,7 +393,8 @@ def get_var(
     label_defs, type_def_mapping = storage_layout
     stor_infos = [l for l in label_defs if l.label == var_name]
     if len(stor_infos) == 0:
-        raise ValueError(f"Unknown varirable: {var_name}")
+        # Allow virtual variables
+        return "0"
     stor_info = stor_infos[0]
     type_info = type_def_mapping[stor_info.type]
     _type = get_type(type_info, type_def_mapping)

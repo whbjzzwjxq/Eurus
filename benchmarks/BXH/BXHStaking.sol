@@ -241,7 +241,7 @@ contract BXHStaking is Ownable, ReentrancyGuard{
 
         (uint112 _reserve0, uint112 _reserve1, ) = IUniswapV2Pair(pool.swapPairAddress).getReserves();
         uint256 amountTokenOut = 0; 
-        uint256 _fee = 0;
+        uint256 _fee = 3;
         if(IUniswapV2Pair(pool.swapPairAddress).token0() == address(iToken)){
             amountTokenOut = getAmountOut( _amountInToken , _reserve0, _reserve1, _fee);
         } else {

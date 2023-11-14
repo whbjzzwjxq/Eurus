@@ -29,7 +29,7 @@ global Z3_OR_GB
 Z3_OR_GB = True
 TRACK_UNSAT = True
 LB = 0
-UB = 2**256 - 1
+UB = 2**128 - 1
 VTYPE = gp.GRB.CONTINUOUS
 
 
@@ -39,12 +39,15 @@ class VAR:
     def __init__(self, name: str, solver: SolverType, value: int = None) -> None:
         if name in self.names:
             raise ValueError(f"Duplicated name: {name}!")
+        scale = SCALE
+        if "block.timestamp" in name:
+            scale = 1
         self.names.add(name)
         self.name = name
         self.solver = solver
         if Z3_OR_GB:
             if value is not None:
-                self.var_obj = value / SCALE
+                self.var_obj = value / scale
             elif TRACK_UNSAT:
                 self.var_obj = Real(name)
                 self.solver.assert_and_track(self.var_obj >= LB, f"LB{len(self.names)}")
@@ -55,7 +58,7 @@ class VAR:
                 self.solver.add(self.var_obj <= UB)
         else:
             if value is not None:
-                self.var_obj = value / SCALE
+                self.var_obj = value / scale
             else:
                 self.var_obj = self.solver.addVar(lb=LB, ub=UB, vtype=VTYPE, name=name)
 
@@ -191,10 +194,14 @@ class FinancialExecution:
 
     def get_hack_param(self, idx: int):
         # hack_params = [
-        #     80000000e6,
-        #     80000000e6,
-        #     41928618941844861817113610,
-        #     (80000000e6 * 1003) / 1000,
+        #     2100e18,
+        #     100e18,
+        #     424526221219952604636716,
+        #     0,
+        #     (424526221219952604636716 * 1003) / 1000,
+        #     3942125010164795070597262,
+        #     29602056415795361087488,
+        #     2100e18 * 1003 / 1000,
         # ]
         # return hack_params[idx]
         return None

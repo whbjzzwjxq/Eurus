@@ -197,7 +197,7 @@ def deploy_contract(bmk_dir: str):
     init_storage = parse_cast_storage_info(lines)
     ctrt_name2addr: Dict[str, str] = {}
 
-    for role in config.roles:
+    for role, _ in config.ctrt_name2cls:
         addr_var = init_storage[f"{role}Addr"]
         ctrt_name2addr[role] = int2address(int(addr_var.value))
     ctrt_name2addr["attacker"] = int2address(int(init_storage["attacker"].value))
