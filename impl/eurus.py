@@ -430,8 +430,8 @@ def eurus_test(bmk_dir: str, args):
         if not only_gt:
             timecost = time.perf_counter() - timer
             new_record = {
-                "eurus_solve_timecost": timecost,
-                "eurus_all_timecost": timecost + builder.synthesizer.timecost,
+                f"eurus_{suffix_spec}_solve_timecost": timecost,
+                f"eurus_{suffix_spec}_all_timecost": timecost + builder.synthesizer.timecost,
             }
             update_record(result_path, new_record)
         anvil_proc.kill()
