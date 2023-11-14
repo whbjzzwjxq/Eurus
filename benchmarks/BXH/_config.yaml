@@ -19,12 +19,18 @@ ctrt_name2deploy:
       "bxhstaking",
       "new BXHStaking(
       address(bxh),
-      1 ether, 21543000, 1000, owner)",
+      1 ether, 
+      block.timestamp, 
+      1000, 
+      owner,
+      address(usdt),
+      address(pair)
+      )",
     ]
 
 extra_actions:
   - "function transaction_bxhstaking_bxh(uint256 amount) internal {
-    bxhstaking.deposit(0, amount, address(pair));
+    bxhstaking.deposit(0, amount);
     }"
 
 extra_deployments:

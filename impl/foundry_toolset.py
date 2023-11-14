@@ -290,6 +290,8 @@ class LazyStorage:
     def parse_func_call(self, key: str) -> Tuple[str, str, List[str]]:
         func_name2sig = {
             "balanceOf": "balanceOf(address)(uint256)",
+            "investedBalanceInUSD": "investedBalanceInUSD()(uint256)",
+            "totalSupply": "totalSupply()(uint256)"
         }
         # A.balanceOf(pair)
         ctrt_name, func_call = key.split(".", 1)

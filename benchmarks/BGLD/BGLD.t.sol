@@ -235,7 +235,7 @@ contract BGLDTest is Test, BlockLoader {
         uint256 amt6
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 >= (amt0 * 1003) / 1000);
+        vm.assume(amt6 >= amt0);
         borrow_wbnb_owner(amt0);
         swap_pair_attacker_wbnb_bgld(amt1, amt2);
         burn_bgld_pair(amt3);

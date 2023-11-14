@@ -84,16 +84,35 @@ def gen_summary_burn(
     sender: str,
     token: str,
     amt: str,
-    percent_in: float = 1,
     percent_out: float = 1,
 ) -> ACTION_CONSTR:
+    bal_from = f"{token}.balanceOf({sender})"
     # fmt: off
-    constraints = gen_summary_transfer(sender, DEAD, token, amt, percent_in=percent_in, percent_out=percent_out)
+    constraints = [
+        # Transfer token
+        lambda s: s.get(f"new_{bal_from}") == s.get(f"old_{bal_from}") - s.get(amt) * percent_out,
+    ]
     underflow = [
         lambda s: s.get(f"new_{token}.balanceOf({sender})") >= 1 / SCALE,
     ]
     # fmt: on
     return [*constraints, *underflow]
+
+
+def gen_summary_mint(
+    receiver: str,
+    token: str,
+    amt: str,
+    percent_in: float = 1,
+) -> ACTION_CONSTR:
+    bal_to = f"{token}.balanceOf({receiver})"
+    # fmt: off
+    constraints = [
+        # Transfer token
+        lambda s: s.get(f"new_{bal_to}") == s.get(f"old_{bal_to}") + s.get(amt) * percent_in,
+    ]
+    # fmt: on
+    return constraints
 
 
 def gen_summary_getAmountsOut(
@@ -287,11 +306,12 @@ def gen_BGLD_burn_bgld_pair():
     burn_amount = "burnAmount"
     burn_summary = gen_summary_transfer("pair", DEAD, "bgld", burn_amount, percent_out=1)
     burn_summary2 = gen_summary_transfer("attacker", DEAD, "bgld", burn_amount, percent_out=1.1)
+    old_bal_attacker = f"old_bgld.balanceOf(attacker)"
     old_bal_pair = f"old_bgld.balanceOf(pair)"
     new_bal_pair = f"new_bgld.balanceOf(pair)"
     extra_constraints = [
         lambda s: s.get("arg_0") == s.get(burn_amount) * 10,
-        lambda s: s.get("arg_0") * 0.1 < s.get(old_bal_pair),
+        lambda s: s.get("arg_0") < s.get(old_bal_attacker),
         lambda s: s.get(new_bal_pair) >= 1 / SCALE,
     ]
     return [*burn_summary, *burn_summary2, *extra_constraints]
@@ -507,30 +527,79 @@ def gen_RES_addliquidity_resA_pair_resA_usdt():
     return constraints
 
 
-def gen_ShadowFi_refinement():
-    trans_limit = 1e-4
-    return [
-        {
-            "burn_sdf_pair": [
-                lambda s: s.get("old_sdf.balanceOf(pair)") - s.get("new_sdf.balanceOf(pair)") <= trans_limit,
-            ]
-        },
-        {
-            "swap_pair_attacker_sdf_wbnb": [
-                lambda s: s.get("old_sdf.balanceOf(attacker)") - s.get("new_sdf.balanceOf(attacker)") <= trans_limit,
-            ]
-        },
-    ]
+def gen_OneRing_getSharePrice(price: str):
+    totalSupply = "vault._totalSupply"
+    balanceWithInvested = "strategy._investedBalanceInUSD"
+    underlyingUnit = 1e18
+    return [lambda s: s.get(price) == underlyingUnit * s.get(f"old_{balanceWithInvested}") / s.get(f"old_{totalSupply}")]
 
 
-def gen_BXH_refinement():
-    return [
-        {
-            "transaction_bxhstaking_bxh": [
-                lambda s: s.get("amtIn") == 0,
-            ]
-        }
+def gen_OneRing_deposit_vault_usdce_vault():
+    attacker = "attacker"
+    vault = "vault"
+    strategy = "strategy"
+    tokenIn = "usdce"
+    tokenOut = "vault"
+    amtIn = "arg_0"
+    amtOut = "amtOut"
+
+    totalSupply = "vault._totalSupply"
+    balanceWithInvested = "strategy._investedBalanceInUSD"
+    assetDelta = amtIn
+    assetInUSD = "assetInUSD"
+
+    sharePrice = "sharePrice"
+
+    constraints = [
+        *gen_summary_transfer(attacker, strategy, tokenIn, amtIn),
+        lambda s: s.get(assetInUSD) == s.get(assetDelta) * 0.557 * 1e12,
+        lambda s: s.get(f"new_{balanceWithInvested}") == s.get(f"old_{balanceWithInvested}") + s.get(assetInUSD) * 1.076,
+        lambda s: s.get(amtOut) == s.get(assetInUSD) * 1e18 / s.get(sharePrice),
+        *gen_OneRing_getSharePrice(sharePrice),
+        *gen_summary_mint(attacker, tokenOut, amtOut),
+        lambda s: s.get(f"new_{totalSupply}") == s.get(f"old_{totalSupply}") + s.get(amtOut),
     ]
+    return constraints
+
+
+def gen_OneRing_withdraw_vault_vault_usdce():
+    attacker = "attacker"
+    vault = "vault"
+    strategy = "strategy"
+    tokenIn = "vault"
+    tokenOut = "usdce"
+    amtIn = "arg_0"
+    amtOut = "amtOut"
+
+    totalSupply = "vault._totalSupply"
+    balanceWithInvested = "strategy._investedBalanceInUSD"
+
+    sharePrice = "sharePrice"
+    _amountInUsd = "_amountInUsd"
+    _minAmountInUsd = "_minAmountInUsd"
+    _toWithdraw = "_toWithdraw"
+    assetInUSD = "assetInUSD"
+
+    constraints = [
+        *gen_OneRing_getSharePrice(sharePrice),
+        lambda s: s.get(_amountInUsd) == s.get(amtIn) * s.get(sharePrice) / 1e18,
+        # 1e12 = 1e18 / usdce.decimals()
+        lambda s: s.get(_minAmountInUsd) == s.get(_amountInUsd) * 98 / 100 / 1e12,
+
+        # _withdraw body
+        *gen_summary_burn(attacker, tokenIn, amtIn),
+        lambda s: s.get(_toWithdraw) == s.get(f"old_{balanceWithInvested}") * s.get(amtIn) / s.get(f"old_{totalSupply}"),
+
+        # withdrawToVault
+        lambda s: s.get(assetInUSD) == s.get(_toWithdraw) / 0.557 / 1e12,
+        lambda s: s.get(f"new_{balanceWithInvested}") == s.get(f"old_{balanceWithInvested}") - s.get(assetInUSD) * 1.076,
+
+        lambda s: s.get(amtOut) == s.get(assetInUSD),
+        lambda s: s.get(amtOut) >= s.get(_minAmountInUsd),
+        *gen_summary_transfer(strategy, attacker, tokenOut, amtOut),
+    ]
+
+    return constraints
 
 
 hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
@@ -571,7 +640,38 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "RES": {
         "addliquidity_resA_pair_resA_usdt": gen_RES_addliquidity_resA_pair_resA_usdt(),
     },
+    "OneRing": {
+        "deposit_vault_usdce_vault": gen_OneRing_deposit_vault_usdce_vault(),
+        "withdraw_vault_vault_usdce": gen_OneRing_withdraw_vault_vault_usdce(),
+    },
 }
+
+
+def gen_ShadowFi_refinement():
+    trans_limit = 1e-4
+    return [
+        {
+            "burn_sdf_pair": [
+                lambda s: s.get("old_sdf.balanceOf(pair)") - s.get("new_sdf.balanceOf(pair)") <= trans_limit,
+            ]
+        },
+        {
+            "swap_pair_attacker_sdf_wbnb": [
+                lambda s: s.get("old_sdf.balanceOf(attacker)") - s.get("new_sdf.balanceOf(attacker)") <= trans_limit,
+            ]
+        },
+    ]
+
+
+def gen_BXH_refinement():
+    return [
+        {
+            "transaction_bxhstaking_bxh": [
+                lambda s: s.get("amtIn") == 0,
+            ]
+        }
+    ]
+
 
 refine_constraints: Dict[str, List[Dict[str, List[LAMBDA_CONSTR]]]] = {
     "ShadowFi": gen_ShadowFi_refinement(),

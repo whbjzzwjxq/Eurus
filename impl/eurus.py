@@ -29,7 +29,7 @@ global Z3_OR_GB
 Z3_OR_GB = True
 TRACK_UNSAT = True
 LB = 0
-UB = 2**128 - 1
+UB = 2**256 - 1
 VTYPE = gp.GRB.CONTINUOUS
 
 
@@ -191,13 +191,10 @@ class FinancialExecution:
 
     def get_hack_param(self, idx: int):
         # hack_params = [
-        #     200000e18,
-        #     200000e18,
-        #     6049.946035638727192292e18,
-        #     3260e18,
-        #     6049.946035638727192292e18,
-        #     307427.442385714227894965e18,
-        #     200000e18 * 1003 / 1000,
+        #     80000000e6,
+        #     80000000e6,
+        #     41928618941844861817113610,
+        #     (80000000e6 * 1003) / 1000,
         # ]
         # return hack_params[idx]
         return None
@@ -296,7 +293,7 @@ def eurus_solve(
         param_strs = []
         for p in exec.all_params:
             v = str(p)
-            print(f"{p.name}: {v}")
+            print(f"uint256 {p.name} = {v}")
             param_strs.append(v)
         feasible = verify_model_on_anvil(ctrt_name2addr, func_name, param_strs)
         if feasible:

@@ -1,0 +1,25 @@
+{
+    "test_results": {
+        "./benchmarks/OneRing": [
+            {
+                "name": "check_cand001",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x4c80a608e1",
+                        "p_amt1_uint256": "0x4c80a0c322",
+                        "p_amt2_uint256": "0x247777a83dab62000000",
+                        "p_amt3_uint256": "0x4cbb670ca9"
+                    }
+                ],
+                "time": [
+                    0.04110008300631307,
+                    0,
+                    0.04110008300631307
+                ],
+                "feasible": true,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

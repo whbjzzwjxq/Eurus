@@ -74,9 +74,11 @@ contract BXHTest is Test, BlockLoader {
         bxhstaking = new BXHStaking(
             address(bxh),
             1 ether,
-            21543000,
+            block.timestamp,
             1000,
-            owner
+            owner,
+            address(usdt),
+            address(pair)
         );
         bxhstakingAddr = address(bxhstaking);
         attackContract = new AttackContract();
@@ -224,7 +226,7 @@ contract BXHTest is Test, BlockLoader {
     }
 
     function transaction_bxhstaking_bxh(uint256 amount) internal {
-        bxhstaking.deposit(0, amount, address(pair));
+        bxhstaking.deposit(0, amount);
     }
 
     function test_gt() public {

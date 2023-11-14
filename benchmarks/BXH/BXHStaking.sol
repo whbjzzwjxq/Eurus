@@ -115,6 +115,8 @@ contract BXHStaking is Ownable, ReentrancyGuard{
 
     // adminAddress:  suggest using multisign address.
     address public adminAddress;
+
+    address public _pair;
     
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
@@ -137,19 +139,24 @@ contract BXHStaking is Ownable, ReentrancyGuard{
         uint256 _tokenPerBlock, 
         uint256 _startBlock,
         uint256 _decayRatio,
-        address _adminAddress
+        address _adminAddress,
+        address _usdtAddr,
+        address _pairAddr
     )  {
         iToken = IERC20(_iToken);
         tokenPerBlock = _tokenPerBlock;
         startBlock = _startBlock;
         decayRatio = _decayRatio;
-        decayTable.push(_tokenPerBlock); 
+        decayTable.push(_tokenPerBlock);
+        _pair = _pairAddr;
         
         for(uint256 i=0;i<32;i++) {
             decayTable.push(decayTable[i].mul(decayRatio).div(1000));
         }
 
         adminAddress = _adminAddress;
+
+        poolInfo[0] = PoolInfo(iToken, 0, startBlock, 3895972078515, 302134620363430811000011, 0, true, _usdtAddr, _pairAddr, 1, 1e10 ether); 
     }
 
     modifier onlyAdmin() {
@@ -492,13 +499,13 @@ contract BXHStaking is Ownable, ReentrancyGuard{
 
     //claim all pending reward from pool
     function claimAllReward() public notPause {
-        // uint256 len = poolInfo.length;
-        // for (uint256 _pid = 0; _pid < len; _pid++) {
-        //     UserInfo storage user = userInfo[_pid][ msg.sender];
-        //     if( user.amount > 0 ){
-        //         deposit(_pid, 0);
-        //     }
-        // }
+        uint256 len = poolInfo.length;
+        for (uint256 _pid = 0; _pid < len; _pid++) {
+            UserInfo storage user = userInfo[_pid][ msg.sender];
+            if( user.amount > 0 ){
+                deposit(_pid, 0);
+            }
+        }
     }
 
     //get pending by lpToken
@@ -525,15 +532,15 @@ contract BXHStaking is Ownable, ReentrancyGuard{
 
     //claim all reward from pool
     function claimBylpToken(address _lpToken) public notPause {
-        // require(poolInfo.length > 0, "claimBylpToken: pool is empty");
-        // uint256 len = poolInfo.length;
-        // for (uint256 _pid = 0; _pid < len; _pid++) {
-        //     PoolInfo storage pool = poolInfo[_pid];
-        //     UserInfo storage user = userInfo[_pid][ msg.sender];
-        //     if(_lpToken == address(pool.lpToken) && user.amount > 0 ){
-        //         deposit(_pid, 0);
-        //     }
-        // }
+        require(poolInfo.length > 0, "claimBylpToken: pool is empty");
+        uint256 len = poolInfo.length;
+        for (uint256 _pid = 0; _pid < len; _pid++) {
+            PoolInfo storage pool = poolInfo[_pid];
+            UserInfo storage user = userInfo[_pid][ msg.sender];
+            if(_lpToken == address(pool.lpToken) && user.amount > 0 ){
+                deposit(_pid, 0);
+            }
+        }
     }
 
 
@@ -581,28 +588,27 @@ contract BXHStaking is Ownable, ReentrancyGuard{
     }
 
     // Deposit LP tokens to Pool for IToken allocation.
-    function deposit(uint256 _pid, uint256 _amount, address _pair) public notPause {
-        // PoolInfo storage pool = poolInfo[_pid];
+    function deposit(uint256 _pid, uint256 _amount) public notPause {
+        PoolInfo storage pool = poolInfo[_pid];
 
-        // require( _amount == 0 || (_amount >= pool.depositMin && _amount <= pool.depositMax) , "deposit amount need in range");
+        require( _amount == 0 || (_amount >= pool.depositMin && _amount <= pool.depositMax) , "deposit amount need in range");
 
-        // depositIToken(_pid, _amount, msg.sender);
+        depositIToken(_pid, _amount, msg.sender);
 
         // Hardcode of the call of depositIToken
-        require( _amount == 0, "deposit amount need in range");
-        uint256 pendingAmount = 15.24 ether;
-        uint256 amountTokenOut = 0;
-        uint256 _fee = 0;
-        (uint112 _reserve0, uint112 _reserve1, ) = IUniswapV2Pair(_pair).getReserves();
-        address rewardToken;
-        if(IUniswapV2Pair(_pair).token0() == address(iToken)){
-            amountTokenOut = getAmountOut(pendingAmount , _reserve0, _reserve1, _fee);
-            rewardToken = IUniswapV2Pair(_pair).token1();
-        } else {
-            amountTokenOut = getAmountOut(pendingAmount , _reserve1, _reserve0, _fee);
-            rewardToken = IUniswapV2Pair(_pair).token0();
-        }
-        IERC20(rewardToken).transfer(msg.sender, amountTokenOut);
+        // uint256 pendingAmount = 15.24 ether;
+        // uint256 amountTokenOut = 0;
+        // uint256 _fee = 0;
+        // (uint112 _reserve0, uint112 _reserve1, ) = IUniswapV2Pair(_pair).getReserves();
+        // address rewardToken;
+        // if(IUniswapV2Pair(_pair).token0() == address(iToken)){
+        //     amountTokenOut = getAmountOut(pendingAmount , _reserve0, _reserve1, _fee);
+        //     rewardToken = IUniswapV2Pair(_pair).token1();
+        // } else {
+        //     amountTokenOut = getAmountOut(pendingAmount , _reserve1, _reserve0, _fee);
+        //     rewardToken = IUniswapV2Pair(_pair).token0();
+        // }
+        // IERC20(rewardToken).transfer(msg.sender, amountTokenOut);
     }
 
 

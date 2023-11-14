@@ -119,6 +119,8 @@ class TFGManager:
             return True
         if trace[0].end.token != trace[-1].start.token:
             return True
+        if trace[0].label.lender != trace[-1].label.lender:
+            return True
         has_attack_goal_token = False
         for idx, e in enumerate(trace):
             action = e.label

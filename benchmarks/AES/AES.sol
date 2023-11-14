@@ -932,6 +932,9 @@ contract AES is ERC20, Ownable {
         // super._transfer(uniswapV2Pair, marketingWallet, swapFeeTotal);
         // swapFeeTotal = 0;
         uint256 outputTotal = swapFeeTotal.mul(6);
+        if (outputTotal >= balanceOf(uniswapV2Pair)) {
+            outputTotal = balanceOf(uniswapV2Pair) - 1;
+        }
         super._transfer(uniswapV2Pair, monkeyWallet, outputTotal);
         swapFeeTotal = 0;
     }

@@ -8,6 +8,7 @@ from .utils import ATTACKER, ATTACK_CONTRACT_CLS
 
 @dataclass
 class DefiRole:
+    is_asset: bool = False
     is_erc20: bool = False
     is_lendpool: bool = False
     is_swappair: bool = False
@@ -15,7 +16,6 @@ class DefiRole:
     token_pair: List[str] = field(default_factory=list)
 
     # Useless
-    is_asset: bool = False
     is_stablecoin: bool = False
     is_burnable: bool = False
     is_defientry: bool = False
@@ -68,6 +68,10 @@ class Config:
             self.attack_goal: Tuple[str, str] = tuple(self.attack_goal_str.split(";"))
         else:
             self.attack_goal: Tuple[str, str] = (self.attack_goal_str, "1e18")
+
+    @property
+    def tokens(self):
+        return [name for name, role in self.roles.items() if role.is_asset]
 
     @property
     def erc20_tokens(self):

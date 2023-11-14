@@ -166,7 +166,7 @@ class Synthesizer:
             self.func_summarys[func_summary.func_sig] = func_summary
 
         # Generate sketch
-        tokens = [VOID] + self.config.erc20_tokens
+        tokens = [VOID] + self.config.tokens
         accounts = ["owner", "dead"] + list(self.role2ctrt.keys())
         func_summarys = list(self.func_summarys.values())
         attack_goal, _ = self.config.attack_goal
@@ -238,13 +238,13 @@ class Synthesizer:
                 ]
         elif action.action_name == "deposit":
             return [
-                Tokenflow(action.token1, action.defi, action.account, ""),
-                Tokenflow(action.token0, action.account, action.defi, ""),
+                Tokenflow(action.token0, action.defi, action.account, ""),
+                Tokenflow(action.token1, action.account, action.defi, ""),
             ]
         elif action.action_name == "withdraw":
             return [
-                Tokenflow(action.token1, action.account, action.defi, ""),
                 Tokenflow(action.token0, action.defi, action.account, ""),
+                Tokenflow(action.token1, action.account, action.defi, ""),
             ]
         elif action.action_name == "transaction":
             return []
@@ -259,7 +259,7 @@ class Synthesizer:
         elif action.action_name == "burn":
             return gen_summary_burn(action.account, action.token0, "arg_0")
         elif action.action_name == "mint":
-            return gen_summary_transfer("dead", action.account, action.token0, "arg_0")
+            return gen_summary_mint(action.account, action.token0, "arg_0")
         elif action.action_name == "swap":
             return gen_summary_uniswap(
                 action.swap_pair, "attacker", "attacker", action.token0, action.token1, "arg_0", "arg_1"

@@ -86,10 +86,8 @@ class AFLAction:
     def token0(self):
         if self.action_name in ("burn", "mint", "borrow", "payback"):
             return self.args_in_name[0]
-        elif self.action_name in ("deposit",):
+        elif self.action_name in ("deposit", "withdraw"):
             return self.args_in_name[1]
-        elif self.action_name in ("withdraw",):
-            return self.args_in_name[0] + "LP"
         elif self.action_name in ("swap", "addliquidity"):
             return self.args_in_name[2]
         else:
@@ -99,10 +97,8 @@ class AFLAction:
     def token1(self):
         if self.action_name in ("swap", "addliquidity"):
             return self.args_in_name[3]
-        elif self.action_name in ("deposit",):
-            return self.args_in_name[0] + "LP"
-        elif self.action_name in ("withdraw",):
-            return self.args_in_name[0]
+        elif self.action_name in ("deposit", "withdraw"):
+            return self.args_in_name[2]
         else:
             raise NotImplementedError
 
@@ -201,13 +197,13 @@ class AddLiquidity(AFLAction):
 
 
 class Deposit(AFLAction):
-    def __init__(self, defi: str, token: str, amount: str, concrete: bool = False) -> None:
-        super().__init__("deposit", [defi, token], [amount], concrete)
+    def __init__(self, defi: str, token0: str, token1: str, amount: str, concrete: bool = False) -> None:
+        super().__init__("deposit", [defi, token0, token1], [amount], concrete)
 
 
 class Withdraw(AFLAction):
-    def __init__(self, defi: str, token: str, amount: str, concrete: bool = False) -> None:
-        super().__init__("withdraw", [defi, token], [amount], concrete)
+    def __init__(self, defi: str, token0: str, token1: str, amount: str, concrete: bool = False) -> None:
+        super().__init__("withdraw", [defi, token0, token1], [amount], concrete)
 
 
 # General Transaction
@@ -321,7 +317,7 @@ class Sketch:
             if a.action_name == "borrow":
                 a1_idx = self.match_borrow_payback(idx)
                 a1 = self.pure_actions[a1_idx]
-                f = f"vm.assume({a1.amount0} >= {a.amount0} * 1003 / 1000);"
+                f = f"vm.assume({a1.amount0} >= {a.amount0});"
                 pre_statements.append(f)
 
         params = [f"uint256 amt{i}" for i in range(self.param_num)]

@@ -182,7 +182,7 @@ contract OneRingVault is ERC20, Ownable {
         //     _newLiquidityInUSD = _amountInUSD;
         // }
 
-        _doHardWorkAll();
+        // _doHardWorkAll();
 
         uint256 _toMint = _newLiquidityInUSD.mul(underlyingUnit).div(
             _sharePrice
