@@ -2,7 +2,7 @@
     "test_results": {
         "./benchmarks/Discover": [
             {
-                "name": "check_cand002",
+                "name": "check_cand001",
                 "num_models": 1,
                 "models": [
                     {
@@ -15,9 +15,9 @@
                     }
                 ],
                 "time": [
-                    0.00283054199826438,
+                    0.0026880000077653676,
                     0,
-                    0.00283054199826438
+                    0.0026880000077653676
                 ],
                 "feasible": true,
                 "refine_loop": 0

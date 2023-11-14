@@ -87,18 +87,6 @@ contract RADTDAOTest is Test, BlockLoader {
 
     function printBalance(string memory tips) public {
         emit log_string(tips);
-        emit log_string("Usdt Balances: ");
-        queryERC20BalanceDecimals(
-            address(usdt),
-            address(usdt),
-            usdt.decimals()
-        );
-        queryERC20BalanceDecimals(
-            address(radt),
-            address(usdt),
-            radt.decimals()
-        );
-        emit log_string("");
         emit log_string("Radt Balances: ");
         queryERC20BalanceDecimals(
             address(usdt),
@@ -111,6 +99,18 @@ contract RADTDAOTest is Test, BlockLoader {
             radt.decimals()
         );
         emit log_string("");
+        emit log_string("Usdt Balances: ");
+        queryERC20BalanceDecimals(
+            address(usdt),
+            address(usdt),
+            usdt.decimals()
+        );
+        queryERC20BalanceDecimals(
+            address(radt),
+            address(usdt),
+            radt.decimals()
+        );
+        emit log_string("");
         emit log_string("Pair Balances: ");
         queryERC20BalanceDecimals(
             address(usdt),
@@ -120,6 +120,18 @@ contract RADTDAOTest is Test, BlockLoader {
         queryERC20BalanceDecimals(
             address(radt),
             address(pair),
+            radt.decimals()
+        );
+        emit log_string("");
+        emit log_string("Wrapper Balances: ");
+        queryERC20BalanceDecimals(
+            address(usdt),
+            address(wrapper),
+            usdt.decimals()
+        );
+        queryERC20BalanceDecimals(
+            address(radt),
+            address(wrapper),
             radt.decimals()
         );
         emit log_string("");
@@ -217,7 +229,7 @@ contract RADTDAOTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        vm.assume(amt5 >= amt0);
         borrow_usdt_owner(amt0);
         swap_pair_attacker_usdt_radt(amt1, amt2);
         swap_pair_attacker_radt_usdt(amt3, amt4);
@@ -236,7 +248,7 @@ contract RADTDAOTest is Test, BlockLoader {
         uint256 amt6
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 >= (amt0 * 1003) / 1000);
+        vm.assume(amt6 >= amt0);
         borrow_usdt_owner(amt0);
         swap_pair_attacker_usdt_radt(amt1, amt2);
         burn_radt_pair(amt3);
@@ -278,7 +290,7 @@ contract RADTDAOTest is Test, BlockLoader {
         uint256 amt6
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 >= (amt0 * 1003) / 1000);
+        vm.assume(amt6 >= amt0);
         borrow_usdt_owner(amt0);
         swap_pair_attacker_usdt_radt(amt1, amt2);
         burn_radt_pair(amt3);

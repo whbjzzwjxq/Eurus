@@ -75,6 +75,8 @@ class BenchmarkBuilder:
 
         # Will print token_users' initial balances.
         self.token_users = list(self.ctrt_name2cls.keys())
+        self.token_users.remove("router")
+        self.token_users.remove("factory")
 
         # Lender Pool
         self.lend_pools = self.config.lend_pools

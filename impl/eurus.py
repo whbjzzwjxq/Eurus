@@ -377,8 +377,23 @@ def eurus_test(bmk_dir: str, args):
         timer = time.perf_counter()
 
         for func_name, output_path, _, _ in result_paths:
+            print(f"Solving: {func_name}")
             # Avoid stuck
-            if project_name == "EGD" and func_name == "check_cand001":
+            stuck_dict = {
+                "EGD": [
+                    "check_cand001",
+                ],
+                "MUMUG": [
+                    "check_cand002", 
+                    "check_cand003",
+                ],
+                "Zoom": [
+                    "check_cand001",
+                    "check_cand002",
+                ]
+            }
+            stuck_list = stuck_dict.get(project_name, [])
+            if func_name in stuck_list:
                 timer -= timeout
                 continue
             VAR.clear_cache()

@@ -99,10 +99,10 @@ contract ZoomproTest is Test, BlockLoader {
         attackerAddr = address(attacker);
         attacker = address(attackContract);
         // Initialize balances and mock flashloan.
-        zoom.transfer(address(controller), balanceOfzoomcontroller);
-        fusdt.transfer(address(controller), balanceOffusdtcontroller);
         zoom.transfer(address(pair), balanceOfzoompair);
         fusdt.transfer(address(pair), balanceOffusdtpair);
+        zoom.transfer(address(controller), balanceOfzoomcontroller);
+        fusdt.transfer(address(controller), balanceOffusdtcontroller);
         usdt.transfer(address(trader), balanceOfusdttrader);
         zoom.transfer(address(trader), balanceOfzoomtrader);
         fusdt.transfer(address(trader), balanceOffusdttrader);
@@ -170,23 +170,6 @@ contract ZoomproTest is Test, BlockLoader {
             fusdt.decimals()
         );
         emit log_string("");
-        emit log_string("Controller Balances: ");
-        queryERC20BalanceDecimals(
-            address(usdt),
-            address(controller),
-            usdt.decimals()
-        );
-        queryERC20BalanceDecimals(
-            address(zoom),
-            address(controller),
-            zoom.decimals()
-        );
-        queryERC20BalanceDecimals(
-            address(fusdt),
-            address(controller),
-            fusdt.decimals()
-        );
-        emit log_string("");
         emit log_string("Pair Balances: ");
         queryERC20BalanceDecimals(
             address(usdt),
@@ -201,6 +184,23 @@ contract ZoomproTest is Test, BlockLoader {
         queryERC20BalanceDecimals(
             address(fusdt),
             address(pair),
+            fusdt.decimals()
+        );
+        emit log_string("");
+        emit log_string("Controller Balances: ");
+        queryERC20BalanceDecimals(
+            address(usdt),
+            address(controller),
+            usdt.decimals()
+        );
+        queryERC20BalanceDecimals(
+            address(zoom),
+            address(controller),
+            zoom.decimals()
+        );
+        queryERC20BalanceDecimals(
+            address(fusdt),
+            address(controller),
             fusdt.decimals()
         );
         emit log_string("");
@@ -378,7 +378,7 @@ contract ZoomproTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        vm.assume(amt5 >= amt0);
         borrow_usdt_owner(amt0);
         swap_trader_attacker_usdt_zoom(amt1, amt2);
         addliquidity_controller_pair_fusdt_fusdt();

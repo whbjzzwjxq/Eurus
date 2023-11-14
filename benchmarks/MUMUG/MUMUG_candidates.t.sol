@@ -76,9 +76,9 @@ contract MUMUGTest is Test, BlockLoader {
         attackerAddr = address(attacker);
         attacker = address(attackContract);
         // Initialize balances and mock flashloan.
-        mu.transfer(address(mubank), balanceOfmumubank);
         usdce.transfer(address(pair), balanceOfusdcepair);
         mu.transfer(address(pair), balanceOfmupair);
+        mu.transfer(address(mubank), balanceOfmumubank);
     }
 
     modifier eurus() {
@@ -87,14 +87,6 @@ contract MUMUGTest is Test, BlockLoader {
 
     function printBalance(string memory tips) public {
         emit log_string(tips);
-        emit log_string("Usdce Balances: ");
-        queryERC20BalanceDecimals(
-            address(usdce),
-            address(usdce),
-            usdce.decimals()
-        );
-        queryERC20BalanceDecimals(address(mu), address(usdce), mu.decimals());
-        emit log_string("");
         emit log_string("Mu Balances: ");
         queryERC20BalanceDecimals(
             address(usdce),
@@ -103,13 +95,13 @@ contract MUMUGTest is Test, BlockLoader {
         );
         queryERC20BalanceDecimals(address(mu), address(mu), mu.decimals());
         emit log_string("");
-        emit log_string("Mubank Balances: ");
+        emit log_string("Usdce Balances: ");
         queryERC20BalanceDecimals(
             address(usdce),
-            address(mubank),
+            address(usdce),
             usdce.decimals()
         );
-        queryERC20BalanceDecimals(address(mu), address(mubank), mu.decimals());
+        queryERC20BalanceDecimals(address(mu), address(usdce), mu.decimals());
         emit log_string("");
         emit log_string("Pair Balances: ");
         queryERC20BalanceDecimals(
@@ -118,6 +110,14 @@ contract MUMUGTest is Test, BlockLoader {
             usdce.decimals()
         );
         queryERC20BalanceDecimals(address(mu), address(pair), mu.decimals());
+        emit log_string("");
+        emit log_string("Mubank Balances: ");
+        queryERC20BalanceDecimals(
+            address(usdce),
+            address(mubank),
+            usdce.decimals()
+        );
+        queryERC20BalanceDecimals(address(mu), address(mubank), mu.decimals());
         emit log_string("");
         emit log_string("Attacker Balances: ");
         queryERC20BalanceDecimals(
@@ -216,7 +216,7 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        vm.assume(amt5 >= amt0);
         borrow_usdce_owner(amt0);
         swap_pair_attacker_usdce_mu(amt1, amt2);
         swap_pair_attacker_mu_usdce(amt3, amt4);
@@ -234,11 +234,11 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        vm.assume(amt5 >= amt0);
         borrow_usdce_owner(amt0);
-        swap_pair_attacker_usdce_mu(amt1, amt2);
+        swap_mubank_attacker_usdce_mu(amt1, amt2);
         swap_pair_attacker_mu_usdce(amt3, amt4);
-        payback_usdce_pair(amt5);
+        payback_usdce_owner(amt5);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -252,11 +252,11 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 >= (amt0 * 1003) / 1000);
-        borrow_usdce_owner(amt0);
-        swap_mubank_attacker_usdce_mu(amt1, amt2);
-        swap_pair_attacker_mu_usdce(amt3, amt4);
-        payback_usdce_owner(amt5);
+        vm.assume(amt5 >= amt0);
+        borrow_mu_owner(amt0);
+        swap_pair_attacker_mu_usdce(amt1, amt2);
+        swap_pair_attacker_usdce_mu(amt3, amt4);
+        payback_mu_owner(amt5);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -267,14 +267,17 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3,
         uint256 amt4,
-        uint256 amt5
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 >= (amt0 * 1003) / 1000);
-        borrow_usdce_owner(amt0);
-        swap_mubank_attacker_usdce_mu(amt1, amt2);
-        swap_pair_attacker_mu_usdce(amt3, amt4);
-        payback_usdce_pair(amt5);
+        vm.assume(amt7 >= amt0);
+        borrow_mu_owner(amt0);
+        swap_pair_attacker_mu_usdce(amt1, amt2);
+        swap_pair_attacker_usdce_mu(amt3, amt4);
+        swap_mubank_attacker_usdce_mu(amt5, amt6);
+        payback_mu_owner(amt7);
         assert(!attackGoal());
         vm.stopPrank();
     }
@@ -288,43 +291,7 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 >= (amt0 * 1003) / 1000);
-        borrow_mu_owner(amt0);
-        swap_pair_attacker_mu_usdce(amt1, amt2);
-        swap_pair_attacker_usdce_mu(amt3, amt4);
-        payback_mu_owner(amt5);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand005(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt5 >= (amt0 * 1003) / 1000);
-        borrow_mu_owner(amt0);
-        swap_pair_attacker_mu_usdce(amt1, amt2);
-        swap_pair_attacker_usdce_mu(amt3, amt4);
-        payback_mu_pair(amt5);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand006(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        vm.assume(amt5 >= amt0);
         borrow_mu_owner(amt0);
         swap_pair_attacker_mu_usdce(amt1, amt2);
         swap_mubank_attacker_usdce_mu(amt3, amt4);
@@ -356,7 +323,7 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        vm.assume(amt5 >= amt0);
         borrow_mu_owner(amt0);
         swap_pair_attacker_mu_usdce(amt1, amt2);
         swap_mubank_attacker_usdce_mu(amt3, amt4);

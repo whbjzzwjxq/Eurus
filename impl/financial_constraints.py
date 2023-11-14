@@ -467,7 +467,7 @@ def gen_SGZ_swap_pair_sgz_sgz_usdt():
         lambda s: s.get(allAmount) == s.get(old_bal_sgz),
         lambda s: s.get(canswap) == s.get(old_bal_sgz) / 6 * 5,
         *gen_summary_uniswap("pair", "sgz", "sgz", "sgz", "usdt", canswap, amtOut),
-        gen_summary_getAmountsOut(canswap, amtOut, old_balIn_pair, old_balOut_pair),
+        *gen_summary_getAmountsOut(canswap, amtOut, old_balIn_pair, old_balOut_pair),
     ]
     return constraints
 

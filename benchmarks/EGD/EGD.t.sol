@@ -115,30 +115,6 @@ contract EGDTest is Test, BlockLoader {
         );
         queryERC20BalanceDecimals(address(egd), address(pair), egd.decimals());
         emit log_string("");
-        emit log_string("Factory Balances: ");
-        queryERC20BalanceDecimals(
-            address(usdt),
-            address(factory),
-            usdt.decimals()
-        );
-        queryERC20BalanceDecimals(
-            address(egd),
-            address(factory),
-            egd.decimals()
-        );
-        emit log_string("");
-        emit log_string("Router Balances: ");
-        queryERC20BalanceDecimals(
-            address(usdt),
-            address(router),
-            usdt.decimals()
-        );
-        queryERC20BalanceDecimals(
-            address(egd),
-            address(router),
-            egd.decimals()
-        );
-        emit log_string("");
         emit log_string("Egdstaking Balances: ");
         queryERC20BalanceDecimals(
             address(usdt),

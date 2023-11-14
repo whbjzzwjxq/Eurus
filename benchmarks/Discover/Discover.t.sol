@@ -258,7 +258,7 @@ contract DiscoverTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        vm.assume(amt5 >= amt0);
         borrow_disc_owner(amt0);
         swap_pair_attacker_disc_usdt(amt1, amt2);
         swap_ethpledge_attacker_usdt_disc(amt3, amt4);

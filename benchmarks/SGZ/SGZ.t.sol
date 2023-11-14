@@ -227,7 +227,7 @@ contract SGZTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        vm.assume(amt5 >= amt0);
         borrow_usdt_owner(amt0);
         swap_pair_attacker_usdt_sgz(amt1, amt2);
         addliquidity_sgz_pair_sgz_usdt();

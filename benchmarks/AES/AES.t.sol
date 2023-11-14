@@ -92,6 +92,10 @@ contract AESTest is Test, BlockLoader {
 
     function printBalance(string memory tips) public {
         emit log_string(tips);
+        emit log_string("Aes Balances: ");
+        queryERC20BalanceDecimals(address(usdt), address(aes), usdt.decimals());
+        queryERC20BalanceDecimals(address(aes), address(aes), aes.decimals());
+        emit log_string("");
         emit log_string("Usdt Balances: ");
         queryERC20BalanceDecimals(
             address(usdt),
@@ -99,10 +103,6 @@ contract AESTest is Test, BlockLoader {
             usdt.decimals()
         );
         queryERC20BalanceDecimals(address(aes), address(usdt), aes.decimals());
-        emit log_string("");
-        emit log_string("Aes Balances: ");
-        queryERC20BalanceDecimals(address(usdt), address(aes), usdt.decimals());
-        queryERC20BalanceDecimals(address(aes), address(aes), aes.decimals());
         emit log_string("");
         emit log_string("Pair Balances: ");
         queryERC20BalanceDecimals(

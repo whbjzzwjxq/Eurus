@@ -148,19 +148,6 @@ contract OneRingTest is Test, BlockLoader {
             vault.decimals()
         );
         emit log_string("");
-        emit log_string("Vault Balances: ");
-        queryERC20BalanceDecimals(
-            address(usdce),
-            address(vault),
-            usdce.decimals()
-        );
-        queryERC20BalanceDecimals(address(mim), address(vault), mim.decimals());
-        queryERC20BalanceDecimals(
-            address(vault),
-            address(vault),
-            vault.decimals()
-        );
-        emit log_string("");
         emit log_string("Strategy Balances: ");
         queryERC20BalanceDecimals(
             address(usdce),
@@ -175,6 +162,19 @@ contract OneRingTest is Test, BlockLoader {
         queryERC20BalanceDecimals(
             address(vault),
             address(strategy),
+            vault.decimals()
+        );
+        emit log_string("");
+        emit log_string("Vault Balances: ");
+        queryERC20BalanceDecimals(
+            address(usdce),
+            address(vault),
+            usdce.decimals()
+        );
+        queryERC20BalanceDecimals(address(mim), address(vault), mim.decimals());
+        queryERC20BalanceDecimals(
+            address(vault),
+            address(vault),
             vault.decimals()
         );
         emit log_string("");
@@ -363,24 +363,6 @@ contract OneRingTest is Test, BlockLoader {
     }
 
     function check_cand004(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt5 >= amt0);
-        borrow_usdce_pair(amt0);
-        swap_pair_attacker_usdce_mim(amt1, amt2);
-        swap_pair_attacker_mim_usdce(amt3, amt4);
-        payback_usdce_pair(amt5);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand005(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,

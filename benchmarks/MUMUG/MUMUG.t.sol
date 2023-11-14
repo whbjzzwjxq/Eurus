@@ -76,9 +76,9 @@ contract MUMUGTest is Test, BlockLoader {
         attackerAddr = address(attacker);
         attacker = address(attackContract);
         // Initialize balances and mock flashloan.
-        mu.transfer(address(mubank), balanceOfmumubank);
         usdce.transfer(address(pair), balanceOfusdcepair);
         mu.transfer(address(pair), balanceOfmupair);
+        mu.transfer(address(mubank), balanceOfmumubank);
     }
 
     modifier eurus() {
@@ -87,14 +87,6 @@ contract MUMUGTest is Test, BlockLoader {
 
     function printBalance(string memory tips) public {
         emit log_string(tips);
-        emit log_string("Usdce Balances: ");
-        queryERC20BalanceDecimals(
-            address(usdce),
-            address(usdce),
-            usdce.decimals()
-        );
-        queryERC20BalanceDecimals(address(mu), address(usdce), mu.decimals());
-        emit log_string("");
         emit log_string("Mu Balances: ");
         queryERC20BalanceDecimals(
             address(usdce),
@@ -103,13 +95,13 @@ contract MUMUGTest is Test, BlockLoader {
         );
         queryERC20BalanceDecimals(address(mu), address(mu), mu.decimals());
         emit log_string("");
-        emit log_string("Mubank Balances: ");
+        emit log_string("Usdce Balances: ");
         queryERC20BalanceDecimals(
             address(usdce),
-            address(mubank),
+            address(usdce),
             usdce.decimals()
         );
-        queryERC20BalanceDecimals(address(mu), address(mubank), mu.decimals());
+        queryERC20BalanceDecimals(address(mu), address(usdce), mu.decimals());
         emit log_string("");
         emit log_string("Pair Balances: ");
         queryERC20BalanceDecimals(
@@ -118,6 +110,14 @@ contract MUMUGTest is Test, BlockLoader {
             usdce.decimals()
         );
         queryERC20BalanceDecimals(address(mu), address(pair), mu.decimals());
+        emit log_string("");
+        emit log_string("Mubank Balances: ");
+        queryERC20BalanceDecimals(
+            address(usdce),
+            address(mubank),
+            usdce.decimals()
+        );
+        queryERC20BalanceDecimals(address(mu), address(mubank), mu.decimals());
         emit log_string("");
         emit log_string("Attacker Balances: ");
         queryERC20BalanceDecimals(
@@ -230,7 +230,7 @@ contract MUMUGTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt5 >= (amt0 * 1003) / 1000);
+        vm.assume(amt5 >= amt0);
         borrow_mu_owner(amt0);
         swap_pair_attacker_mu_usdce(amt1, amt2);
         swap_mubank_attacker_usdce_mu(amt3, amt4);
