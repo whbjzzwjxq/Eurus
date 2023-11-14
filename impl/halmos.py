@@ -1245,7 +1245,7 @@ def exec_halmos(*arg_strs) -> MainResult:
 
         result = MainResult(0, test_results_map)
 
-        if args.json_output and not args.solver_only_dump:
+        if args.json_output:
             with open(args.json_output, "w") as json_file:
                 json.dump(asdict(result), json_file, indent=4)
 

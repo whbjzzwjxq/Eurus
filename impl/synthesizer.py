@@ -81,8 +81,6 @@ class Synthesizer:
     def __init__(self, bmk_dir: str, record: dict = None) -> None:
         self.config: Config = init_config(bmk_dir)
         self.sli = gen_slither(bmk_dir)
-        test_ctrt_name = f"{self.config.project_name}Test"
-        self.test_ctrt = self.sli.get_contract_from_name(test_ctrt_name)[0]
         self.candidates: List[Sketch] = []
         self.candidates_signs: Set[str] = set()
         actions = [init_action_from_list(a, True) for a in self.config.groundtruth]
@@ -95,6 +93,9 @@ class Synthesizer:
         self.timecost: float = 0
         self.func_summarys: Dict[str, AFLAction] = {}
         self.candidates: List[Sketch] = []
+        suffix = "TestBase"
+        test_ctrt_name = f"{self.config.project_name}{suffix}"
+        self.test_ctrt = self.sli.get_contract_from_name(test_ctrt_name)[0]
         if record is None:
             timer = time.perf_counter()
             self.candidates = self._infer_candidates()

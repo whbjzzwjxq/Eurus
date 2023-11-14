@@ -10,7 +10,7 @@ import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
 
-contract BXHTest is Test, BlockLoader {
+contract BXHTestBase is Test, BlockLoader {
     BXH bxh;
     USDT usdt;
     UniswapV2Pair pair;
@@ -116,30 +116,6 @@ contract BXHTest is Test, BlockLoader {
             usdt.decimals()
         );
         queryERC20BalanceDecimals(address(bxh), address(pair), bxh.decimals());
-        emit log_string("");
-        emit log_string("Factory Balances: ");
-        queryERC20BalanceDecimals(
-            address(usdt),
-            address(factory),
-            usdt.decimals()
-        );
-        queryERC20BalanceDecimals(
-            address(bxh),
-            address(factory),
-            bxh.decimals()
-        );
-        emit log_string("");
-        emit log_string("Router Balances: ");
-        queryERC20BalanceDecimals(
-            address(usdt),
-            address(router),
-            usdt.decimals()
-        );
-        queryERC20BalanceDecimals(
-            address(bxh),
-            address(router),
-            bxh.decimals()
-        );
         emit log_string("");
         emit log_string("Bxhstaking Balances: ");
         queryERC20BalanceDecimals(

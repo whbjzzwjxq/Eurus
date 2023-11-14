@@ -11,7 +11,7 @@ import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
 
-contract OneRingTest is Test, BlockLoader {
+contract OneRingTestBase is Test, BlockLoader {
     USDCE usdce;
     MIM mim;
     UniswapV2Pair pair;

@@ -9,7 +9,7 @@ import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
 import {WBNB} from "@utils/WBNB.sol";
 
-contract ShadowFiTest is Test, BlockLoader {
+contract ShadowFiTestBase is Test, BlockLoader {
     ShadowFi sdf;
     WBNB wbnb;
     UniswapV2Pair pair;

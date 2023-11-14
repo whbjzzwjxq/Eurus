@@ -9,7 +9,7 @@ import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
 import {WBNB} from "@utils/WBNB.sol";
 
-contract BGLDTest is Test, BlockLoader {
+contract BGLDTestBase is Test, BlockLoader {
     BGLD bgld;
     WBNB wbnb;
     UniswapV2Pair pair;

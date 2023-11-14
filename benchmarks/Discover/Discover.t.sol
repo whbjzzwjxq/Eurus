@@ -10,7 +10,7 @@ import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
 
-contract DiscoverTest is Test, BlockLoader {
+contract DiscoverTestBase is Test, BlockLoader {
     USDT usdt;
     Discover disc;
     UniswapV2Pair pair;

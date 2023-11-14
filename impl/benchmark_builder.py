@@ -174,8 +174,8 @@ class BenchmarkBuilder:
         all = [license, pragma, *imports]
         return all
 
-    def gen_contract_header(self) -> List[str]:
-        return [f"contract {self.name}Test is Test, BlockLoader " + "{"]
+    def gen_contract_header(self, suffix: str) -> List[str]:
+        return [f"contract {self.name}{suffix} is Test, BlockLoader " + "{"]
 
     def gen_state_varibles(self) -> List[str]:
         contract_interfaces = []
@@ -350,7 +350,7 @@ class BenchmarkBuilder:
     def output(self, output_path: str):
         results = [
             *self.gen_imports(),
-            *self.gen_contract_header(),
+            *self.gen_contract_header("TestBase"),
             *self.gen_state_varibles(),
             *self.gen_setup(),
             *self.gen_helper_funcs(),
@@ -372,7 +372,7 @@ class BenchmarkBuilder:
             func_bodys.extend(c.output(func_name, self.extra_statements))
         results = [
             *self.gen_imports(),
-            *self.gen_contract_header(),
+            *self.gen_contract_header("Test"),
             *self.gen_state_varibles(),
             *self.gen_setup(),
             *self.gen_helper_funcs(),
@@ -388,11 +388,12 @@ class BenchmarkBuilder:
         return self.synthesizer.candidates, self.synthesizer.timecost
 
     def output_verify(self, verifiers: List[Tuple[str, Sketch, List[List[str]]]], output_path: str):
+        suffix = "Test"
         results = [
             "// SPDX-License-Identifier: MIT",
             "pragma solidity ^0.8.10;",
-            f'import "./{self.name}.t.sol";',
-            f"contract {self.name}Verify is {self.name}Test" + "{",
+            f'import "./{self.name}_candidates.t.sol";',
+            f"contract {self.name}Verify is {self.name}{suffix}" + "{",
         ]
         for func_name, candidate, arg_candidates in verifiers:
             if len(arg_candidates) == 0:

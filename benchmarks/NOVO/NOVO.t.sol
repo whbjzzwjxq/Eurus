@@ -9,7 +9,7 @@ import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
 import {WBNB} from "@utils/WBNB.sol";
 
-contract NOVOTest is Test, BlockLoader {
+contract NOVOTestBase is Test, BlockLoader {
     WBNB wbnb;
     NOVO novo;
     UniswapV2Pair pair;

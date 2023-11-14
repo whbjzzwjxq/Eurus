@@ -51,13 +51,6 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "-fo",
-    "--forge",
-    help="Do Foundry fuzzing test.",
-    action="store_true",
-)
-
-parser.add_argument(
     "-ha",
     "--halmos",
     help="Do Halmos symbolic execution.",
@@ -75,13 +68,6 @@ parser.add_argument(
     "-s",
     "--statistic",
     help="Print statistic.",
-    action="store_true",
-)
-
-parser.add_argument(
-    "-c",
-    "--clean",
-    help="Clean the cache.",
     action="store_true",
 )
 
@@ -134,11 +120,6 @@ parser.add_argument(
         "All",
         "Models",
         "None",
-        "DataDepDiv",
-        "CtrlDepDiv",
-        "DataDepOnly",
-        "CtrlDepOnly",
-        "HackFirstDev",
     ],
     default="All",
 )
@@ -274,10 +255,9 @@ def halmos_test(
 ):
     timeout: int = args.timeout
     only_gt: bool = args.gt
-    smtdiv: str = args.smtdiv
+    smtdiv: str = "Models"
     start: int = args.start
     end: int = args.end
-    print_only: bool = args.printsmt
     suffix_spec: str = args.suffix
     builder = BenchmarkBuilder(bmk_dir)
     synthesizer = builder.synthesizer
@@ -288,25 +268,7 @@ def halmos_test(
 
     result_paths = result_paths[start:end]
 
-    for func_name, output_path, err_path, smt_folder in result_paths:
-        if not print_only and (path.exists(output_path) or path.exists(err_path)):
-            print(f"Previous result is here, {func_name} had been tested!")
-            continue
-        extra_halmos_options = [
-            f"--smtdiv={smtdiv}",
-            "--dump-smt-queries",
-            smt_folder,
-        ]
-        if print_only:
-            extra_halmos_options = [
-                *extra_halmos_options,
-                "--solver-only-dump",
-            ]
-        if args.unsat_core:
-            extra_halmos_options.append(
-                "--unsat-core",
-            )
-
+    for func_name, output_path, _, _ in result_paths:
         args = [
             "-vvvvv",
             "--function",
@@ -318,14 +280,12 @@ def halmos_test(
             "--forge-build-out",
             ".cache",
             "--print-potential-counterexample",
-            # Use default setting.
-            # "--solver-timeout-branching",
-            # "100000",
             "--solver-timeout-assertion",
-            f"{timeout * 1000}",
+            # Give 4 times timeout for Halmos
+            f"{timeout * 4 * 1000}",
             "--json-output",
             output_path,
-            *extra_halmos_options,
+            "--unsat-core",
         ]
         print(" ".join(args))
         exec_halmos(*args)
