@@ -808,21 +808,6 @@ contract BXHStaking is Ownable, ReentrancyGuard {
         );
 
         depositIToken(_pid, _amount, msg.sender);
-
-        // Hardcode of the call of depositIToken
-        // uint256 pendingAmount = 15.24 ether;
-        // uint256 amountTokenOut = 0;
-        // uint256 _fee = 0;
-        // (uint112 _reserve0, uint112 _reserve1, ) = IUniswapV2Pair(_pair).getReserves();
-        // address rewardToken;
-        // if(IUniswapV2Pair(_pair).token0() == address(iToken)){
-        //     amountTokenOut = getAmountOut(pendingAmount , _reserve0, _reserve1, _fee);
-        //     rewardToken = IUniswapV2Pair(_pair).token1();
-        // } else {
-        //     amountTokenOut = getAmountOut(pendingAmount , _reserve1, _reserve0, _fee);
-        //     rewardToken = IUniswapV2Pair(_pair).token0();
-        // }
-        // IERC20(rewardToken).transfer(msg.sender, amountTokenOut);
     }
 
     function depositIToken(
