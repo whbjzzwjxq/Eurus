@@ -19,9 +19,9 @@ ctrt_name2deploy:
       "bxhstaking",
       "new BXHStaking(
       address(bxh),
-      1 ether, 
-      block.timestamp, 
-      1000, 
+      1 ether,
+      block.timestamp,
+      1000,
       owner,
       address(usdt),
       address(pair)
@@ -29,22 +29,28 @@ ctrt_name2deploy:
     ]
 
 extra_actions:
-  - "function withdraw_bxhstaking_bxh(uint256 amount) internal {
+  - "function deposit_bxhstaking_bxh_bxhslp(uint256 amount) internal eurus {
+    bxh.approve(address(bxhstaking), amount);
     bxhstaking.deposit(0, amount);
     }"
 
+  - "function withdraw_bxhstaking_bxhslp_usdt(uint256 amount) internal eurus {
+    bxhstaking.deposit(0, 0);
+    }"
+
 extra_deployments:
-  - "bxh.transfer(address(bxhstaking), 200000 ether);"
+  - "usdt.transfer(address(bxhstaking), 200000 ether);"
 extra_statements: []
 
 attack_goal_str: "usdt"
 
 groundtruth:
-  - ["borrow", "owner", "usdt", "3110000e18"]
-  - ["swap", "pair", "usdt", "bxh", "usdt.balanceOf(attacker)"]
-  - ["transaction", "bxhstaking", "bxh", "0"]
-  - ["swap", "pair", "bxh", "usdt", "bxh.balanceOf(attacker)"]
-  - ["payback", "owner", "usdt", "3110000e18 * 1003 / 1000"]
+  - ["borrow", "usdt", "owner", "3110000e18"]
+  - ["swap", "pair", "attacker", "usdt", "bxh", "3110000e18", "pair.getAmountOut(3110000e18, address(usdt))"]
+  - ["deposit", "bxhstaking", "bxh", "bxhslp", "5582e18"]
+  - ["withdraw", "bxhstaking", "bxhslp", "usdt", "0"]
+  - ["swap", "pair", "attacker", "bxh", "usdt", "bxh.balanceOf(attacker)", "pair.getAmountOut(bxh.balanceOf(attacker), address(bxh))"]
+  - ["payback", "usdt", "owner", "3110000e18 * 1003 / 1000"]
 
 # Information for search space building.
 roles:
@@ -58,7 +64,8 @@ roles:
     is_stablecoin: false
   "pair":
     is_swappair: true
-    uniswap_order: ["usdt", "bxh"]
+    is_uniswap: true
+    token_pair: ["usdt", "bxh"]
     support_swaps:
       "usdt": ["bxh", "usdt"]
       "bxh": ["bxh", "usdt"]
@@ -69,5 +76,8 @@ roles:
   "bxhstaking":
     is_defientry: true
     hacked_assets: ["bxh"]
+
+  "bxhslp":
+    is_asset: true
 
 pattern: "BuySell Manipulation"

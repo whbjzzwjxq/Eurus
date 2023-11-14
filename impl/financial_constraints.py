@@ -282,22 +282,52 @@ def gen_NMB_transaction_gnimbstaking_gnimb():
     return [*reward_summary, *transfer_summary]
 
 
-def gen_BXH_transaction_bxhstaking_bxh():
-    balances_bxh_pair = f"old_bxh.balanceOf(pair)"
-    balances_usdt_pair = f"old_usdt.balanceOf(pair)"
-    amount_in = "amtIn"
-    amount_out = "amtOut"
+def gen_BXH_deposit_bxhstaking_bxh_bxhslp():
+    attacker = "attacker"
+    bxhstaking = "bxhstaking"
+    bxh = "bxh"
 
-    reward_base_amount = [lambda s: 15.24 == s.get(amount_in)]
+    user_amount = "bxhstaking.user_amount"
+    user_rewardDebt = "bxhstaking.user_rewardDebt"
+    pool_accITokenPerShare = "bxhstaking.pool_accITokenPerShare"
 
-    #
-    reward_amount = gen_summary_getAmountsOut(amount_in, amount_out, balances_bxh_pair, balances_usdt_pair)
+    amtIn = "arg_0"
 
-    reward_summary = [*reward_base_amount, *reward_amount]
+    constraints = [
+        *gen_summary_transfer(attacker, bxhstaking, bxh, amtIn),
+        lambda s: s.get(f"new_{user_amount}") == s.get(f"old_{user_amount}") + s.get(amtIn),
+        lambda s: s.get(f"new_{user_rewardDebt}")
+        == s.get(f"new_{user_amount}") * s.get(f"old_{pool_accITokenPerShare}") / 1e12,
+        lambda s: s.get(f"old_{pool_accITokenPerShare}") == 302134620363430811000011,
+    ]
 
-    transfer_summary0 = gen_summary_transfer("bxhstaking", "attacker", "usdt", amount_out)
-    transfer_summary1 = gen_summary_transfer("attacker", "bxhstaking", "bxh", amount_in)
-    return [*reward_summary, *transfer_summary0, *transfer_summary1]
+    return constraints
+
+
+def gen_BXH_withdraw_bxhstaking_bxhslp_usdt():
+    attacker = "attacker"
+    bxhstaking = "bxhstaking"
+    usdt = "usdt"
+    reserveIn = f"old_bxh.balanceOf(pair)"
+    reserveOut = f"old_usdt.balanceOf(pair)"
+
+    pendingAmount = "pendingAmount"
+    pendingAmount1 = "pendingAmount1"
+
+    user_amount = "bxhstaking.user_amount"
+    user_rewardDebt = "bxhstaking.user_rewardDebt"
+    pool_accITokenPerShare = "bxhstaking.pool_accITokenPerShare"
+
+    constraints = [
+        lambda s: s.get(f"new_{pool_accITokenPerShare}") == s.get(f"old_{pool_accITokenPerShare}") + 1e12 * 5 / 1000,
+        lambda s: s.get(pendingAmount)
+        == s.get(f"old_{user_amount}") * s.get(f"new_{pool_accITokenPerShare}") / 1e12
+        - s.get(f"old_{user_rewardDebt}"),
+        *gen_summary_getAmountsOut(pendingAmount, pendingAmount1, reserveIn, reserveOut),
+        *gen_summary_transfer(bxhstaking, attacker, usdt, pendingAmount1),
+        # Others are ignored.
+    ]
+    return constraints
 
 
 def gen_BGLD_burn_bgld_pair():
@@ -626,27 +656,21 @@ def gen_EGD_deposit_egdstaking_usdt_egdslp():
     new_claimTime = "new_egdstaking.user_claimTime"
 
     constraints = [
-
         # Transfer
         *gen_summary_getAmountsOut(amountSub0, amountOut0, old_balIn_pair, old_balOut_pair),
         lambda s: s.get(amountSub0) == s.get(amount) * 70 / 100,
-
         # Give all amount USDT out.
         *gen_summary_burn(attacker, usdt, amount),
-
         # For pair
         *gen_summary_mint(pair, usdt, amountSub0),
         *gen_summary_burn(pair, egd, amountOut0),
-
         # For egdstaking
         *gen_summary_mint(egdstaking, egd, amountOut0),
-
         # Reward
         lambda s: s.get(tempRate) == 383,
         lambda s: s.get(new_rates) == s.get(amount) * s.get(tempRate) / 100000 / 86400,
         lambda s: s.get(new_claimTime) == s.get("old_block.timestamp"),
         lambda s: s.get("new_block.timestamp") == s.get("old_block.timestamp") + 54,
-
         # Utils, unmeaningful
         lambda s: s.get(old_claimTime) == 0,
         lambda s: s.get(old_rates) == 0,
@@ -686,7 +710,8 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "transaction_gnimbstaking_gnimb": gen_NMB_transaction_gnimbstaking_gnimb(),
     },
     "BXH": {
-        "transaction_bxhstaking_bxh": gen_BXH_transaction_bxhstaking_bxh(),
+        "deposit_bxhstaking_bxh_bxhslp": gen_BXH_deposit_bxhstaking_bxh_bxhslp(),
+        "withdraw_bxhstaking_bxhslp_usdt": gen_BXH_withdraw_bxhstaking_bxhslp_usdt(),
     },
     "BGLD": {
         "swap_pair_attacker_wbnb_bgld": gen_BGLD_swap_pair_attacker_wbnb_bgld(),
@@ -747,13 +772,8 @@ def gen_ShadowFi_refinement():
 
 
 def gen_BXH_refinement():
-    return [
-        {
-            "transaction_bxhstaking_bxh": [
-                lambda s: s.get("amtIn") == 0,
-            ]
-        }
-    ]
+    return []
+
 
 def gen_EGD_refinement():
     return [
@@ -766,7 +786,7 @@ def gen_EGD_refinement():
             "swap_pair_attacker_egd_usdt": [
                 lambda s: s.get("arg_1") >= 1 / SCALE,
             ]
-        }
+        },
     ]
 
 

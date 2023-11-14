@@ -1,0 +1,29 @@
+{
+    "test_results": {
+        "./benchmarks/BXH": [
+            {
+                "name": "check_cand003",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x186fa9be4c3ce300000000",
+                        "p_amt1_uint256": "0x186fa9bddc8d8400000000",
+                        "p_amt2_uint256": "0x1fbee2c5363fbe000000",
+                        "p_amt3_uint256": "0x43296c7c4a7170000",
+                        "p_amt4_uint256": "0xde0b6b3a7640000",
+                        "p_amt5_uint256": "0x1f997844f8d4c4000000",
+                        "p_amt6_uint256": "0x186f9b31bee67900000000",
+                        "p_amt7_uint256": "0x18826e17b3739000000000"
+                    }
+                ],
+                "time": [
+                    0.04535887500969693,
+                    0,
+                    0.04535887500969693
+                ],
+                "feasible": false,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

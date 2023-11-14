@@ -85,6 +85,7 @@ class TFGManager:
         self.tokens = tokens
         self.accounts = accounts
         self.func_summarys = func_summarys
+        self.func_sigs = {f.func_sig for f in self.func_summarys}
         self.attack_goal = attack_goal
         for a in accounts:
             sub_graph = TFG(a)
@@ -147,11 +148,15 @@ class TFGManager:
         # Heuristics
         new_sketches = []
         actions = sketch.pure_actions
+        attacker_got_tokens = set()
         for i, cur_a in enumerate(actions):
             if i == 0:
                 continue
             last_a = actions[i-1]
+            # Price manipulation
             if cur_a.action_name == "swap":
+                if cur_a.account == "attacker":
+                    attacker_got_tokens.add(cur_a.token1)
                 if last_a.action_name == "swap" and last_a.swap_pair == cur_a.swap_pair:
                     read_vars, _ = extract_rw_vars(cur_a.constraints)
                     # The balance of acction doesn't influence the price.
@@ -165,7 +170,11 @@ class TFGManager:
                             new_sketch = [*actions]
                             new_sketch.insert(i, f)
                             new_sketches.append(Sketch(new_sketch).symbolic_copy())
+
+            # Price manipulation
             if cur_a.action_name == "withdraw":
+                if cur_a.account == "attacker":
+                    attacker_got_tokens.add(cur_a.token1)
                 if last_a.action_name == "deposit" and last_a.defi == cur_a.defi:
                     read_vars, _ = extract_rw_vars(cur_a.constraints)
                     # The balance of acction doesn't influence the price.
@@ -188,7 +197,26 @@ class TFGManager:
                                 new_sketch = [*actions]
                                 new_sketch.insert(i, f)
                                 new_sketches.append(Sketch(new_sketch).symbolic_copy())
-                        
+
+            if cur_a.action_name == "deposit":
+                if cur_a.account == "attacker":
+                    attacker_got_tokens.add(cur_a.token1)
+            
+            # Token distribution
+            if cur_a.action_name == "payback":
+                payback_token = cur_a.token0
+                attacker_got_tokens.remove(payback_token)
+                for t in attacker_got_tokens:
+                    for f in self.func_summarys:
+                        if not f.action_name == "swap":
+                            continue
+                        if not (f.token0 == t and f.token1 == payback_token):
+                            continue
+                        if f.func_sig in sketch.func_sigs:
+                            continue
+                        new_sketch = [*actions]
+                        new_sketch.insert(i, f)
+                        new_sketches.append(Sketch(new_sketch).symbolic_copy())
         return new_sketches
 
     def gen_candidates(self):
