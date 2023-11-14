@@ -363,10 +363,6 @@ def run(
     if args.verbose >= 1:
         print(f"Executing {funname}")
 
-    bmk_dir = args.bmk_dir
-    builder = BenchmarkBuilder(bmk_dir)
-    synthesizer = builder.synthesizer
-
     #
     # calldata
     #
@@ -490,8 +486,6 @@ def run(
             models.append(res)
             model = res.model
             if model is not None:
-                timer.pause()
-                models_timer.pause()
                 arg_candidates = [
                     model.get(f"p_amt{j}_uint256", "") for j in range(len(model))
                 ]
@@ -499,8 +493,6 @@ def run(
                 sketch = builder.get_sketch_by_func_name(func_name)
                 verifier = [(func_name, sketch, [arg_candidates])]
                 feasiable = verify_model(bmk_dir, verifier)
-                timer.resume()
-                models_timer.resume()
                 if feasiable:
                     break
 
@@ -1201,8 +1193,6 @@ def exec_halmos(*arg_strs) -> MainResult:
     # collect run arguments
     #
 
-    test_results_map = {}
-
     for build_out_map, filename, contract_name in build_output_iterator(build_out):
         if args.contract and args.contract != contract_name:
             continue
@@ -1239,14 +1229,14 @@ def exec_halmos(*arg_strs) -> MainResult:
             libs,
         )
 
-        test_results = run_sequential(run_args)
+        yield run_sequential(run_args)
 
-        test_results_map[contract_path] = test_results
+        # test_results_map[contract_path] = test_results
 
-        result = MainResult(0, test_results_map)
+        # result = MainResult(0, test_results_map)
 
-        if args.json_output:
-            with open(args.json_output, "w") as json_file:
-                json.dump(asdict(result), json_file, indent=4)
+        # if args.json_output:
+        #     with open(args.json_output, "w") as json_file:
+        #         json.dump(asdict(result), json_file, indent=4)
 
-        return result
+        # return result

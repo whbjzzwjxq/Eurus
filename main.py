@@ -255,7 +255,6 @@ def halmos_test(
 ):
     timeout: int = args.timeout
     only_gt: bool = args.gt
-    smtdiv: str = "Models"
     start: int = args.start
     end: int = args.end
     suffix_spec: str = args.suffix
@@ -264,7 +263,7 @@ def halmos_test(
     project_name = resolve_project_name(bmk_dir)
     _, result_path = prepare_subfolder(bmk_dir)
 
-    result_paths = gen_result_paths(result_path, only_gt, smtdiv, len(synthesizer.candidates), suffix_spec)
+    result_paths = gen_result_paths(result_path, only_gt, "halmos", len(synthesizer.candidates), suffix_spec)
 
     result_paths = result_paths[start:end]
 
@@ -285,7 +284,8 @@ def halmos_test(
             f"{timeout * 4 * 1000}",
             "--json-output",
             output_path,
-            "--unsat-core",
+            "--smtdiv",
+            "Models",
         ]
         print(" ".join(args))
         exec_halmos(*args)
