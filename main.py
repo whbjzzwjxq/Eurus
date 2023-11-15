@@ -16,6 +16,7 @@ from impl.utils import (
 )
 from impl.verifier import verify_model
 from impl.halmos import exec_halmos
+from impl.ityfuzz import ityfuzz_test
 
 parser = argparse.ArgumentParser()
 
@@ -90,7 +91,7 @@ parser.add_argument(
     "--timeout",
     help="Set the timeout for each sketch.",
     type=int,
-    default=100,
+    default=1800 * 1000,
 )
 
 parser.add_argument(
@@ -281,7 +282,7 @@ def halmos_test(
             "--print-potential-counterexample",
             "--solver-timeout-assertion",
             # 20 times for each path in Halmos
-            f"{timeout * 20 * 1000}",
+            f"{timeout}",
             "--json-output",
             output_path,
             "--smtdiv",
@@ -305,6 +306,8 @@ def _main():
             eurus_test(bmk_dir, args)
         if args.halmos:
             halmos_test(bmk_dir, args)
+        if args.fuzz:
+            ityfuzz_test(bmk_dir, args)
         if args.verify:
             verify_result(bmk_dir, args.gt, args.smtdiv, args.verify_result_path, args.suffix)
 

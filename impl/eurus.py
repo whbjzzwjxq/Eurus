@@ -267,7 +267,7 @@ def setup_solver(timeout: int):
     # timeout is counted as seconds.
     if Z3_OR_GB:
         solver = Solver()
-        solver.set(timeout=timeout * 1000)
+        solver.set(timeout=timeout)
         solver.set(unsat_core=True)
     else:
         solver = gp.Model()
@@ -379,23 +379,18 @@ def eurus_test(bmk_dir: str, args):
         for func_name, output_path, _, _ in result_paths:
             print(f"Solving: {func_name}")
             # Avoid stuck
-            # stuck_dict = {
-            #     "EGD": [
-            #         "check_cand001",
-            #     ],
-            #     "MUMUG": [
-            #         "check_cand002", 
-            #         "check_cand003",
-            #     ],
-            #     "Zoom": [
-            #         "check_cand001",
-            #         "check_cand002",
-            #     ]
-            # }
-            # stuck_list = stuck_dict.get(project_name, [])
-            # if func_name in stuck_list:
-            #     timer -= timeout
-            #     continue
+            stuck_dict = {
+                "EGD": [
+                    "check_cand001",
+                ],
+                "MUMUG": [
+                    "check_cand003",
+                ],
+            }
+            stuck_list = stuck_dict.get(project_name, [])
+            if func_name in stuck_list:
+                timer -= timeout
+                continue
             VAR.clear_cache()
             solver = setup_solver(timeout)
             origin_sketch = builder.get_sketch_by_func_name(func_name, synthesizer.candidates)
