@@ -505,7 +505,7 @@ def run(
                 models_timer.resume()
                 if feasiable:
                     timer.stop()
-                    timecost = timer.elapsed
+                    timecost = timer.elapsed()
                     new_record = {
                         f"eurus_{args.suffix}_solve_timecost": timecost,
                         f"eurus_{args.suffix}_all_timecost": timecost + builder.synthesizer.timecost,
