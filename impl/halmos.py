@@ -495,7 +495,7 @@ def run(
                     model.get(f"p_amt{j}_uint256", "") for j in range(len(model))
                 ]
                 func_name = args.function
-                sketch = builder.get_sketch_by_func_name(func_name)
+                sketch = builder.get_sketch_by_func_name(func_name, builder.synthesizer.candidates)
                 verifier = [(func_name, sketch, [arg_candidates])]
                 feasiable = verify_model(bmk_dir, verifier)
                 timer.resume()
