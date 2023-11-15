@@ -386,6 +386,9 @@ def run(
     #
 
     timer = NamedTimer("time", auto_start=True)
+    # Don't remove it
+    path_timer = timer.create_subtimer("paths")
+
 
     options = mk_options(args)
     sevm = SEVM(options)
