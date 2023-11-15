@@ -494,11 +494,11 @@ def run(
             if model is not None:
                 timer.pause()
                 models_timer.pause()
-                arg_candidates = [
-                    model.get(f"p_amt{j}_uint256", "") for j in range(len(model))
-                ]
                 func_name = args.function
                 sketch = builder.get_sketch_by_func_name(func_name, builder.synthesizer.candidates)
+                arg_candidates = [
+                    model.get(f"p_amt{j}_uint256", "0x1") for j in range(sketch.param_num)
+                ]
                 verifier = [(func_name, sketch, [arg_candidates])]
                 feasiable = verify_model(bmk_dir, verifier)
                 timer.resume()
