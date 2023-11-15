@@ -306,10 +306,10 @@ class LazyStorage:
         return ctrt_name, func_sig, func_args
 
     def get(self, key: str):
-        # A.balanceOf(
+        # A.balanceOf()
         func_call_regex = re.compile(r"\w*\.\w*\(.*")
 
-        # vm.warp(block.timestamp + )
+        # vm.warp(block.timestamp)
         vmwarp_regex = re.compile(r"vm\.warp\((.*)\)")
         if key in self._cache:
             return self._cache[key]

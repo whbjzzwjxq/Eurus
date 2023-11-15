@@ -17,6 +17,7 @@ from halmos.sevm import *
 from halmos.utils import NamedTimer, color_good, color_warn, hexify
 from halmos.warnings import *
 
+from .utils import prepare_subfolder, update_record
 from .benchmark_builder import BenchmarkBuilder
 from .verifier import verify_model
 
@@ -384,8 +385,7 @@ def run(
     # run
     #
 
-    timer = NamedTimer("time")
-    path_timer = timer.create_subtimer("paths")
+    timer = NamedTimer("time", auto_start=True)
 
     options = mk_options(args)
     sevm = SEVM(options)
@@ -480,12 +480,17 @@ def run(
         models = [m for m in thread_pool.map(gen_model_from_sexpr, fn_args)]
 
     else:
+        bmk_dir = args.bmk_dir
+        _, result_path = prepare_subfolder(bmk_dir)
+        builder = BenchmarkBuilder(bmk_dir, sketch_generation=False)
         models = []
         for idx, ex in execs_to_model:
             res = gen_model(args, idx, ex)
             models.append(res)
             model = res.model
             if model is not None:
+                timer.pause()
+                models_timer.pause()
                 arg_candidates = [
                     model.get(f"p_amt{j}_uint256", "") for j in range(len(model))
                 ]
@@ -493,7 +498,16 @@ def run(
                 sketch = builder.get_sketch_by_func_name(func_name)
                 verifier = [(func_name, sketch, [arg_candidates])]
                 feasiable = verify_model(bmk_dir, verifier)
+                timer.resume()
+                models_timer.resume()
                 if feasiable:
+                    timer.stop()
+                    timecost = timer.elapsed
+                    new_record = {
+                        f"eurus_{args.suffix}_solve_timecost": timecost,
+                        f"eurus_{args.suffix}_all_timecost": timecost + builder.synthesizer.timecost,
+                    }
+                    update_record(result_path, new_record)
                     break
 
     no_counterexample = all(m.model is None for m in models)
@@ -1189,6 +1203,8 @@ def exec_halmos(*arg_strs) -> MainResult:
     except Exception as err:
         print(color_warn(f"Build output parsing failed: {type(err).__name__}: {err}"))
         raise ValueError("Parse build output failed")
+    
+    test_results_map = {}
 
     # collect run arguments
     #
@@ -1229,14 +1245,14 @@ def exec_halmos(*arg_strs) -> MainResult:
             libs,
         )
 
-        yield run_sequential(run_args)
+        test_results = run_sequential(run_args)
 
-        # test_results_map[contract_path] = test_results
+        test_results_map[contract_path] = test_results
 
-        # result = MainResult(0, test_results_map)
+        result = MainResult(0, test_results_map)
 
-        # if args.json_output:
-        #     with open(args.json_output, "w") as json_file:
-        #         json.dump(asdict(result), json_file, indent=4)
+        if args.json_output:
+            with open(args.json_output, "w") as json_file:
+                json.dump(asdict(result), json_file, indent=4)
 
-        # return result
+        return result

@@ -280,12 +280,14 @@ def halmos_test(
             ".cache",
             "--print-potential-counterexample",
             "--solver-timeout-assertion",
-            # Give 4 times timeout for Halmos
-            f"{timeout * 4 * 1000}",
+            # 20 times for each path in Halmos
+            f"{timeout * 20 * 1000}",
             "--json-output",
             output_path,
             "--smtdiv",
             "Models",
+            "--suffix",
+            suffix_spec,
         ]
         print(" ".join(args))
         exec_halmos(*args)

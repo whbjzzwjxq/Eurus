@@ -291,4 +291,11 @@ def mk_arg_parser() -> argparse.ArgumentParser:
         action="store_true",
     )
 
+    group_eurus.add_argument(
+        "--suffix",
+        help="Suffix for result.",
+        type=str,
+        default="",
+    )
+
     return parser
