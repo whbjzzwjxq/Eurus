@@ -352,6 +352,8 @@ def eurus_test(bmk_dir: str, args):
     Z3_OR_GB = args.solver == "z3"
     VAR.clear_cache()
 
+    timer = time.perf_counter()
+
     project_name = resolve_project_name(bmk_dir)
     _, result_path = prepare_subfolder(bmk_dir)
 
@@ -374,8 +376,6 @@ def eurus_test(bmk_dir: str, args):
         result_paths = gen_result_paths(result_path, only_gt, "eurus", len(synthesizer.candidates), suffix_spec)
         result_paths = result_paths[start:end]
 
-        timer = time.perf_counter()
-
         for func_name, output_path, _, _ in result_paths:
             print(f"Solving: {func_name}")
             # Avoid stuck
@@ -389,7 +389,8 @@ def eurus_test(bmk_dir: str, args):
             }
             stuck_list = stuck_dict.get(project_name, [])
             if func_name in stuck_list:
-                timer -= timeout
+                # ms -> s
+                timer -= timeout / 1000
                 continue
             VAR.clear_cache()
             solver = setup_solver(timeout)

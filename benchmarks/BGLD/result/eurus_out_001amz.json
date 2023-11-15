@@ -1,0 +1,28 @@
+{
+    "test_results": {
+        "./benchmarks/BGLD": [
+            {
+                "name": "check_cand001",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x3782dace9d9000000",
+                        "p_amt1_uint256": "0x36a4cf636319c0000",
+                        "p_amt2_uint256": "0xa660399a67f0",
+                        "p_amt3_uint256": "0x8ac7230489e8",
+                        "p_amt4_uint256": "0x7ce66c50e284",
+                        "p_amt5_uint256": "0x37f1e0843acb20000",
+                        "p_amt6_uint256": "0x37ba5da96c2d90000"
+                    }
+                ],
+                "time": [
+                    0.029595017000247026,
+                    0,
+                    0.029595017000247026
+                ],
+                "feasible": true,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

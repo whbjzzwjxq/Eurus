@@ -1,0 +1,27 @@
+{
+    "test_results": {
+        "./benchmarks/Zoompro": [
+            {
+                "name": "check_cand003",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x107ad8f556c6c0000",
+                        "p_amt1_uint256": "0xf9ccd8a1c5080000",
+                        "p_amt2_uint256": "0x28f17d13b4f9c80000000",
+                        "p_amt3_uint256": "0x28f03c83a582840000000",
+                        "p_amt4_uint256": "0xde0b6b3a7640000",
+                        "p_amt5_uint256": "0x1087dba09f33ae000"
+                    }
+                ],
+                "time": [
+                    0.03734930799873837,
+                    0,
+                    0.03734930799873837
+                ],
+                "feasible": true,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

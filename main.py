@@ -16,7 +16,7 @@ from impl.utils import (
 )
 from impl.verifier import verify_model
 from impl.halmos import exec_halmos
-from impl.ityfuzz import ityfuzz_test
+# from impl.ityfuzz import ityfuzz_test
 
 parser = argparse.ArgumentParser()
 
@@ -306,8 +306,8 @@ def _main():
             eurus_test(bmk_dir, args)
         if args.halmos:
             halmos_test(bmk_dir, args)
-        if args.fuzz:
-            ityfuzz_test(bmk_dir, args)
+        # if args.fuzz:
+        #     ityfuzz_test(bmk_dir, args)
         if args.verify:
             verify_result(bmk_dir, args.gt, args.smtdiv, args.verify_result_path, args.suffix)
 
