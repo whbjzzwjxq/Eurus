@@ -329,6 +329,9 @@ class LazyStorage:
             cmd = ["cast", "call", ctrt_addr, func_sig, *func_args]
             output = run(cmd, capture_output=True, text=True)
             value = output.stdout.strip().removesuffix("\n")
+            # To deal with the case in Anvil 0.2.0
+            if " " in value:
+                value = value.split(" ")[0]
         else:
             ctrt_name, var_name, keys = self.parse_key(key)
             if ctrt_name not in self.ctrt_name2addr:
