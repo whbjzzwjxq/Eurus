@@ -1,0 +1,24 @@
+{
+    "exitcode": 0,
+    "test_results": {
+        "benchmarks/Discover/Discover_candidates.t.sol:DiscoverTest": [
+            {
+                "name": "check_cand001(uint256,uint256,uint256,uint256,uint256,uint256)",
+                "exitcode": 0,
+                "num_models": 0,
+                "models": [],
+                "num_paths": [
+                    26,
+                    2,
+                    0
+                ],
+                "time": [
+                    3652.1813716629986,
+                    11.497329318000993,
+                    3640.684031875
+                ],
+                "num_bounded_loops": 0
+            }
+        ]
+    }
+}
