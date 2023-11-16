@@ -165,6 +165,7 @@ temp*
 build-info
 .tmp
 results.json
+work_dir
 
 node_modules
 benchmarks/**/.cache

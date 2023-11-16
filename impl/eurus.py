@@ -304,8 +304,8 @@ def eurus_solve(
             param_strs.append(v)
         feasible = verify_model_on_anvil(ctrt_name2addr, func_name, param_strs)
         # There is a bug in anvil, this solution is tested in foundry test.
-        if "BXH" in bmk_dir and func_name == "check_cand003":
-            feasible = True
+        # if "BXH" in bmk_dir and func_name == "check_cand003":
+        #     feasible = True
         if feasible:
             print(f"Result for {func_name} is feasible in realworld!")
         else:

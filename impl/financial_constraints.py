@@ -671,9 +671,10 @@ def gen_EGD_deposit_egdstaking_usdt_egdslp():
         lambda s: s.get(new_rates) == s.get(amount) * s.get(tempRate) / 100000 / 86400,
         lambda s: s.get(new_claimTime) == s.get("old_block.timestamp"),
         lambda s: s.get("new_block.timestamp") == s.get("old_block.timestamp") + 54,
-        # Utils, unmeaningful
-        lambda s: s.get(old_claimTime) == 0,
-        lambda s: s.get(old_rates) == 0,
+
+        # Utils to make those variables been initilized.
+        lambda s: s.get(old_claimTime) >= 0,
+        lambda s: s.get(old_rates) >= 0,
     ]
 
     return constraints
