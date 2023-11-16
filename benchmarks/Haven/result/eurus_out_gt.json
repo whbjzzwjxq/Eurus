@@ -1,0 +1,31 @@
+{
+    "test_results": {
+        "./benchmarks/Haven": [
+            {
+                "name": "check_gt",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x6f05b59d3b20000",
+                        "p_amt1_uint256": "0xde0b6b3a7640000",
+                        "p_amt2_uint256": "0xde0b6b3a7640000",
+                        "p_amt3_uint256": "0xde0b6b3a764000",
+                        "p_amt4_uint256": "0x10f44733fab",
+                        "p_amt5_uint256": "0xebec21ee1d",
+                        "p_amt6_uint256": "0xe6b7dd6abede8000",
+                        "p_amt7_uint256": "0xe4fbc69449f20000",
+                        "p_amt8_uint256": "0xe4fbc69449f200",
+                        "p_amt9_uint256": "0x6f66da9c24b3bc0"
+                    }
+                ],
+                "time": [
+                    0.02301341699785553,
+                    0,
+                    0.02301341699785553
+                ],
+                "feasible": true,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

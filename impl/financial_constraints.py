@@ -185,18 +185,18 @@ def gen_summary_uniswap(
     amtIn: str,
     amtOut: str,
     amtOutRatio: float = 1,
-    percent_in_in: float = 1,
-    percent_out_in: float = 1,
-    percent_in_out: float = 1,
-    percent_out_out: float = 1,
+    percent_in_tokenIn: float = 1,
+    percent_out_tokenIn: float = 1,
+    percent_in_tokenOut: float = 1,
+    percent_out_tokenOut: float = 1,
     scale: int = 1000,
     fee: int = 3,
     suffix: str = "",
 ) -> ACTION_CONSTR:
     amtOutMax = "amtOutMax"
-    s_in = gen_summary_transfer(sender, pair, tokenIn, amtIn, percent_in=percent_in_in, percent_out=percent_out_in)
+    s_in = gen_summary_transfer(sender, pair, tokenIn, amtIn, percent_in=percent_in_tokenIn, percent_out=percent_out_tokenIn)
     s_out = gen_summary_transfer(
-        pair, receiver, tokenOut, amtOut, percent_in=percent_in_out, percent_out=percent_out_out
+        pair, receiver, tokenOut, amtOut, percent_in=percent_in_tokenOut, percent_out=percent_out_tokenOut
     )
 
     # Generate Invariants
@@ -346,12 +346,12 @@ def gen_BGLD_burn_bgld_pair():
 
 
 def gen_BGLD_swap_pair_attacker_bgld_wbnb():
-    return gen_summary_uniswap("pair", "attacker", "attacker", "bgld", "wbnb", "arg_0", "arg_1", percent_out_in=1.1)
+    return gen_summary_uniswap("pair", "attacker", "attacker", "bgld", "wbnb", "arg_0", "arg_1", percent_out_tokenIn=1.1)
 
 
 def gen_BGLD_swap_pair_attacker_wbnb_bgld():
     return gen_summary_uniswap(
-        "pair", "attacker", "attacker", "wbnb", "bgld", "arg_0", "arg_1", amtOutRatio=0.9, percent_out_out=1.1
+        "pair", "attacker", "attacker", "wbnb", "bgld", "arg_0", "arg_1", amtOutRatio=0.9, percent_out_tokenOut=1.1
     )
 
 
@@ -403,7 +403,7 @@ def gen_Discover_swap_ethpledge_attacker_usdt_disc():
 
 def gen_AES_swap_pair_attacker_usdt_aes():
     uniswap_constraints = gen_summary_uniswap(
-        "pair", "attacker", "attacker", "usdt", "aes", "arg_0", "arg_1", percent_in_out=0.9, percent_out_out=0.93
+        "pair", "attacker", "attacker", "usdt", "aes", "arg_0", "arg_1", percent_in_tokenOut=0.9, percent_out_tokenOut=0.93
     )
     extra_constraints = [
         lambda s: s.get("new_aes.swapFeeTotal") == s.get("old_aes.swapFeeTotal") + s.get("arg_1") * 0.01
@@ -421,8 +421,8 @@ def gen_AES_swap_pair_attacker_aes_usdt():
         "arg_0",
         "arg_1",
         amtOutRatio=0.9,
-        percent_in_in=0.97,
-        percent_out_in=1,
+        percent_in_tokenIn=0.97,
+        percent_out_tokenIn=1,
     )
     extra_constraints = [
         lambda s: s.get("new_aes.swapFeeTotal") == s.get("old_aes.swapFeeTotal") + s.get("arg_0") * 0.01
@@ -705,6 +705,26 @@ def gen_EGD_withdraw_egdstaking_egdslp_egd():
 
     return constraints
 
+def gen_Haven_swap_pairhw_haven_haven_wbnb():
+    amtIn = "old_haven.swapThreshold"
+    amtOut = "amtOut"
+
+    return gen_summary_uniswap("pairhw", "haven", "haven", "haven", "wbnb", amtIn, amtOut)
+
+def gen_Haven_swap_pairbh_attacker_haven_busd():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pairbh", "attacker", "attacker", "haven", "busd", amtIn, amtOut, amtOutRatio=0.87 * 0.997, percent_in_tokenIn=0.87)
+
+def gen_Haven_swap_pairbh_attacker_busd_haven():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pairbh", "attacker", "attacker", "busd", "haven", amtIn, amtOut, percent_in_tokenOut=0.87)
+
+def gen_Haven_swap_pairhw_attacker_wbnb_haven():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pairhw", "attacker", "attacker", "wbnb", "haven", amtIn, amtOut, percent_in_tokenOut=0.87)
 
 hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "NMB": {
@@ -753,6 +773,12 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "deposit_egdstaking_usdt_egdslp": gen_EGD_deposit_egdstaking_usdt_egdslp(),
         "withdraw_egdstaking_egdslp_egd": gen_EGD_withdraw_egdstaking_egdslp_egd(),
     },
+    "Haven": {
+        "swap_pairhw_haven_haven_wbnb": gen_Haven_swap_pairhw_haven_haven_wbnb(),
+        "swap_pairbh_attacker_haven_busd": gen_Haven_swap_pairbh_attacker_haven_busd(),
+        "swap_pairbh_attacker_busd_haven": gen_Haven_swap_pairbh_attacker_busd_haven(),
+        "swap_pairhw_attacker_wbnb_haven": gen_Haven_swap_pairhw_attacker_wbnb_haven(),
+    }
 }
 
 

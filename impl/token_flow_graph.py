@@ -152,27 +152,29 @@ class TFGManager:
         for i, cur_a in enumerate(actions):
             if i == 0:
                 continue
-            last_a = actions[i-1]
             # Price manipulation
             if cur_a.action_name == "swap":
                 if cur_a.account == "attacker":
                     attacker_got_tokens.add(cur_a.token1)
-                if last_a.action_name == "swap" and last_a.swap_pair == cur_a.swap_pair:
-                    read_vars, _ = extract_rw_vars(cur_a.constraints)
-                    # The balance of acction doesn't influence the price.
-                    n_read_vars = set(v for v in read_vars if not cur_a.account in v)
-                    for f in self.func_summarys:
-                        if f == cur_a or f == last_a or f.action_name == "borrow" or f.action_name == "payback":
+                read_vars, _ = extract_rw_vars(cur_a.constraints)
+                # The balance of acction doesn't influence the price.
+                n_read_vars = set(v for v in read_vars if not cur_a.account in v)
+                for f in self.func_summarys:
+                    if f.action_name == "swap":
+                        if f.account == cur_a.account:
                             continue
-                        # Perhaps manipulate the price
-                        _, write_vars = extract_rw_vars(f.constraints)
-                        if write_vars.intersection(n_read_vars) != set():
-                            new_sketch = [*actions]
-                            new_sketch.insert(i, f)
-                            new_sketches.append(Sketch(new_sketch).symbolic_copy())
+                    if f.action_name == "borrow" or f.action_name == "payback":
+                        continue
+                    # Perhaps manipulate the price
+                    _, write_vars = extract_rw_vars(f.constraints)
+                    if write_vars.intersection(n_read_vars) != set():
+                        new_sketch = [*actions]
+                        new_sketch.insert(i, f)
+                        new_sketches.append(Sketch(new_sketch).symbolic_copy())
 
             # Price manipulation
             if cur_a.action_name == "withdraw":
+                last_a = actions[i-1]
                 if cur_a.account == "attacker":
                     attacker_got_tokens.add(cur_a.token1)
                 if last_a.action_name == "deposit" and last_a.defi == cur_a.defi:

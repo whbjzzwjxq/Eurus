@@ -23,6 +23,7 @@ class BenchmarkBuilder:
         "USDT",
         "WETH",
         "WBNB",
+        "BUSD",
     ]
     default_import_ctrts = [
         *default_erc20_tokens,

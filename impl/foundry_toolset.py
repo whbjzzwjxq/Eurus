@@ -215,6 +215,7 @@ class LazyStorage:
         "USDT",
         "WETH",
         "WBNB",
+        "BUSD",
     ]
 
     def __init__(self, bmk_dir: str, ctrt_name2addr: Dict[str, str], timestamp: str) -> None:
