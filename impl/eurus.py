@@ -386,6 +386,9 @@ def eurus_test(bmk_dir: str, args):
                 "MUMUG": [
                     "check_cand003",
                 ],
+                "Haven": [
+                    "check_cand011",
+                ]
             }
             stuck_list = stuck_dict.get(project_name, [])
             if func_name in stuck_list:

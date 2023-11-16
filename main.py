@@ -91,7 +91,7 @@ parser.add_argument(
     "--timeout",
     help="Set the timeout for each sketch.",
     type=int,
-    default=1800 * 1000,
+    default=300 * 1000,
 )
 
 parser.add_argument(
@@ -254,7 +254,7 @@ def halmos_test(
     bmk_dir: str,
     args,
 ):
-    timeout: int = args.timeout
+    timeout: int = 1800 * 1000
     only_gt: bool = args.gt
     start: int = args.start
     end: int = args.end

