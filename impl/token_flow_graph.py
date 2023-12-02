@@ -122,11 +122,8 @@ class TFGManager:
             return True
         if trace[0].label.lender != trace[-1].label.lender:
             return True
-        has_attack_goal_token = False
         for idx, e in enumerate(trace):
             action = e.label
-            if e.end.token == self.attack_goal and action.action_name != "borrow":
-                has_attack_goal_token = True
             if idx >= 1:
                 last_e = trace[idx - 1]
                 last_action = last_e.label
@@ -141,8 +138,6 @@ class TFGManager:
                     if e1_action.action_name == "borrow":
                         if e1_action.lender == action.swap_pair:
                             return True
-        if not has_attack_goal_token:
-            return True
 
     def mutation(self, sketch: Sketch):
         # Heuristics
@@ -174,7 +169,7 @@ class TFGManager:
 
             # Price manipulation
             if cur_a.action_name == "withdraw":
-                last_a = actions[i-1]
+                last_a = actions[i - 1]
                 if cur_a.account == "attacker":
                     attacker_got_tokens.add(cur_a.token1)
                 if last_a.action_name == "deposit" and last_a.defi == cur_a.defi:
@@ -203,7 +198,7 @@ class TFGManager:
             if cur_a.action_name == "deposit":
                 if cur_a.account == "attacker":
                     attacker_got_tokens.add(cur_a.token1)
-            
+
             # Token distribution
             if cur_a.action_name == "payback":
                 payback_token = cur_a.token0
@@ -220,6 +215,14 @@ class TFGManager:
                         new_sketch.insert(i, f)
                         new_sketches.append(Sketch(new_sketch).symbolic_copy())
         return new_sketches
+
+    def after_prune(self, sketch: Sketch) -> bool:
+        has_attack_goal_token = False
+        for idx, action in enumerate(sketch.pure_actions):
+            if e.end.token == self.attack_goal and action.action_name != "borrow":
+                has_attack_goal_token = True
+        if not has_attack_goal_token:
+            return True
 
     def gen_candidates(self):
         i = 0
@@ -250,10 +253,13 @@ class TFGManager:
                     break
                 new_candidates = self.mutation(cur_sketch)
                 for nc in new_candidates:
-                    potential_candidates.insert(k+1, nc)
+                    potential_candidates.insert(k + 1, nc)
                     k += 1
                 k += 1
-            candidates.extend(potential_candidates)
+            for cand in potential_candidates:
+                if self.after_prune(cand.pure_actions):
+                    continue
+                candidates.append(cand)
 
             i += 1
         return candidates

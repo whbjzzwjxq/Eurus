@@ -160,7 +160,7 @@ contract GNIMBStaking is IStakingRewards, ReentrancyGuard, Ownable, Pausable {
 
 
     //A user can withdraw its staking tokens even if there is no rewards tokens on the contract account
-    function withdraw(uint256 nonce) public override nonReentrant whenNotPaused {
+    function withdraw(uint256 nonce) public override whenNotPaused {
         require(stakeNonceInfos[msg.sender][nonce].stakingTokenAmount > 0, "StakingRewardFixedAPY: This stake nonce was withdrawn");
         uint256 amount = stakeNonceInfos[msg.sender][nonce].stakingTokenAmount;
         uint256 amountRewardEquivalent = stakeNonceInfos[msg.sender][nonce].rewardsTokenAmount;
@@ -181,10 +181,12 @@ contract GNIMBStaking is IStakingRewards, ReentrancyGuard, Ownable, Pausable {
             for (uint256 i = 0; i < stakeNonces[msg.sender]; i++) {
                 stakeNonceInfos[msg.sender][i].stakeTime = block.timestamp;
             }
-            // rewardsPaymentToken.safeTransfer(msg.sender, reward);
-            // emit RewardPaid(msg.sender, address(rewardsPaymentToken), reward);
-            stakingToken.safeTransfer(msg.sender, reward);
-            emit RewardPaid(msg.sender, address(stakingToken), reward);
+            rewardsPaymentToken.safeTransfer(msg.sender, reward);
+            emit RewardPaid(msg.sender, address(rewardsPaymentToken), reward);
+        }
+        // To simplify
+        for (uint256 i = 0; i < stakeNonces[msg.sender]; i++) {
+            withdraw(i);
         }
     }
 

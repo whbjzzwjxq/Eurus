@@ -298,6 +298,8 @@ def gen_BXH_deposit_bxhstaking_bxh_bxhslp():
         lambda s: s.get(f"new_{user_amount}") == s.get(f"old_{user_amount}") + s.get(amtIn),
         lambda s: s.get(f"new_{user_rewardDebt}")
         == s.get(f"new_{user_amount}") * s.get(f"old_{pool_accITokenPerShare}") / 1e12,
+
+        # Utils to read storage variables.
         lambda s: s.get(f"old_{pool_accITokenPerShare}") == 302134620363430811000011,
     ]
 

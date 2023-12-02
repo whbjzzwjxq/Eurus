@@ -20,7 +20,7 @@ contract ContractTest is Test, BlockLoader {
     IUniswapV2Pair pairnbunimb = IUniswapV2Pair(0x7D88A2390F8B5070acF5188e8879aA7Ba2f2A60C);
 
     address attacker = address(0x86Aa1c46f2Ae35ba1B228dC69fB726813D95b597);
-    address nbustaking = address(0x3aA2B9de4ce397d93E11699C3f07B769b210bBD5);
+    address gslp = address(0x3aA2B9de4ce397d93E11699C3f07B769b210bBD5);
 
     function setUp() public {
         vm.createSelectFork("bsc", 23_639_507);
@@ -36,12 +36,14 @@ contract ContractTest is Test, BlockLoader {
         users[0] = address(pairnbugnimb);
         users[1] = address(pairnbunimb);
         users[2] = attacker;
-        users[3] = nbustaking;
+        users[3] = gslp;
+
         string[] memory user_names = new string[](4);
         user_names[0] = "pairnbugnimb";
         user_names[1] = "pairnbunimb";
         user_names[2] = "attacker";
-        user_names[3] = "nbustaking";
+        user_names[3] = "gslp";
+
         queryERC20(address(gnimb), "gnimb", users, user_names);
         queryERC20(address(nimb), "nimb", users, user_names);
         queryERC20(address(nbu), "nbu", users, user_names);
