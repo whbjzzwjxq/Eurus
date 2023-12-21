@@ -6,8 +6,8 @@ import re
 from z3 import *
 
 from impl.dsl import Sketch
-from .foundry_toolset import LazyStorage, deploy_contract, init_anvil, verify_model_on_anvil
-from .benchmark_builder import BenchmarkBuilder
+from .toolkit.foundry import LazyStorage, deploy_contract, init_anvil, verify_model_on_anvil
+from .sketch_enum.sol_builder import BenchmarkBuilder
 from .utils import (
     gen_result_paths,
     prepare_subfolder,

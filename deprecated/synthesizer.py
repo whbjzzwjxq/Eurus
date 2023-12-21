@@ -61,7 +61,7 @@
 #             self.candidates_signs.add(str(s))
 
 #     def gen_candidates_buysell(self):
-#         lend_pools = ["owner"] + [k for k, v in self.roles.items() if v.is_lendpool]
+#         lendpools = ["owner"] + [k for k, v in self.roles.items() if v.is_lendpool]
 #         assets = [k for k, v in self.roles.items() if v.is_asset]
 #         stable_coins = [k for k, v in self.roles.items() if v.is_stablecoin]
 #         swap_pairs = [k for k, v in self.roles.items() if v.is_swappair]
@@ -72,7 +72,7 @@
 #         for (
 #             lend_pool0, lend_pool1, asset0, asset1, swap_pair0, asset2, asset3, defi_entry, asset_hacked, swap_pair1, swap_pair2, stable_coin
 #         ) in itertools.product(
-#             lend_pools, lend_pools, assets, assets, swap_pairs, assets, assets, defi_entrys, assets, swap_pairs, swap_pairs, stable_coins
+#             lendpools, lendpools, assets, assets, swap_pairs, assets, assets, defi_entrys, assets, swap_pairs, swap_pairs, stable_coins
 #         ):
 #             template: List[AFLAction] = [
 #                 Borrow(lend_pool0, asset0, "amt0"),
@@ -105,7 +105,7 @@
 #             # i += 1
 
 #     def gen_candidates_pricediscrepancy(self):
-#         lend_pools = ["owner"] + [k for k, v in self.roles.items() if v.is_lendpool]
+#         lendpools = ["owner"] + [k for k, v in self.roles.items() if v.is_lendpool]
 #         assets = [k for k, v in self.roles.items() if v.is_asset]
 #         stable_coins = [k for k, v in self.roles.items() if v.is_stablecoin]
 #         swap_pairs = [k for k, v in self.roles.items() if v.is_swappair]
@@ -114,7 +114,7 @@
 #         for (
 #             lend_pool0, asset0, swap_pair0, asset1, oracle, swap_pair1, swap_pair2, stable_coin, swap_pair3
 #         ) in itertools.product(
-#             lend_pools, assets, swap_pairs, assets, oracles, swap_pairs, swap_pairs, stable_coins, swap_pairs
+#             lendpools, assets, swap_pairs, assets, oracles, swap_pairs, swap_pairs, stable_coins, swap_pairs
 #         ):
 #             template: List[AFLAction] = [
 #                 Borrow(lend_pool0, asset0, "amt0"),
@@ -139,7 +139,7 @@
 #             self.extend_candidates_from_template(template, template_times)
 
 #     def gen_candidates_tokenburn(self):
-#         lend_pools = ["owner"] + [k for k, v in self.roles.items() if v.is_lendpool]
+#         lendpools = ["owner"] + [k for k, v in self.roles.items() if v.is_lendpool]
 #         assets = [k for k, v in self.roles.items() if v.is_asset]
 #         stable_coins = [k for k, v in self.roles.items() if v.is_stablecoin]
 #         swap_pairs = [k for k, v in self.roles.items() if v.is_swappair]
@@ -148,7 +148,7 @@
 #         for (
 #             lend_pool0, asset0, swap_pair0, asset1, oracle, swap_pair1, swap_pair2, stable_coin,
 #         ) in itertools.product(
-#             lend_pools, assets, swap_pairs, assets, oracles, swap_pairs, swap_pairs, stable_coins
+#             lendpools, assets, swap_pairs, assets, oracles, swap_pairs, swap_pairs, stable_coins
 #         ):
 #             template: List[AFLAction] = [
 #                 Borrow(lend_pool0, asset0, "amt0"),
@@ -174,7 +174,7 @@
 #             self.extend_candidates_from_template(template, template_times)
 
 #     def gen_candidates_lrbreak(self):
-#         lend_pools = ["owner"] + [k for k, v in self.roles.items() if v.is_lendpool]
+#         lendpools = ["owner"] + [k for k, v in self.roles.items() if v.is_lendpool]
 #         assets = [k for k, v in self.roles.items() if v.is_asset]
 #         stable_coins = [k for k, v in self.roles.items() if v.is_stablecoin]
 #         swap_pairs = [k for k, v in self.roles.items() if v.is_swappair]
@@ -184,7 +184,7 @@
 #         for (
 #             lend_pool0, asset0, swap_pair0, asset1, defi_entry, oracle, swap_pair1, swap_pair2, stable_coin,
 #         ) in itertools.product(
-#             lend_pools, assets, swap_pairs, assets, defi_entrys, oracles, swap_pairs, swap_pairs, stable_coins,
+#             lendpools, assets, swap_pairs, assets, defi_entrys, oracles, swap_pairs, swap_pairs, stable_coins,
 #         ):
 #             template: List[AFLAction] = [
 #                 Borrow(lend_pool0, asset0, "amt0"),

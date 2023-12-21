@@ -23,7 +23,7 @@ ATTACK_CONTRACT_CLS = "AttackContract"
 DEAD = "dead"
 OWENR = "owner"
 
-ctrt_name_regex = re.compile(r"\ncontract (\w+)\s+{")
+func_name_regex = re.compile(r"function (.*?)\(")
 
 
 def decimal_to_n_base(decimal: int, base: int) -> List[int]:

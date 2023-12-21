@@ -5,7 +5,7 @@ from subprocess import CalledProcessError, run
 
 from impl.eurus import eurus_test
 
-from impl.benchmark_builder import BenchmarkBuilder
+from impl.sketch_enum.sol_builder import BenchmarkBuilder
 from impl.utils import (
     gen_result_paths,
     get_bmk_dirs,
@@ -170,6 +170,10 @@ def prepare(bmk_dir: str):
         "forge",
         "test",
         "-vv",
+        "--fork-url",
+        builder.config.blockchain,
+        "--fork-block-number",
+        str(builder.config.blocknumber),
         "--cache-path",
         cache_path,
         "--match-path",
@@ -191,25 +195,25 @@ def prepare(bmk_dir: str):
 
     # Generate Candidates
 
-    output_file = path.join(bmk_dir, f"{project_name}_candidates.t.sol")
+    # output_file = path.join(bmk_dir, f"{project_name}_candidates.t.sol")
 
-    candidates, timecost = builder.output_with_candidates(output_file)
+    # candidates, timecost = builder.output_with_candidates(output_file)
 
-    candidate_strs = [c.func_sigs for c in candidates]
+    # candidate_strs = [c.func_sigs for c in candidates]
 
-    gen_candidate = {"sketchgen_timecost": timecost, "candidates": candidate_strs}
+    # gen_candidate = {"sketchgen_timecost": timecost, "candidates": candidate_strs}
 
-    update_record(result_path, gen_candidate)
+    # update_record(result_path, gen_candidate)
 
-    # Format
-    cmd = [
-        "npx",
-        "prettier",
-        "--write",
-        "--plugin=prettier-plugin-solidity",
-        f"{output_file}",
-    ]
-    run(cmd, text=True, check=True)
+    # # Format
+    # cmd = [
+    #     "npx",
+    #     "prettier",
+    #     "--write",
+    #     "--plugin=prettier-plugin-solidity",
+    #     f"{output_file}",
+    # ]
+    # run(cmd, text=True, check=True)
 
 
 def print_groundtruth(bmk_dir: str):

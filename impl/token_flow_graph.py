@@ -2,7 +2,7 @@ from typing import List, Set, Dict
 
 from .financial_constraints import extract_rw_vars
 
-from .synthesizer import AFLAction, Sketch
+from .sketch_enum.synthesizer import AFLAction, Sketch
 from .utils import *
 from .utils_slither import *
 

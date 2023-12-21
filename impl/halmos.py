@@ -18,7 +18,7 @@ from halmos.utils import NamedTimer, color_good, color_warn, hexify
 from halmos.warnings import *
 
 from .utils import prepare_subfolder, update_record
-from .benchmark_builder import BenchmarkBuilder
+from .sketch_enum.sol_builder import BenchmarkBuilder
 from .verifier import verify_model
 
 StrModel = Dict[str, str]
