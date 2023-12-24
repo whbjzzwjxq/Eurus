@@ -81,7 +81,7 @@ class BenchmarkBuilder:
             i_name = c.interface_name
             if i_name in self.predefined_interfaces or i_name == "":
                 continue
-            imports.append(f'import {{{i_name}}} from "@interfaces/{i_name}.sol";')
+            imports.append(f'import {{{i_name}}} from "./contracts/{i_name}.sol";')
         imports = sorted(imports)
         all = [license, pragma, *imports]
         return all
@@ -103,7 +103,6 @@ class BenchmarkBuilder:
         init_balance_attacker_sv = f"balanceOf{attack_goal_token}{ATTACKER}"
         balance_attacker_sv = f"{attack_goal_token}.balanceOf({ATTACKER})"
         attacker_svs = [
-            f"address {ATTACKER} = address({self.attacker_addr});",
             f"uint256 {init_balance_attacker_sv};",
         ]
 

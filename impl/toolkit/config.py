@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple
 
 import yaml
 
-from .const import ATTACKER
+from .const import ATTACKER, ATTACKER_ADDR
 
 
 @dataclass
@@ -41,7 +41,6 @@ class Config:
     project_name: str = "None"
     blockchain: str = "mainnet"
     blocknumber: int = 0
-    attacker_addr: str = "0xdead"
     attack_goal_str: str = "usdt"
 
     # Used for setup project
@@ -73,6 +72,9 @@ class Config:
         for c in self.contracts:
             ci = ContractInfo(*c)
             self.contract_infos[ci.name] = ci
+        if ATTACKER not in self.contract_infos:
+            print(f"Attacker's address is not given, use the default address: {ATTACKER_ADDR}")
+            self.contract_infos[ATTACKER] = ContractInfo(ATTACKER, "", "", ATTACKER_ADDR)
 
         # Add Roles
         keys = list(self.roles.keys())
@@ -86,6 +88,10 @@ class Config:
             self.attack_goal: Tuple[str, str] = tuple(self.attack_goal_str.split(";"))
         else:
             self.attack_goal: Tuple[str, str] = (self.attack_goal_str, "1e18")
+
+    @property
+    def attacker_addr(self):
+        return self.contract_infos[ATTACKER].address
 
     @property
     def assets(self):

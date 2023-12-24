@@ -184,13 +184,13 @@ def prepare(bmk_dir: str):
         "--root",
         os.getcwd(),
     ]
+    print("Execute: ", " ".join(cmds))
     try:
         out = run(cmds, text=True, check=True, capture_output=True)
     except Exception as err:
         if isinstance(err, CalledProcessError):
             print(err.stderr, err.stdout)
         print(f"\n\nBenchmark: {bmk_dir} ground truth doesn't work!")
-        print("Execute: ", " ".join(cmds))
         raise err
 
     # Generate Candidates
