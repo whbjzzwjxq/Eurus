@@ -1,18 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 import "@utils/Helper.sol";
-import {IETHpledge} from "./contracts/IETHpledge.sol";
+import {BUSD} from "@utils/BUSD.sol";
+import {Discover} from "./contracts/Discover.sol";
+import {ETHpledge} from "./contracts/ETHpledge.sol";
+import {UniswapV2Pair} from "@uniswapv2/UniswapV2Pair.sol";
 
 contract DiscoverTestBase is Test, Helper {
-    IERC20 busd = IERC20(0x55d398326f99059fF775485246999027B3197955);
-    IERC20 disc = IERC20(0x5908E4650bA07a9cf9ef9FD55854D4e1b700A267);
-    IUniswapV2Pair pair =
-        IUniswapV2Pair(0x92f961B6bb19D35eedc1e174693aAbA85Ad2425d);
-    IETHpledge ethpledge =
-        IETHpledge(0xe732a7bD6706CBD6834B300D7c56a8D2096723A7);
     address busdholder = address(0x8894E0a0c962CB723c1976a4421c95949bE2D4E3);
     address attacker = address(0x06B912354B167848a4A608a56BC26C680DAD3D79);
     address attacker1 = address(0xAb21300fA507Ab30D50c3A5D1Cad617c19E83930);
+    BUSD busd = BUSD(payable(0x55d398326f99059fF775485246999027B3197955));
+    Discover disc =
+        Discover(payable(0x5908E4650bA07a9cf9ef9FD55854D4e1b700A267));
+    UniswapV2Pair pair =
+        UniswapV2Pair(payable(0x92f961B6bb19D35eedc1e174693aAbA85Ad2425d));
+    ETHpledge ethpledge =
+        ETHpledge(payable(0xe732a7bD6706CBD6834B300D7c56a8D2096723A7));
     uint256 balanceOfbusdattacker;
     modifier foray() {
         _;
@@ -34,18 +38,18 @@ contract DiscoverTestBase is Test, Helper {
         token_names[1] = "disc";
         user_addrs[0] = attacker;
         user_names[0] = "attacker";
-        user_addrs[1] = address(busd);
-        user_names[1] = "busd";
-        user_addrs[2] = address(disc);
-        user_names[2] = "disc";
-        user_addrs[3] = address(pair);
-        user_names[3] = "pair";
-        user_addrs[4] = address(ethpledge);
-        user_names[4] = "ethpledge";
-        user_addrs[5] = busdholder;
-        user_names[5] = "busdholder";
-        user_addrs[6] = attacker1;
-        user_names[6] = "attacker1";
+        user_addrs[1] = busdholder;
+        user_names[1] = "busdholder";
+        user_addrs[2] = attacker1;
+        user_names[2] = "attacker1";
+        user_addrs[3] = address(busd);
+        user_names[3] = "busd";
+        user_addrs[4] = address(disc);
+        user_names[4] = "disc";
+        user_addrs[5] = address(pair);
+        user_names[5] = "pair";
+        user_addrs[6] = address(ethpledge);
+        user_names[6] = "ethpledge";
         queryERC20BalanceBatch(
             token_addrs,
             token_names,

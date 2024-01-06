@@ -4,13 +4,13 @@ blocknumber: 18_446_845
 attack_goal_str: "busd"
 
 contracts:
-  - ["busd", "BUSD", "IERC20", "0x55d398326f99059fF775485246999027B3197955"]
-  - ["disc", "Discover", "IERC20", "0x5908E4650bA07a9cf9ef9FD55854D4e1b700A267"]
-  - ["pair", "UniswapV2Pair", "IUniswapV2Pair", "0x92f961B6bb19D35eedc1e174693aAbA85Ad2425d"]
-  - ["ethpledge", "ETHpledge", "IETHpledge", "0xe732a7bD6706CBD6834B300D7c56a8D2096723A7"]
-  - ["busdholder", "", "", "0x8894E0a0c962CB723c1976a4421c95949bE2D4E3"]
-  - ["attacker", "", "", "0x06B912354B167848a4A608a56BC26C680DAD3D79"]
-  - ["attacker1", "", "", "0xAb21300fA507Ab30D50c3A5D1Cad617c19E83930"]
+  - ["busd", "BUSD", "0x55d398326f99059fF775485246999027B3197955"]
+  - ["disc", "Discover", "0x5908E4650bA07a9cf9ef9FD55854D4e1b700A267"]
+  - ["pair", "UniswapV2Pair", "0x92f961B6bb19D35eedc1e174693aAbA85Ad2425d"]
+  - ["ethpledge", "ETHpledge", "0xe732a7bD6706CBD6834B300D7c56a8D2096723A7"]
+  - ["busdholder", "", "0x8894E0a0c962CB723c1976a4421c95949bE2D4E3"]
+  - ["attacker", "", "0x06B912354B167848a4A608a56BC26C680DAD3D79"]
+  - ["attacker1", "", "0xAb21300fA507Ab30D50c3A5D1Cad617c19E83930"]
 
 roles:
   "busd":

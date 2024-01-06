@@ -32,7 +32,6 @@ class DefiRole:
 class ContractInfo:
     name: str
     cls_name: str
-    interface_name: str
     address: str
 
 
@@ -49,6 +48,7 @@ class Config:
 
     # Used for public access
     contract_infos: Dict[str, ContractInfo] = field(default_factory=dict)
+    account_infos: Dict[str, ContractInfo] = field(default_factory=dict)
 
     # Used for synthesizer
     roles: Dict[str, DefiRole] = field(default_factory=dict)
@@ -71,10 +71,13 @@ class Config:
         # Add Contracts
         for c in self.contracts:
             ci = ContractInfo(*c)
-            self.contract_infos[ci.name] = ci
-        if ATTACKER not in self.contract_infos:
+            if ci.cls_name == "":
+                self.account_infos[ci.name] = ci
+            else:
+                self.contract_infos[ci.name] = ci
+        if ATTACKER not in self.account_infos:
             print(f"Attacker's address is not given, use the default address: {ATTACKER_ADDR}")
-            self.contract_infos[ATTACKER] = ContractInfo(ATTACKER, "", "", ATTACKER_ADDR)
+            self.account_infos[ATTACKER] = ContractInfo(ATTACKER, "", ATTACKER_ADDR)
 
         # Add Roles
         keys = list(self.roles.keys())
@@ -91,7 +94,7 @@ class Config:
 
     @property
     def attacker_addr(self):
-        return self.contract_infos[ATTACKER].address
+        return self.account_infos[ATTACKER].address
 
     @property
     def assets(self):

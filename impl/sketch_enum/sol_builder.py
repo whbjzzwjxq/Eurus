@@ -1,13 +1,10 @@
 import re
 from typing import List
 
-from impl.dsl import Sketch, init_action_from_list
+from impl.dsl.dsl import Sketch, init_action_from_list
 from impl.toolkit.config import Config, init_config
-from impl.toolkit.const import ATTACKER
-from impl.utils import (ZFILL_SIZE, func_name_regex, load_record,
-                        prepare_subfolder)
-
-from .synthesizer import Synthesizer
+from impl.toolkit.const import ATTACKER, MODIFIER
+from impl.toolkit.utils import ZFILL_SIZE, func_name_regex
 
 
 class BenchmarkBuilder:
@@ -19,17 +16,20 @@ class BenchmarkBuilder:
     check_gt_prefix = "check_gt"
     test_gt_prefix = "test_gt"
 
-    predefined_interfaces = ["IERC20", "IUniswapV2Pair"]
+    predefined_contracts = {
+        "BUSD": 'import {BUSD} from "@utils/BUSD.sol";',
+        "UniswapV2Pair": 'import {UniswapV2Pair} from "@uniswapv2/UniswapV2Pair.sol";',
+    }
 
-    def __init__(self, bmk_dir: str, sketch_generation: bool = False) -> None:
+    def __init__(self, bmk_dir: str) -> None:
         self.bmk_dir = bmk_dir
-        _, result_path = prepare_subfolder(bmk_dir)
         self.config: Config = init_config(bmk_dir)
 
         # Grammar Sugars
         self.project_name = self.config.project_name
         self.roles = self.config.roles
         self.contract_infos = self.config.contract_infos
+        self.account_infos = self.config.account_infos
         self.attack_goal = self.config.attack_goal
         self.extra_actions = self.config.extra_actions
         self.uniswap_pairs = self.config.uniswap_pairs
@@ -43,11 +43,11 @@ class BenchmarkBuilder:
 
         # Get all token users
         self.token_user2addrs = {ATTACKER: ATTACKER}
+        for c in self.account_infos.values():
+            self.token_user2addrs[c.name] = c.name
+
         for c in self.contract_infos.values():
-            if c.interface_name == "":
-                self.token_user2addrs[c.name] = c.name
-            else:
-                self.token_user2addrs[c.name] = f"address({c.name})"
+            self.token_user2addrs[c.name] = f"address({c.name})"
 
         # Get ground truth
         actions = [init_action_from_list(a, True) for a in self.config.groundtruth]
@@ -55,11 +55,6 @@ class BenchmarkBuilder:
 
         # Collect all public action names.
         self.ava_action_names = self._init_ava_action_names()
-
-        if sketch_generation:
-            self.synthesizer = None
-        else:
-            self.synthesizer = Synthesizer(self.bmk_dir, record=load_record(result_path))
 
     def _init_ava_action_names(self):
         ava_action_names = []
@@ -78,10 +73,12 @@ class BenchmarkBuilder:
             'import "@utils/Helper.sol";',
         ]
         for c in self.contract_infos.values():
-            i_name = c.interface_name
-            if i_name in self.predefined_interfaces or i_name == "":
-                continue
-            imports.append(f'import {{{i_name}}} from "./contracts/{i_name}.sol";')
+            cls_name = c.cls_name
+            if cls_name in self.predefined_contracts:
+                import_str = self.predefined_contracts[cls_name]
+            else:
+                import_str = f'import {{{cls_name}}} from "./contracts/{cls_name}.sol";'
+            imports.append(import_str)
         imports = sorted(imports)
         all = [license, pragma, *imports]
         return all
@@ -90,11 +87,15 @@ class BenchmarkBuilder:
         # Contracts
         contract_decl = [f"contract {self.project_name}{suffix} is Test, Helper " + "{"]
         contract_interfaces = []
+
+        for c in self.account_infos.values():
+            cls_name = c.cls_name
+            s = f"address {c.name} = address({c.address});"
+            contract_interfaces.append(s)
+
         for c in self.contract_infos.values():
-            if c.interface_name != "":
-                s = f"{c.interface_name} {c.name} = {c.interface_name}({c.address});"
-            else:
-                s = f"address {c.name} = address({c.address});"
+            cls_name = c.cls_name
+            s = f"{cls_name} {c.name} = {cls_name}(payable({c.address}));"
             contract_interfaces.append(s)
 
         # Attackers
@@ -110,7 +111,7 @@ class BenchmarkBuilder:
 
         # The modifier used to identify actions in Slither IR.
         action_mod = [
-            "modifier foray() {",
+            f"modifier {MODIFIER}()" + "{",
             "_;",
             "}",
         ]
@@ -135,14 +136,14 @@ class BenchmarkBuilder:
         i = 0
         for name in self.erc20_tokens:
             s0 = f"token_addrs[{i}] = address({name});"
-            s1 = f"token_names[{i}] = \"{name}\";"
+            s1 = f'token_names[{i}] = "{name}";'
             print_content.append(s0)
             print_content.append(s1)
             i += 1
         i = 0
         for name, addr in self.token_user2addrs.items():
             s0 = f"user_addrs[{i}] = {addr};"
-            s1 = f"user_names[{i}] = \"{name}\";"
+            s1 = f'user_names[{i}] = "{name}";'
             print_content.append(s0)
             print_content.append(s1)
             i += 1
@@ -183,7 +184,7 @@ class BenchmarkBuilder:
             addr = f"address({l})"
             for t in self.erc20_tokens:
                 borrow = [
-                    f"function borrow_{t}_{l}(uint256 amount) internal foray" + "{",
+                    f"function borrow_{t}_{l}(uint256 amount) internal {MODIFIER}" + "{",
                     f"vm.stopPrank();",
                     f"vm.prank({addr});",
                     f"{t}.transfer(attacker, amount);",
@@ -191,7 +192,7 @@ class BenchmarkBuilder:
                     "}",
                 ]
                 payback = [
-                    f"function payback_{t}_{l}(uint256 amount) internal foray" + "{",
+                    f"function payback_{t}_{l}(uint256 amount) internal {MODIFIER}" + "{",
                     f"{t}.transfer({addr}, amount);",
                     "}",
                 ]
@@ -202,14 +203,16 @@ class BenchmarkBuilder:
         for u, t in self.uniswap2tokens.items():
             token0, token1 = t
             swap0 = [
-                f"function swap_{u}_attacker_{token0}_{token1}(uint256 amount, uint256 amountOut) internal foray" + "{",
+                f"function swap_{u}_attacker_{token0}_{token1}(uint256 amount, uint256 amountOut) internal {MODIFIER}"
+                + "{",
                 f"{token0}.transfer(address({u}), amount);",
                 f"{u}.swap(0, amountOut, attacker, new bytes(0));",
                 "}",
             ]
             add_func_to_actions(swap0)
             swap1 = [
-                f"function swap_{u}_attacker_{token1}_{token0}(uint256 amount, uint256 amountOut) internal foray" + "{",
+                f"function swap_{u}_attacker_{token1}_{token0}(uint256 amount, uint256 amountOut) internal {MODIFIER}"
+                + "{",
                 f"{token1}.transfer(address({u}), amount);",
                 f"{u}.swap(amountOut, 0, attacker, new bytes(0));",
                 "}",
@@ -238,10 +241,9 @@ class BenchmarkBuilder:
                 f.write(l)
                 f.write("\n")
 
-    def output_with_candidates(self, output_path: str):
-        self.synthesizer = Synthesizer(self.bmk_dir, record=None)
+    def output_with_candidates(self, candidates: List[Sketch], output_path: str):
         func_bodys: List[str] = []
-        for idx, c in enumerate(self.synthesizer.candidates):
+        for idx, c in enumerate(candidates):
             suffix = str(idx).zfill(ZFILL_SIZE)
             func_name = self.check_cand_prefix + suffix
             func_bodys.extend(c.output(func_name, self.extra_statements))
@@ -257,7 +259,6 @@ class BenchmarkBuilder:
             for l in results:
                 f.write(l)
                 f.write("\n")
-        return self.synthesizer.candidates, self.synthesizer.timecost
 
     def get_sketch_by_func_name(self, func_name: str, candidates: List[Sketch]):
         if func_name == self.check_gt_prefix:
