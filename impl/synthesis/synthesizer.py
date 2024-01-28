@@ -95,9 +95,8 @@ class Synthesizer:
         return candidates[: gt_idx + 1]
 
     def infer_token_flows(self, action: AFLAction) -> List[Tokenflow]:
-        cur_hack_token_flows = {}
-        if action.func_sig in cur_hack_token_flows:
-            return cur_hack_token_flows[action.func_sig]
+        # We aren't inferring precise token flow here.
+        # We are inferring the expected token flows for sketch enumeration.
         if action.action_name == "nop":
             return []
         elif action.action_name == "burn":
@@ -135,4 +134,28 @@ class Synthesizer:
             return []
 
     def infer_constraints(self, action: AFLAction) -> ACTION_CONSTR:
-        pass
+        cur_hack_constraints = hack_constraints.get(self.config.project_name, {})
+        if action.func_sig in cur_hack_constraints:
+            return cur_hack_constraints[action.func_sig]
+        if action.action_name == "nop":
+            return []
+        elif action.action_name == "burn":
+            return gen_summary_burn(action.account, action.token0, "arg_0")
+        elif action.action_name == "mint":
+            return gen_summary_mint(action.account, action.token0, "arg_0")
+        elif action.action_name == "swap":
+            return gen_summary_uniswap(
+                action.swap_pair, "attacker", "attacker", action.token0, action.token1, "arg_0", "arg_1"
+            )
+        elif action.action_name == "borrow":
+            return gen_summary_transfer(action.lender, "attacker", action.token0, "arg_0")
+        elif action.action_name == "payback":
+            return gen_summary_payback("attacker", action.lender, action.token0, "arg_x0", "arg_0")
+        elif action.action_name == "addliquidity":
+            return []
+        elif action.action_name == "deposit":
+            return []
+        elif action.action_name == "withdraw":
+            return []
+        elif action.action_name == "transaction":
+            return []

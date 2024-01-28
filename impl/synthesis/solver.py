@@ -3,11 +3,12 @@ import re
 import time
 from typing import Any, Dict, List
 
-import gurobipy as gp
+# import gurobipy as gp
+gp = None
 from z3 import *
 
 from impl.dsl.dsl import Sketch
-from impl.sketch_enum.sol_builder import BenchmarkBuilder
+from impl.synthesis.sol_builder import BenchmarkBuilder
 from impl.toolkit.foundry import (LazyStorage, deploy_contract, init_anvil,
                                   verify_model_on_anvil)
 from impl.toolkit.utils import (gen_result_paths, prepare_subfolder,
@@ -23,7 +24,6 @@ Z3_OR_GB = True
 TRACK_UNSAT = True
 LB = 0
 UB = 2**128 - 1
-VTYPE = gp.GRB.CONTINUOUS
 
 
 class VAR:
@@ -53,6 +53,7 @@ class VAR:
             if value is not None:
                 self.var_obj = value / scale
             else:
+                VTYPE = gp.GRB.CONTINUOUS
                 self.var_obj = self.solver.addVar(lb=LB, ub=UB, vtype=VTYPE, name=name)
 
     @property
