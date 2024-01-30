@@ -1,7 +1,7 @@
 import time
 from typing import Any, Dict, List
 import json
-import gurobipy as gp
+# import gurobipy as gp
 import re
 from z3 import *
 
@@ -30,7 +30,6 @@ Z3_OR_GB = True
 TRACK_UNSAT = True
 LB = 0
 UB = 2**128 - 1
-VTYPE = gp.GRB.CONTINUOUS
 
 
 class VAR:
@@ -60,6 +59,8 @@ class VAR:
             if value is not None:
                 self.var_obj = value / scale
             else:
+                # VTYPE = gp.GRB.CONTINUOUS
+                VTYPE = None
                 self.var_obj = self.solver.addVar(lb=LB, ub=UB, vtype=VTYPE, name=name)
 
     @property
