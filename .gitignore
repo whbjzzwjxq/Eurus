@@ -170,3 +170,4 @@ work_dir
 node_modules
 benchmarks/**/.cache
 package-lock.json
+record.json
