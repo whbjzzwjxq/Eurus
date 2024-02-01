@@ -728,6 +728,16 @@ def gen_Haven_swap_pairhw_attacker_wbnb_haven():
     amtOut = "arg_1"
     return gen_summary_uniswap("pairhw", "attacker", "attacker", "wbnb", "haven", amtIn, amtOut, percent_in_tokenOut=0.87)
 
+def gen_SwaposV2_swap_spair_attacker_weth_swapos():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("spair", "attacker", "attacker", "weth", "swapos", amtIn, amtOut, amtOutRatio=9.997)
+
+def gen_SwaposV2_swap_spair_attacker_swapos_weth():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("spair", "attacker", "attacker", "swapos", "weth", amtIn, amtOut, amtOutRatio=9.997)
+
 hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "NMB": {
         "transaction_gnimbstaking_gnimb": gen_NMB_transaction_gnimbstaking_gnimb(),
@@ -780,6 +790,10 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "swap_pairbh_attacker_haven_busd": gen_Haven_swap_pairbh_attacker_haven_busd(),
         "swap_pairbh_attacker_busd_haven": gen_Haven_swap_pairbh_attacker_busd_haven(),
         "swap_pairhw_attacker_wbnb_haven": gen_Haven_swap_pairhw_attacker_wbnb_haven(),
+    },
+    "SwaposV2": {
+        "swap_spair_attacker_weth_swapos": gen_SwaposV2_swap_spair_attacker_weth_swapos(),
+        "swap_spair_attacker_swapos_weth": gen_SwaposV2_swap_spair_attacker_swapos_weth(),
     }
 }
 

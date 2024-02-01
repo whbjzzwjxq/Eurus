@@ -167,10 +167,14 @@ class BenchmarkBuilder:
             'import "@utils/QueryBlockchain.sol";',
         ]
         for c in self.ctrt_cls:
+            # if c in self.default_import_ctrts:
+            #     imports.append(f'import {{{c}}} from "@utils/{c}.sol";')
+            # else:
+            #     imports.append(f'import "./{c}.sol";')
             if c in self.default_import_ctrts:
                 imports.append(f'import {{{c}}} from "@utils/{c}.sol";')
             else:
-                imports.append(f'import "./{c}.sol";')
+                imports.append(f'import {{{c}}} from "./{c}.sol";')
         imports = sorted(imports)
         all = [license, pragma, *imports]
         return all

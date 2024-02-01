@@ -1,0 +1,27 @@
+{
+    "test_results": {
+        "./benchmarks/SwaposV2": [
+            {
+                "name": "check_cand002",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0xde0b6b3a7640000",
+                        "p_amt1_uint256": "0x6f05b59d3b20000",
+                        "p_amt2_uint256": "0x8ffb6787e8ad80000",
+                        "p_amt3_uint256": "0x8f1d5c1cae3740000",
+                        "p_amt4_uint256": "0x14def2c42ebd6400",
+                        "p_amt5_uint256": "0xdecdb5384967780"
+                    }
+                ],
+                "time": [
+                    0.0035060830414295197,
+                    0,
+                    0.0035060830414295197
+                ],
+                "feasible": true,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

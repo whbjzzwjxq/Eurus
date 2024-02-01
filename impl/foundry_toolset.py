@@ -101,11 +101,13 @@ class CastStorageInfo:
     offset: str
     bytes: str
     value: str
+    hex_value: str
     contract: str
 
 
 def parse_cast_storage_info(lines: List[str]) -> Dict[str, CastStorageInfo]:
-    # |Name|Type|Slot|Offset|Bytes|Value|Contract|
+    # Update to anvil 0.2.0
+    # |Name|Type|Slot|Offset|Bytes|Value|Hex Value|Contract|
     results = {}
     storage_regex = re.compile(r"\|[\w\s\|]+\|")
     for l in lines:
@@ -356,7 +358,8 @@ def verify_model_on_anvil(ctrt_name2addr: Dict[str, str], func_name: str, params
         "cast",
         "call",
         "--trace",
-        "--verbose",
+        # cast 0.2.0 doesn't support
+        # "--verbose",
         *labels,
         "--rpc-url",
         f"{DEFAULT_HOST}:{DEFAULT_PORT}",
@@ -373,9 +376,11 @@ def verify_model_on_anvil(ctrt_name2addr: Dict[str, str], func_name: str, params
     except Exception as err:
         print(err)
         return False
-    print(out.stdout)
+    # This string is a special string used to indicate a successful transaction
     output = out.stdout.splitlines()[-5]
     feasible = output.endswith("0x4e487b710000000000000000000000000000000000000000000000000000000000000001")
-    if not feasible:
-        print(out.stdout)
+    print(out.stdout)
+    if feasible:
+        print("Don't care `Transaction failed.` here. It doesn't mean the result is not feasible.")
+        print("0x4e487b710000000000000000000000000000000000000000000000000000000000000001 is the special string used to indicate a successful transaction.")
     return feasible

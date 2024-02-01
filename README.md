@@ -33,7 +33,7 @@ pip3 install -q --upgrade pip && pip3 install -q -r ./requirements.txt && \
 solc-select install 0.8.15 && solc-select use 0.8.15 && npm install --quiet --save-dev
 ```
 
-Install foundry
+Install foundry 0.2.0
 ```bash
 curl -L https://foundry.paradigm.xyz | bash
 ```

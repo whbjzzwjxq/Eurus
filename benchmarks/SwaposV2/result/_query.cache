@@ -1,0 +1,38 @@
+Compiling 1 files with 0.8.24
+Solc 0.8.24 finished in 601.99ms
+Compiler run [32msuccessful![0m
+
+Running 1 test for benchmarks/SwaposV2/SwaposV2_query.t.sol:ContractTest
+[32m[PASS][0m test_query() (gas: 127639)
+Logs:
+  ----query starts----
+  ----queryBlockTimestamp starts----
+  uint256 blockTimestamp: 1681623155
+  ----queryBlockTimestamp ends----
+  ----queryUniswapV2Pair starts----pair
+  uint112 reserve0pair: 145658161144708222114663
+  uint112 reserve1pair: 133386512258125308305
+  uint32 blockTimestampLastpair: 1681623155
+  uint256 kLastpair: 0
+  uint256 price0CumulativeLastpair: 25566050626255828898907897182436060
+  uint256 price1CumulativeLastpair: 94016544460781427383945236328047841088624
+  ----queryUniswapV2Pair ends----pair
+  ----queryERC20 starts----weth
+  uint256 totalSupplyweth: 3772451708783817760115995
+  uint256 balanceOfwethpair: 133386512258125308305
+  uint256 balanceOfwethattacker: 0
+  uint256 balanceOfwethspair: 133386512258125308305
+  uint256 balanceOfweth: 1085074040072792434537
+  ----queryERC20 ends----weth
+  ----queryERC20 starts----swapos
+  uint256 totalSupplyswapos: 5024960847500000000000000
+  uint256 balanceOfswapospair: 145658161144708222114663
+  uint256 balanceOfswaposattacker: 0
+  uint256 balanceOfswaposspair: 145658161144708222114663
+  uint256 balanceOfswapos: 0
+  ----queryERC20 ends----swapos
+  ----query ends----
+
+Test result: [32mok[0m. [32m1[0m passed; [31m0[0m failed; [33m0[0m skipped; finished in 3.90s
+ 
+Ran 1 test suites: [32m1[0m tests passed, [31m0[0m failed, [33m0[0m skipped (1 total tests)
