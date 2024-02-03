@@ -1,33 +1,41 @@
 /**
  *Submitted for verification at BscScan.com on 2023-05-30
 */
+// import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
+import "@uniswapv2/contracts/interfaces/IUniswapV2Factory.sol";
+import "@uniswapv2/contracts/interfaces/IUniswapV2Router.sol";
+import "@uniswapv2/contracts/interfaces/IUniswapV2Pair.sol";
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.1;
-interface IERC20 {
-    function name() external view returns (string memory);
-    function symbol() external view returns (string memory);
-    function decimals() external view returns (uint8);
-    function totalSupply() external view returns (uint256);
-    function balanceOf(address account) external view returns (uint256);
-    function transfer(address to, uint256 amount) external returns (bool);
-    function allowance(
-        address owner,
-        address spender
-    ) external view returns (uint256);
-    function approve(address spender, uint256 amount) external returns (bool);
-    function transferFrom(
-        address from,
-        address to,
-        uint256 amount
-    ) external returns (bool);
-    event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(
-        address indexed owner,
-        address indexed spender,
-        uint256 value
-    );
-}
+pragma solidity ^0.8.0;
+// interface IERC20 {
+//     function name() external view returns (string memory);
+//     function symbol() external view returns (string memory);
+//     function decimals() external view returns (uint8);
+//     function totalSupply() external view returns (uint256);
+//     function balanceOf(address account) external view returns (uint256);
+//     function transfer(address to, uint256 amount) external returns (bool);
+//     function allowance(
+//         address owner,
+//         address spender
+//     ) external view returns (uint256);
+//     function approve(address spender, uint256 amount) external returns (bool);
+//     function transferFrom(
+//         address from,
+//         address to,
+//         uint256 amount
+//     ) external returns (bool);
+//     event Transfer(address indexed from, address indexed to, uint256 value);
+//     event Approval(
+//         address indexed owner,
+//         address indexed spender,
+//         uint256 value
+//     );
+// }
 library Address {
     function isContract(address account) internal view returns (bool) {
         return account.code.length > 0;
@@ -144,101 +152,101 @@ library Address {
         }
     }
 }
-library SafeMath {
-    function tryAdd(
-        uint256 a,
-        uint256 b
-    ) internal pure returns (bool, uint256) {
-        unchecked {
-            uint256 c = a + b;
-            if (c < a) return (false, 0);
-            return (true, c);
-        }
-    }
-    function trySub(
-        uint256 a,
-        uint256 b
-    ) internal pure returns (bool, uint256) {
-        unchecked {
-            if (b > a) return (false, 0);
-            return (true, a - b);
-        }
-    }
-    function tryMul(
-        uint256 a,
-        uint256 b
-    ) internal pure returns (bool, uint256) {
-        unchecked {
-            if (a == 0) return (true, 0);
-            uint256 c = a * b;
-            if (c / a != b) return (false, 0);
-            return (true, c);
-        }
-    }
-    function tryDiv(
-        uint256 a,
-        uint256 b
-    ) internal pure returns (bool, uint256) {
-        unchecked {
-            if (b == 0) return (false, 0);
-            return (true, a / b);
-        }
-    }
-    function tryMod(
-        uint256 a,
-        uint256 b
-    ) internal pure returns (bool, uint256) {
-        unchecked {
-            if (b == 0) return (false, 0);
-            return (true, a % b);
-        }
-    }
-    function add(uint256 a, uint256 b) internal pure returns (uint256) {
-        return a + b;
-    }
-    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        return a - b;
-    }
-    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
-        return a * b;
-    }
-    function div(uint256 a, uint256 b) internal pure returns (uint256) {
-        return a / b;
-    }
-    function mod(uint256 a, uint256 b) internal pure returns (uint256) {
-        return a % b;
-    }
-    function sub(
-        uint256 a,
-        uint256 b,
-        string memory errorMessage
-    ) internal pure returns (uint256) {
-        unchecked {
-            require(b <= a, errorMessage);
-            return a - b;
-        }
-    }
-    function div(
-        uint256 a,
-        uint256 b,
-        string memory errorMessage
-    ) internal pure returns (uint256) {
-        unchecked {
-            require(b > 0, errorMessage);
-            return a / b;
-        }
-    }
-    function mod(
-        uint256 a,
-        uint256 b,
-        string memory errorMessage
-    ) internal pure returns (uint256) {
-        unchecked {
-            require(b > 0, errorMessage);
-            return a % b;
-        }
-    }
-}
+// library SafeMath {
+//     function tryAdd(
+//         uint256 a,
+//         uint256 b
+//     ) internal pure returns (bool, uint256) {
+//         unchecked {
+//             uint256 c = a + b;
+//             if (c < a) return (false, 0);
+//             return (true, c);
+//         }
+//     }
+//     function trySub(
+//         uint256 a,
+//         uint256 b
+//     ) internal pure returns (bool, uint256) {
+//         unchecked {
+//             if (b > a) return (false, 0);
+//             return (true, a - b);
+//         }
+//     }
+//     function tryMul(
+//         uint256 a,
+//         uint256 b
+//     ) internal pure returns (bool, uint256) {
+//         unchecked {
+//             if (a == 0) return (true, 0);
+//             uint256 c = a * b;
+//             if (c / a != b) return (false, 0);
+//             return (true, c);
+//         }
+//     }
+//     function tryDiv(
+//         uint256 a,
+//         uint256 b
+//     ) internal pure returns (bool, uint256) {
+//         unchecked {
+//             if (b == 0) return (false, 0);
+//             return (true, a / b);
+//         }
+//     }
+//     function tryMod(
+//         uint256 a,
+//         uint256 b
+//     ) internal pure returns (bool, uint256) {
+//         unchecked {
+//             if (b == 0) return (false, 0);
+//             return (true, a % b);
+//         }
+//     }
+//     function add(uint256 a, uint256 b) internal pure returns (uint256) {
+//         return a + b;
+//     }
+//     function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+//         return a - b;
+//     }
+//     function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+//         return a * b;
+//     }
+//     function div(uint256 a, uint256 b) internal pure returns (uint256) {
+//         return a / b;
+//     }
+//     function mod(uint256 a, uint256 b) internal pure returns (uint256) {
+//         return a % b;
+//     }
+//     function sub(
+//         uint256 a,
+//         uint256 b,
+//         string memory errorMessage
+//     ) internal pure returns (uint256) {
+//         unchecked {
+//             require(b <= a, errorMessage);
+//             return a - b;
+//         }
+//     }
+//     function div(
+//         uint256 a,
+//         uint256 b,
+//         string memory errorMessage
+//     ) internal pure returns (uint256) {
+//         unchecked {
+//             require(b > 0, errorMessage);
+//             return a / b;
+//         }
+//     }
+//     function mod(
+//         uint256 a,
+//         uint256 b,
+//         string memory errorMessage
+//     ) internal pure returns (uint256) {
+//         unchecked {
+//             require(b > 0, errorMessage);
+//             return a % b;
+//         }
+//     }
+// }
 interface ISwapPair {
     function DOMAIN_SEPARATOR() external view returns (bytes32);
     function PERMIT_TYPEHASH() external pure returns (bytes32);
@@ -425,20 +433,20 @@ contract ERC20 is IERC20 {
     constructor(string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
-        _totalSupply = 30000000000000000000000000;
+        _totalSupply = 3e25;
         _balances[msg.sender] = _totalSupply;
     
     }
-    function name() public view virtual override returns (string memory) {
+    function name() public view virtual returns (string memory) {
         return _name;
     }
-    function symbol() public view virtual override returns (string memory) {
+    function symbol() public view virtual returns (string memory) {
         return _symbol;
     }
-    function decimals() public view virtual override returns (uint8) {
+    function decimals() public view virtual returns (uint8) {
         return 18;
     }
-    function totalSupply() public view virtual override returns (uint256) {
+    function totalSupply() public view virtual returns (uint256) {
         return _totalSupply;
     }
     function totalCirculation() public view virtual returns (uint256) {
@@ -608,44 +616,44 @@ contract ERC20 is IERC20 {
         _minTotalSupply = amount;
     }
 }
-contract Ownable {
-    address private _owner;
-    event OwnershipTransferred(
-        address indexed previousOwner,
-        address indexed newOwner
-    );
-    constructor() {
-        _transferOwnership(_msgSender());
-    }
-    function _msgSender() internal view virtual returns (address) {
-        return msg.sender;
-    }
-    function _msgData() internal view virtual returns (bytes calldata) {
-        return msg.data;
-    }
-    function owner() public view virtual returns (address) {
-        return _owner;
-    }
-    modifier onlyOwner() {
-        require(owner() == _msgSender(), "Ownable: caller is not the owner");
-        _;
-    }
-    function renounceOwnership() public virtual onlyOwner {
-        _transferOwnership(address(0));
-    }
-    function transferOwnership(address newOwner) public virtual onlyOwner {
-        require(
-            newOwner != address(0),
-            "Ownable: new owner is the zero address"
-        );
-        _transferOwnership(newOwner);
-    }
-    function _transferOwnership(address newOwner) internal virtual {
-        address oldOwner = _owner;
-        _owner = newOwner;
-        emit OwnershipTransferred(oldOwner, newOwner);
-    }
-}
+// contract Ownable {
+//     address private _owner;
+//     event OwnershipTransferred(
+//         address indexed previousOwner,
+//         address indexed newOwner
+//     );
+//     constructor() {
+//         _transferOwnership(_msgSender());
+//     }
+//     function _msgSender() internal view virtual returns (address) {
+//         return msg.sender;
+//     }
+//     function _msgData() internal view virtual returns (bytes calldata) {
+//         return msg.data;
+//     }
+//     function owner() public view virtual returns (address) {
+//         return _owner;
+//     }
+//     modifier onlyOwner() {
+//         require(owner() == _msgSender(), "Ownable: caller is not the owner");
+//         _;
+//     }
+//     function renounceOwnership() public virtual onlyOwner {
+//         _transferOwnership(address(0));
+//     }
+//     function transferOwnership(address newOwner) public virtual onlyOwner {
+//         require(
+//             newOwner != address(0),
+//             "Ownable: new owner is the zero address"
+//         );
+//         _transferOwnership(newOwner);
+//     }
+//     function _transferOwnership(address newOwner) internal virtual {
+//         address oldOwner = _owner;
+//         _owner = newOwner;
+//         emit OwnershipTransferred(oldOwner, newOwner);
+//     }
+// }
 contract Refer {
     mapping(address => address) private _refers;
     mapping(address => mapping(uint256 => address)) private _invites;
@@ -816,15 +824,16 @@ contract UN is ERC20, Ownable, Refer {
             super._transfer(from, to, amount - every * 9);
         } else if (from == swapPair) {
             uint256 every = amount.div(100);
-            super._transfer(from, address(stake), every * 3);
-            stake.sendReward(every * 3);
+            // require(address(stake) != address(0), "empty stake");
+            // super._transfer(from, address(stake), every * 3);
+            // stake.sendReward(every * 3);
             super._transfer(from, address(this), every);
             super._transfer(from, market, every * 3);
             super._transfer(from, to, amount - every * 7);
         } else if (to == swapPair) {
             uint256 every = amount.div(1000);
-            super._transfer(from, address(stake), every * 33);
-            stake.sendReward(every * 33);
+            // super._transfer(from, address(stake), every * 33);
+            // stake.sendReward(every * 33);
             super._transfer(from, address(this), every * 10);
             super._transfer(from, market, every * 32);
             address _refer = from;

