@@ -1,0 +1,318 @@
+Compiling 184 files with 0.8.24
+Solc 0.8.24 finished in 40.69s
+Compiler run [33msuccessful with warnings:[0m
+[1;33mWarning (2462)[0m[1;37m: Visibility for constructor is ignored. If you want the contract to be non-deployable, making it "abstract" is sufficient.[0m
+   [34m-->[0m benchmarks/CFC/BEP20USDT.sol:358:3:
+[34m    |[0m
+[34m358 |[0m   [33mconstructor() public {[0m
+[34m    |[0m   [1;33m^ (Relevant source part starts here and spans across multiple lines).[0m
+
+[1;33mWarning (2462)[0m[1;37m: Visibility for constructor is ignored. If you want the contract to be non-deployable, making it "abstract" is sufficient.[0m
+   [34m-->[0m benchmarks/CFC/SAFE.sol:871:5:
+[34m    |[0m
+[34m871 |[0m     [33mconstructor () public ERC20(NAME, SYMBOL) {}[0m
+[34m    |[0m     [1;33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (9302)[0m[1;37m: Return value of low-level calls not used.[0m
+   [34m-->[0m benchmarks/ShadowFi/ShadowFi.sol:801:13:
+[34m    |[0m
+[34m801 |[0m             [33mpayable(marketingFeeReceiver).call{value: amountBNBMarketing, gas: 30000}("")[0m;
+[34m    |[0m             [1;33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/AES/AES.t.sol:195:28:
+[34m    |[0m
+[34m195 |[0m     function burn_aes_pair([33muint256 amount[0m) internal eurus {
+[34m    |[0m                            [1;33m^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/AES/AES_candidates.t.sol:195:28:
+[34m    |[0m
+[34m195 |[0m     function burn_aes_pair([33muint256 amount[0m) internal eurus {
+[34m    |[0m                            [1;33m^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/BXH/BXH.t.sol:217:46:
+[34m    |[0m
+[34m217 |[0m     function withdraw_bxhstaking_bxhslp_usdt([33muint256 amount[0m) internal eurus {
+[34m    |[0m                                              [1;33m^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/BXH/BXH_candidates.t.sol:217:46:
+[34m    |[0m
+[34m217 |[0m     function withdraw_bxhstaking_bxhslp_usdt([33muint256 amount[0m) internal eurus {
+[34m    |[0m                                              [1;33m^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/Discover/Discover.t.sol:229:9:
+[34m    |[0m
+[34m229 |[0m         [33muint256 amountOut[0m
+[34m    |[0m         [1;33m^^^^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/Discover/Discover_candidates.t.sol:229:9:
+[34m    |[0m
+[34m229 |[0m         [33muint256 amountOut[0m
+[34m    |[0m         [1;33m^^^^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/EGD/EGD.t.sol:216:45:
+[34m    |[0m
+[34m216 |[0m     function withdraw_egdstaking_egdslp_egd([33muint256 amount[0m) internal eurus {
+[34m    |[0m                                             [1;33m^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/EGD/EGD_candidates.t.sol:216:45:
+[34m    |[0m
+[34m216 |[0m     function withdraw_egdstaking_egdslp_egd([33muint256 amount[0m) internal eurus {
+[34m    |[0m                                             [1;33m^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/Haven/Haven.sol:577:26:
+[34m    |[0m
+[34m577 |[0m     function getTotalFee([33mbool selling[0m) public view returns (uint256) {
+[34m    |[0m                          [1;33m^^^^^^^^^^^^[0m
+
+[1;33mWarning (2072)[0m[1;37m: Unused local variable.[0m
+   [34m-->[0m benchmarks/Haven/Haven.sol:617:9:
+[34m    |[0m
+[34m617 |[0m         [33muint256 balanceBefore[0m = address(this).balance;
+[34m    |[0m         [1;33m^^^^^^^^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/Haven/Haven.sol:789:30:
+[34m    |[0m
+[34m789 |[0m     function isOverLiquified([33muint256 target[0m, uint256 accuracy) public view returns (bool) {
+[34m    |[0m                              [1;33m^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/Haven/Haven.sol:789:46:
+[34m    |[0m
+[34m789 |[0m     function isOverLiquified(uint256 target, [33muint256 accuracy[0m) public view returns (bool) {
+[34m    |[0m                                              [1;33m^^^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/Haven/Haven.t.sol:355:9:
+[34m    |[0m
+[34m355 |[0m         [33muint256 amount[0m,
+[34m    |[0m         [1;33m^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/Haven/Haven.t.sol:356:9:
+[34m    |[0m
+[34m356 |[0m         [33muint256 amountOut[0m
+[34m    |[0m         [1;33m^^^^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/Haven/Haven_candidates.t.sol:355:9:
+[34m    |[0m
+[34m355 |[0m         [33muint256 amount[0m,
+[34m    |[0m         [1;33m^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/Haven/Haven_candidates.t.sol:356:9:
+[34m    |[0m
+[34m356 |[0m         [33muint256 amountOut[0m
+[34m    |[0m         [1;33m^^^^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/Kashi/CauldronMediumRiskV1.sol:251:51:
+[34m    |[0m
+[34m251 |[0m     function updateExchangeRate() public returns ([33mbool updated[0m, uint256 rate) {
+[34m    |[0m                                                   [1;33m^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/Kashi/CauldronMediumRiskV1.sol:251:65:
+[34m    |[0m
+[34m251 |[0m     function updateExchangeRate() public returns (bool updated, [33muint256 rate[0m) {
+[34m    |[0m                                                                 [1;33m^^^^^^^^^^^^[0m
+
+[1;33mWarning (2072)[0m[1;37m: Unused local variable.[0m
+   [34m-->[0m benchmarks/MUMUG/MuBank.sol:526:10:
+[34m    |[0m
+[34m526 |[0m         ([33muint256 mu_coin_swap_amount[0m, uint256 mu_coin_amount) = _mu_bond_quote(
+[34m    |[0m          [1;33m^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/MUMUG/MUMUG.t.sol:204:9:
+[34m    |[0m
+[34m204 |[0m         [33muint256 amountOut[0m
+[34m    |[0m         [1;33m^^^^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/MUMUG/MUMUG_candidates.t.sol:204:9:
+[34m    |[0m
+[34m204 |[0m         [33muint256 amountOut[0m
+[34m    |[0m         [1;33m^^^^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/NMB/NMB.t.sol:377:39:
+[34m    |[0m
+[34m377 |[0m     function withdraw_gslp_gslp_gnimb([33muint256 amount[0m) internal {
+[34m    |[0m                                       [1;33m^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/OneRing/Strategy.sol:213:33:
+[34m    |[0m
+[34m213 |[0m     function withdrawAllToVault([33maddress _asset[0m) public restricted {
+[34m    |[0m                                 [1;33m^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/SGZ/SGZ.t.sol:193:9:
+[34m    |[0m
+[34m193 |[0m         [33muint256 amount[0m,
+[34m    |[0m         [1;33m^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/SGZ/SGZ.t.sol:194:9:
+[34m    |[0m
+[34m194 |[0m         [33muint256 amountOut[0m
+[34m    |[0m         [1;33m^^^^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/SGZ/SGZ_candidates.t.sol:193:9:
+[34m    |[0m
+[34m193 |[0m         [33muint256 amount[0m,
+[34m    |[0m         [1;33m^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/SGZ/SGZ_candidates.t.sol:194:9:
+[34m    |[0m
+[34m194 |[0m         [33muint256 amountOut[0m
+[34m    |[0m         [1;33m^^^^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/UN/UN.sol:607:9:
+[34m    |[0m
+[34m607 |[0m         [33maddress from[0m,
+[34m    |[0m         [1;33m^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/Zoompro/Zoom.sol:330:9:
+[34m    |[0m
+[34m330 |[0m         [33maddress _from[0m,
+[34m    |[0m         [1;33m^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/Zoompro/Zoom.sol:331:9:
+[34m    |[0m
+[34m331 |[0m         [33maddress _to[0m,
+[34m    |[0m         [1;33m^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/Zoompro/Zoompro.t.sol:342:9:
+[34m    |[0m
+[34m342 |[0m         [33muint256 amountOut[0m
+[34m    |[0m         [1;33m^^^^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/Zoompro/Zoompro.t.sol:350:9:
+[34m    |[0m
+[34m350 |[0m         [33muint256 amountOut[0m
+[34m    |[0m         [1;33m^^^^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/Zoompro/Zoompro_candidates.t.sol:342:9:
+[34m    |[0m
+[34m342 |[0m         [33muint256 amountOut[0m
+[34m    |[0m         [1;33m^^^^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (5667)[0m[1;37m: Unused function parameter. Remove or comment out the variable name to silence this warning.[0m
+   [34m-->[0m benchmarks/Zoompro/Zoompro_candidates.t.sol:350:9:
+[34m    |[0m
+[34m350 |[0m         [33muint256 amountOut[0m
+[34m    |[0m         [1;33m^^^^^^^^^^^^^^^^^[0m
+
+[1;33mWarning (2018)[0m[1;37m: Function state mutability can be restricted to pure[0m
+   [34m-->[0m benchmarks/BIGFI/BIGFI.sol:956:5:
+[34m    |[0m
+[34m956 |[0m     [33mfunction _getRate() private view returns (uint256) {[0m
+[34m    |[0m     [1;33m^ (Relevant source part starts here and spans across multiple lines).[0m
+
+[1;33mWarning (2018)[0m[1;37m: Function state mutability can be restricted to pure[0m
+   [34m-->[0m benchmarks/Discover/ETHpledge.sol:576:5:
+[34m    |[0m
+[34m576 |[0m     [33mfunction totalSupply() external view returns (uint256) {[0m
+[34m    |[0m     [1;33m^ (Relevant source part starts here and spans across multiple lines).[0m
+
+[1;33mWarning (2018)[0m[1;37m: Function state mutability can be restricted to pure[0m
+   [34m-->[0m benchmarks/Haven/Haven.sol:577:5:
+[34m    |[0m
+[34m577 |[0m     [33mfunction getTotalFee(bool selling) public view returns (uint256) {[0m
+[34m    |[0m     [1;33m^ (Relevant source part starts here and spans across multiple lines).[0m
+
+[1;33mWarning (2018)[0m[1;37m: Function state mutability can be restricted to pure[0m
+   [34m-->[0m benchmarks/Haven/Haven.sol:789:5:
+[34m    |[0m
+[34m789 |[0m     [33mfunction isOverLiquified(uint256 target, uint256 accuracy) public view returns (bool) {[0m
+[34m    |[0m     [1;33m^ (Relevant source part starts here and spans across multiple lines).[0m
+
+[1;33mWarning (2018)[0m[1;37m: Function state mutability can be restricted to view[0m
+  [34m-->[0m benchmarks/Kashi/ChainlinkOracleV2.sol:94:5:
+[34m   |[0m
+[34m94 |[0m     [33mfunction get(bytes calldata data) public override returns (bool, uint256) {[0m
+[34m   |[0m     [1;33m^ (Relevant source part starts here and spans across multiple lines).[0m
+
+[1;33mWarning (2018)[0m[1;37m: Function state mutability can be restricted to pure[0m
+   [34m-->[0m benchmarks/Kashi/ChainlinkOracleV2.sol:113:5:
+[34m    |[0m
+[34m113 |[0m     [33mfunction name(bytes calldata) public view override returns (string memory) {[0m
+[34m    |[0m     [1;33m^ (Relevant source part starts here and spans across multiple lines).[0m
+
+[1;33mWarning (2018)[0m[1;37m: Function state mutability can be restricted to pure[0m
+   [34m-->[0m benchmarks/Kashi/ChainlinkOracleV2.sol:118:5:
+[34m    |[0m
+[34m118 |[0m     [33mfunction symbol(bytes calldata) public view override returns (string memory) {[0m
+[34m    |[0m     [1;33m^ (Relevant source part starts here and spans across multiple lines).[0m
+
+[1;33mWarning (2018)[0m[1;37m: Function state mutability can be restricted to view[0m
+   [34m-->[0m benchmarks/OneRing/OneRingVault.sol:122:5:
+[34m    |[0m
+[34m122 |[0m     [33mfunction _getDecimaledUnderlyingBalance([0m
+[34m    |[0m     [1;33m^ (Relevant source part starts here and spans across multiple lines).[0m
+
+[1;33mWarning (2018)[0m[1;37m: Function state mutability can be restricted to view[0m
+   [34m-->[0m benchmarks/OneRing/OneRingVault.sol:131:5:
+[34m    |[0m
+[34m131 |[0m     [33mfunction _getDefaultMinimumAmountForDeposit([0m
+[34m    |[0m     [1;33m^ (Relevant source part starts here and spans across multiple lines).[0m
+
+[1;33mWarning (2018)[0m[1;37m: Function state mutability can be restricted to view[0m
+   [34m-->[0m benchmarks/Zoompro/Zoom.sol:329:5:
+[34m    |[0m
+[34m329 |[0m     [33mfunction _beforeTokenTransfer([0m
+[34m    |[0m     [1;33m^ (Relevant source part starts here and spans across multiple lines).[0m
+
+
+Running 1 test for benchmarks/Axioma/Axioma_query.t.sol:ContractTest
+[32m[PASS][0m test_query() (gas: 119994)
+Logs:
+  ----query starts----
+  ----queryBlockTimestamp starts----
+  uint256 blockTimestamp: 1682316206
+  ----queryBlockTimestamp ends----
+  ----queryUniswapV2Pair starts----pair
+  uint112 reserve0pair: 14157668659303833605910
+  uint112 reserve1pair: 135484087470763777599
+  uint32 blockTimestampLastpair: 1682282924
+  uint256 kLastpair: 1906756385124960529232642104097337455670834
+  uint256 price0CumulativeLastpair: 162381479393497589138817955145076787665
+  uint256 price1CumulativeLastpair: 6858833427654604253311640316527161756879863
+  ----queryUniswapV2Pair ends----pair
+  ----queryERC20 starts----wbnb
+  uint256 totalSupplywbnb: 2523198357460087879090449
+  uint256 balanceOfwbnbpair: 135484087470763777599
+  uint256 balanceOfwbnbaxiomaPresale: 0
+  uint256 balanceOfwbnbattacker: 0
+  ----queryERC20 ends----wbnb
+  ----queryERC20 starts----axt
+  uint256 totalSupplyaxt: 1000000000000000000000000000
+  uint256 balanceOfaxtpair: 14157668659303833605910
+  uint256 balanceOfaxtaxiomaPresale: 9999996160000000000000000
+  uint256 balanceOfaxtattacker: 0
+  ----queryERC20 ends----axt
+  ----query ends----
+
+Test result: [32mok[0m. [32m1[0m passed; [31m0[0m failed; [33m0[0m skipped; finished in 2.97s
+ 
+Ran 1 test suites: [32m1[0m tests passed, [31m0[0m failed, [33m0[0m skipped (1 total tests)
