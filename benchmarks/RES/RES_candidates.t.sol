@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import "./AttackContract.sol";
-import "./RESA.sol";
-import "./RESB.sol";
 import "@utils/QueryBlockchain.sol";
 import "forge-std/Test.sol";
+import {AttackContract} from "./AttackContract.sol";
+import {RESA} from "./RESA.sol";
+import {RESB} from "./RESB.sol";
 import {USDT} from "@utils/USDT.sol";
 import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
@@ -273,6 +273,25 @@ contract RESTest is Test, BlockLoader {
         vm.startPrank(attacker);
         vm.assume(amt5 >= amt0);
         borrow_usdt_owner(amt0);
+        addliquidity_resA_pair_resA_usdt();
+        swap_pair_attacker_usdt_resA(amt1, amt2);
+        swap_pair_attacker_resA_usdt(amt3, amt4);
+        payback_usdt_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand002(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= amt0);
+        borrow_usdt_owner(amt0);
         swap_pair_attacker_usdt_resA(amt1, amt2);
         addliquidity_resA_pair_resA_usdt();
         swap_pair_attacker_resA_usdt(amt3, amt4);
@@ -281,7 +300,7 @@ contract RESTest is Test, BlockLoader {
         vm.stopPrank();
     }
 
-    function check_cand002(
+    function check_cand003(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -299,7 +318,26 @@ contract RESTest is Test, BlockLoader {
         vm.stopPrank();
     }
 
-    function check_cand003(
+    function check_cand004(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= amt0);
+        borrow_resA_owner(amt0);
+        addliquidity_resA_pair_resA_usdt();
+        swap_pair_attacker_resA_usdt(amt1, amt2);
+        swap_pair_attacker_usdt_resA(amt3, amt4);
+        payback_resA_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand005(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,

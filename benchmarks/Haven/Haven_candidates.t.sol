@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import "./AttackContract.sol";
-import "./Haven.sol";
 import "@utils/QueryBlockchain.sol";
 import "forge-std/Test.sol";
+import {AttackContract} from "./AttackContract.sol";
 import {BUSD} from "@utils/BUSD.sol";
+import {Haven} from "./Haven.sol";
 import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
@@ -598,7 +598,7 @@ contract HavenTest is Test, BlockLoader {
         swap_pairbw_attacker_wbnb_busd(amt1, amt2);
         swap_pairbh_attacker_busd_haven(amt3, amt4);
         swap_pairhw_attacker_haven_wbnb(amt5, amt6);
-        swap_pairbw_attacker_busd_wbnb(amt7, amt8);
+        swap_pairhw_haven_haven_wbnb(amt7, amt8);
         payback_wbnb_owner(amt9);
         assert(!attackGoal());
         vm.stopPrank();
@@ -622,7 +622,7 @@ contract HavenTest is Test, BlockLoader {
         swap_pairbw_attacker_wbnb_busd(amt1, amt2);
         swap_pairbh_attacker_busd_haven(amt3, amt4);
         swap_pairhw_attacker_haven_wbnb(amt5, amt6);
-        swap_pairhw_haven_haven_wbnb(amt7, amt8);
+        swap_pairbw_attacker_busd_wbnb(amt7, amt8);
         payback_wbnb_owner(amt9);
         assert(!attackGoal());
         vm.stopPrank();

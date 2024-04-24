@@ -225,6 +225,10 @@ class TFGManager:
         i = 0
         candidates: List[Sketch] = []
         while i <= self.MAX_STEP:
+            for c in candidates:
+                print("--------")
+                if len(c) == i - 1:
+                    print(c)
             potential_candidates: List[Sketch] = []
             if i == 0:
                 old_traces = []

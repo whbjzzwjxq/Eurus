@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import "./AttackContract.sol";
-import "./SGZ.sol";
 import "@utils/QueryBlockchain.sol";
 import "forge-std/Test.sol";
+import {AttackContract} from "./AttackContract.sol";
+import {SGZ} from "./SGZ.sol";
 import {USDT} from "@utils/USDT.sol";
 import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
@@ -215,6 +215,46 @@ contract SGZTest is Test, BlockLoader {
     }
 
     function check_cand001(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= amt0);
+        borrow_usdt_owner(amt0);
+        addliquidity_sgz_pair_sgz_usdt();
+        swap_pair_attacker_usdt_sgz(amt1, amt2);
+        swap_pair_attacker_sgz_usdt(amt3, amt4);
+        payback_usdt_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand002(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt7 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_pair_sgz_sgz_usdt(amt1, amt2);
+        swap_pair_attacker_usdt_sgz(amt3, amt4);
+        swap_pair_attacker_sgz_usdt(amt5, amt6);
+        payback_usdt_owner(amt7);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand003(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,

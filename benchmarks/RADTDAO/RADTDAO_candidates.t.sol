@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import "./AttackContract.sol";
-import "./RADTDAO.sol";
-import "./Wrapper.sol";
 import "@utils/QueryBlockchain.sol";
 import "forge-std/Test.sol";
+import {AttackContract} from "./AttackContract.sol";
+import {RADTDAO} from "./RADTDAO.sol";
 import {USDT} from "@utils/USDT.sol";
 import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
+import {Wrapper} from "./Wrapper.sol";
 
 contract RADTDAOTest is Test, BlockLoader {
     RADTDAO radt;
@@ -239,6 +239,26 @@ contract RADTDAOTest is Test, BlockLoader {
     }
 
     function check_cand001(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt6 >= amt0);
+        borrow_usdt_owner(amt0);
+        burn_radt_pair(amt1);
+        swap_pair_attacker_usdt_radt(amt2, amt3);
+        swap_pair_attacker_radt_usdt(amt4, amt5);
+        payback_usdt_owner(amt6);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand002(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,

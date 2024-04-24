@@ -1,6 +1,7 @@
 import argparse
 import os
 from os import path
+import shutil
 from subprocess import CalledProcessError, run
 
 from impl.eurus import eurus_test
@@ -180,13 +181,13 @@ def prepare(bmk_dir: str):
         "--root",
         os.getcwd(),
     ]
+    print("Execute: ", " ".join(cmds))
     try:
         out = run(cmds, text=True, check=True, capture_output=True)
     except Exception as err:
         if isinstance(err, CalledProcessError):
             print(err.stderr, err.stdout)
         print(f"\n\nBenchmark: {bmk_dir} ground truth doesn't work!")
-        print("Execute: ", " ".join(cmds))
         raise err
 
     # Generate Candidates
@@ -290,7 +291,7 @@ def halmos_test(
             "--suffix",
             suffix_spec,
         ]
-        print(" ".join(args))
+        print("halmos " + " ".join(args))
         exec_halmos(*args)
 
 
@@ -312,77 +313,19 @@ def _main():
             verify_result(bmk_dir, args.gt, args.smtdiv, args.verify_result_path, args.suffix)
 
 
-# def call_halmos(
-#     bmk_dir: str,
-#     project_name: str,
-#     func_name: str,
-#     timeout: int,
-#     output_path: str,
-#     err_path: str,
-#     *extra_halmos_options,
-# ):
-#     """
-#     timeout count as seconds.
-#     """
-#     args = [
-#         "-vvvvv",
-#         "--function",
-#         f"{func_name}",
-#         "--bmk-dir",
-#         f"{bmk_dir}",
-#         "--contract",
-#         f"{project_name}Test",
-#         "--forge-build-out",
-#         ".cache",
-#         "--print-potential-counterexample",
-#         # Use default setting.
-#         # "--solver-timeout-branching",
-#         # "100000",
-#         "--solver-timeout-assertion",
-#         f"{timeout * 1000}",
-#         "--json-output",
-#         output_path,
-#         *extra_halmos_options,
-#     ]
-#     print(" ".join(args))
-#     exec_halmos(*args)
-
-
-# def forge_test(bmk_dir: str, timeout: int):
-#     project_name = resolve_project_name(bmk_dir)
-#     test_solfile = path.join(bmk_dir, f"{project_name}.t.sol")
-#     cache_path, result_path = prepare_subfolder(bmk_dir)
-#     cmds = [
-#         "forge",
-#         "test",
-#         "-vv",
-#         "--cache-path",
-#         cache_path,
-#         "--match-path",
-#         test_solfile,
-#         "--extra-output",
-#         "storageLayout",
-#         "metadata",
-#         "--root",
-#         os.getcwd(),
-#     ]
-#     print(" ".join(cmds))
-#     run(cmds, timeout=timeout)
-
-
-# def clean_result(bmk_dir: str, only_gt: bool, smtdiv: str, start: int, end: int, suffix_spec: str):
-#     builder = BenchmarkBuilder(bmk_dir)
-#     synthesizer = builder.synthesizer
-#     _, result_path = prepare_subfolder(bmk_dir)
-#     result_paths = gen_result_paths(result_path, only_gt, smtdiv, len(synthesizer.candidates), suffix_spec)
-#     result_paths = result_paths[start:end]
-#     for _, output_path, err_path, smt_folder in result_paths:
-#         if path.exists(output_path):
-#             os.remove(output_path)
-#         if path.exists(err_path):
-#             os.remove(err_path)
-#         if path.exists(smt_folder):
-#             shutil.rmtree(smt_folder)
+def clean_result(bmk_dir: str, only_gt: bool, smtdiv: str, start: int, end: int, suffix_spec: str):
+    builder = BenchmarkBuilder(bmk_dir)
+    synthesizer = builder.synthesizer
+    _, result_path = prepare_subfolder(bmk_dir)
+    result_paths = gen_result_paths(result_path, only_gt, smtdiv, len(synthesizer.candidates), suffix_spec)
+    result_paths = result_paths[start:end]
+    for _, output_path, err_path, smt_folder in result_paths:
+        if path.exists(output_path):
+            os.remove(output_path)
+        if path.exists(err_path):
+            os.remove(err_path)
+        if path.exists(smt_folder):
+            shutil.rmtree(smt_folder)
 
 
 if __name__ == "__main__":

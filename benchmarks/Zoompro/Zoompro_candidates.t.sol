@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import "./AttackContract.sol";
-import "./FUSDT.sol";
-import "./Zoom.sol";
-import "./ZoomController.sol";
-import "./ZoomTrader.sol";
 import "@utils/QueryBlockchain.sol";
 import "forge-std/Test.sol";
+import {AttackContract} from "./AttackContract.sol";
+import {FUSDT} from "./FUSDT.sol";
 import {USDT} from "@utils/USDT.sol";
 import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
+import {ZoomController} from "./ZoomController.sol";
+import {ZoomTrader} from "./ZoomTrader.sol";
+import {Zoom} from "./Zoom.sol";
 
 contract ZoomproTest is Test, BlockLoader {
     USDT usdt;
@@ -377,43 +377,20 @@ contract ZoomproTest is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3,
         uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7
+        uint256 amt5
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt7 >= amt0);
+        vm.assume(amt5 >= amt0);
         borrow_usdt_owner(amt0);
+        addliquidity_controller_pair_fusdt_fusdt();
         swap_trader_attacker_usdt_zoom(amt1, amt2);
-        swap_pair_attacker_fusdt_zoom(amt3, amt4);
-        swap_trader_attacker_zoom_usdt(amt5, amt6);
-        payback_usdt_owner(amt7);
+        swap_trader_attacker_zoom_usdt(amt3, amt4);
+        payback_usdt_owner(amt5);
         assert(!attackGoal());
         vm.stopPrank();
     }
 
     function check_cand002(
-        uint256 amt0,
-        uint256 amt1,
-        uint256 amt2,
-        uint256 amt3,
-        uint256 amt4,
-        uint256 amt5,
-        uint256 amt6,
-        uint256 amt7
-    ) public {
-        vm.startPrank(attacker);
-        vm.assume(amt7 >= amt0);
-        borrow_usdt_owner(amt0);
-        swap_trader_attacker_usdt_zoom(amt1, amt2);
-        swap_pair_attacker_zoom_fusdt(amt3, amt4);
-        swap_trader_attacker_zoom_usdt(amt5, amt6);
-        payback_usdt_owner(amt7);
-        assert(!attackGoal());
-        vm.stopPrank();
-    }
-
-    function check_cand003(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import "./AttackContract.sol";
-import "./NOVO.sol";
 import "@utils/QueryBlockchain.sol";
 import "forge-std/Test.sol";
+import {AttackContract} from "./AttackContract.sol";
+import {NOVO} from "./NOVO.sol";
 import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
@@ -223,6 +223,26 @@ contract NOVOTest is Test, BlockLoader {
     }
 
     function check_cand001(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt6 >= amt0);
+        borrow_wbnb_owner(amt0);
+        burn_novo_pair(amt1);
+        swap_pair_attacker_wbnb_novo(amt2, amt3);
+        swap_pair_attacker_novo_wbnb(amt4, amt5);
+        payback_wbnb_owner(amt6);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand002(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,

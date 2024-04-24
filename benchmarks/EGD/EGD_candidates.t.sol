@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import "./AttackContract.sol";
-import "./EGD.sol";
-import "./EGDStaking.sol";
 import "@utils/QueryBlockchain.sol";
 import "forge-std/Test.sol";
+import {AttackContract} from "./AttackContract.sol";
+import {EGDStaking} from "./EGDStaking.sol";
+import {EGD} from "./EGD.sol";
 import {USDT} from "@utils/USDT.sol";
 import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
@@ -247,6 +247,26 @@ contract EGDTest is Test, BlockLoader {
         vm.startPrank(attacker);
         vm.assume(amt6 >= amt0);
         borrow_usdt_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        swap_pair_attacker_usdt_egd(amt2, amt3);
+        swap_pair_attacker_egd_usdt(amt4, amt5);
+        payback_usdt_owner(amt6);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand002(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt6 >= amt0);
+        borrow_usdt_owner(amt0);
         swap_pair_attacker_usdt_egd(amt1, amt2);
         deposit_egdstaking_usdt_egdslp(amt3);
         swap_pair_attacker_egd_usdt(amt4, amt5);
@@ -255,7 +275,7 @@ contract EGDTest is Test, BlockLoader {
         vm.stopPrank();
     }
 
-    function check_cand002(
+    function check_cand003(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -273,7 +293,27 @@ contract EGDTest is Test, BlockLoader {
         vm.stopPrank();
     }
 
-    function check_cand003(
+    function check_cand004(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt6 >= amt0);
+        borrow_egd_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        swap_pair_attacker_egd_usdt(amt2, amt3);
+        swap_pair_attacker_usdt_egd(amt4, amt5);
+        payback_egd_owner(amt6);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand005(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -293,7 +333,7 @@ contract EGDTest is Test, BlockLoader {
         vm.stopPrank();
     }
 
-    function check_cand004(
+    function check_cand006(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -312,7 +352,7 @@ contract EGDTest is Test, BlockLoader {
         vm.stopPrank();
     }
 
-    function check_cand005(
+    function check_cand007(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
