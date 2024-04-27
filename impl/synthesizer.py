@@ -174,16 +174,27 @@ class Synthesizer:
         tfg = TFGManager(tokens, accounts, func_summarys, attack_goal)
 
         candidates = tfg.gen_candidates()
-        # Remove all candidates after the groundtruth
-        gt_idx = -1
+        # Remove all candidates after the groundtruth.
+        # To allow the false-prositive ablation study, disable it.
+        # end_idx = -1
+        # for idx, c in enumerate(candidates):
+        #     if len(c) != len(self.gt_sketch):
+        #         continue
+        #     if c == self.gt_sketch:
+        #         end_idx = idx
+        #     if len(c.args) > 8:
+        #         end_idx = idx
+        # if end_idx == -1:
+        #     raise ValueError("Ground truth is not covered by the candidates!")
+        # return candidates[: end_idx + 1]
+
+        # Solidity doesn't support arguments more than 12, otherwise stack too deep will raise.
+        res = []
         for idx, c in enumerate(candidates):
-            if len(c) != len(self.gt_sketch):
-                continue
-            if c == self.gt_sketch:
-                gt_idx = idx
-        if gt_idx == -1:
-            raise ValueError("Ground truth is not covered by the candidates!")
-        return candidates[: gt_idx + 1]
+            if len(c.args) > 12:
+               continue
+            res.append(c)
+        return res
 
     def _load_candidates(self, record: dict):
         for func in self.test_ctrt.functions:

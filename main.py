@@ -67,6 +67,12 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--fixed",
+    help="The false-prositive ablation study for eurus. Sketches include vulnerable functions will be pruned.",
+    action="store_true",
+)
+
+parser.add_argument(
     "-s",
     "--statistic",
     help="Print statistic.",
@@ -134,14 +140,14 @@ parser.add_argument(
 
 parser.add_argument(
     "--unsat-core",
-    help="Use unsat-core based solution.",
+    help="Use unsat-core based solution",
     action="store_true",
 )
 
 parser.add_argument(
     "--solver",
-    help="Used Solver.",
-    choices=["z3", "gp"],
+    help="Used Solver",
+    choices=["z3"],
     default="z3",
 )
 

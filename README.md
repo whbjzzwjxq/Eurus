@@ -36,6 +36,11 @@ This command will evaluate all sketches of a benchmark.
 python3 ./main.py -e -i ./benchmarks/Discover
 ```
 
+Ablation study
+```bash
+python3 ./main.py -e --fixed -i ./benchmarks/Discover
+```
+
 ### Halmos eval
 This command will evaluate all sketches of a benchmark.
 ```bash

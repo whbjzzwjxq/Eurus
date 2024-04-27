@@ -152,7 +152,6 @@ class BenchmarkBuilder:
 
     def _init_ava_action_names(self):
         actions = self.gen_actions()
-        func_name_regex = re.compile(r"function (.*?)\(")
         for l in actions:
             m = func_name_regex.match(l)
             if m:
@@ -297,7 +296,6 @@ class BenchmarkBuilder:
         # Actions
         actions = []
         extra_actions = self.config.extra_actions
-        func_name_regex = re.compile(r"function (.*?)\(")
         extra_action_names = set([func_name_regex.match(a).group(1) for a in extra_actions])
 
         def add_func_to_actions(func_body: str):

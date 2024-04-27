@@ -249,6 +249,333 @@ contract ShadowFiTest is Test, BlockLoader {
         vm.stopPrank();
     }
 
+    function check_cand003(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.assume(amt5 >= amt0);
+        borrow_sdf_owner(amt0);
+        swap_pair_attacker_sdf_wbnb(amt1, amt2);
+        swap_pair_attacker_wbnb_sdf(amt3, amt4);
+        payback_sdf_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand004(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.assume(amt6 >= amt0);
+        borrow_sdf_owner(amt0);
+        burn_sdf_pair(amt1);
+        swap_pair_attacker_sdf_wbnb(amt2, amt3);
+        swap_pair_attacker_wbnb_sdf(amt4, amt5);
+        payback_sdf_owner(amt6);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand005(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.assume(amt6 >= amt0);
+        borrow_sdf_owner(amt0);
+        swap_pair_attacker_sdf_wbnb(amt1, amt2);
+        burn_sdf_pair(amt3);
+        swap_pair_attacker_wbnb_sdf(amt4, amt5);
+        payback_sdf_owner(amt6);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand006(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.assume(amt9 >= amt0);
+        borrow_wbnb_owner(amt0);
+        swap_pair_attacker_wbnb_sdf(amt1, amt2);
+        swap_pair_attacker_sdf_wbnb(amt3, amt4);
+        swap_pair_attacker_wbnb_sdf(amt5, amt6);
+        swap_pair_attacker_sdf_wbnb(amt7, amt8);
+        payback_wbnb_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand007(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.assume(amt10 >= amt0);
+        borrow_wbnb_owner(amt0);
+        burn_sdf_pair(amt1);
+        swap_pair_attacker_wbnb_sdf(amt2, amt3);
+        swap_pair_attacker_sdf_wbnb(amt4, amt5);
+        swap_pair_attacker_wbnb_sdf(amt6, amt7);
+        swap_pair_attacker_sdf_wbnb(amt8, amt9);
+        payback_wbnb_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand008(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.assume(amt10 >= amt0);
+        borrow_wbnb_owner(amt0);
+        swap_pair_attacker_wbnb_sdf(amt1, amt2);
+        burn_sdf_pair(amt3);
+        swap_pair_attacker_sdf_wbnb(amt4, amt5);
+        swap_pair_attacker_wbnb_sdf(amt6, amt7);
+        swap_pair_attacker_sdf_wbnb(amt8, amt9);
+        payback_wbnb_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand009(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.assume(amt10 >= amt0);
+        borrow_wbnb_owner(amt0);
+        swap_pair_attacker_wbnb_sdf(amt1, amt2);
+        swap_pair_attacker_sdf_wbnb(amt3, amt4);
+        burn_sdf_pair(amt5);
+        swap_pair_attacker_wbnb_sdf(amt6, amt7);
+        swap_pair_attacker_sdf_wbnb(amt8, amt9);
+        payback_wbnb_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand010(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.assume(amt10 >= amt0);
+        borrow_wbnb_owner(amt0);
+        swap_pair_attacker_wbnb_sdf(amt1, amt2);
+        swap_pair_attacker_sdf_wbnb(amt3, amt4);
+        swap_pair_attacker_wbnb_sdf(amt5, amt6);
+        burn_sdf_pair(amt7);
+        swap_pair_attacker_sdf_wbnb(amt8, amt9);
+        payback_wbnb_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand011(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.assume(amt9 >= amt0);
+        borrow_sdf_owner(amt0);
+        swap_pair_attacker_sdf_wbnb(amt1, amt2);
+        swap_pair_attacker_wbnb_sdf(amt3, amt4);
+        swap_pair_attacker_sdf_wbnb(amt5, amt6);
+        swap_pair_attacker_wbnb_sdf(amt7, amt8);
+        payback_sdf_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand012(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.assume(amt10 >= amt0);
+        borrow_sdf_owner(amt0);
+        burn_sdf_pair(amt1);
+        swap_pair_attacker_sdf_wbnb(amt2, amt3);
+        swap_pair_attacker_wbnb_sdf(amt4, amt5);
+        swap_pair_attacker_sdf_wbnb(amt6, amt7);
+        swap_pair_attacker_wbnb_sdf(amt8, amt9);
+        payback_sdf_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand013(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.assume(amt10 >= amt0);
+        borrow_sdf_owner(amt0);
+        swap_pair_attacker_sdf_wbnb(amt1, amt2);
+        burn_sdf_pair(amt3);
+        swap_pair_attacker_wbnb_sdf(amt4, amt5);
+        swap_pair_attacker_sdf_wbnb(amt6, amt7);
+        swap_pair_attacker_wbnb_sdf(amt8, amt9);
+        payback_sdf_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand014(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.assume(amt10 >= amt0);
+        borrow_sdf_owner(amt0);
+        swap_pair_attacker_sdf_wbnb(amt1, amt2);
+        swap_pair_attacker_wbnb_sdf(amt3, amt4);
+        burn_sdf_pair(amt5);
+        swap_pair_attacker_sdf_wbnb(amt6, amt7);
+        swap_pair_attacker_wbnb_sdf(amt8, amt9);
+        payback_sdf_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand015(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.assume(amt10 >= amt0);
+        borrow_sdf_owner(amt0);
+        swap_pair_attacker_sdf_wbnb(amt1, amt2);
+        swap_pair_attacker_wbnb_sdf(amt3, amt4);
+        swap_pair_attacker_sdf_wbnb(amt5, amt6);
+        burn_sdf_pair(amt7);
+        swap_pair_attacker_wbnb_sdf(amt8, amt9);
+        payback_sdf_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
     function test_gt() public {
         vm.startPrank(attacker);
         vm.warp(blockTimestamp);

@@ -409,6 +409,806 @@ contract ZoomproTest is Test, BlockLoader {
         vm.stopPrank();
     }
 
+    function check_cand003(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= amt0);
+        borrow_zoom_owner(amt0);
+        swap_trader_attacker_zoom_usdt(amt1, amt2);
+        swap_trader_attacker_usdt_zoom(amt3, amt4);
+        payback_zoom_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand004(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= amt0);
+        borrow_zoom_owner(amt0);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_trader_attacker_zoom_usdt(amt1, amt2);
+        swap_trader_attacker_usdt_zoom(amt3, amt4);
+        payback_zoom_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand005(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= amt0);
+        borrow_zoom_owner(amt0);
+        swap_trader_attacker_zoom_usdt(amt1, amt2);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_trader_attacker_usdt_zoom(amt3, amt4);
+        payback_zoom_owner(amt5);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand006(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_trader_attacker_usdt_zoom(amt1, amt2);
+        swap_pair_attacker_zoom_fusdt(amt3, amt4);
+        swap_pair_attacker_fusdt_zoom(amt5, amt6);
+        swap_trader_attacker_zoom_usdt(amt7, amt8);
+        payback_usdt_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand007(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_usdt_owner(amt0);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_trader_attacker_usdt_zoom(amt1, amt2);
+        swap_pair_attacker_zoom_fusdt(amt3, amt4);
+        swap_pair_attacker_fusdt_zoom(amt5, amt6);
+        swap_trader_attacker_zoom_usdt(amt7, amt8);
+        payback_usdt_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand008(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_trader_attacker_usdt_zoom(amt1, amt2);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_pair_attacker_zoom_fusdt(amt3, amt4);
+        swap_pair_attacker_fusdt_zoom(amt5, amt6);
+        swap_trader_attacker_zoom_usdt(amt7, amt8);
+        payback_usdt_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand009(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_trader_attacker_usdt_zoom(amt1, amt2);
+        swap_pair_attacker_zoom_fusdt(amt3, amt4);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_pair_attacker_fusdt_zoom(amt5, amt6);
+        swap_trader_attacker_zoom_usdt(amt7, amt8);
+        payback_usdt_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand010(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_trader_attacker_usdt_zoom(amt1, amt2);
+        swap_pair_attacker_zoom_fusdt(amt3, amt4);
+        swap_pair_attacker_fusdt_zoom(amt5, amt6);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_trader_attacker_zoom_usdt(amt7, amt8);
+        payback_usdt_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand011(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_trader_attacker_usdt_zoom(amt1, amt2);
+        swap_trader_attacker_zoom_usdt(amt3, amt4);
+        swap_trader_attacker_usdt_zoom(amt5, amt6);
+        swap_trader_attacker_zoom_usdt(amt7, amt8);
+        payback_usdt_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand012(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_usdt_owner(amt0);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_trader_attacker_usdt_zoom(amt1, amt2);
+        swap_trader_attacker_zoom_usdt(amt3, amt4);
+        swap_trader_attacker_usdt_zoom(amt5, amt6);
+        swap_trader_attacker_zoom_usdt(amt7, amt8);
+        payback_usdt_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand013(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_trader_attacker_usdt_zoom(amt1, amt2);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_trader_attacker_zoom_usdt(amt3, amt4);
+        swap_trader_attacker_usdt_zoom(amt5, amt6);
+        swap_trader_attacker_zoom_usdt(amt7, amt8);
+        payback_usdt_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand014(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_trader_attacker_usdt_zoom(amt1, amt2);
+        swap_trader_attacker_zoom_usdt(amt3, amt4);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_trader_attacker_usdt_zoom(amt5, amt6);
+        swap_trader_attacker_zoom_usdt(amt7, amt8);
+        payback_usdt_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand015(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_trader_attacker_usdt_zoom(amt1, amt2);
+        swap_trader_attacker_zoom_usdt(amt3, amt4);
+        swap_trader_attacker_usdt_zoom(amt5, amt6);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_trader_attacker_zoom_usdt(amt7, amt8);
+        payback_usdt_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand016(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_zoom_owner(amt0);
+        swap_pair_attacker_zoom_fusdt(amt1, amt2);
+        swap_pair_attacker_fusdt_zoom(amt3, amt4);
+        swap_trader_attacker_zoom_usdt(amt5, amt6);
+        swap_trader_attacker_usdt_zoom(amt7, amt8);
+        payback_zoom_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand017(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_zoom_owner(amt0);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_pair_attacker_zoom_fusdt(amt1, amt2);
+        swap_pair_attacker_fusdt_zoom(amt3, amt4);
+        swap_trader_attacker_zoom_usdt(amt5, amt6);
+        swap_trader_attacker_usdt_zoom(amt7, amt8);
+        payback_zoom_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand018(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_zoom_owner(amt0);
+        swap_pair_attacker_zoom_fusdt(amt1, amt2);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_pair_attacker_fusdt_zoom(amt3, amt4);
+        swap_trader_attacker_zoom_usdt(amt5, amt6);
+        swap_trader_attacker_usdt_zoom(amt7, amt8);
+        payback_zoom_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand019(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_zoom_owner(amt0);
+        swap_pair_attacker_zoom_fusdt(amt1, amt2);
+        swap_pair_attacker_fusdt_zoom(amt3, amt4);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_trader_attacker_zoom_usdt(amt5, amt6);
+        swap_trader_attacker_usdt_zoom(amt7, amt8);
+        payback_zoom_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand020(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_zoom_owner(amt0);
+        swap_pair_attacker_zoom_fusdt(amt1, amt2);
+        swap_pair_attacker_fusdt_zoom(amt3, amt4);
+        swap_trader_attacker_zoom_usdt(amt5, amt6);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_trader_attacker_usdt_zoom(amt7, amt8);
+        payback_zoom_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand021(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_zoom_owner(amt0);
+        swap_trader_attacker_zoom_usdt(amt1, amt2);
+        swap_trader_attacker_usdt_zoom(amt3, amt4);
+        swap_pair_attacker_zoom_fusdt(amt5, amt6);
+        swap_pair_attacker_fusdt_zoom(amt7, amt8);
+        payback_zoom_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand022(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_zoom_owner(amt0);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_trader_attacker_zoom_usdt(amt1, amt2);
+        swap_trader_attacker_usdt_zoom(amt3, amt4);
+        swap_pair_attacker_zoom_fusdt(amt5, amt6);
+        swap_pair_attacker_fusdt_zoom(amt7, amt8);
+        payback_zoom_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand023(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_zoom_owner(amt0);
+        swap_trader_attacker_zoom_usdt(amt1, amt2);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_trader_attacker_usdt_zoom(amt3, amt4);
+        swap_pair_attacker_zoom_fusdt(amt5, amt6);
+        swap_pair_attacker_fusdt_zoom(amt7, amt8);
+        payback_zoom_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand024(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_zoom_owner(amt0);
+        swap_trader_attacker_zoom_usdt(amt1, amt2);
+        swap_trader_attacker_usdt_zoom(amt3, amt4);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_pair_attacker_zoom_fusdt(amt5, amt6);
+        swap_pair_attacker_fusdt_zoom(amt7, amt8);
+        payback_zoom_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand025(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_zoom_owner(amt0);
+        swap_trader_attacker_zoom_usdt(amt1, amt2);
+        swap_trader_attacker_usdt_zoom(amt3, amt4);
+        swap_pair_attacker_zoom_fusdt(amt5, amt6);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_pair_attacker_fusdt_zoom(amt7, amt8);
+        payback_zoom_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand026(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_zoom_owner(amt0);
+        swap_trader_attacker_zoom_usdt(amt1, amt2);
+        swap_trader_attacker_usdt_zoom(amt3, amt4);
+        swap_trader_attacker_zoom_usdt(amt5, amt6);
+        swap_trader_attacker_usdt_zoom(amt7, amt8);
+        payback_zoom_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand027(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_zoom_owner(amt0);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_trader_attacker_zoom_usdt(amt1, amt2);
+        swap_trader_attacker_usdt_zoom(amt3, amt4);
+        swap_trader_attacker_zoom_usdt(amt5, amt6);
+        swap_trader_attacker_usdt_zoom(amt7, amt8);
+        payback_zoom_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand028(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_zoom_owner(amt0);
+        swap_trader_attacker_zoom_usdt(amt1, amt2);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_trader_attacker_usdt_zoom(amt3, amt4);
+        swap_trader_attacker_zoom_usdt(amt5, amt6);
+        swap_trader_attacker_usdt_zoom(amt7, amt8);
+        payback_zoom_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand029(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_zoom_owner(amt0);
+        swap_trader_attacker_zoom_usdt(amt1, amt2);
+        swap_trader_attacker_usdt_zoom(amt3, amt4);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_trader_attacker_zoom_usdt(amt5, amt6);
+        swap_trader_attacker_usdt_zoom(amt7, amt8);
+        payback_zoom_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand030(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_zoom_owner(amt0);
+        swap_trader_attacker_zoom_usdt(amt1, amt2);
+        swap_trader_attacker_usdt_zoom(amt3, amt4);
+        swap_trader_attacker_zoom_usdt(amt5, amt6);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_trader_attacker_usdt_zoom(amt7, amt8);
+        payback_zoom_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand031(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_fusdt_owner(amt0);
+        swap_pair_attacker_fusdt_zoom(amt1, amt2);
+        swap_trader_attacker_zoom_usdt(amt3, amt4);
+        swap_trader_attacker_usdt_zoom(amt5, amt6);
+        swap_pair_attacker_zoom_fusdt(amt7, amt8);
+        payback_fusdt_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand032(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_fusdt_owner(amt0);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_pair_attacker_fusdt_zoom(amt1, amt2);
+        swap_trader_attacker_zoom_usdt(amt3, amt4);
+        swap_trader_attacker_usdt_zoom(amt5, amt6);
+        swap_pair_attacker_zoom_fusdt(amt7, amt8);
+        payback_fusdt_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand033(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_fusdt_owner(amt0);
+        swap_pair_attacker_fusdt_zoom(amt1, amt2);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_trader_attacker_zoom_usdt(amt3, amt4);
+        swap_trader_attacker_usdt_zoom(amt5, amt6);
+        swap_pair_attacker_zoom_fusdt(amt7, amt8);
+        payback_fusdt_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand034(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_fusdt_owner(amt0);
+        swap_pair_attacker_fusdt_zoom(amt1, amt2);
+        swap_trader_attacker_zoom_usdt(amt3, amt4);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_trader_attacker_usdt_zoom(amt5, amt6);
+        swap_pair_attacker_zoom_fusdt(amt7, amt8);
+        payback_fusdt_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand035(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_fusdt_owner(amt0);
+        swap_pair_attacker_fusdt_zoom(amt1, amt2);
+        swap_trader_attacker_zoom_usdt(amt3, amt4);
+        swap_trader_attacker_usdt_zoom(amt5, amt6);
+        addliquidity_controller_pair_fusdt_fusdt();
+        swap_pair_attacker_zoom_fusdt(amt7, amt8);
+        payback_fusdt_owner(amt9);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
     function test_gt() public {
         vm.startPrank(attacker);
         borrow_usdt_owner(3000000e18);

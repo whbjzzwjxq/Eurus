@@ -13,6 +13,7 @@ from .utils import (
     prepare_subfolder,
     resolve_project_name,
     update_record,
+    func_name_regex
 )
 from .financial_constraints import (
     ACTION_CONSTR,
@@ -349,6 +350,8 @@ def eurus_test(bmk_dir: str, args):
     start: int = args.start
     end: int = args.end
     suffix_spec: str = args.suffix
+    if args.fixed:
+        suffix_spec = "fixed"
     global Z3_OR_GB
     Z3_OR_GB = args.solver == "z3"
     VAR.clear_cache()
@@ -377,6 +380,15 @@ def eurus_test(bmk_dir: str, args):
         result_paths = gen_result_paths(result_path, only_gt, "eurus", len(synthesizer.candidates), suffix_spec)
         result_paths = result_paths[start:end]
 
+        if args.fixed:
+            # Assume this function is vulnerable.
+            vulnerable_func_str = builder.extra_actions[0]
+            m = func_name_regex.match(vulnerable_func_str)
+            if m:
+                vulnerable_func_name = m.group(1)
+            else:
+                raise ValueError(f"Unmatched function str: {vulnerable_func_str}")
+
         for func_name, output_path, _, _ in result_paths:
             print(f"Solving: {func_name}")
             # Avoid stuck
@@ -393,12 +405,19 @@ def eurus_test(bmk_dir: str, args):
             }
             stuck_list = stuck_dict.get(project_name, [])
             if func_name in stuck_list:
-                # ms -> s
+                # ms -> s, mock timeout
                 timer -= timeout / 1000
                 continue
             VAR.clear_cache()
             solver = setup_solver(timeout)
             origin_sketch = builder.get_sketch_by_func_name(func_name, synthesizer.candidates)
+            sketch_is_fixed = False
+            for action in origin_sketch.pure_actions:
+                if action.func_sig == vulnerable_func_name:
+                    sketch_is_fixed = True
+            if args.fixed and sketch_is_fixed:
+                continue
+
             exec = FinancialExecution(origin_sketch, solver, init_state, attack_goal)
 
             exec.execute()
