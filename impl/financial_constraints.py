@@ -797,6 +797,29 @@ def gen_Axioma_swap_pair_attacker_axt_wbnb():
     amtOut = "arg_1"
     return gen_summary_uniswap("pair", "attacker", "attacker", "axt", "wbnb", amtIn, amtOut, percent_in_tokenOut=0.9)
 
+def gen_Safemoon_swap_safemoon_attacker_weth_safemoon():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "weth", "safemoon", amtIn, amtOut)
+
+def gen_Safemoon_swap_safemoon_attacker_safemoon_weth():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "safemoon", "weth", amtIn, amtOut)
+
+def gen_Safemoon_burn_safemoon_pair():
+    burn_amount = "burnAmount"
+    burn_summary = gen_summary_transfer("pair", DEAD, "safemoon", burn_amount, percent_out=1)
+    old_bal_attacker = f"old_safemoon.balanceOf(attacker)"
+    old_bal_pair = f"old_safemoon.balanceOf(pair)"
+    new_bal_pair = f"new_safemoon.balanceOf(pair)"
+    extra_constraints = [
+        lambda s: s.get("arg_0") == s.get(burn_amount),
+        lambda s: s.get("arg_0") < s.get(old_bal_pair),
+        lambda s: s.get(new_bal_pair) >= 1 / SCALE,
+    ]
+    return [*burn_summary, *extra_constraints]
+
 hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "NMB": {
         "deposit_gslp_gnimb_gslp": gen_NMB_deposit_gslp_gnimb_gslp(),
@@ -862,6 +885,11 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "Axioma": {
         "swap_axiomaPresale_attacker_wbnb_axt": gen_Axioma_swap_axiomaPresale_attacker_wbnb_axt(),
         "swap_pair_attacker_axt_wbnb": gen_Axioma_swap_pair_attacker_axt_wbnb(),
+    },
+    "Safemoon": {
+        "swap_safemoon_attacker_weth_safemoon": gen_Safemoon_swap_safemoon_attacker_weth_safemoon(),
+        "burn_safemoon_pair": gen_Safemoon_burn_safemoon_pair(),
+        "swap_safemoon_attacker_safemoon_weth": gen_Safemoon_swap_safemoon_attacker_safemoon_weth(),
     }
 }
 

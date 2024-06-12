@@ -1,5 +1,5 @@
-Compiling 237 files with 0.8.25
-Solc 0.8.25 finished in 39.41s
+Compiling 233 files with 0.8.25
+Solc 0.8.25 finished in 40.13s
 Compiler run successful with warnings:
 Warning (3420): Source file does not specify required compiler version! Consider adding "pragma solidity ^0.8.25;"
 --> benchmarks/Safemoon/interfaces/IERC20.sol
@@ -35,9 +35,9 @@ Warning (9302): Return value of low-level calls not used.
     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Warning (6321): Unnamed return variable can remain unassigned. Add an explicit return with value to all non-reverting code paths or name the variable.
-   --> benchmarks/SellToken/SellTokenRouter.sol:751:94:
+   --> benchmarks/SellToken/SellTokenRouter.sol:743:94:
     |
-751 |     function getNewTokenPrice(address my,address token,address token1) view private  returns(bool){
+743 |     function getNewTokenPrice(address my,address token,address token1) view private  returns(bool){
     |                                                                                              ^^^^
 
 Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
@@ -191,18 +191,6 @@ Warning (5667): Unused function parameter. Remove or comment out the variable na
     |                                       ^^^^^^^^^^^^^^
 
 Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
-   --> benchmarks/NeverFall/NeverFall.t.sol:185:9:
-    |
-185 |         uint256 amountOut
-    |         ^^^^^^^^^^^^^^^^^
-
-Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
-   --> benchmarks/NeverFall/NeverFall.t.sol:193:9:
-    |
-193 |         uint256 amountOut
-    |         ^^^^^^^^^^^^^^^^^
-
-Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
    --> benchmarks/OneRing/Strategy.sol:213:33:
     |
 213 |     function withdrawAllToVault(address _asset) public restricted {
@@ -233,33 +221,51 @@ Warning (5667): Unused function parameter. Remove or comment out the variable na
     |         ^^^^^^^^^^^^^^^^^
 
 Warning (2072): Unused local variable.
-   --> benchmarks/Safemoon/SafeSwapTradeRouter.sol:769:12:
+   --> benchmarks/Safemoon/SafeSwapTradeRouter.sol:767:12:
     |
-769 |         (, uint256 dexFee, uint256 tokenAFee, uint256 tokenBFee) = getFees(trade.path, trade.amountIn, msg.sender);
+767 |         (, uint256 dexFee, uint256 tokenAFee, uint256 tokenBFee) = getFees(trade.path, trade.amountIn, msg.sender);
     |            ^^^^^^^^^^^^^^
 
 Warning (2072): Unused local variable.
-   --> benchmarks/Safemoon/SafeSwapTradeRouter.sol:769:28:
+   --> benchmarks/Safemoon/SafeSwapTradeRouter.sol:767:28:
     |
-769 |         (, uint256 dexFee, uint256 tokenAFee, uint256 tokenBFee) = getFees(trade.path, trade.amountIn, msg.sender);
+767 |         (, uint256 dexFee, uint256 tokenAFee, uint256 tokenBFee) = getFees(trade.path, trade.amountIn, msg.sender);
     |                            ^^^^^^^^^^^^^^^^^
 
 Warning (2072): Unused local variable.
-   --> benchmarks/Safemoon/SafeSwapTradeRouter.sol:769:47:
+   --> benchmarks/Safemoon/SafeSwapTradeRouter.sol:767:47:
     |
-769 |         (, uint256 dexFee, uint256 tokenAFee, uint256 tokenBFee) = getFees(trade.path, trade.amountIn, msg.sender);
+767 |         (, uint256 dexFee, uint256 tokenAFee, uint256 tokenBFee) = getFees(trade.path, trade.amountIn, msg.sender);
     |                                               ^^^^^^^^^^^^^^^^^
 
 Warning (2072): Unused local variable.
-    --> benchmarks/Safemoon/Safemoon.sol:1548:9:
+    --> benchmarks/Safemoon/Safemoon.sol:1555:9:
      |
-1548 |         uint256 feeAmount = tradeRouter.getSwapFees(bnbAmount, path);
+1555 |         uint256 feeAmount = tradeRouter.getSwapFees(bnbAmount, path);
      |         ^^^^^^^^^^^^^^^^^
 
 Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
-   --> benchmarks/UN/UN.sol:607:9:
+   --> benchmarks/Safemoon/SafeswapFactory.sol:649:9:
     |
-607 |         address from,
+649 |         address to,
+    |         ^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/SellToken/SellToken.t.sol:263:42:
+    |
+263 |     function withdraw_srouter_sellc_wbnb(uint256 amount) internal eurus {
+    |                                          ^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/SellToken/SellToken_candidates.t.sol:263:42:
+    |
+263 |     function withdraw_srouter_sellc_wbnb(uint256 amount) internal eurus {
+    |                                          ^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/UN/UN.sol:611:9:
+    |
+611 |         address from,
     |         ^^^^^^^^^^^^
 
 Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
@@ -335,15 +341,15 @@ Warning (2018): Function state mutability can be restricted to view
     |     ^ (Relevant source part starts here and spans across multiple lines).
 
 Warning (2018): Function state mutability can be restricted to view
-   --> benchmarks/Safemoon/Safemoon.sol:911:5:
+   --> benchmarks/Safemoon/Safemoon.sol:920:5:
     |
-911 |     function getPairAddr() public returns (address) {
+920 |     function getPairAddr() public returns (address) {
     |     ^ (Relevant source part starts here and spans across multiple lines).
 
 Warning (2018): Function state mutability can be restricted to pure
-   --> benchmarks/Safemoon/SafeswapRouterProxy1.sol:791:5:
+   --> benchmarks/Safemoon/SafeswapRouterProxy1.sol:790:5:
     |
-791 |     function version() public view returns (uint256) {
+790 |     function version() public view returns (uint256) {
     |     ^ (Relevant source part starts here and spans across multiple lines).
 
 Warning (2018): Function state mutability can be restricted to view
@@ -354,42 +360,32 @@ Warning (2018): Function state mutability can be restricted to view
 
 
 Ran 1 test for benchmarks/Safemoon/Safemoon_query.t.sol:ContractTest
-[PASS] test_query() (gas: 207974)
+[PASS] test_query() (gas: 130077)
 Logs:
   ----query starts----
   ----queryBlockTimestamp starts----
   uint256 blockTimestamp: 1680000871
   ----queryBlockTimestamp ends----
-  ----queryUniswapV2Pair starts----pair
-  uint112 reserve0pair: 0
-  uint112 reserve1pair: 0
-  uint32 blockTimestampLastpair: 0
-  uint256 kLastpair: 0
-  uint256 price0CumulativeLastpair: 0
-  uint256 price1CumulativeLastpair: 0
-  ----queryUniswapV2Pair ends----pair
-  ----queryUniswapV2Pair starts----sfmoonUniswapv2Pair
-  uint112 reserve0sfmoonUniswapv2Pair: 32912229748033645031
-  uint112 reserve1sfmoonUniswapv2Pair: 27464995549338281104177
-  uint32 blockTimestampLastsfmoonUniswapv2Pair: 1680000259
-  uint256 kLastsfmoonUniswapv2Pair: 903810459486866707352442128303555486933588
-  uint256 price0CumulativeLastsfmoonUniswapv2Pair: 59058603194915512913186809455369547161568248
-  uint256 price1CumulativeLastsfmoonUniswapv2Pair: 65602384699141556534938484031371725281
-  ----queryUniswapV2Pair ends----sfmoonUniswapv2Pair
+  ----queryUniswapV2Pair starts----sfpairimpl
+  uint112 reserve0sfpairimpl: 0
+  uint112 reserve1sfpairimpl: 0
+  uint32 blockTimestampLastsfpairimpl: 0
+  uint256 kLastsfpairimpl: 0
+  uint256 price0CumulativeLastsfpairimpl: 0
+  uint256 price1CumulativeLastsfpairimpl: 0
+  ----queryUniswapV2Pair ends----sfpairimpl
   ----queryERC20 starts----safemoon
   uint256 totalSupplysafemoon: 1000000000000000000000
-  uint256 balanceOfsafemoonpair: 0
-  uint256 balanceOfsafemoonsfmoonUniswapv2Pair: 32912229748033645031
+  uint256 balanceOfsafemoonsfpairimpl: 0
   uint256 balanceOfsafemoonattacker: 0
   ----queryERC20 ends----safemoon
   ----queryERC20 starts----weth
   uint256 totalSupplyweth: 3533691745814785013767043
-  uint256 balanceOfwethpair: 0
-  uint256 balanceOfwethsfmoonUniswapv2Pair: 27464995549338281104177
+  uint256 balanceOfwethsfpairimpl: 0
   uint256 balanceOfwethattacker: 0
   ----queryERC20 ends----weth
   ----query ends----
 
-Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 5.68s (4.12s CPU time)
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 1.42s (2.25ms CPU time)
 
-Ran 1 test suite in 5.84s (5.68s CPU time): 1 tests passed, 0 failed, 0 skipped (1 total tests)
+Ran 1 test suite in 1.65s (1.42s CPU time): 1 tests passed, 0 failed, 0 skipped (1 total tests)

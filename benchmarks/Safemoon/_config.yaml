@@ -9,6 +9,7 @@ ctrt_name2cls:
   - ["feeSetter", "FeeSetter"]
   - ["buyBackAndBurnFeeCollector", "BuyBackAndBurnFeeCollector"]
   - ["lpFeeCollector", "LpFeeCollector"]
+  - ["sfpairimpl", "SafeswapPair"]
   - ["pair", "SafeswapPair"]
   - ["factory", "SafeswapFactory"]
   - ["tradeRouter", "SafeSwapTradeRouter"]
@@ -17,7 +18,7 @@ ctrt_name2cls:
 ctrt_name2deploy:
   - ["safemoon", "new Safemoon ()"]
   - ["weth", ""]
-  - ["pair", "new SafeswapPair ()"]
+  - ["sfpairimpl", "new SafeswapPair ()"]
   - ["feejar", "new FeeJar()"]
   - ["feeJarAdmin", "new FeeJarAdmin()"]
   - ["feeSetter", "new FeeSetter()"]
@@ -27,6 +28,7 @@ ctrt_name2deploy:
       "factory", 
       "new SafeswapFactory()",
     ]
+  - ["pair", "new SafeswapPair ()"]
   - ["tradeRouter", "new SafeSwapTradeRouter()"]
   - ["router", "new SafeswapRouterProxy1()"]
     
@@ -79,7 +81,8 @@ extra_deployments:
   - "
     factory.initialize(address(0x0), address(0x0));
     factory.setRouter(address(router));
-    factory.setImplementation(address(pair));
+    factory.setImplementation(address(sfpairimpl));
+    factory.setPair(address(safemoon), address(weth), address(safemoon), address(pair));
     factory.approveLiquidityPartner(address(safemoon));
     factory.approveLiquidityPartner(address(weth));
     feejar.initialize(address(feeJarAdmin), address(feeSetter), address(buyBackAndBurnFeeCollector), address(lpFeeCollector), address(factory), 10000, 1200, 6800, 2000);
@@ -87,7 +90,7 @@ extra_deployments:
     router.initialize(address(factory), address(weth));
     router.setRouterTrade(address(tradeRouter));
     safemoon.initialize();
-    safemoon.initRouterAndPair(address(router));
+    safemoon.initRouterAndPair(address(router), address(pair));
     weth.approve(address(safemoon), 27457 ether);
     safemoon.afterDeploy();
     "
@@ -101,7 +104,7 @@ attack_goal_str: "weth;1e6"
 groundtruth:
   - ["borrow", "weth", "owner", "1000 ether"]
   - ["swap", "safemoon", "attacker", "weth", "safemoon", "800 * 1e18", "0"]
-  - ["burn", "safemoon", "pair", "safemoon.balanceOf(safemoon.uniswapV2Pair()) - 1000000000"]
+  - ["burn", "safemoon", "pair", "safemoon.balanceOf(address(pair)) - 1000000000"]
   - ["swap", "safemoon", "attacker", "safemoon", "weth", "safemoon.balanceOf(address(attacker))", "0"]
   - ["payback", "weth", "owner", "1000 ether"]
 
@@ -116,6 +119,15 @@ roles:
     is_asset: true
     is_erc20: true
     is_stablecoin: true
+  "sfpairimpl":
+    is_swappair: true
+    is_uniswap: true
+    token_pair: ["weth", "safemoon"]
+    support_swaps:
+      "weth": ["weth", "safemoon"]
+      "safemoon": ["weth", "safemoon"]
+    is_oracle: true
+    oracle: "pair"
   "pair":
     is_swappair: true
     is_uniswap: true
@@ -125,6 +137,7 @@ roles:
       "safemoon": ["weth", "safemoon"]
     is_oracle: true
     oracle: "pair"
+  
   
 
 pattern: "Token burn"

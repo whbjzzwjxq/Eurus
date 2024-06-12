@@ -902,11 +902,12 @@ contract Safemoon is ISafemoon, Initializable, ContextUpgradeable, OwnableUpgrad
         IUniswapV2Pair(uniswapV2Pair).sync();
     }
 
-    function initRouterAndPair(address _router) external onlyOwner {
+    function initRouterAndPair(address _router, address _pair) external onlyOwner {
         uniswapV2Router = IUniswapV2Router02(_router);
         WBNB = uniswapV2Router.WETH();
         // Create a uniswap pair for this new token
-        uniswapV2Pair = IUniswapV2Factory(uniswapV2Router.factory()).createPair(address(this), WBNB, address(this));
+        uniswapV2Pair = _pair;
+        // IUniswapV2Factory(uniswapV2Router.factory()).createPair(address(this), WBNB, address(this));
     }
 
     function __Safemoon_tiers_init() internal initializer {

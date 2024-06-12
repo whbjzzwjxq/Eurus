@@ -643,6 +643,19 @@ contract SafeswapFactory is ISafeswapFactory, Initializable {
         emit PairCreated(token0, token1, pair, allPairs.length);
     }
 
+    function setPair(
+        address tokenA,
+        address tokenB,
+        address to,
+        address pair) public {
+        (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
+        
+        ISafeswapPair(pair).initialize(token0, token1);
+        getPair[token0][token1] = pair;
+        getPair[token1][token0] = pair; // populate mapping in the reverse direction
+        allPairs.push(pair);
+        emit PairCreated(token0, token1, pair, allPairs.length);
+    }
     function setRouter(address _router) public {
         require(msg.sender == admin, "NOT AUTHORIZED");
         router = _router;
