@@ -761,6 +761,42 @@ def gen_UN_burn_un_pair():
     ]
     return [*burn_summary, *burn_summary2, *extra_constraints]
 
+def gen_Axioma_swap_axiomaPresale_attacker_wbnb_axt():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    tokenAmount = "tokenAmount"
+    taxAmount = "taxAmount"
+    transferAmount = "transferAmount"
+    old_balOut_axiomaPresale = "old_axt.balanceOf(axiomaPresale)"
+    new_balOut_axiomaPresale = "new_axt.balanceOf(axiomaPresale)"
+    old_balOut_owner = "old_axt.balanceOf(owner)"
+    new_balOut_owner = "new_axt.balanceOf(owner)"
+    old_balOut_attacker = "old_axt.balanceOf(attacker)"
+    new_balOut_attacker = "new_axt.balanceOf(attacker)"
+    
+
+    transfer_summary0 = gen_summary_transfer("attacker", "owner", "wbnb", amtIn)
+    transfer_summary1 = [
+        # Transfer token
+        lambda s: s.get(new_balOut_axiomaPresale) == s.get(old_balOut_axiomaPresale) - 
+            (s.get(taxAmount) + s.get(transferAmount)) * 1,
+        lambda s: s.get(new_balOut_owner) == s.get(old_balOut_owner) + s.get(taxAmount) * 1,
+        lambda s: s.get(new_balOut_attacker) == s.get(old_balOut_attacker) + s.get(transferAmount) * 1,
+    ]
+    
+    extra_constraints = [
+        lambda s: s.get("arg_0") * 300 == s.get(tokenAmount),
+        lambda s: s.get(taxAmount) == s.get(tokenAmount) / 100,
+        lambda s: s.get(transferAmount) == s.get(tokenAmount) - s.get(taxAmount)
+    ]
+    
+    return [*transfer_summary0, *transfer_summary1, *extra_constraints]
+
+def gen_Axioma_swap_pair_attacker_axt_wbnb():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "axt", "wbnb", amtIn, amtOut, percent_in_tokenOut=0.9)
+
 hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "NMB": {
         "deposit_gslp_gnimb_gslp": gen_NMB_deposit_gslp_gnimb_gslp(),
@@ -823,6 +859,10 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "burn_un_pair": gen_UN_burn_un_pair(),
         "swap_pair_attacker_un_busd": gen_UN_swap_pair_attacker_un_busd(),
     },
+    "Axioma": {
+        "swap_axiomaPresale_attacker_wbnb_axt": gen_Axioma_swap_axiomaPresale_attacker_wbnb_axt(),
+        "swap_pair_attacker_axt_wbnb": gen_Axioma_swap_pair_attacker_axt_wbnb(),
+    }
 }
 
 
