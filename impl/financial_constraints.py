@@ -740,6 +740,27 @@ def gen_SwaposV2_swap_spair_attacker_swapos_weth():
     amtOut = "arg_1"
     return gen_summary_uniswap("spair", "attacker", "attacker", "swapos", "weth", amtIn, amtOut, amtOutRatio=9.997)
 
+def gen_UN_swap_pair_attacker_un_busd():
+    extra_constraints = [
+         lambda s: s.get("arg_0") * 80/100 < s.get("old_un.balanceOf(pair)"),
+    ]
+    return gen_summary_uniswap(
+        "pair", "attacker", "attacker", "un", "busd", "arg_0", "arg_1", 
+        percent_in_tokenIn=0.905,percent_out_tokenIn=1) + [*extra_constraints] 
+
+def gen_UN_burn_un_pair():
+    burn_amount = "burnAmount"
+    burn_summary = gen_summary_transfer("pair", DEAD, "un", burn_amount, percent_out=1)
+    burn_summary2 = gen_summary_transfer("attacker", DEAD, "un", burn_amount, percent_out=1)
+    old_bal_attacker = f"old_un.balanceOf(attacker)"
+    new_bal_pair = f"new_un.balanceOf(pair)"
+    extra_constraints = [
+        lambda s: s.get("arg_0") == s.get(burn_amount) * 100 / 7,
+        lambda s: s.get("arg_0") < s.get(old_bal_attacker) * 90 / 100,
+        lambda s: s.get(new_bal_pair) >= 1 / SCALE,
+    ]
+    return [*burn_summary, *burn_summary2, *extra_constraints]
+
 hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "NMB": {
         "deposit_gslp_gnimb_gslp": gen_NMB_deposit_gslp_gnimb_gslp(),
@@ -797,7 +818,11 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "SwaposV2": {
         "swap_spair_attacker_weth_swapos": gen_SwaposV2_swap_spair_attacker_weth_swapos(),
         "swap_spair_attacker_swapos_weth": gen_SwaposV2_swap_spair_attacker_swapos_weth(),
-    }
+    },
+    "UN" : {
+        "burn_un_pair": gen_UN_burn_un_pair(),
+        "swap_pair_attacker_un_busd": gen_UN_swap_pair_attacker_un_busd(),
+    },
 }
 
 
