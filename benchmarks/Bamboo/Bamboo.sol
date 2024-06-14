@@ -1141,9 +1141,9 @@ contract Bamboo is Context, IERC20, Ownable {
         else return bytes1(uint8(b) + 0x57);
     }
 
-function appendString(string memory _a, string memory _b, string memory _c) internal pure returns (string memory)  {
-    return string(abi.encodePacked(_a, _b, _c));
-}
+    function appendString(string memory _a, string memory _b, string memory _c) internal pure returns (string memory)  {
+        return string(abi.encodePacked(_a, _b, _c));
+    }   
     function takeFee(
         address sender,
         address recipient,

@@ -820,6 +820,36 @@ def gen_Safemoon_burn_safemoon_pair():
     ]
     return [*burn_summary, *extra_constraints]
 
+
+def gen_Bamboo_burn_bamboo_pair():
+    burn_amount = "burnAmount"
+    burn_summary = gen_summary_transfer("pair", DEAD, "bamboo", burn_amount, percent_out=1)
+    old_bal_attacker = f"old_bamboo.balanceOf(attacker)"
+    old_bal_pair = f"old_bamboo.balanceOf(pair)"
+    new_bal_pair = f"new_bamboo.balanceOf(pair)"
+    extra_constraints = [
+        lambda s: s.get("arg_0") > 10000 / 1e18,
+        lambda s: s.get(old_bal_pair) > s.get("arg_0") * 101 / 100,
+        # if (!isMarketPair[sender]) updatePool(amount);
+        #  ...  uint256 fA = amount / 100;
+        lambda s: s.get("arg_0") == s.get(burn_amount) * 50,
+        lambda s: s.get("arg_0") < s.get(old_bal_attacker) ,
+        lambda s: s.get(new_bal_pair) >= 1 / SCALE,
+    ]
+    return [*burn_summary, *extra_constraints]
+
+def gen_Bamboo_swap_pair_attacker_wbnb_bamboo():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "wbnb", "bamboo", amtIn, amtOut)
+
+
+def gen_Bamboo_swap_pair_attacker_bamboo_wbnb():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "bamboo", "wbnb", amtIn, amtOut, 
+                            fee=3)
+       
 hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "NMB": {
         "deposit_gslp_gnimb_gslp": gen_NMB_deposit_gslp_gnimb_gslp(),
@@ -890,7 +920,12 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "swap_safemoon_attacker_weth_safemoon": gen_Safemoon_swap_safemoon_attacker_weth_safemoon(),
         "burn_safemoon_pair": gen_Safemoon_burn_safemoon_pair(),
         "swap_safemoon_attacker_safemoon_weth": gen_Safemoon_swap_safemoon_attacker_safemoon_weth(),
-    }
+    },
+    "Bamboo": {
+        "swap_pair_attacker_wbnb_bamboo": gen_Bamboo_swap_pair_attacker_wbnb_bamboo(),
+        "burn_bamboo_pair": gen_Bamboo_burn_bamboo_pair(),
+        "swap_pair_attacker_bamboo_wbnb": gen_Bamboo_swap_pair_attacker_bamboo_wbnb(),
+    },
 }
 
 

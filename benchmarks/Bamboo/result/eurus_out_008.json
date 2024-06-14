@@ -1,0 +1,32 @@
+{
+    "test_results": {
+        "benchmarks/Bamboo": [
+            {
+                "name": "check_cand008",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x3aa44c05a492d000000",
+                        "p_amt1_uint256": "0x3aa36dfa39585800000",
+                        "p_amt2_uint256": "0x7f4cf4cb285c80000",
+                        "p_amt3_uint256": "0x56bc75e2d63100000",
+                        "p_amt4_uint256": "0xde0b6b3a7640000",
+                        "p_amt5_uint256": "0x1dab985c64364a00000",
+                        "p_amt6_uint256": "0xde0b6b3a7640000",
+                        "p_amt7_uint256": "0x0",
+                        "p_amt8_uint256": "0x53444835ec5800000",
+                        "p_amt9_uint256": "0x1d25e9bc75a3d900000",
+                        "p_amt10_uint256": "0x3ad166576c72d400000"
+                    }
+                ],
+                "time": [
+                    0.018744500000000386,
+                    0,
+                    0.018744500000000386
+                ],
+                "feasible": false,
+                "refine_loop": 0
+            }
+        ]
+    }
+}
