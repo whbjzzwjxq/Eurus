@@ -849,7 +849,43 @@ def gen_Bamboo_swap_pair_attacker_bamboo_wbnb():
     amtOut = "arg_1"
     return gen_summary_uniswap("pair", "attacker", "attacker", "bamboo", "wbnb", amtIn, amtOut, 
                             fee=3)
-       
+
+def gen_LUSD_swap_loan_attacker_btcb_lusd():
+    amtIn = "arg_0"
+    # amtOut = "arg_1"
+    usdtAmout = "usdtAmout"
+    old_btcb_bal_attacker = f"old_btcb.balanceOf(attacker)"
+    new_btcb_bal_attacker = f"new_btcb.balanceOf(attacker)"
+    old_btcb_bal_loan = f"old_btcb.balanceOf(loan)"
+    new_btcb_bal_loan = f"new_btcb.balanceOf(loan)"
+    old_lusd_bal_attacker = f"old_lusd.balanceOf(attacker)"
+    new_lusd_bal_attacker = f"new_lusd.balanceOf(attacker)"
+    constraints = [
+        lambda s: s.get(new_btcb_bal_attacker) == s.get(old_btcb_bal_attacker) - s.get(amtIn),
+        lambda s: s.get(new_btcb_bal_loan) == s.get(old_btcb_bal_loan) + s.get(amtIn),
+        lambda s: (s.get(amtIn) > 0),
+        # uint256 usdtAmount = router.getAmountsOut(supplyAmount, path)[1];
+        *gen_summary_getAmountsOut(amtIn, usdtAmout, "old_btcb.balanceOf(pairub)", "old_usdt.balanceOf(pairub)"), 
+        # payoutAmount: (usdtAmount * info[supplyToken].supplyRatio) / 1e4,
+        # LUSD.mint(msg.sender, order.payoutAmount);
+        lambda s: s.get(new_lusd_bal_attacker) == s.get(old_lusd_bal_attacker) + s.get(usdtAmout) / 2,
+    ]
+    # fmt: on
+    return constraints
+
+def gen_LUSD_withdraw_lusdpool_lusd_usdt():
+    amtIn = "arg_0"
+    burn_amount = "burnAmount"
+    burn_summary = gen_summary_transfer("attacker", DEAD, "lusd", amtIn, percent_out=1)
+    burn_summary2 = gen_summary_transfer("lusdpool", "attacker", "usdt", burn_amount, percent_out=1)
+    
+    extra_constraints = [
+        lambda s: s.get("arg_0") * 97 / 100 == s.get(burn_amount),
+    ]
+
+    return [*burn_summary, *burn_summary2, *extra_constraints]
+
+
 hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "NMB": {
         "deposit_gslp_gnimb_gslp": gen_NMB_deposit_gslp_gnimb_gslp(),
@@ -925,6 +961,10 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "swap_pair_attacker_wbnb_bamboo": gen_Bamboo_swap_pair_attacker_wbnb_bamboo(),
         "burn_bamboo_pair": gen_Bamboo_burn_bamboo_pair(),
         "swap_pair_attacker_bamboo_wbnb": gen_Bamboo_swap_pair_attacker_bamboo_wbnb(),
+    },
+    "LUSD": {
+        "swap_loan_attacker_btcb_lusd": gen_LUSD_swap_loan_attacker_btcb_lusd(),
+        "withdraw_lusdpool_lusd_usdt": gen_LUSD_withdraw_lusdpool_lusd_usdt(),
     },
 }
 

