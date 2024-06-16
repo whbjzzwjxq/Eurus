@@ -885,6 +885,52 @@ def gen_LUSD_withdraw_lusdpool_lusd_usdt():
 
     return [*burn_summary, *burn_summary2, *extra_constraints]
 
+def gen_LW_swap_pair_attacker_usdt_lw():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "usdt", "lw", amtIn, amtOut)
+            #  + [lambda s: s.get(amtIn) == 1000000] 
+  
+def gen_LW_swap_pair_attacker_lw_usdt():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "lw", "usdt", amtIn, amtOut, amtOutRatio=0.9)
+
+def gen_LW_burn_lw_pair():
+    burn_amount = "burnAmount"
+    per_burnOutMax = "perburnOutMax"
+    swaptodead_amount = "swaptoDeadAmount"
+    tokenprice = "tokenPrice"
+    burn_summary = gen_summary_transfer("pair", DEAD, "lw", burn_amount, percent_out=1)
+    old_usdt_bal_attacker = f"old_usdt.balanceOf(attacker)"
+    old_lw_bal_attacker = f"old_lw.balanceOf(attacker)"
+    old_usdt_bal_pair = f"old_usdt.balanceOf(pair)"
+    old_lw_bal_pair = f"old_lw.balanceOf(pair)"
+    new_lw_bal_pair = f"new_lw.balanceOf(pair)"
+    new_usdt_bal_pair = f"new_usdt.balanceOf(pair)"
+    
+    extra_constraints = [
+        lambda s: s.get(tokenprice) == s.get(old_usdt_bal_pair) / s.get(old_lw_bal_pair),
+        # if(2500e18<price && _startTimeForSwap +72*60*60 <block.timestamp   ){
+        #             thanPrice +=1; 
+        lambda s: s.get("arg_0") > (2500) / s.get(tokenprice),
+        ## remove this: lambda s: s.get("arg_0") < 1000,
+
+        # IERC20(_token).transferFrom(_marketAddr,address(this),3000e18);
+        lambda s: s.get(swaptodead_amount) == 3000, 
+        lambda s: s.get(new_usdt_bal_pair) == s.get(old_usdt_bal_pair) + s.get(swaptodead_amount) * 40,
+        # swapTokensForDead(3000e18);    
+        # TODO: Although burn for 40 times, the amount of burned tokens decreases as loop executes.
+        # So we approximate the amount of total burn by 30 * "the amount of burned tokens for the first time"
+        lambda s: s.get(burn_amount) == s.get(per_burnOutMax) * 30, 
+        *gen_summary_getAmountsOut(swaptodead_amount, per_burnOutMax, old_usdt_bal_pair, old_lw_bal_pair),
+        
+        # lambda s: s.get("arg_0") == s.get(burn_amount) / 50,
+        lambda s: s.get("arg_0") < s.get(old_lw_bal_attacker) ,
+        lambda s: s.get(new_lw_bal_pair) >= 1 / SCALE,
+    ]
+    return [*burn_summary, *extra_constraints]
+
 
 hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "NMB": {
@@ -966,6 +1012,11 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "swap_loan_attacker_btcb_lusd": gen_LUSD_swap_loan_attacker_btcb_lusd(),
         "withdraw_lusdpool_lusd_usdt": gen_LUSD_withdraw_lusdpool_lusd_usdt(),
     },
+    "LW": {
+        "swap_pair_attacker_usdt_lw": gen_LW_swap_pair_attacker_usdt_lw(),
+        "burn_lw_pair": gen_LW_burn_lw_pair(),
+        "swap_pair_attacker_lw_usdt": gen_LW_swap_pair_attacker_lw_usdt(),
+    }
 }
 
 
