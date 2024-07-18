@@ -247,9 +247,11 @@ class LazyStorage:
             else:
                 key = f"benchmarks/{self.project_name}/{ctrt_filename}.sol"
             compiled_file = list(sol_file_cache[key]["artifacts"][ctrt_filename].values())[0]
+            # print(list(sol_file_cache[key]["artifacts"][ctrt_filename].values()))
+            # print(compiled_file)
             source_output = path.join(
                 ".cache",
-                compiled_file,
+                compiled_file['path'],
             )
             with open(source_output, "r") as f:
                 compile_output = json.load(f)

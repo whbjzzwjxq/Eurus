@@ -932,6 +932,12 @@ def gen_LW_burn_lw_pair():
     return [*burn_summary, *extra_constraints]
 
 
+def gen_GPU_swap_pair_attacker_busd_gpu():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "busd", "gpu", amtIn, amtOut)
+
+
 hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "NMB": {
         "deposit_gslp_gnimb_gslp": gen_NMB_deposit_gslp_gnimb_gslp(),
@@ -1016,7 +1022,11 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "swap_pair_attacker_usdt_lw": gen_LW_swap_pair_attacker_usdt_lw(),
         "burn_lw_pair": gen_LW_burn_lw_pair(),
         "swap_pair_attacker_lw_usdt": gen_LW_swap_pair_attacker_lw_usdt(),
-    }
+    },
+    "GPU": {
+        "swap_pair_attacker_busd_gpu": gen_GPU_swap_pair_attacker_busd_gpu(),
+    },
+
 }
 
 

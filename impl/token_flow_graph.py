@@ -207,7 +207,8 @@ class TFGManager:
             # Token distribution
             if cur_a.action_name == "payback":
                 payback_token = cur_a.token0
-                attacker_got_tokens.remove(payback_token)
+                if payback_token in attacker_got_tokens:
+                    attacker_got_tokens.remove(payback_token)
                 for t in attacker_got_tokens:
                     for f in self.func_summarys:
                         if not f.action_name == "swap":

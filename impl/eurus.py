@@ -247,6 +247,8 @@ class FinancialExecution:
             all_read_vars = all_read_vars.union(read_vars)
 
         s = {}
+        print(all_read_vars)
+        print(self.init_state._cache)
         for v in all_read_vars:
             value = int(self.init_state.get(v))
             var = VAR(v + str(0), self.solver, value)

