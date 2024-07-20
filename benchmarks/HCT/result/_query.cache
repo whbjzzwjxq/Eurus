@@ -1,0 +1,32 @@
+No files changed, compilation skipped
+
+Ran 1 test for benchmarks/HCT/HCT_query.t.sol:ContractTest
+[PASS] test_query() (gas: 161796)
+Logs:
+  ----query starts----
+  ----queryBlockTimestamp starts----
+  uint256 blockTimestamp: 1694072657
+  ----queryBlockTimestamp ends----
+  ----queryUniswapV2Pair starts----pair
+  uint112 reserve0pair: 3717772046944618148783712500
+  uint112 reserve1pair: 65997190154150201517
+  uint32 blockTimestampLastpair: 1694072327
+  uint256 kLastpair: 245362221734290758329030764219727072491889549804
+  uint256 price0CumulativeLastpair: 729587255814590925291688223878
+  uint256 price1CumulativeLastpair: 2722826325220391734927707496324911789737616281
+  ----queryUniswapV2Pair ends----pair
+  ----queryERC20 starts----wbnb
+  uint256 totalSupplywbnb: 2533000389601163349233474
+  uint256 balanceOfwbnbpair: 65997190154150201517
+  uint256 balanceOfwbnbattacker: 0
+  ----queryERC20 ends----wbnb
+  ----queryERC20 starts----hct
+  uint256 totalSupplyhct: 9987704855137886084130217133
+  uint256 balanceOfhctpair: 3717772046944618148783712500
+  uint256 balanceOfhctattacker: 0
+  ----queryERC20 ends----hct
+  ----query ends----
+
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 4.38s (2.48ms CPU time)
+
+Ran 1 test suite in 4.38s (4.38s CPU time): 1 tests passed, 0 failed, 0 skipped (1 total tests)
