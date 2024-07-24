@@ -1,0 +1,28 @@
+{
+    "test_results": {
+        "./benchmarks/Safemoon": [
+            {
+                "name": "check_cand006",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x303f3b2c93f1a80000",
+                        "p_amt1_uint256": "0x30315a75e04a440000",
+                        "p_amt2_uint256": "0xde0b6b3a7640000",
+                        "p_amt3_uint256": "0x1a055690d9db80000",
+                        "p_amt4_uint256": "0xde0b6b3a7640000",
+                        "p_amt5_uint256": "0x305afc99fb40700000",
+                        "p_amt6_uint256": "0x3065652301fdfc0000"
+                    }
+                ],
+                "time": [
+                    0.004609249999987242,
+                    0,
+                    0.004609249999987242
+                ],
+                "feasible": false,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

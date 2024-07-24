@@ -119,15 +119,6 @@ roles:
     is_asset: true
     is_erc20: true
     is_stablecoin: true
-  "sfpairimpl":
-    is_swappair: true
-    is_uniswap: true
-    token_pair: ["weth", "safemoon"]
-    support_swaps:
-      "weth": ["weth", "safemoon"]
-      "safemoon": ["weth", "safemoon"]
-    is_oracle: true
-    oracle: "pair"
   "pair":
     is_swappair: true
     is_uniswap: true

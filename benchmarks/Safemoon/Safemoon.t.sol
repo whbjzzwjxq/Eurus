@@ -287,22 +287,6 @@ contract SafemoonTestBase is Test, BlockLoader {
         safemoon.transfer(owner, amount);
     }
 
-    function swap_sfpairimpl_attacker_weth_safemoon(
-        uint256 amount,
-        uint256 amountOut
-    ) internal eurus {
-        weth.transfer(address(sfpairimpl), amount);
-        sfpairimpl.swap(0, amountOut, attacker, new bytes(0));
-    }
-
-    function swap_sfpairimpl_attacker_safemoon_weth(
-        uint256 amount,
-        uint256 amountOut
-    ) internal eurus {
-        safemoon.transfer(address(sfpairimpl), amount);
-        sfpairimpl.swap(amountOut, 0, attacker, new bytes(0));
-    }
-
     function swap_pair_attacker_weth_safemoon(
         uint256 amount,
         uint256 amountOut
