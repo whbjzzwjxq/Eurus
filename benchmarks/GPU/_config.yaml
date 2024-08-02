@@ -3,18 +3,14 @@ project_name: "GPU"
 
 ctrt_name2cls:
   - ["busd", "BUSD"]
-  # - ["wbnb", "WBNB"]
   - ["gpu", "GPU"]
-  # - ["busdWbnbPair", "UniswapV2Pair"]
   - ["pair", "UniswapV2Pair"]
   - ["factory", "UniswapV2Factory"]
   - ["router", "UniswapV2Router"]
 
 ctrt_name2deploy:
   - ["busd", ""]
-  # - ["wbnb", ""]
   - ["gpu", "new GPU(address(this), address(busd))"]
-  # - ["busdWbnbPair", ""]
   - ["pair", ""]
   - ["factory", ""]
   - ["router", ""]
@@ -25,7 +21,7 @@ extra_actions:
 }'
 
 extra_deployments:
-  - "vm.warp(10**24 + 18 * 30 * 86400);
+  - "vm.warp(1715162466 + 18 * 30 * 86400);
   gpu.afterDeploy(address(router), address(pair));"
 
 extra_statements: []
@@ -69,5 +65,6 @@ roles:
       "busd": ["busd", "gpu"]
       "gpu": ["busd", "gpu"]
     is_lendpool: true
+    oracle: "pair"
 
 pattern: "Pump & Dump"

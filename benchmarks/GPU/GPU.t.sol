@@ -70,7 +70,7 @@ contract GPUTestBase is Test, BlockLoader {
         // Initialize balances and mock flashloan.
         busd.transfer(address(pair), balanceOfbusdpair);
         gpu.transfer(address(pair), balanceOfgpupair);
-        vm.warp(10 ** 24 + 18 * 30 * 86400);
+        vm.warp(1715162466 + 18 * 30 * 86400);
         gpu.afterDeploy(address(router), address(pair));
     }
 

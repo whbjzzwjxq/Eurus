@@ -1,5 +1,5 @@
-Compiling 242 files with Solc 0.8.25
-Solc 0.8.25 finished in 49.07s
+Compiling 263 files with Solc 0.8.25
+Solc 0.8.25 finished in 51.62s
 Compiler run successful with warnings:
 Warning (3420): Source file does not specify required compiler version! Consider adding "pragma solidity ^0.8.25;"
 --> benchmarks/Safemoon/interfaces/IERC20.sol
@@ -9,6 +9,12 @@ Warning (2462): Visibility for constructor is ignored. If you want the contract 
     |
 871 |     constructor () public ERC20(NAME, SYMBOL) {}
     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Warning (2462): Visibility for constructor is ignored. If you want the contract to be non-deployable, making it "abstract" is sufficient.
+   --> benchmarks/Hackathon/Hackathon.sol:383:3:
+    |
+383 |   constructor() public {
+    |   ^ (Relevant source part starts here and spans across multiple lines).
 
 Warning (2462): Visibility for constructor is ignored. If you want the contract to be non-deployable, making it "abstract" is sufficient.
    --> benchmarks/LUSD/BTCB.sol:356:3:
@@ -53,6 +59,12 @@ Warning (5667): Unused function parameter. Remove or comment out the variable na
     |                            ^^^^^^^^^^^^^^
 
 Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/APEMAGA/APEMAGA.t.sol:175:32:
+    |
+175 |     function burn_apemaga_pair(uint256 amount) internal eurus {
+    |                                ^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
    --> benchmarks/Axioma/Axioma.t.sol:213:9:
     |
 213 |         uint256 amountOut
@@ -75,30 +87,6 @@ Warning (5667): Unused function parameter. Remove or comment out the variable na
     |
 217 |     function withdraw_bxhstaking_bxhslp_usdt(uint256 amount) internal eurus {
     |                                              ^^^^^^^^^^^^^^
-
-Warning (2072): Unused local variable.
-   --> benchmarks/CFC/CFC1.t.sol:339:9:
-    |
-339 |         uint256 amt6 = 0x1bc16d674ec80000;
-    |         ^^^^^^^^^^^^
-
-Warning (2072): Unused local variable.
-   --> benchmarks/CFC/CFC1.t.sol:341:9:
-    |
-341 |         uint256 amt8 = 0x8584fdca777b200000;
-    |         ^^^^^^^^^^^^
-
-Warning (2072): Unused local variable.
-   --> benchmarks/CFC/CFC1.t.sol:342:9:
-    |
-342 |         uint256 amt9 = 0x2ad9861e5527d400000;
-    |         ^^^^^^^^^^^^
-
-Warning (2072): Unused local variable.
-   --> benchmarks/CFC/CFC1.t.sol:343:9:
-    |
-343 |         uint256 amt10 = 0x2ad96a5ce7c08400000;
-    |         ^^^^^^^^^^^^^
 
 Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
    --> benchmarks/Discover/Discover.t.sol:229:9:
@@ -191,12 +179,6 @@ Warning (5667): Unused function parameter. Remove or comment out the variable na
     |                    ^^^^^^^^^^
 
 Warning (2072): Unused local variable.
-   --> benchmarks/LW/LW.t.sol:236:9:
-    |
-236 |         uint256 amtout = 0x356c8f5498e37600000; 
-    |         ^^^^^^^^^^^^^^
-
-Warning (2072): Unused local variable.
    --> benchmarks/MUMUG/MuBank.sol:526:10:
     |
 526 |         (uint256 mu_coin_swap_amount, uint256 mu_coin_amount) = _mu_bond_quote(
@@ -281,27 +263,27 @@ Warning (5667): Unused function parameter. Remove or comment out the variable na
     |         ^^^^^^^^^^
 
 Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
-   --> benchmarks/Safemoon/Safemoon.t.sol:308:9:
+   --> benchmarks/Safemoon/Safemoon.t.sol:292:9:
     |
-308 |         uint256 amountOut
+292 |         uint256 amountOut
     |         ^^^^^^^^^^^^^^^^^
 
 Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
-   --> benchmarks/Safemoon/Safemoon.t.sol:328:9:
+   --> benchmarks/Safemoon/Safemoon.t.sol:312:9:
     |
-328 |         uint256 amountOut
+312 |         uint256 amountOut
     |         ^^^^^^^^^^^^^^^^^
 
 Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
-   --> benchmarks/Safemoon/Safemoon_candidates.t.sol:308:9:
+   --> benchmarks/Safemoon/Safemoon_candidates.t.sol:292:9:
     |
-308 |         uint256 amountOut
+292 |         uint256 amountOut
     |         ^^^^^^^^^^^^^^^^^
 
 Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
-   --> benchmarks/Safemoon/Safemoon_candidates.t.sol:328:9:
+   --> benchmarks/Safemoon/Safemoon_candidates.t.sol:312:9:
     |
-328 |         uint256 amountOut
+312 |         uint256 amountOut
     |         ^^^^^^^^^^^^^^^^^
 
 Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
@@ -317,9 +299,9 @@ Warning (5667): Unused function parameter. Remove or comment out the variable na
     |                                          ^^^^^^^^^^^^^^
 
 Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
-   --> benchmarks/UN/UN.sol:611:9:
+   --> benchmarks/UN/UN.sol:607:9:
     |
-611 |         address from,
+607 |         address from,
     |         ^^^^^^^^^^^^
 
 Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
@@ -414,7 +396,7 @@ Warning (2018): Function state mutability can be restricted to view
 
 
 Ran 1 test for benchmarks/GPU/GPU_query.t.sol:ContractTest
-[PASS] test_query() (gas: 108437)
+[PASS] test_query() (gas: 108200)
 Logs:
   ----query starts----
   ----queryBlockTimestamp starts----
@@ -440,6 +422,6 @@ Logs:
   ----queryERC20 ends----gpu
   ----query ends----
 
-Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 1.12s (1.35ms CPU time)
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 2.08s (2.35ms CPU time)
 
-Ran 1 test suite in 1.12s (1.12s CPU time): 1 tests passed, 0 failed, 0 skipped (1 total tests)
+Ran 1 test suite in 2.09s (2.08s CPU time): 1 tests passed, 0 failed, 0 skipped (1 total tests)
