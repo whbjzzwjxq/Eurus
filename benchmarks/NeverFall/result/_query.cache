@@ -1,0 +1,40 @@
+No files changed, compilation skipped
+
+Ran 1 test for benchmarks/NeverFall/NeverFall_query.t.sol:ContractTest
+[PASS] test_query() (gas: 149324)
+Logs:
+  ----query starts----
+  ----queryBlockTimestamp starts----
+  uint256 blockTimestamp: 1683045919
+  ----queryBlockTimestamp ends----
+  ----queryUniswapV2Pair starts----pair
+  uint112 reserve0pair: 390749131999675869539950
+  uint112 reserve1pair: 177366502266430132318230923
+  uint32 blockTimestampLastpair: 1683045649
+  uint256 kLastpair: 69305797938101003734510187556035080952127678689650
+  uint256 price0CumulativeLastpair: 11686512911925420079328798062310345871832946
+  uint256 price1CumulativeLastpair: 38487942699576719668303578652959368015
+  ----queryUniswapV2Pair ends----pair
+  ----queryERC20 starts----usdt
+  uint256 totalSupplyusdt: 3179997906401637314353419735
+  uint256 balanceOfusdtpair: 390749131999675869539950
+  uint256 balanceOfusdtattacker: 0
+  uint256 balanceOfusdtneverFall: 10920
+  ----queryERC20 ends----usdt
+  ----queryERC20 starts----neverFall
+  uint256 totalSupplyneverFall: 99900000000000000000000000000
+  uint256 balanceOfneverFallpair: 177366502266430132318230923
+  uint256 balanceOfneverFallattacker: 0
+  uint256 balanceOfneverFallneverFall: 99537303621642211235625620728
+  ----queryERC20 ends----neverFall
+  ----queryERC20 starts----pair
+  uint256 totalSupplypair: 8321500927629604090282341
+  uint256 balanceOfpairpair: 0
+  uint256 balanceOfpairattacker: 0
+  uint256 balanceOfpairneverFall: 8320140689525074913430188
+  ----queryERC20 ends----pair
+  ----query ends----
+
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 806.66ms (1.90ms CPU time)
+
+Ran 1 test suite in 809.04ms (806.66ms CPU time): 1 tests passed, 0 failed, 0 skipped (1 total tests)

