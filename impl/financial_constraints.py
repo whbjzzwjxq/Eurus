@@ -977,6 +977,19 @@ def gen_NeverFall_swap_pair_attacker_neverFall_usdt():
 
     return [*s_in, *s_out, *invariants]
 
+def gen_Hackathon_burn_hackathon_pair():
+    burn_amount = "burnAmount"
+    burn_summary = gen_summary_transfer(DEAD, "attacker", "hackathon", burn_amount, percent_out=1)
+    old_bal_attacker = f"old_hackathon.balanceOf(attacker)"
+    old_bal_pair = f"old_hackathon.balanceOf(pair)"
+    new_bal_pair = f"new_hackathon.balanceOf(pair)"
+    extra_constraints = [
+        lambda s: s.get("arg_0") ==  s.get(burn_amount),
+        lambda s: s.get("arg_0") <= s.get(old_bal_attacker),
+        lambda s: s.get(new_bal_pair) >= 1 / SCALE,
+    ]
+    return [*burn_summary, *extra_constraints]
+
 hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "NMB": {
         "deposit_gslp_gnimb_gslp": gen_NMB_deposit_gslp_gnimb_gslp(),
@@ -1069,8 +1082,10 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
         "deposit_neverFall_usdt_neverFall": gen_NeverFall_deposit_neverFall_usdt_neverFall(),
         "swap_pair_attacker_neverFall_usdt": gen_NeverFall_swap_pair_attacker_neverFall_usdt(),
         "withdraw_neverFall_neverFall_usdt": gen_NeverFall_withdraw_neverFall_neverFall_usdt(),
-    }
-
+    },
+    "Hackathon": {
+        "burn_hackathon_pair": gen_Hackathon_burn_hackathon_pair(),        
+    },
 }
 
 
