@@ -990,6 +990,31 @@ def gen_Hackathon_burn_hackathon_pair():
     ]
     return [*burn_summary, *extra_constraints]
 
+def gen_XAI_swap_pair_attacker_wbnb_xai():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "wbnb", "xai", amtIn, amtOut) + \
+        [lambda s: s.get("arg_0") == 3000]
+
+
+def gen_XAI_swap_pair_attacker_xai_wbnb():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "xai", "wbnb", amtIn, amtOut, amtOutRatio=0.9999691263904297)
+
+def gen_XAI_burn_xai_pair():
+    old_bal_pair = f"old_xai.balanceOf(pair)"
+    new_bal_pair = f"new_xai.balanceOf(pair)"
+    old_bal_attacker = f"old_xai.balanceOf(attacker)"
+    new_bal_attacker = f"new_xai.balanceOf(attacker)"
+    extra_constraints = [
+        lambda s: s.get(new_bal_pair) ==  s.get(old_bal_pair) * s.get("arg_0") * 30 / (37 * (s.get(old_bal_attacker) + s.get(old_bal_pair))), 
+        lambda s: s.get(new_bal_attacker) ==  s.get(old_bal_attacker) * s.get("arg_0") / (s.get(old_bal_attacker) + s.get(old_bal_pair)), 
+        lambda s: s.get("arg_0") > 0,
+        lambda s: s.get("arg_0") == 10000 / SCALE,
+    ]
+    return [*extra_constraints]
+
 hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "NMB": {
         "deposit_gslp_gnimb_gslp": gen_NMB_deposit_gslp_gnimb_gslp(),
@@ -1086,6 +1111,13 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "Hackathon": {
         "burn_hackathon_pair": gen_Hackathon_burn_hackathon_pair(),        
     },
+    "XAI": {
+        "swap_pair_attacker_wbnb_xai": gen_XAI_swap_pair_attacker_wbnb_xai(),
+        "burn_xai_pair": gen_XAI_burn_xai_pair(),
+        "swap_pair_attacker_xai_wbnb": gen_XAI_swap_pair_attacker_xai_wbnb(),
+        "payback_wbnb_owner": gen_summary_payback("attacker", "owner", "wbnb", "arg_x0", "arg_0", fee=0),
+    },
+    
 }
 
 

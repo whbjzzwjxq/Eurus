@@ -1,0 +1,28 @@
+{
+    "test_results": {
+        "./benchmarks/XAI": [
+            {
+                "name": "check_cand002",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0xa2af3dc00543400000",
+                        "p_amt1_uint256": "0xa2a15d09519be00000",
+                        "p_amt2_uint256": "0x142ffed757491900000000000",
+                        "p_amt3_uint256": "0x2710",
+                        "p_amt4_uint256": "0x2629",
+                        "p_amt5_uint256": "0xa2a23b14bcd6580000",
+                        "p_amt6_uint256": "0xa2afacc5bae0800000"
+                    }
+                ],
+                "time": [
+                    0.04010470793582499,
+                    0,
+                    0.04010470793582499
+                ],
+                "feasible": false,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

