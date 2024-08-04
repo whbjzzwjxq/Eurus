@@ -1137,6 +1137,8 @@ contract NeverFall is ERC20,Ownable{
 
     event BuyNF(address indexed account,uint256 amount);
 
+    event InitSupply(uint256 amount);
+
     function buy(uint256 amountU) public returns(uint256){
         require(startBuy,"not start");
         //收usdt
@@ -1146,6 +1148,7 @@ contract NeverFall is ERC20,Ownable{
         //90%加池子
         emit LiqudityBal(IERC20(uniswapV2Pair).balanceOf(address(this)));
         IERC20(usdtAddress).approve(uniswapV2Router,amountU);
+        emit InitSupply(initSupply);
         addLiquidity(initSupply, amountU * buyAddLiqFee / 100);
         emit LiqudityBal(IERC20(uniswapV2Pair).balanceOf(address(this)));
         uint256 afterLiquidityAmount = balanceOf(address(this));

