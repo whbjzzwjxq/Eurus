@@ -388,6 +388,8 @@ def eurus_test(bmk_dir: str, args):
                 vulnerable_func_name = m.group(1)
             else:
                 raise ValueError(f"Unmatched function str: {vulnerable_func_str}")
+        else:
+            vulnerable_func_name = None
 
         for func_name, output_path, _, _ in result_paths:
             print(f"Solving: {func_name}")
