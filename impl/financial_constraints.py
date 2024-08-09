@@ -247,9 +247,7 @@ def gen_attack_goal(token: str, amount: str, scale: int) -> LAMBDA_CONSTR:
 
 
 # TODO
-
-
-def gen_NMB_transaction_gnimbstaking_gnimb():
+def gen_NMB_deposit_gslp_gnimb_gslp():
     pair_bal_nbu = f"old_nbu.balanceOf(pairnbunimb)"
     pair_bal_nimb = f"old_nimb.balanceOf(pairnbunimb)"
     amount_base = "amtIn"
@@ -280,6 +278,10 @@ def gen_NMB_transaction_gnimbstaking_gnimb():
     # The reward constraint system
     transfer_summary = gen_summary_transfer("gnimbstaking", "attacker", "gnimb", amount_out)
     return [*reward_summary, *transfer_summary]
+
+# TODO
+def gen_NMB_withdraw_gslp_gslp_gnimb():
+    pass
 
 
 def gen_BXH_deposit_bxhstaking_bxh_bxhslp():
@@ -740,7 +742,8 @@ def gen_SwaposV2_swap_spair_attacker_swapos_weth():
 
 hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "NMB": {
-        "transaction_gnimbstaking_gnimb": gen_NMB_transaction_gnimbstaking_gnimb(),
+        "deposit_gslp_gnimb_gslp": gen_NMB_deposit_gslp_gnimb_gslp(),
+        "withdraw_gslp_gslp_gnimb": gen_NMB_withdraw_gslp_gslp_gnimb(),
     },
     "BXH": {
         "deposit_bxhstaking_bxh_bxhslp": gen_BXH_deposit_bxhstaking_bxh_bxhslp(),

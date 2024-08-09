@@ -2,6 +2,7 @@ import os
 from os import path
 from subprocess import Popen, run, DEVNULL
 
+import subprocess
 from typing import List, Dict, Tuple
 
 from dataclasses import dataclass
@@ -152,6 +153,7 @@ def deploy_contract(bmk_dir: str):
         raise err
     lines = out.stdout.splitlines(keepends=False)
     address = None
+    # print(lines)
     for l in lines:
         if l.startswith("Deployed to: "):
             address = l.removeprefix("Deployed to: ").strip()
@@ -347,6 +349,7 @@ class LazyStorage:
 
 
 def verify_model_on_anvil(ctrt_name2addr: Dict[str, str], func_name: str, params: List[str]) -> bool:
+    # cast call doesn't support startPrank / prank / etc. Thus, we use forge debug instead.
     owner_address = ctrt_name2addr["owner"]
     labels = []
     for k, v in ctrt_name2addr.items():
@@ -383,4 +386,26 @@ def verify_model_on_anvil(ctrt_name2addr: Dict[str, str], func_name: str, params
     if feasible:
         print("Don't care `Transaction failed.` here. It doesn't mean the result is not feasible.")
         print("0x4e487b710000000000000000000000000000000000000000000000000000000000000001 is the special string used to indicate a successful transaction.")
+    return feasible
+
+
+def verify_model_on_forge_debug(bmk_dir: str, bmk_name: str, func_name: str, params: List[str]) -> bool:
+    param_types = ",".join(["uint256"] * len(params))
+    func_sig = f"{func_name}({param_types})"
+    cmd = [
+        "forge",
+        "script",
+        "-vvvv",
+        f"{bmk_dir}/{bmk_name}_candidates.t.sol",
+        "--sig",
+        func_sig,
+        *params,
+    ]
+    print(" ".join(cmd))
+    try:
+        out = run(cmd, text=True, capture_output=True)
+    except Exception as err:
+        print(err)
+        return False
+    feasible = "Attack succeed!" in out.stderr
     return feasible

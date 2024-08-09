@@ -23,9 +23,9 @@ pip3 install -q --upgrade pip && pip3 install -q -r ./requirements.txt && \
 solc-select install 0.8.21 && solc-select use 0.8.21 && npm install --quiet --save-dev
 ```
 
-Add foundry 0.2.0 to $PATH
+Install Foundry 0.2.0.
 ```bash
-export PATH=$(pwd)/.foundry:$PATH
+curl -L https://foundry.paradigm.xyz | bash
 ```
 
 ## Evaluation
@@ -70,4 +70,10 @@ Supported cheating codes: [Check this file](https://github.com/a16z/halmos/blob/
 ```bash
 python3 ./main.py -p -i ./benchmarks/Discover
 python3 ./main.py -p -i all
+```
+
+### Clean result
+```bash
+rm ./benchmarks/**/result/eurus_*.json
+rm ./benchmarks/**/result/record.json
 ```

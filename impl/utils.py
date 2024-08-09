@@ -93,7 +93,7 @@ def update_record(result_path: str, update: dict):
     current.update(update)
 
     with open(record_path, "w") as f:
-        json.dump(current, f)
+        json.dump(current, f, indent=4)
 
 
 def load_record(result_path: str) -> dict:

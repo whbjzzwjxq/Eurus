@@ -332,7 +332,7 @@ class Sketch:
             f"vm.startPrank(attacker);",
             *pre_statements,
             *func_body,
-            "assert(!attackGoal());",
+            "require(!attackGoal(), \"Attack succeed!\");",
             f"vm.stopPrank();",
             "}",
         ]
@@ -340,10 +340,15 @@ class Sketch:
 
     def output_verify(self, func_name: str, pre_statements: List[str] = None, print_balance: bool = False) -> List[str]:
         func_body = []
+        args_idx = 0
         # action must be concrete
         for idx, a in enumerate(self.pure_actions):
             if not a.concrete:
                 raise ValueError("Try to verify a sketch with non-concretized actions!")
+            # print concrete parameters in the ground truth
+            for arg in a.args:
+                func_body.append(f"emit log_named_uint(\"amt{args_idx}\", {arg});")
+                args_idx += 1
             func_body.append(f"{str(a)};")
             if print_balance:
                 func_body.append(f'printBalance("After step{idx} ");')

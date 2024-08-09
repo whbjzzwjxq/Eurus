@@ -6,7 +6,7 @@ import re
 from z3 import *
 
 from impl.dsl import Sketch
-from .foundry_toolset import LazyStorage, deploy_contract, init_anvil, verify_model_on_anvil
+from .foundry_toolset import LazyStorage, deploy_contract, init_anvil, verify_model_on_anvil, verify_model_on_forge_debug
 from .benchmark_builder import BenchmarkBuilder
 from .utils import (
     gen_result_paths,
@@ -304,10 +304,12 @@ def eurus_solve(
             v = str(p)
             print(f"uint256 {p.name} = {v}")
             param_strs.append(v)
-        feasible = verify_model_on_anvil(ctrt_name2addr, func_name, param_strs)
+        
+        # feasible = verify_model_on_anvil(ctrt_name2addr, func_name, param_strs)
         # There is a bug in anvil, this solution is tested in foundry test.
         # if "BXH" in bmk_dir and func_name == "check_cand003":
         #     feasible = True
+        feasible = verify_model_on_forge_debug(bmk_dir, resolve_project_name(bmk_dir), func_name, param_strs)
         if feasible:
             print(f"Result for {func_name} is feasible in realworld!")
         else:
@@ -396,14 +398,14 @@ def eurus_test(bmk_dir: str, args):
             # Avoid stuck
             stuck_dict = {
                 "EGD": [
-                    "check_cand001",
+                    "check_cand002",
+                ],
+                "Haven": [
+                    "check_cand012",
                 ],
                 "MUMUG": [
                     "check_cand003",
                 ],
-                "Haven": [
-                    "check_cand011",
-                ]
             }
             stuck_list = stuck_dict.get(project_name, [])
             if func_name in stuck_list:

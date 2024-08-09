@@ -1,0 +1,28 @@
+{
+    "test_results": {
+        "./benchmarks/NOVO": [
+            {
+                "name": "check_cand002",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x9c2007651b2500000",
+                        "p_amt1_uint256": "0x9b41fbf9e0aec0000",
+                        "p_amt2_uint256": "0x7ce66c50e28400",
+                        "p_amt3_uint256": "0x4fb383de9c0df0",
+                        "p_amt4_uint256": "0x6f05b59d3b2000",
+                        "p_amt5_uint256": "0x9cfe12d0559b40000",
+                        "p_amt6_uint256": "0x9cc68ff586fdb0000"
+                    }
+                ],
+                "time": [
+                    0.009236291007255204,
+                    0,
+                    0.009236291007255204
+                ],
+                "feasible": true,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

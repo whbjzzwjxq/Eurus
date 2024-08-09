@@ -1,0 +1,28 @@
+{
+    "test_results": {
+        "./benchmarks/ShadowFi": [
+            {
+                "name": "check_cand002",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x1761724eb4270e000000",
+                        "p_amt1_uint256": "0x1761802f6adab5000000",
+                        "p_amt2_uint256": "0x246e62c7d680ca",
+                        "p_amt3_uint256": "0x5af3022d7e28",
+                        "p_amt4_uint256": "0x53444835ec58",
+                        "p_amt5_uint256": "0x17738d7d128b72000000",
+                        "p_amt6_uint256": "0x17736acb49ca50000000"
+                    }
+                ],
+                "time": [
+                    0.012809792009647936,
+                    0,
+                    0.012809792009647936
+                ],
+                "feasible": true,
+                "refine_loop": 2
+            }
+        ]
+    }
+}

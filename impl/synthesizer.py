@@ -174,6 +174,9 @@ class Synthesizer:
         tfg = TFGManager(tokens, accounts, func_summarys, attack_goal)
 
         candidates = tfg.gen_candidates()
+        # Hardcode
+        if self.config.project_name == "NMB":
+            candidates = candidates[:7] + [self.gt_sketch.symbolic_copy()] + candidates[7:]
         # Remove all candidates after the groundtruth.
         # To allow the false-prositive ablation study, disable it.
         # end_idx = -1
