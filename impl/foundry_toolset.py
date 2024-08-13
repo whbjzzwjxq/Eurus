@@ -398,7 +398,7 @@ def verify_model_on_forge_debug(bmk_dir: str, bmk_name: str, func_name: str, par
         "-vvvv",
         f"{bmk_dir}/{bmk_name}_candidates.t.sol",
         "--sig",
-        func_sig,
+        f"\"{func_sig}\"",
         *params,
     ]
     print(" ".join(cmd))

@@ -829,8 +829,8 @@ def gen_EGD_refinement():
             ]
         },
         {
-            "swap_pair_attacker_egd_usdt": [
-                lambda s: s.get("arg_1") >= 1 / SCALE,
+            "borrow_usdt_pair": [
+                lambda s: s.get("arg_0") <= 516000e18 / SCALE,
             ]
         },
     ]

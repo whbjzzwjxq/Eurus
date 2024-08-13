@@ -315,9 +315,9 @@ class Sketch:
         # Here, all of benchmarks have flashloan.
         for idx, a in enumerate(self.pure_actions):
             if a.action_name == "borrow":
-                a1_idx = self.match_borrow_payback(idx)
-                a1 = self.pure_actions[a1_idx]
-                f = f"vm.assume({a1.amount0} >= {a.amount0});"
+                payback_idx = self.match_borrow_payback(idx)
+                payback = self.pure_actions[payback_idx]
+                f = f"vm.assume({payback.amount0} >= {a.amount0});"
                 pre_statements.append(f)
 
         params = [f"uint256 amt{i}" for i in range(self.param_num)]

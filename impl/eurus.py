@@ -98,6 +98,7 @@ class VarGetter:
         pre_state: Dict[str, VAR],
         post_state: Dict[str, VAR],
         params: Dict[str, VAR],
+        param_alias: Dict[str, VAR],
         solver: SolverType,
     ) -> None:
         self.idx = idx
@@ -105,6 +106,7 @@ class VarGetter:
         self.pre_state = pre_state
         self.post_state = post_state
         self.params = params
+        self.param_alias = param_alias
         self.solver = solver
 
     def get(self, __name: str) -> Any:
@@ -124,6 +126,10 @@ class VarGetter:
         elif __name.startswith("init_"):
             key = __name.removeprefix("init_")
             r = self.init_state[key].var_obj
+            return r
+        elif __name.startswith("alias_"):
+            key = __name.removeprefix("alias_")
+            r = self.param_alias[key].var_obj
             return r
         else:
             # Internal variable
@@ -148,6 +154,7 @@ class FinancialExecution:
         self.states: List[Dict[str, VAR]] = []
         self.params: List[Dict[str, VAR]] = []
         self.all_params: List[VAR] = []
+        self.param_alias: Dict[str, VAR] = {}
         self.init_state = init_state
         self.attack_goal = attack_goal
 
@@ -189,6 +196,7 @@ class FinancialExecution:
             pre_state,
             post_state,
             params,
+            self.param_alias,
             self.solver,
         )
         c = func(getter)
@@ -229,8 +237,11 @@ class FinancialExecution:
                     var = VAR(k, self.solver, hack_param)
                 params[f"{i}"] = var
                 self.all_params.append(var)
-            for idx, p in enumerate(self.all_params):
-                params[f"x{idx}"] = p
+                if action.action_name == "borrow" and i == 0:
+                    payback_func_sig = action.func_sig.replace("borrow", "payback")
+                    self.param_alias[payback_func_sig] = var
+            # for idx, p in enumerate(self.all_params):
+            #     params[f"x{idx}"] = p
             self.params.append(params)
             read_vars, _ = extract_rw_vars(action.constraints)
             all_read_vars = all_read_vars.union(read_vars)
@@ -398,6 +409,7 @@ def eurus_test(bmk_dir: str, args):
             # Avoid stuck
             stuck_dict = {
                 "EGD": [
+                    "check_cand001",
                     "check_cand002",
                 ],
                 "Haven": [

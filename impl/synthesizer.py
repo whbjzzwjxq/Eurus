@@ -280,7 +280,7 @@ class Synthesizer:
         elif action.action_name == "borrow":
             return gen_summary_transfer(action.lender, "attacker", action.token0, "arg_0")
         elif action.action_name == "payback":
-            return gen_summary_payback("attacker", action.lender, action.token0, "arg_x0", "arg_0")
+            return gen_summary_payback("attacker", action.lender, action.token0, "alias_" + action.func_sig, "arg_0")
         elif action.action_name == "addliquidity":
             return []
         elif action.action_name == "deposit":
