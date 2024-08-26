@@ -117,6 +117,8 @@ class BenchmarkBuilder:
                 "metadata",
                 "--root",
                 os.getcwd(),
+                "--evm-version",
+                "shanghai",
             ]
             print(" ".join(cmd))
             try:

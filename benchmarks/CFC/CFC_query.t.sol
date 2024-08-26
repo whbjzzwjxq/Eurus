@@ -13,7 +13,7 @@ contract ContractTest is Test, BlockLoader {
     // SAFE - BEP20USDT
     IUniswapV2Pair safeusdtPair = IUniswapV2Pair(0x400DB103Af7a0403C9Ab014b2B73702B89F6B4b7);
     // SAFE - CFC
-    IUniswapV2Pair CakeLP = IUniswapV2Pair(0x595488F902C4d9Ec7236031a1D96cf63b0405CF0);
+    IUniswapV2Pair pair = IUniswapV2Pair(0x595488F902C4d9Ec7236031a1D96cf63b0405CF0);
 
     address attacker = address(0xb8D700f30d93FAb242429245E892600dCC03935D);
 
@@ -25,14 +25,14 @@ contract ContractTest is Test, BlockLoader {
         emit log_string("----query starts----");
         queryBlockTimestamp();
         queryUniswapV2Pair(address(safeusdtPair), "safeusdtPair");
-        queryUniswapV2Pair(address(CakeLP), "CakeLP");
+        queryUniswapV2Pair(address(pair), "pair");
         address[] memory users = new address[](3);
         users[0] = address(safeusdtPair);
-        users[1] = address(CakeLP);
+        users[1] = address(pair);
         users[2] = attacker;
         string[] memory user_names = new string[](3);
         user_names[0] = "safeusdtPair";
-        user_names[1] = "CakeLP";
+        user_names[1] = "pair";
         user_names[2] = "attacker";
         queryERC20(address(safe), "safe", users, user_names);
         queryERC20(address(cfc), "cfc", users, user_names);

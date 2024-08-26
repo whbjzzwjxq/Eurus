@@ -1,0 +1,32 @@
+{
+    "test_results": {
+        "./benchmarks/CFC": [
+            {
+                "name": "check_cand026",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x26764a5ae86ba600000",
+                        "p_amt1_uint256": "0x26756c4f7d313000000",
+                        "p_amt2_uint256": "0x7764443d11976c0000",
+                        "p_amt3_uint256": "0x776417c9d130ec0000",
+                        "p_amt4_uint256": "0x83b50e28262a0000000",
+                        "p_amt5_uint256": "0x7d1def2bb1219000000",
+                        "p_amt6_uint256": "0x1d4c13b2e3b02c00000",
+                        "p_amt7_uint256": "0x787dfc48f2690c0000",
+                        "p_amt8_uint256": "0x787dfc48f2690c0000",
+                        "p_amt9_uint256": "0x2693d5bfdce30200000",
+                        "p_amt10_uint256": "0x2693d4e1d177c800000"
+                    }
+                ],
+                "time": [
+                    0.09263112500775605,
+                    0,
+                    0.09263112500775605
+                ],
+                "feasible": true,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

