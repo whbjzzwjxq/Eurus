@@ -273,6 +273,11 @@ contract Minerals is Ownable{
     }
     receive() external payable {
      }
+
+     function balance(address token) public returns(uint256){
+        return balanceOf[token];
+     }
+
      function setPools(address token,uint value,bool zt)public{
         // require(_msgSender()==ceo,"You are not a routing contract administrator"); 
         if(zt){
@@ -339,16 +344,19 @@ contract Minerals is Ownable{
              }
         }
     }
+    event branchOne(uint256 a);
     function sell(address _token,address bnborUsdt,uint256 tokenAmount,address to) public  {
         require(_msgSender()==ceo,"You are not a routing contract administrator");
         IERC20(_token).approve(address(_router), 2 ** 256 - 1);
         if(bnborUsdt==_WBNB){
+            emit branchOne(1);
            address[] memory path = new address[](2);
            path[0] = _token;
            path[1] = bnborUsdt;
            IRouter(_router).swapExactTokensForTokensSupportingFeeOnTransferTokens(tokenAmount,0,path,to,block.timestamp);
         }
         if(bnborUsdt==_USDT){
+            emit branchOne(2);
            address[] memory path = new address[](3);
            path[0] = _token;
            path[1] = bnborUsdt;
@@ -545,11 +553,12 @@ contract SellTokenRouter is Ownable {
         require(terraces[terrace]!=address(0) && tokenPrice[addr][coin] > 0);
         require(coin != address(0));
         require(bnbOrUsdt == _WBNB || bnbOrUsdt==_USDT);
-        require(!getNewTokenPrice(addr,coin,bnbOrUsdt), "495");
+        require(!getNewTokenPrice(addr,coin,bnbOrUsdt));
         // require(!getNewTokenPrice(addr,coin,bnbOrUsdt) && block.timestamp > tokenPriceTime[addr][coin]);
         // uint bnb=msg.value;
         uint tos=getToken2Price(coin,bnbOrUsdt,mkt.balanceOf(coin))/10;
-        require(Short[addr][coin].bnb+bnb <= tos);
+        // require(false, toString(tos));
+        require(Short[addr][coin].bnb+bnb <= tos, "Short[addr][coin].bnb+bnb > tos");
         Short[addr][coin].token=bnbOrUsdt;
         Short[addr][coin].coin=coin;
         Short[addr][coin].bnb+=bnb*98/100;
@@ -583,6 +592,9 @@ contract SellTokenRouter is Ownable {
         // payable (owner()).transfer(bnb*2/100);
         // payable (terraces[terrace]).transfer(bnb/100);
     }
+    event BranchOne(uint256 a);
+    event BranchTwo(uint256 a);
+    
     function withdraw(address token)public {
         require(Short[_msgSender()][token].bnb>0);
         require(Short[_msgSender()][token].time>0);
@@ -627,7 +639,7 @@ contract SellTokenRouter is Ownable {
         }
     }
     
-    function getTokenPrice(address _tolens,address bnbOrUsdt,uint bnb) view private  returns(uint){
+    function getTokenPrice(address _tolens,address bnbOrUsdt,uint bnb) view public  returns(uint){
         if(_tolens == address(0)) return 0;
         address isbnb;
         if(bnbOrUsdt == _WBNB){

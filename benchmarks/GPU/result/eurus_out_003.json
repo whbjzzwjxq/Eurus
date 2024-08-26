@@ -1,0 +1,27 @@
+{
+    "test_results": {
+        "./benchmarks/GPU": [
+            {
+                "name": "check_cand003",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x2a9bf0f397f1080000",
+                        "p_amt1_uint256": "0x29a2241af62c000000",
+                        "p_amt2_uint256": "0x2ad07ae76c2cfc0000",
+                        "p_amt3_uint256": "0x2abea2bc5913820000",
+                        "p_amt4_uint256": "0x29d9a6f5c4c9900000",
+                        "p_amt5_uint256": "0x2ac59317b2e7340000"
+                    }
+                ],
+                "time": [
+                    0.004380541999125853,
+                    0,
+                    0.004380541999125853
+                ],
+                "feasible": false,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

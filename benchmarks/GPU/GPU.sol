@@ -939,7 +939,7 @@ contract GPU is ERC20 {
 		_isExcludedFromFeesVip[_contractSender] = true;
 
         total = 10**24;
-		startTime = 1715162466;
+		startTime = 0;
         _mint(_tokenOwner, total);
         
     }

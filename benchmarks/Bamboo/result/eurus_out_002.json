@@ -1,6 +1,6 @@
 {
     "test_results": {
-        "benchmarks/Bamboo": [
+        "./benchmarks/Bamboo": [
             {
                 "name": "check_cand002",
                 "num_models": 1,
@@ -16,9 +16,9 @@
                     }
                 ],
                 "time": [
-                    0.01340091700000201,
+                    0.01560466701630503,
                     0,
-                    0.01340091700000201
+                    0.01560466701630503
                 ],
                 "feasible": true,
                 "refine_loop": 0

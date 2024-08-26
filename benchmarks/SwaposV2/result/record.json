@@ -626,6 +626,6 @@
             "payback_swapos_spair"
         ]
     ],
-    "eurus__solve_timecost": 74.15090045900433,
-    "eurus__all_timecost": 74.75591354201606
+    "eurus__solve_timecost": 0.07876845891587436,
+    "eurus__all_timecost": 0.6837815419276012
 }

@@ -130,6 +130,6 @@
             "payback_radt_owner"
         ]
     ],
-    "eurus__solve_timecost": 71.44688274999498,
-    "eurus__all_timecost": 71.45347704198502
+    "eurus__solve_timecost": 0.04020395805127919,
+    "eurus__all_timecost": 0.04679825004131999
 }

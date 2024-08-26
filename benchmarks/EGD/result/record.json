@@ -1,5 +1,5 @@
 {
-    "sketchgen_timecost": 0.008421915990766138,
+    "sketchgen_timecost": 0.23305791604798287,
     "candidates": [
         [
             "borrow_usdt_owner",
@@ -530,5 +530,7 @@
             "swap_pair_attacker_usdt_egd",
             "payback_egd_owner"
         ]
-    ]
+    ],
+    "eurus__solve_timecost": 0.3170024160062894,
+    "eurus__all_timecost": 0.5500603320542723
 }

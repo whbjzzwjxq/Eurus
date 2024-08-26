@@ -55,7 +55,7 @@ attack_goal_str: "wbnb;1e6"
 
 groundtruth:
   - ["borrow", "wbnb", "owner", "428 ether"]
-  - ["swap", "pair", "attacker", "wbnb", "sellc", "wbnb.balanceOf(address(attacker)) * 99 / 100", "5000000 ether"]
+  - ["swap", "pair", "attacker", "wbnb", "sellc", "wbnb.balanceOf(address(attacker)) * 99 / 100", "pair.getAmountOut((wbnb.balanceOf(address(attacker)) * 99) / 100, address(wbnb))"]
   - ["deposit", "srouter", "wbnb", "sellc", "4 ether"]
   - ["swap", "pair", "attacker", "sellc", "wbnb", "sellc.balanceOf(address(attacker))", "pair.getAmountOut(sellc.balanceOf(address(attacker)), address(sellc))"]
   - ["withdraw", "srouter", "sellc", "wbnb", "0"]

@@ -1,26 +1,26 @@
 {
     "test_results": {
-        "benchmarks/LUSD": [
+        "./benchmarks/LUSD": [
             {
                 "name": "check_cand003",
                 "num_models": 1,
                 "models": [
                     {
-                        "p_amt0_uint256": "0x23a9cba2371674000000",
-                        "p_amt1_uint256": "0x23a9c6dd523860000000",
-                        "p_amt2_uint256": "0xeb1f6b9b0e69900",
-                        "p_amt3_uint256": "0x1bc16d674ec8000",
+                        "p_amt0_uint256": "0xd9f2c74d0f278800000",
+                        "p_amt1_uint256": "0xd9f27afec1465000000",
+                        "p_amt2_uint256": "0xb39c90cc70d9900",
+                        "p_amt3_uint256": "0x3782dace9d90000",
                         "p_amt4_uint256": "0xde0b6b3a7640000",
-                        "p_amt5_uint256": "0x111fa56eec2a8400000",
-                        "p_amt6_uint256": "0xcf5d92fa3f59c00",
-                        "p_amt7_uint256": "0x22bb6b87fdb77a000000",
-                        "p_amt8_uint256": "0x23c52f62cd2892000000"
+                        "p_amt5_uint256": "0x21f591133debc400000",
+                        "p_amt6_uint256": "0x7c18dbbe9d64880",
+                        "p_amt7_uint256": "0xb9a9257b99077000000",
+                        "p_amt8_uint256": "0xda9a2de8e63ab000000"
                     }
                 ],
                 "time": [
-                    0.349476082999999,
+                    0.042681500082835555,
                     0,
-                    0.349476082999999
+                    0.042681500082835555
                 ],
                 "feasible": true,
                 "refine_loop": 0
