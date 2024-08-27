@@ -1,0 +1,27 @@
+{
+    "test_results": {
+        "./benchmarks/Axioma": [
+            {
+                "name": "check_cand001",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0xde0b6b3a7640000",
+                        "p_amt1_uint256": "0xc55f7bc23038e00",
+                        "p_amt2_uint256": "0xde0b6b3a7640000",
+                        "p_amt3_uint256": "0xd8d726b7177a80000",
+                        "p_amt4_uint256": "0x1d460162f516f000",
+                        "p_amt5_uint256": "0xdfc78210eb2c800"
+                    }
+                ],
+                "time": [
+                    0.014336207997985184,
+                    0,
+                    0.014336207997985184
+                ],
+                "feasible": true,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

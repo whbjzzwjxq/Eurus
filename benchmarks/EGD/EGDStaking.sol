@@ -128,6 +128,7 @@ contract EGDStaking is OwnableUpgradeable {
         black[addr] = b;
     }
 
+   
     function getEGDPrice() public view returns (uint) {
         uint balance1 = EGD.balanceOf(address(pair));
         uint balance2 = U.balanceOf(address(pair));
@@ -294,13 +295,17 @@ contract EGDStaking is OwnableUpgradeable {
         return userInfo[addr].userStakeList;
     }
 
+    event EGDPrice(uint256 price);
     function claimAllReward() external {
+
+        emit EGDPrice(1);
         require(userInfo[msg.sender].userStakeList.length > 0, "no stake");
         require(!black[msg.sender], "black");
         uint[] storage list = userInfo[msg.sender].userStakeList;
         uint rew;
         uint outAmount;
         uint range = list.length;
+        emit EGDPrice(1);
         for (uint i = 0; i < range; i++) {
             UserSlot storage info = userSlot[msg.sender][list[i - outAmount]];
             require(info.totalQuota != 0, "wrong index");
@@ -308,7 +313,10 @@ contract EGDStaking is OwnableUpgradeable {
             if (quota >= info.leftQuota) {
                 quota = info.leftQuota;
             }
+            emit EGDPrice(EGD.balanceOf(address(pair)));
+            emit EGDPrice(getEGDPrice());
             rew += (quota * 1e18) / getEGDPrice();
+            emit EGDPrice(getEGDPrice());
             info.claimTime = block.timestamp;
             info.leftQuota -= quota;
             info.claimedQuota += quota;

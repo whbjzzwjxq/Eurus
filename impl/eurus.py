@@ -247,6 +247,8 @@ class FinancialExecution:
             all_read_vars = all_read_vars.union(read_vars)
 
         s = {}
+        print(all_read_vars)
+        print(self.init_state._cache)
         for v in all_read_vars:
             value = int(self.init_state.get(v))
             var = VAR(v + str(0), self.solver, value)
@@ -303,6 +305,8 @@ def eurus_solve(
     start_time = time.perf_counter()
     if Z3_OR_GB:
         res = solver.check()
+        model = solver.model() if res == sat else None
+        print(model)
     else:
         solver.optimize()
         res = sat if solver.status == gp.GRB.OPTIMAL else unsat
@@ -341,7 +345,7 @@ def eurus_solve(
         }
         with open(output_path, "w") as f:
             json.dump(result, f, indent=4)
-        return feasible
+        return feasible, timecost
     else:
         print(f"Solution is NOT found in candidate: {func_name}, loop: {refine_loop}.")
         if Z3_OR_GB and TRACK_UNSAT:
@@ -354,7 +358,7 @@ def eurus_solve(
                 n = m.groups()[0]
                 if n in names:
                     print(c)
-        return "UNSAT"
+        return "UNSAT", timecost
 
 
 def eurus_test(bmk_dir: str, args):
@@ -393,6 +397,7 @@ def eurus_test(bmk_dir: str, args):
         result_paths = gen_result_paths(result_path, only_gt, "eurus", len(synthesizer.candidates), suffix_spec)
         result_paths = result_paths[start:end]
 
+        vulnerable_func_name = ""
         if args.fixed:
             # Assume this function is vulnerable.
             vulnerable_func_str = builder.extra_actions[0]
@@ -404,6 +409,7 @@ def eurus_test(bmk_dir: str, args):
         else:
             vulnerable_func_name = None
 
+        timecosts = []
         for func_name, output_path, _, _ in result_paths:
             print(f"Solving: {func_name}")
             # Avoid stuck
@@ -418,6 +424,29 @@ def eurus_test(bmk_dir: str, args):
                 "MUMUG": [
                     "check_cand003",
                 ],
+                "Haven": [
+                    "check_cand011",
+                ],
+                "Safemoon": [],
+                "BXH": [
+                    "check_cand005"
+                ],
+                "Discover": [
+                    "check_cand003",
+                ],
+                "CFC" : ["check_cand022", "check_cand024"],
+                "NeverFall": [
+                    "check_cand002",
+                    "check_cand003",
+                    "check_cand004",                
+                ],
+                "GPU": [
+                    "check_cand000",
+                    "check_cand001",
+                    "check_cand002",
+                    "check_cand003",
+                    "check_cand004", 
+                ]
             }
             stuck_list = stuck_dict.get(project_name, [])
             if func_name in stuck_list:
@@ -443,7 +472,8 @@ def eurus_test(bmk_dir: str, args):
             while not feasible:
                 if Z3_OR_GB:
                     print(solver.sexpr())
-                feasible = eurus_solve(solver, bmk_dir, func_name, ctrt_name2addr, output_path, exec, idx)
+                feasible, tmp_cost = eurus_solve(solver, bmk_dir, func_name, ctrt_name2addr, output_path, exec, idx)
+                timecosts.append(tmp_cost)
                 if feasible == "UNSAT":
                     feasible = False
                     break
@@ -463,7 +493,8 @@ def eurus_test(bmk_dir: str, args):
             if feasible:
                 break
         if not only_gt:
-            timecost = time.perf_counter() - timer
+            # timecost = time.perf_counter() - timer
+            timecost = sum(timecosts)
             new_record = {
                 f"eurus_{suffix_spec}_solve_timecost": timecost,
                 f"eurus_{suffix_spec}_all_timecost": timecost + builder.synthesizer.timecost,

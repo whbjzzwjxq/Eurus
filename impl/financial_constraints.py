@@ -192,6 +192,7 @@ def gen_summary_uniswap(
     scale: int = 1000,
     fee: int = 3,
     suffix: str = "",
+    outMax = False,
 ) -> ACTION_CONSTR:
     amtOutMax = "amtOutMax"
     s_in = gen_summary_transfer(sender, pair, tokenIn, amtIn, percent_in=percent_in_tokenIn, percent_out=percent_out_tokenIn)
@@ -202,10 +203,16 @@ def gen_summary_uniswap(
     # Generate Invariants
     old_balIn_pair = f"old_{tokenIn}.balanceOf({pair})"
     old_balOut_pair = f"old_{tokenOut}.balanceOf({pair})"
-    invariants = [
-        lambda s: s.get(amtOut) < s.get(amtOutMax) * amtOutRatio,
-        *gen_summary_getAmountsOut(amtIn, amtOutMax, old_balIn_pair, old_balOut_pair, scale, fee, suffix),
-    ]
+    if outMax:
+        invariants = [
+            lambda s: s.get(amtOut) == s.get(amtOutMax) * amtOutRatio,
+            *gen_summary_getAmountsOut(amtIn, amtOutMax, old_balIn_pair, old_balOut_pair, scale, fee, suffix),
+        ]
+    else:
+        invariants = [
+            lambda s: s.get(amtOut) < s.get(amtOutMax) * amtOutRatio,
+            *gen_summary_getAmountsOut(amtIn, amtOutMax, old_balIn_pair, old_balOut_pair, scale, fee, suffix),
+        ]
 
     return [*s_in, *s_out, *invariants]
 
@@ -402,7 +409,16 @@ def gen_Discover_swap_ethpledge_attacker_usdt_disc():
     # bool y2 = other.balanceOf(address(this)) >= curTAmount22;
     # require(y2, "Token balance is low.");
     # other.transfer(msg.sender, curTAmount22);
-    return gen_summary_ratioswap("ethpledge", "attacker", "attacker", "usdt", "disc", "arg_0", "arg_1", "ethpledge")
+    old_bal_ethpledge = "old_disc.balanceOf(ethpledge)"
+    old_usdt_bal_pair = "old_usdt.balanceOf(pair)"
+    old_disc_bal_pair = "old_disc.balanceOf(pair)"
+    
+    extra_constraints = [
+        lambda s: s.get(old_bal_ethpledge) > s.get("curTAmount22"),
+        lambda s: s.get("curTAmount22") == s.get("arg_0") * s.get(old_disc_bal_pair) / s.get(old_usdt_bal_pair)
+    ]
+    return gen_summary_ratioswap("ethpledge", "attacker", "attacker", "usdt", "disc", "arg_0", "arg_1", "pair") + \
+        extra_constraints
 
 
 def gen_AES_swap_pair_attacker_usdt_aes():
@@ -628,13 +644,18 @@ def gen_OneRing_withdraw_vault_vault_usdce():
         lambda s: s.get(assetInUSD) == s.get(_toWithdraw) / 0.557 / 1e12,
         lambda s: s.get(f"new_{balanceWithInvested}")
         == s.get(f"old_{balanceWithInvested}") - s.get(assetInUSD) * 1.076,
-        lambda s: s.get(amtOut) == s.get(assetInUSD),
+        lambda s: s.get(amtOut) == s.get(assetInUSD) * 0.99, # relaxation
         lambda s: s.get(amtOut) >= s.get(_minAmountInUsd),
         *gen_summary_transfer(strategy, attacker, tokenOut, amtOut),
     ]
 
     return constraints
 
+# def gen_EGD_borrow_usdt_owner():
+#     extra_constraints = [
+#         lambda s: s.get
+#     ]
+#     return gen_summary_transfer("owner", "attacker", "usdt", "arg_0") + 
 
 def gen_EGD_deposit_egdstaking_usdt_egdslp():
     pair = "pair"
@@ -684,6 +705,13 @@ def gen_EGD_deposit_egdstaking_usdt_egdslp():
     return constraints
 
 
+def gen_EGD_borrow_usdt_pair():
+    extra_constraints = [
+        lambda s: s.get("arg_0") < s.get("old_usdt.balanceOf(pair)")
+    ]
+    return gen_summary_transfer("pair", "attacker", "usdt", "arg_0") + extra_constraints
+
+
 def gen_EGD_withdraw_egdstaking_egdslp_egd():
     old_balIn_pair = "old_usdt.balanceOf(pair)"
     old_balOut_pair = "old_egd.balanceOf(pair)"
@@ -702,6 +730,7 @@ def gen_EGD_withdraw_egdstaking_egdslp_egd():
 
     constraints = [
         lambda s: s.get(quota) == (s.get("old_block.timestamp") - s.get(claimTime)) * s.get(rates),
+        lambda s: s.get(old_balIn_pair) * 1e18 > s.get(old_balOut_pair),
         lambda s: s.get(rew) == s.get(quota) * 1e18 / s.get(getEGDPrice),
         lambda s: s.get(getEGDPrice) == s.get(old_balIn_pair) * 1e18 / s.get(old_balOut_pair),
         *gen_summary_transfer(egdstaking, attacker, egd, rew),
@@ -739,6 +768,401 @@ def gen_SwaposV2_swap_spair_attacker_swapos_weth():
     amtIn = "arg_0"
     amtOut = "arg_1"
     return gen_summary_uniswap("spair", "attacker", "attacker", "swapos", "weth", amtIn, amtOut, amtOutRatio=9.997)
+
+def gen_UN_swap_pair_attacker_busd_un():
+    return gen_summary_uniswap("pair", "attacker", "attacker", "busd", "un", "arg_0", "arg_1",
+                               percent_in_tokenOut=0.93) 
+
+def gen_UN_swap_pair_attacker_un_busd():
+    # super._transfer(from, to, amount - every * 95);
+    return gen_summary_uniswap("pair", "attacker", "attacker", "un", "busd", "arg_0", "arg_1")
+        # percent_in_tokenIn=0.905)
+
+def gen_UN_burn_un_pair():
+    burn_amount = "burnAmount"
+    burn_amount1 = "burnAmount1"
+    old_bal_attacker = f"old_un.balanceOf(attacker)"
+    old_bal_pair = f"old_un.balanceOf(pair)"
+    new_bal_pair = f"new_un.balanceOf(pair)"
+    extra_constraints = [
+        lambda s: s.get(f"new_un.balanceOf(pair)") == s.get(f"old_un.balanceOf(pair)") - s.get(burn_amount),
+        lambda s: s.get(f"new_un.balanceOf(attacker)") == s.get(f"old_un.balanceOf(attacker)") - s.get(burn_amount1),
+        lambda s: s.get("arg_0") == s.get(burn_amount) * 3,
+        lambda s: s.get("arg_0") == s.get(burn_amount1) * 10,
+        lambda s: s.get("arg_0") < s.get(old_bal_attacker),
+        lambda s: s.get("arg_0") < s.get(old_bal_pair),
+        lambda s: s.get(new_bal_pair) >= 1 / SCALE,
+    ]
+    return extra_constraints
+
+def gen_Axioma_swap_axiomaPresale_attacker_wbnb_axt():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    tokenAmount = "tokenAmount"
+    taxAmount = "taxAmount"
+    transferAmount = "transferAmount"
+    old_balOut_axiomaPresale = "old_axt.balanceOf(axiomaPresale)"
+    new_balOut_axiomaPresale = "new_axt.balanceOf(axiomaPresale)"
+    old_balOut_owner = "old_axt.balanceOf(owner)"
+    new_balOut_owner = "new_axt.balanceOf(owner)"
+    old_balOut_attacker = "old_axt.balanceOf(attacker)"
+    new_balOut_attacker = "new_axt.balanceOf(attacker)"
+    
+
+    transfer_summary0 = gen_summary_transfer("attacker", "owner", "wbnb", amtIn)
+    transfer_summary1 = [
+        # Transfer token
+        lambda s: s.get(new_balOut_axiomaPresale) == s.get(old_balOut_axiomaPresale) - 
+            (s.get(taxAmount) + s.get(transferAmount)),
+        lambda s: s.get(new_balOut_owner) == s.get(old_balOut_owner) + s.get(taxAmount),
+        lambda s: s.get(new_balOut_attacker) == s.get(old_balOut_attacker) + s.get(transferAmount),
+    ]
+    
+    extra_constraints = [
+        # uint256 tokenAmount = bnbAmountToBuy.mul(rate).div(10**9);
+        lambda s: s.get("arg_0") * 300 == s.get(tokenAmount),
+        # uint256 taxAmount = tokenAmount.mul(buyTax).div(100);
+        lambda s: s.get(taxAmount) == s.get(tokenAmount) * 3 / 100,
+        # (bool sent) = token.transfer(msg.sender, tokenAmount.sub(taxAmount));
+        lambda s: s.get(transferAmount) == s.get(tokenAmount) - s.get(taxAmount)
+    ]
+    
+    return [*transfer_summary0, *transfer_summary1, *extra_constraints]
+
+def gen_Axioma_swap_pair_attacker_axt_wbnb():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "axt", "wbnb", amtIn, amtOut, percent_in_tokenOut=0.9, amtOutRatio=0.9)
+
+def gen_Safemoon_swap_pair_attacker_weth_safemoon():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "weth", "safemoon", amtIn, amtOut, outMax=True)
+
+def gen_Safemoon_swap_pair_attacker_safemoon_weth():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "safemoon", "weth", amtIn, amtOut, outMax=True)
+
+def gen_Safemoon_burn_safemoon_pair():
+    burn_amount = "burnAmount"
+    burn_summary = gen_summary_transfer("pair", DEAD, "safemoon", burn_amount, percent_out=1)
+    old_bal_attacker = f"old_safemoon.balanceOf(attacker)"
+    old_bal_pair = f"old_safemoon.balanceOf(pair)"
+    new_bal_pair = f"new_safemoon.balanceOf(pair)"
+    extra_constraints = [
+        lambda s: s.get("arg_0") == s.get(burn_amount),
+        lambda s: s.get("arg_0") < s.get(old_bal_pair),
+        lambda s: s.get(new_bal_pair) >= 1 / SCALE,
+    ]
+    return [*burn_summary, *extra_constraints]
+
+
+def gen_Bamboo_burn_bamboo_pair():
+    burn_amount = "burnAmount"
+    burn_summary = gen_summary_transfer("pair", DEAD, "bamboo", burn_amount, percent_out=1)
+    old_bal_attacker = f"old_bamboo.balanceOf(attacker)"
+    old_bal_pair = f"old_bamboo.balanceOf(pair)"
+    new_bal_pair = f"new_bamboo.balanceOf(pair)"
+    extra_constraints = [
+        lambda s: s.get("arg_0") > 10000 / 1e18,
+        lambda s: s.get(old_bal_pair) > s.get("arg_0") * 101 / 100,
+        # if (!isMarketPair[sender]) updatePool(amount);
+        #  ...  uint256 fA = amount / 100;
+        lambda s: s.get("arg_0") == s.get(burn_amount) * 50,
+        lambda s: s.get("arg_0") < s.get(old_bal_attacker) ,
+        lambda s: s.get(new_bal_pair) >= 1 / SCALE,
+    ]
+    return [*burn_summary, *extra_constraints]
+
+def gen_Bamboo_swap_pair_attacker_wbnb_bamboo():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "wbnb", "bamboo", amtIn, amtOut)
+
+
+def gen_Bamboo_swap_pair_attacker_bamboo_wbnb():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "bamboo", "wbnb", amtIn, amtOut, 
+                            fee=3)
+
+def gen_LUSD_swap_loan_attacker_btcb_lusd():
+    amtIn = "arg_0"
+    # amtOut = "arg_1"
+    usdtAmout = "usdtAmout"
+    old_btcb_bal_attacker = f"old_btcb.balanceOf(attacker)"
+    new_btcb_bal_attacker = f"new_btcb.balanceOf(attacker)"
+    old_btcb_bal_loan = f"old_btcb.balanceOf(loan)"
+    new_btcb_bal_loan = f"new_btcb.balanceOf(loan)"
+    old_lusd_bal_attacker = f"old_lusd.balanceOf(attacker)"
+    new_lusd_bal_attacker = f"new_lusd.balanceOf(attacker)"
+    constraints = [
+        lambda s: s.get(new_btcb_bal_attacker) == s.get(old_btcb_bal_attacker) - s.get(amtIn),
+        lambda s: s.get(new_btcb_bal_loan) == s.get(old_btcb_bal_loan) + s.get(amtIn),
+        lambda s: (s.get(amtIn) > 0),
+        # uint256 usdtAmount = router.getAmountsOut(supplyAmount, path)[1];
+        *gen_summary_getAmountsOut(amtIn, usdtAmout, "old_btcb.balanceOf(pairub)", "old_usdt.balanceOf(pairub)"), 
+        # payoutAmount: (usdtAmount * info[supplyToken].supplyRatio) / 1e4,
+        # LUSD.mint(msg.sender, order.payoutAmount);
+        lambda s: s.get(new_lusd_bal_attacker) == s.get(old_lusd_bal_attacker) + s.get(usdtAmout) / 2,
+    ]
+    # fmt: on
+    return constraints
+
+def gen_LUSD_withdraw_lusdpool_lusd_usdt():
+    amtIn = "arg_0"
+    burn_amount = "burnAmount"
+    burn_summary = gen_summary_transfer("attacker", DEAD, "lusd", amtIn, percent_out=1)
+    burn_summary2 = gen_summary_transfer("lusdpool", "attacker", "usdt", burn_amount, percent_out=1)
+    
+    extra_constraints = [
+        lambda s: s.get("arg_0") * 97 / 100 == s.get(burn_amount),
+    ]
+
+    return [*burn_summary, *burn_summary2, *extra_constraints]
+
+def gen_LW_swap_pair_attacker_usdt_lw():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    #  uint256 fees = amount.mul(getBuyFee()).div(10000);
+    return gen_summary_uniswap("pair", "attacker", "attacker", "usdt", "lw", amtIn, amtOut, percent_in_tokenOut=0.9)
+    
+def gen_LW_swap_pair_attacker_lw_usdt():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "lw", "usdt", amtIn, amtOut, amtOutRatio=0.9)
+
+def gen_LW_burn_lw_pair():
+    burn_amount = "burnAmount"
+    per_burnOutMax = "perburnOutMax"
+    swaptodead_amount = "swaptoDeadAmount"
+    tokenprice = "tokenPrice"
+    burn_summary = gen_summary_transfer("pair", DEAD, "lw", burn_amount, percent_out=1)
+    old_usdt_bal_attacker = f"old_usdt.balanceOf(attacker)"
+    old_lw_bal_attacker = f"old_lw.balanceOf(attacker)"
+    old_usdt_bal_pair = f"old_usdt.balanceOf(pair)"
+    old_lw_bal_pair = f"old_lw.balanceOf(pair)"
+    new_lw_bal_pair = f"new_lw.balanceOf(pair)"
+    new_usdt_bal_pair = f"new_usdt.balanceOf(pair)"
+    
+    extra_constraints = [
+        lambda s: s.get(tokenprice) == s.get(old_usdt_bal_pair) / s.get(old_lw_bal_pair),
+        # if(2500e18<price && _startTimeForSwap +72*60*60 <block.timestamp   ){
+        #             thanPrice +=1; 
+        lambda s: s.get("arg_0") > (2500) / s.get(tokenprice),
+        ## remove this: lambda s: s.get("arg_0") < 1000,
+
+        # IERC20(_token).transferFrom(_marketAddr,address(this),3000e18);
+        lambda s: s.get(swaptodead_amount) == 3000, 
+        lambda s: s.get(new_usdt_bal_pair) == s.get(old_usdt_bal_pair) + s.get(swaptodead_amount) * 40,
+        # swapTokensForDead(3000e18);    
+        # Note: Although burn for 40 times, the amount of burned tokens decreases as loop executes.
+        # So we approximate the amount of total burn by 20 * "the amount of burned tokens for the first time"
+        lambda s: s.get(burn_amount) == s.get(per_burnOutMax) * 20, 
+        *gen_summary_getAmountsOut(swaptodead_amount, per_burnOutMax, old_usdt_bal_pair, old_lw_bal_pair),
+        
+        lambda s: s.get("arg_0") < s.get(old_lw_bal_attacker) / 2, # leave room for fees
+        lambda s: s.get(new_lw_bal_pair) >= 1 / SCALE,
+    ]
+    return [*burn_summary, *extra_constraints]
+
+
+def gen_GPU_swap_pair_attacker_busd_gpu():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "busd", "gpu", amtIn, amtOut)
+
+def gen_GPU_mint_gpu_attacker():
+    old_gpu_bal_attacker = f"old_gpu.balanceOf(attacker)"
+    extra_constraints = [
+        lambda s: s.get("arg_0") < s.get(old_gpu_bal_attacker)
+    ]
+    return gen_summary_mint("attacker", "gpu", "arg_0") + extra_constraints
+
+def gen_NeverFall_deposit_neverFall_usdt_neverFall():
+    # addLiquidity(initSupply, amountU * buyAddLiqFee / 100);
+    old_usdt_bal_attacker = f"old_usdt.balanceOf(attacker)"
+    old_usdt_bal_pair = f"old_usdt.balanceOf(pair)"
+    old_neverFall_bal_pair = f"old_neverFall.balanceOf(pair)"
+    transfer_summary = gen_summary_transfer("attacker", "pair", "usdt", "arg_0", percent_in=0.98)
+
+    extra_constraints = [
+        lambda s: s.get("initSupply") ==  99900000000e12,
+        lambda s: s.get(f"new_neverFall.balanceOf(attacker)") == s.get(f"old_neverFall.balanceOf(attacker)") + s.get("neverFallAmount") * 0.823,
+        lambda s: s.get(f"new_neverFall.balanceOf(pair)") == s.get(f"old_neverFall.balanceOf(pair)") + s.get("neverFallAmount") * 0.823,
+        lambda s: s.get("arg_0") < s.get(old_usdt_bal_attacker),
+        lambda s: s.get("neverFallAmount") == (s.get("arg_0") * s.get(old_neverFall_bal_pair)) / s.get(old_usdt_bal_pair),
+    ]
+    return [*transfer_summary, *extra_constraints]
+
+def gen_NeverFall_withdraw_neverFall_neverFall_usdt():
+    old_usdt_bal_pair = f"old_usdt.balanceOf(pair)"
+    old_neverFall_bal_pair = f"old_neverFall.balanceOf(pair)"
+    old_neverFall_bal_attacker = f"old_neverFall.balanceOf(attacker)"
+
+    transfer_summary0 = gen_summary_transfer("attacker", "pair", "neverFall", "arg_0")
+    transfer_summary1 = gen_summary_transfer("pair", "attacker", "usdt", "usdtAmount")
+
+    extra_constraints = [
+        lambda s: s.get("arg_0") < s.get(old_neverFall_bal_pair),
+        lambda s: s.get("arg_0") < s.get(old_neverFall_bal_attacker),
+        lambda s: s.get("usdtAmount") == (s.get("arg_0") * s.get(old_usdt_bal_pair) * 0.85) / s.get(old_neverFall_bal_pair)
+    ]
+    return [*transfer_summary0, *transfer_summary1, *extra_constraints]
+
+def gen_NeverFall_swap_pair_attacker_usdt_neverFall():
+    amtOutMax = "amtOutMax"
+    s_in = gen_summary_transfer("attacker", "pair", "usdt", "arg_0")
+    s_out = gen_summary_transfer("pair", "owner", "neverFall", "arg_1")
+
+    # Generate Invariants
+    old_balIn_pair = f"old_usdt.balanceOf(pair)"
+    old_balOut_pair = f"old_neverFall.balanceOf(pair)"
+    invariants = [
+        lambda s: s.get("arg_1") < s.get(amtOutMax),
+        *gen_summary_getAmountsOut("arg_0", amtOutMax, old_balIn_pair, old_balOut_pair),
+    ]
+
+    return [*s_in, *s_out, *invariants]
+
+def gen_Hackathon_burn_hackathon_pair():
+    burn_amount = "burnAmount"
+    burn_summary = gen_summary_transfer(DEAD, "attacker", "hackathon", burn_amount, percent_out=1)
+    old_bal_attacker = f"old_hackathon.balanceOf(attacker)"
+    old_bal_pair = f"old_hackathon.balanceOf(pair)"
+    new_bal_pair = f"new_hackathon.balanceOf(pair)"
+    extra_constraints = [
+        lambda s: s.get("arg_0") ==  s.get(burn_amount),
+        lambda s: s.get("arg_0") <= s.get(old_bal_attacker),
+        lambda s: s.get(new_bal_pair) >= 1 / SCALE,
+    ]
+    return [*burn_summary, *extra_constraints]
+
+def gen_XAI_swap_pair_attacker_wbnb_xai():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "wbnb", "xai", amtIn, amtOut) + [lambda s: s.get("arg_0") == 3000]
+
+
+def gen_XAI_swap_pair_attacker_xai_wbnb():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "xai", "wbnb", amtIn, amtOut, amtOutRatio=0.9999691263904297)
+
+def gen_XAI_burn_xai_pair():
+    old_bal_pair = f"old_xai.balanceOf(pair)"
+    new_bal_pair = f"new_xai.balanceOf(pair)"
+    old_bal_attacker = f"old_xai.balanceOf(attacker)"
+    new_bal_attacker = f"new_xai.balanceOf(attacker)"
+    extra_constraints = [
+        lambda s: s.get(new_bal_pair) ==  s.get(old_bal_pair) * s.get("arg_0") * 30 / (37 * (s.get(old_bal_attacker) + s.get(old_bal_pair))), 
+        lambda s: s.get(new_bal_attacker) ==  s.get(old_bal_attacker) * s.get("arg_0") / (s.get(old_bal_attacker) + s.get(old_bal_pair)), 
+        lambda s: s.get("arg_0") > 0,
+        lambda s: s.get("arg_0") == 10000 / SCALE,
+    ]
+    return [*extra_constraints]
+
+def gen_XAI_payback_wbnb_owner():
+    extra_constraints = [
+        lambda s: s.get("alias_" + "payback_wbnb_owner") <= s.get("arg_0"),
+    ]
+    constraints = gen_summary_transfer("attacker", "owner", "wbnb", "arg_0")
+    return [*constraints, *extra_constraints]
+
+def gen_HCT_swap_pair_attacker_wbnb_hct():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "wbnb", "hct", amtIn, amtOut, amtOutRatio=0.9)
+
+def gen_HCT_swap_pair_attacker_hct_wbnb():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "hct", "wbnb", amtIn, amtOut, amtOutRatio=0.9)
+
+def gen_HCT_burn_hct_pair():
+    old_bal_pair = f"old_hct.balanceOf(pair)"
+    new_bal_pair = f"new_hct.balanceOf(pair)"
+    old_bal_attacker = f"old_hct.balanceOf(attacker)"
+    new_bal_attacker = f"new_hct.balanceOf(attacker)"
+    extra_constraints = [
+        lambda s: s.get(new_bal_pair) > s.get(old_bal_pair) * s.get("arg_0") / (s.get(old_bal_attacker) + s.get(old_bal_pair)) - 1,
+        lambda s: s.get(new_bal_pair) <=  s.get(old_bal_pair) * s.get("arg_0") / (s.get(old_bal_attacker) + s.get(old_bal_pair)), 
+        lambda s: s.get(new_bal_attacker) ==  s.get(old_bal_attacker) * s.get("arg_0") / (s.get(old_bal_attacker) + s.get(old_bal_pair)), 
+        lambda s: s.get("arg_0") > 0,
+        lambda s: s.get("arg_0") == 10000 / SCALE,
+    ]
+    return [*extra_constraints]
+
+def gen_CFC_swap_pair_attacker_safe_cfc():
+    amtIn = "arg_0"
+    amtOut = "arg_1"
+    return gen_summary_uniswap("pair", "attacker", "attacker", "safe", "cfc", amtIn, amtOut, percent_in_tokenOut=0.95)
+
+def gen_CFC_burn_cfc_pair():
+    burn_amount = "burnAmount"
+    burn_summary = gen_summary_transfer("pair", DEAD, "cfc", burn_amount, percent_out=1)
+    old_bal_attacker = f"old_cfc.balanceOf(attacker)"
+    old_bal_pair = f"old_cfc.balanceOf(pair)"
+    old_bal_usdt_pair = f"old_usdt.balanceOf(pair)"
+    
+    new_bal_pair = f"new_cfc.balanceOf(pair)"
+    extra_constraints = [
+        lambda s: s.get("arg_0") > 10000 / 1e18,
+        lambda s: s.get("arg_0") * 1.5 <= s.get(old_bal_pair),
+        # function sync() private  {
+        # if( _tOwned[uniswapV2Pair]>sellAmount && _tOwned[address(0xdead)] < _tTotal - minSwap ){
+        lambda s: s.get(old_bal_pair) - s.get("arg_0") * 0.9 >= s.get(old_bal_usdt_pair), 
+        # if (!isMarketPair[sender]) updatePool(amount);
+        #  ...  uint256 fA = amount / 100;
+        lambda s: s.get("arg_0") * 1.3 == s.get(burn_amount),
+        lambda s: s.get("arg_0") < s.get(old_bal_attacker) ,
+        lambda s: s.get(new_bal_pair) >= 1 / SCALE,
+    ]
+    return [*burn_summary, *extra_constraints]
+
+
+def gen_SellToken_borrow_wbnb_owner():
+    extra_constraints = [
+        lambda s: s.get("arg_0") == 428,
+    ]
+    return gen_summary_transfer("owner", "attacker", "wbnb", "arg_0") + extra_constraints
+
+def gen_SellToken_deposit_srouter_wbnb_sellc():
+    extra_constraints = [
+        # uint tos=getToken2Price(coin,bnbOrUsdt,mkt.balanceOf(coin))/10;
+        *gen_summary_getAmountsOut("mkt_balanceOf(coin)", "tos", "old_sellc.balanceOf(pair)","old_wbnb.balanceOf(pair)", suffix="1"),
+        # mkt.balanceOf(coin) == 15917150.0
+        lambda s: s.get("mkt_balanceOf(coin)") == 15917150.0,
+        #  require(Short[addr][coin].bnb+bnb <= tos);
+        lambda s: s.get("arg_0") <= s.get("tos") / 10,
+        *gen_summary_getAmountsOut("usdtAmt", "new_tokenPrice", "old_wbnb.balanceOf(pair)", "old_sellc.balanceOf(pair)"),
+        lambda s: s.get("usdtAmt") == 1,
+        lambda s: s.get("arg_0") > 0,
+    ]
+    transfer_summary0 = gen_summary_transfer("attacker", "srouter", "wbnb", "arg_0")
+    
+    return [*transfer_summary0, *extra_constraints]
+
+def gen_SellToken_withdraw_srouter_sellc_wbnb():
+    extra_constraints = [
+        *gen_summary_getAmountsOut("usdtAmt", "new_tokenPrice", "old_wbnb.balanceOf(pair)", "old_sellc.balanceOf(pair)"),
+        lambda s: s.get("usdtAmt") == 1,
+        # lambda s: s.get("withdraw_usdt") < 20,
+        lambda s: s.get("withdraw_usdt") == s.get("new_tokenPrice") / s.get("old_tokenPrice") * s.get("old_wbnb.balanceOf(srouter)")
+    ]
+    transfer_summary0 = gen_summary_transfer("pair", "attacker", "wbnb", "withdraw_usdt")
+    
+    return [*transfer_summary0, *extra_constraints]
+
+def gen_SellToken_payback_wbnb_owner():
+    extra_constraints = [
+        lambda s: s.get("old_wbnb.balanceOf(attacker)") >= s.get("alias_" + "payback_wbnb_owner") * 1001 / 1000,
+        lambda s: s.get("alias_" + "payback_wbnb_owner") <= s.get("arg_0"),
+    ]
+    constraints = gen_summary_transfer("attacker", "owner", "wbnb", "arg_0")
+    return [*constraints, *extra_constraints]
+    # return gen_summary_payback("attacker", "owner", "wbnb", "alias_" + "payback_wbnb_owner", "arg_0")
 
 hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "NMB": {
@@ -783,8 +1207,11 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "OneRing": {
         "deposit_vault_usdce_vault": gen_OneRing_deposit_vault_usdce_vault(),
         "withdraw_vault_vault_usdce": gen_OneRing_withdraw_vault_vault_usdce(),
+        # "payback_wbnb_owner": gen_summary_payback("attacker", "owner", "usdce", "arg_x0", "arg_0", fee=0),
     },
     "EGD": {
+        # "borrow_usdt_owner": gen_EGD_borrow_usdt_owner(),
+        "borrow_usdt_pair": gen_EGD_borrow_usdt_pair(),
         "deposit_egdstaking_usdt_egdslp": gen_EGD_deposit_egdstaking_usdt_egdslp(),
         "withdraw_egdstaking_egdslp_egd": gen_EGD_withdraw_egdstaking_egdslp_egd(),
     },
@@ -797,7 +1224,68 @@ hack_constraints: Dict[str, Dict[str, ACTION_CONSTR]] = {
     "SwaposV2": {
         "swap_spair_attacker_weth_swapos": gen_SwaposV2_swap_spair_attacker_weth_swapos(),
         "swap_spair_attacker_swapos_weth": gen_SwaposV2_swap_spair_attacker_swapos_weth(),
-    }
+    },
+    "UN" : {
+        "swap_pair_attacker_busd_un": gen_UN_swap_pair_attacker_busd_un(),
+        "burn_un_pair": gen_UN_burn_un_pair(),
+        "swap_pair_attacker_un_busd": gen_UN_swap_pair_attacker_un_busd(),
+    },
+    "Axioma": {
+        "swap_axiomaPresale_attacker_wbnb_axt": gen_Axioma_swap_axiomaPresale_attacker_wbnb_axt(),
+        "swap_pair_attacker_axt_wbnb": gen_Axioma_swap_pair_attacker_axt_wbnb(),
+    },
+    "Safemoon": {
+        "swap_pair_attacker_weth_safemoon": gen_Safemoon_swap_pair_attacker_weth_safemoon(),
+        "burn_safemoon_pair": gen_Safemoon_burn_safemoon_pair(),
+        "swap_pair_attacker_safemoon_weth": gen_Safemoon_swap_pair_attacker_safemoon_weth(),
+    },
+    "Bamboo": {
+        "swap_pair_attacker_wbnb_bamboo": gen_Bamboo_swap_pair_attacker_wbnb_bamboo(),
+        "burn_bamboo_pair": gen_Bamboo_burn_bamboo_pair(),
+        "swap_pair_attacker_bamboo_wbnb": gen_Bamboo_swap_pair_attacker_bamboo_wbnb(),
+    },
+    "LUSD": {
+        "swap_loan_attacker_btcb_lusd": gen_LUSD_swap_loan_attacker_btcb_lusd(),
+        "withdraw_lusdpool_lusd_usdt": gen_LUSD_withdraw_lusdpool_lusd_usdt(),
+    },
+    "LW": {
+        "swap_pair_attacker_usdt_lw": gen_LW_swap_pair_attacker_usdt_lw(),
+        "burn_lw_pair": gen_LW_burn_lw_pair(),
+        "swap_pair_attacker_lw_usdt": gen_LW_swap_pair_attacker_lw_usdt(),
+    },
+    "GPU": {
+        "swap_pair_attacker_busd_gpu": gen_GPU_swap_pair_attacker_busd_gpu(),
+        "mint_gpu_attacker": gen_GPU_mint_gpu_attacker(),
+    },
+    "NeverFall": {
+        "deposit_neverFall_usdt_neverFall": gen_NeverFall_deposit_neverFall_usdt_neverFall(),
+        "swap_pair_attacker_usdt_neverFall": gen_NeverFall_swap_pair_attacker_usdt_neverFall(),
+        "withdraw_neverFall_neverFall_usdt": gen_NeverFall_withdraw_neverFall_neverFall_usdt(),
+    },
+    "Hackathon": {
+        "burn_hackathon_pair": gen_Hackathon_burn_hackathon_pair(),        
+    },
+    "XAI": {
+        "swap_pair_attacker_wbnb_xai": gen_XAI_swap_pair_attacker_wbnb_xai(),
+        "burn_xai_pair": gen_XAI_burn_xai_pair(),
+        "swap_pair_attacker_xai_wbnb": gen_XAI_swap_pair_attacker_xai_wbnb(),
+        "payback_wbnb_owner": gen_XAI_payback_wbnb_owner(),
+    },
+    "CFC": {
+        "swap_pair_attacker_safe_cfc": gen_CFC_swap_pair_attacker_safe_cfc(),
+        "burn_cfc_pair": gen_CFC_burn_cfc_pair(),
+    },
+    "HCT": {
+        "swap_pair_attacker_wbnb_hct": gen_HCT_swap_pair_attacker_wbnb_hct(),
+        "burn_hct_pair": gen_HCT_burn_hct_pair(),
+        "swap_pair_attacker_hct_wbnb": gen_HCT_swap_pair_attacker_hct_wbnb(),
+    },
+    "SellToken": {
+        "borrow_wbnb_owner": gen_SellToken_borrow_wbnb_owner(),
+        "deposit_srouter_wbnb_sellc": gen_SellToken_deposit_srouter_wbnb_sellc(),
+        "withdraw_srouter_sellc_wbnb": gen_SellToken_withdraw_srouter_sellc_wbnb(),
+        "payback_wbnb_owner": gen_SellToken_payback_wbnb_owner(),
+    }    
 }
 
 

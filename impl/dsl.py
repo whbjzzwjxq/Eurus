@@ -111,7 +111,7 @@ class AFLAction:
 
     @property
     def lender(self):
-        if self.action_name in ("borrow", "payback"):
+        if self.action_name in ("borrow", "payback", "mint"):
             return self.args_in_name[1]
         else:
             raise NotImplementedError

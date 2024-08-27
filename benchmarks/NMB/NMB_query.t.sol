@@ -14,7 +14,7 @@ import "@utils/QueryBlockchain.sol";
 contract ContractTest is Test, BlockLoader {
     IERC20 gnimb = IERC20(0x99C486b908434Ae4adF567e9990A929854d0c955);
     IERC20 nimb = IERC20(0xCb492C701F7fe71bC9C4B703b84B0Da933fF26bB);
-    IERC20 nbu = IERC20(0xA2CA18FC541B7B101c64E64bBc2834B05066248b);
+    IERC20 nbu = IERC20();
 
     IUniswapV2Pair pairnbugnimb = IUniswapV2Pair(0x68D8fa8a879237D5805F1FAd010d691fD5d4c23c);
     IUniswapV2Pair pairnbunimb = IUniswapV2Pair(0x7D88A2390F8B5070acF5188e8879aA7Ba2f2A60C);

@@ -6,22 +6,22 @@
                 "num_models": 1,
                 "models": [
                     {
-                        "p_amt0_uint256": "0xde0b6b3a7640000",
-                        "p_amt1_uint256": "0xde0b6b3a7640000",
-                        "p_amt2_uint256": "0x168f339a07a0d800",
-                        "p_amt3_uint256": "0x6f05b59d3b20000",
-                        "p_amt4_uint256": "0x0",
-                        "p_amt5_uint256": "0x1bc16d674ec8000",
-                        "p_amt6_uint256": "0x3c52a29272094a00",
-                        "p_amt7_uint256": "0x1bc16d674ec80000"
+                        "p_amt0_uint256": "0x296aa140278e7000000",
+                        "p_amt1_uint256": "0x2969c334bc53fa00000",
+                        "p_amt2_uint256": "0x2185b95ffdda0c00000",
+                        "p_amt3_uint256": "0xde0b6b3a7640000",
+                        "p_amt4_uint256": "0x16ff560c51e3ed00",
+                        "p_amt5_uint256": "0x2183f13b5f014000000",
+                        "p_amt6_uint256": "0x52585c13fe3a5c00000",
+                        "p_amt7_uint256": "0x298ab8e6a7018800000"
                     }
                 ],
                 "time": [
-                    0.005016459006583318,
+                    1.3420526669942774,
                     0,
-                    0.005016459006583318
+                    1.3420526669942774
                 ],
-                "feasible": false,
+                "feasible": true,
                 "refine_loop": 0
             }
         ]

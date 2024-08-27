@@ -1,0 +1,27 @@
+{
+    "test_results": {
+        "./benchmarks/NeverFall": [
+            {
+                "name": "check_cand002",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0xf33075f96e61d800000",
+                        "p_amt1_uint256": "0xf330717bb07de800000",
+                        "p_amt2_uint256": "0x1af32ff4c5bc9300000000",
+                        "p_amt3_uint256": "0x40242a45c849f",
+                        "p_amt4_uint256": "0x6f05b59d3b20000",
+                        "p_amt5_uint256": "0xf3eb3aefb14d0000000"
+                    }
+                ],
+                "time": [
+                    0.013318166995304637,
+                    0,
+                    0.013318166995304637
+                ],
+                "feasible": false,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

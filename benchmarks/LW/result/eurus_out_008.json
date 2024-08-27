@@ -1,0 +1,32 @@
+{
+    "test_results": {
+        "benchmarks/LW": [
+            {
+                "name": "check_cand008",
+                "num_models": 1,
+                "models": [
+                    {
+                        "p_amt0_uint256": "0x1a784457e508ef0000000",
+                        "p_amt1_uint256": "0xd3c21bcecceda0000000",
+                        "p_amt2_uint256": "0x2d4630ce46e8400000000",
+                        "p_amt3_uint256": "0x177761d0c4472800000",
+                        "p_amt4_uint256": "0xde0b6b3a7640000",
+                        "p_amt5_uint256": "0x0",
+                        "p_amt6_uint256": "0xd3c21bcecceda0000000",
+                        "p_amt7_uint256": "0xd02ab486cedc000",
+                        "p_amt8_uint256": "0x13f306a2409fc0000",
+                        "p_amt9_uint256": "0x1a8c98838633220000000",
+                        "p_amt10_uint256": "0x1a8c98f28be8bf0000000"
+                    }
+                ],
+                "time": [
+                    0.0311520829999985,
+                    0,
+                    0.0311520829999985
+                ],
+                "feasible": false,
+                "refine_loop": 0
+            }
+        ]
+    }
+}

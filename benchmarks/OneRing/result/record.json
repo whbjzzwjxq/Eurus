@@ -1,5 +1,5 @@
 {
-    "sketchgen_timecost": 0.21262187500542495,
+    "sketchgen_timecost": 0.25904704100685194,
     "candidates": [
         [
             "borrow_usdce_owner",
@@ -277,5 +277,7 @@
             "deposit_vault_usdce_vault",
             "payback_vault_pair"
         ]
-    ]
+    ],
+    "eurus__solve_timecost": 0.07748083397746086,
+    "eurus__all_timecost": 0.3365278749843128
 }

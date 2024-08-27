@@ -1,0 +1,427 @@
+Compiling 263 files with Solc 0.8.25
+Solc 0.8.25 finished in 51.62s
+Compiler run successful with warnings:
+Warning (3420): Source file does not specify required compiler version! Consider adding "pragma solidity ^0.8.25;"
+--> benchmarks/Safemoon/interfaces/IERC20.sol
+
+Warning (2462): Visibility for constructor is ignored. If you want the contract to be non-deployable, making it "abstract" is sufficient.
+   --> benchmarks/CFC/SAFE.sol:871:5:
+    |
+871 |     constructor () public ERC20(NAME, SYMBOL) {}
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Warning (2462): Visibility for constructor is ignored. If you want the contract to be non-deployable, making it "abstract" is sufficient.
+   --> benchmarks/Hackathon/Hackathon.sol:383:3:
+    |
+383 |   constructor() public {
+    |   ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2462): Visibility for constructor is ignored. If you want the contract to be non-deployable, making it "abstract" is sufficient.
+   --> benchmarks/LUSD/BTCB.sol:356:3:
+    |
+356 |   constructor() public {
+    |   ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (9302): Return value of low-level calls not used.
+ --> benchmarks/LW/URoter.sol:5:10:
+  |
+5 |          tokens.call(abi.encodeWithSelector(0x095ea7b3, to, ~uint256(0)));
+  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Warning (9302): Return value of low-level calls not used.
+   --> benchmarks/LW/LW.sol:128:9:
+    |
+128 |         _token.call(abi.encodeWithSelector(0x095ea7b3, _uniswapV2Router, ~uint256(0)));
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Warning (9302): Return value of low-level calls not used.
+   --> benchmarks/ShadowFi/ShadowFi.sol:801:13:
+    |
+801 |             payable(marketingFeeReceiver).call{value: amountBNBMarketing, gas: 30000}("");
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Warning (6321): Unnamed return variable can remain unassigned. Add an explicit return with value to all non-reverting code paths or name the variable.
+   --> benchmarks/SellToken/SellTokenRouter.sol:743:94:
+    |
+743 |     function getNewTokenPrice(address my,address token,address token1) view private  returns(bool){
+    |                                                                                              ^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/AES/AES.t.sol:195:28:
+    |
+195 |     function burn_aes_pair(uint256 amount) internal eurus {
+    |                            ^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/AES/AES_candidates.t.sol:195:28:
+    |
+195 |     function burn_aes_pair(uint256 amount) internal eurus {
+    |                            ^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/APEMAGA/APEMAGA.t.sol:175:32:
+    |
+175 |     function burn_apemaga_pair(uint256 amount) internal eurus {
+    |                                ^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Axioma/Axioma.t.sol:213:9:
+    |
+213 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Axioma/Axioma_candidates.t.sol:213:9:
+    |
+213 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/BXH/BXH.t.sol:217:46:
+    |
+217 |     function withdraw_bxhstaking_bxhslp_usdt(uint256 amount) internal eurus {
+    |                                              ^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/BXH/BXH_candidates.t.sol:217:46:
+    |
+217 |     function withdraw_bxhstaking_bxhslp_usdt(uint256 amount) internal eurus {
+    |                                              ^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Discover/Discover.t.sol:229:9:
+    |
+229 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Discover/Discover_candidates.t.sol:229:9:
+    |
+229 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/EGD/EGD.t.sol:216:45:
+    |
+216 |     function withdraw_egdstaking_egdslp_egd(uint256 amount) internal eurus {
+    |                                             ^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/EGD/EGD_candidates.t.sol:216:45:
+    |
+216 |     function withdraw_egdstaking_egdslp_egd(uint256 amount) internal eurus {
+    |                                             ^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Haven/Haven.sol:577:26:
+    |
+577 |     function getTotalFee(bool selling) public view returns (uint256) {
+    |                          ^^^^^^^^^^^^
+
+Warning (2072): Unused local variable.
+   --> benchmarks/Haven/Haven.sol:617:9:
+    |
+617 |         uint256 balanceBefore = address(this).balance;
+    |         ^^^^^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Haven/Haven.sol:789:30:
+    |
+789 |     function isOverLiquified(uint256 target, uint256 accuracy) public view returns (bool) {
+    |                              ^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Haven/Haven.sol:789:46:
+    |
+789 |     function isOverLiquified(uint256 target, uint256 accuracy) public view returns (bool) {
+    |                                              ^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Haven/Haven.t.sol:355:9:
+    |
+355 |         uint256 amount,
+    |         ^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Haven/Haven.t.sol:356:9:
+    |
+356 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Haven/Haven_candidates.t.sol:355:9:
+    |
+355 |         uint256 amount,
+    |         ^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Haven/Haven_candidates.t.sol:356:9:
+    |
+356 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/LUSD/LUSD.t.sol:291:9:
+    |
+291 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/LUSD/LUSD_candidates.t.sol:291:9:
+    |
+291 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/LW/LW.sol:267:20:
+    |
+267 |     function setEn(bool value) public{
+    |                    ^^^^^^^^^^
+
+Warning (2072): Unused local variable.
+   --> benchmarks/MUMUG/MuBank.sol:526:10:
+    |
+526 |         (uint256 mu_coin_swap_amount, uint256 mu_coin_amount) = _mu_bond_quote(
+    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/MUMUG/MUMUG.t.sol:204:9:
+    |
+204 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/MUMUG/MUMUG_candidates.t.sol:204:9:
+    |
+204 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/NMB/NMB.t.sol:377:39:
+    |
+377 |     function withdraw_gslp_gslp_gnimb(uint256 amount) internal {
+    |                                       ^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/OneRing/Strategy.sol:213:33:
+    |
+213 |     function withdrawAllToVault(address _asset) public restricted {
+    |                                 ^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/SGZ/SGZ.t.sol:193:9:
+    |
+193 |         uint256 amount,
+    |         ^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/SGZ/SGZ.t.sol:194:9:
+    |
+194 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/SGZ/SGZ_candidates.t.sol:193:9:
+    |
+193 |         uint256 amount,
+    |         ^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/SGZ/SGZ_candidates.t.sol:194:9:
+    |
+194 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (2072): Unused local variable.
+   --> benchmarks/Safemoon/SafeSwapTradeRouter.sol:767:12:
+    |
+767 |         (, uint256 dexFee, uint256 tokenAFee, uint256 tokenBFee) = getFees(trade.path, trade.amountIn, msg.sender);
+    |            ^^^^^^^^^^^^^^
+
+Warning (2072): Unused local variable.
+   --> benchmarks/Safemoon/SafeSwapTradeRouter.sol:767:28:
+    |
+767 |         (, uint256 dexFee, uint256 tokenAFee, uint256 tokenBFee) = getFees(trade.path, trade.amountIn, msg.sender);
+    |                            ^^^^^^^^^^^^^^^^^
+
+Warning (2072): Unused local variable.
+   --> benchmarks/Safemoon/SafeSwapTradeRouter.sol:767:47:
+    |
+767 |         (, uint256 dexFee, uint256 tokenAFee, uint256 tokenBFee) = getFees(trade.path, trade.amountIn, msg.sender);
+    |                                               ^^^^^^^^^^^^^^^^^
+
+Warning (2072): Unused local variable.
+    --> benchmarks/Safemoon/Safemoon.sol:1555:9:
+     |
+1555 |         uint256 feeAmount = tradeRouter.getSwapFees(bnbAmount, path);
+     |         ^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Safemoon/SafeswapFactory.sol:649:9:
+    |
+649 |         address to,
+    |         ^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Safemoon/Safemoon.t.sol:292:9:
+    |
+292 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Safemoon/Safemoon.t.sol:312:9:
+    |
+312 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Safemoon/Safemoon_candidates.t.sol:292:9:
+    |
+292 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Safemoon/Safemoon_candidates.t.sol:312:9:
+    |
+312 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/SellToken/SellToken.t.sol:263:42:
+    |
+263 |     function withdraw_srouter_sellc_wbnb(uint256 amount) internal eurus {
+    |                                          ^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/SellToken/SellToken_candidates.t.sol:263:42:
+    |
+263 |     function withdraw_srouter_sellc_wbnb(uint256 amount) internal eurus {
+    |                                          ^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/UN/UN.sol:607:9:
+    |
+607 |         address from,
+    |         ^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Zoompro/Zoom.sol:330:9:
+    |
+330 |         address _from,
+    |         ^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Zoompro/Zoom.sol:331:9:
+    |
+331 |         address _to,
+    |         ^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Zoompro/Zoompro.t.sol:342:9:
+    |
+342 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Zoompro/Zoompro.t.sol:350:9:
+    |
+350 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Zoompro/Zoompro_candidates.t.sol:342:9:
+    |
+342 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (5667): Unused function parameter. Remove or comment out the variable name to silence this warning.
+   --> benchmarks/Zoompro/Zoompro_candidates.t.sol:350:9:
+    |
+350 |         uint256 amountOut
+    |         ^^^^^^^^^^^^^^^^^
+
+Warning (2018): Function state mutability can be restricted to pure
+   --> benchmarks/BIGFI/BIGFI.sol:956:5:
+    |
+956 |     function _getRate() private view returns (uint256) {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to pure
+   --> benchmarks/Discover/ETHpledge.sol:576:5:
+    |
+576 |     function totalSupply() external view returns (uint256) {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to pure
+   --> benchmarks/Haven/Haven.sol:577:5:
+    |
+577 |     function getTotalFee(bool selling) public view returns (uint256) {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to pure
+   --> benchmarks/Haven/Haven.sol:789:5:
+    |
+789 |     function isOverLiquified(uint256 target, uint256 accuracy) public view returns (bool) {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to view
+   --> benchmarks/OneRing/OneRingVault.sol:122:5:
+    |
+122 |     function _getDecimaledUnderlyingBalance(
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to view
+   --> benchmarks/OneRing/OneRingVault.sol:131:5:
+    |
+131 |     function _getDefaultMinimumAmountForDeposit(
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to view
+   --> benchmarks/Safemoon/Safemoon.sol:920:5:
+    |
+920 |     function getPairAddr() public returns (address) {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to pure
+   --> benchmarks/Safemoon/SafeswapRouterProxy1.sol:790:5:
+    |
+790 |     function version() public view returns (uint256) {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to view
+   --> benchmarks/Zoompro/Zoom.sol:329:5:
+    |
+329 |     function _beforeTokenTransfer(
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+Ran 1 test for benchmarks/GPU/GPU_query.t.sol:ContractTest
+[PASS] test_query() (gas: 108200)
+Logs:
+  ----query starts----
+  ----queryBlockTimestamp starts----
+  uint256 blockTimestamp: 1715162496
+  ----queryBlockTimestamp ends----
+  ----queryUniswapV2Pair starts----pair
+  uint112 reserve0pair: 32666057895841703902864
+  uint112 reserve1pair: 30903990987461173215594
+  uint32 blockTimestampLastpair: 1715157349
+  uint256 kLastpair: 1000000000000000000000000000000000000000000000
+  uint256 price0CumulativeLastpair: 3593172380488441457328771074525154312554
+  uint256 price1CumulativeLastpair: 3413984338485409116007014517744538854
+  ----queryUniswapV2Pair ends----pair
+  ----queryERC20 starts----busd
+  uint256 totalSupplybusd: 3979997892719565019731285863
+  uint256 balanceOfbusdpair: 32666057895841703902864
+  uint256 balanceOfbusdattacker: 0
+  ----queryERC20 ends----busd
+  ----queryERC20 starts----gpu
+  uint256 totalSupplygpu: 1000000000000000000000000
+  uint256 balanceOfgpupair: 30903990987461173215594
+  uint256 balanceOfgpuattacker: 0
+  ----queryERC20 ends----gpu
+  ----query ends----
+
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 2.08s (2.35ms CPU time)
+
+Ran 1 test suite in 2.09s (2.08s CPU time): 1 tests passed, 0 failed, 0 skipped (1 total tests)
